@@ -1,0 +1,720 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) Launch romp (german test)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/romp/romp",
+            "args": [
+                "--output",
+                "${workspaceFolder}/romp/tests/german.m.test.cpp",
+                "${workspaceFolder}/romp/tests/german.m"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "CMake: build romp"
+        },
+        // {
+        //     "name": "(gdb) Launch romp (german test) [no-build]",
+        //     "type": "cppdbg",
+        //     "request": "launch",
+        //     "program": "${workspaceFolder}/build/romp/romp",
+        //     "args": [
+        //         "--output",
+        //         "${workspaceFolder}/romp/tests/german.m.test.cpp",
+        //         "${workspaceFolder}/romp/tests/german.m"
+        //     ],
+        //     "stopAtEntry": false,
+        //     "cwd": "${workspaceFolder}",
+        //     "environment": [],
+        //     "externalConsole": false,
+        //     "MIMode": "gdb",
+        //     "setupCommands": [
+        //         {
+        //             "description": "Enable pretty-printing for gdb",
+        //             "text": "-enable-pretty-printing",
+        //             "ignoreFailures": true
+        //         },
+        //         {
+        //             "description": "Set Disassembly Flavor to Intel",
+        //             "text": "-gdb-set disassembly-flavor intel",
+        //             "ignoreFailures": true
+        //         }
+        //     ]
+        // },
+        {
+            "name": "(gdb) Launch romp (pingpong test)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/romp/romp",
+            "args": [
+                "--output",
+                "${workspaceFolder}/romp/tests/pingpong.m.test.cpp",
+                "${workspaceFolder}/romp/tests/pingpong.m"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "CMake: build romp"
+        },
+        // {
+        //     "name": "(gdb) Launch romp (pingpong test) [no-build]",
+        //     "type": "cppdbg",
+        //     "request": "launch",
+        //     "program": "${workspaceFolder}/build/romp/romp",
+        //     "args": [
+        //         "--output",
+        //         "${workspaceFolder}/romp/tests/pingpong.m.test.cpp",
+        //         "${workspaceFolder}/romp/tests/pingpong.m"
+        //     ],
+        //     "stopAtEntry": false,
+        //     "cwd": "${workspaceFolder}",
+        //     "environment": [],
+        //     "externalConsole": false,
+        //     "MIMode": "gdb",
+        //     "setupCommands": [
+        //         {
+        //             "description": "Enable pretty-printing for gdb",
+        //             "text": "-enable-pretty-printing",
+        //             "ignoreFailures": true
+        //         },
+        //         {
+        //             "description": "Set Disassembly Flavor to Intel",
+        //             "text": "-gdb-set disassembly-flavor intel",
+        //             "ignoreFailures": true
+        //         }
+        //     ]
+        // },
+        {
+            "name": "(gdb) Launch romp (sort5 test)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/romp/romp",
+            "args": [
+                "--output",
+                "${workspaceFolder}/romp/tests/sort5.m.test.cpp",
+                "${workspaceFolder}/romp/tests/sort5.m"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "CMake: build romp"
+        },
+        // {
+        //     "name": "(gdb) Launch romp (sort5 test) [no-build]",
+        //     "type": "cppdbg",
+        //     "request": "launch",
+        //     "program": "${workspaceFolder}/build/romp/romp",
+        //     "args": [
+        //         "--output",
+        //         "${workspaceFolder}/romp/tests/sort5.m.test.cpp",
+        //         "${workspaceFolder}/romp/tests/sort5.m"
+        //     ],
+        //     "stopAtEntry": false,
+        //     "cwd": "${workspaceFolder}",
+        //     "environment": [],
+        //     "externalConsole": false,
+        //     "MIMode": "gdb",
+        //     "setupCommands": [
+        //         {
+        //             "description": "Enable pretty-printing for gdb",
+        //             "text": "-enable-pretty-printing",
+        //             "ignoreFailures": true
+        //         },
+        //         {
+        //             "description": "Set Disassembly Flavor to Intel",
+        //             "text": "-gdb-set disassembly-flavor intel",
+        //             "ignoreFailures": true
+        //         }
+        //     ]
+        // },
+        {
+            "name": "(gdb) Launch romp (mcslock2 test)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/romp/romp",
+            "args": [
+                "--output",
+                "${workspaceFolder}/romp/tests/mcslock2.m.test.cpp",
+                "${workspaceFolder}/romp/tests/mcslock2.m"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "CMake: build romp"
+        },
+        {
+            "name": "(gdb) Launch romp (arbiter test)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/romp/romp",
+            "args": [
+                "--output",
+                "${workspaceFolder}/romp/tests/arbiter.m.test.cpp",
+                "${workspaceFolder}/romp/tests/arbiter.m"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "CMake: build romp"
+        },
+        {
+            "name": "(gdb) Launch romp (cache3 test)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/romp/romp",
+            "args": [
+                "--output",
+                "${workspaceFolder}/romp/tests/cache3.m.test.cpp",
+                "${workspaceFolder}/romp/tests/cache3.m"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "CMake: build romp"
+        },
+        {
+            "name": "(gdb) Launch romp (dpnew test)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/romp/romp",
+            "args": [
+                "--output",
+                "${workspaceFolder}/romp/tests/dpnew.m.test.cpp",
+                "${workspaceFolder}/romp/tests/dpnew.m"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "CMake: build romp"
+        },
+        {
+            "name": "(gdb) german help/man test",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/romp/tests/german.m.test",
+            "args": [
+                "-h"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build german test [no-build]"
+        },
+        {
+            "name": "(gdb) german single no-trace test",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/romp/tests/german.m.test",
+            "args": [
+                "-sw",
+                "-s",
+                "1234567890",
+                "-a",
+                "-d",
+                "256",
+                "-ll",
+                "64",
+                "-y"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build german test [no-build]"
+        },
+        {
+            "name": "(gdb) german single TRACE test ",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/romp/tests/german.m.test",
+            "args": [
+                "-sw",
+                "-s",
+                "1234567890",
+                "-t",
+                "-a",
+                "-d",
+                "256",
+                "-ll",
+                "64",
+                "-y"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build german test [no-build]"
+        },
+        {
+            "name": "(gdb) german parallel no-trace test",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/romp/tests/german.m.test",
+            "args": [
+                "-w",
+                "16",
+                "-s",
+                "1234567890",
+                "-a",
+                "-d",
+                "256",
+                "-ll",
+                "128",
+                "-ros",
+                "-y"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build german test [no-build]"
+        },
+        {
+            "name": "(gdb) german parallel TRACE test",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/romp/tests/german.m.test",
+            "args": [
+                "-w",
+                "16",
+                "-s",
+                "1234567890",
+                "-t",
+                "-a",
+                "-d",
+                "256",
+                "-ll",
+                "64",
+                "-ros",
+                "-y"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build german test [no-build]"
+        },
+        {
+            "name": "C/C++: romp-rw g++ build and debug active C++ file (single-walk test)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${fileDirname}/${fileBasenameNoExtension}",
+            "args": [
+                "-sw",
+                "-s",
+                "1234567890",
+                "-a",
+                "-d",
+                "256",
+                "-ll",
+                "64",
+                "-y"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "C/C++: g++ build active C++ file",
+            "miDebuggerPath": "/bin/gdb"
+        },
+        {
+            "name": "romp: romp->g++ build and debug active murphi file (single-walk test)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${file}.test",
+            "args": [
+                "-sw",
+                "-s",
+                "1234567890",
+                "-a",
+                "-d",
+                "256",
+                "-ll",
+                "64",
+                "-rhl",
+                "8"
+                // ,"-y"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "C/C++: g++ build active murphi file [romp]",
+            "miDebuggerPath": "/bin/gdb"
+        },
+        {
+            "name": "C/C++: romp-rw g++ build and debug active C++ file (parallel-walk test)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${fileDirname}/${fileBasenameNoExtension}",
+            "args": [
+                "-w",
+                "16",
+                "-s",
+                "1234567890",
+                "-a",
+                "-d",
+                "256",
+                "-ll",
+                "64",
+                "-ros"
+                ,"-y"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "C/C++: g++ build active C++ file [romp]",
+            "miDebuggerPath": "/bin/gdb"
+        },
+        {
+            "name": "romp: romp->g++ build and debug active murphi file (parallel-walk test)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${file}.test",
+            "args": [
+                // "-w",
+                // "16",
+                "-s",
+                "1234567890",
+                "-a",
+                "-d",
+                "256",
+                "-ll",
+                "-ros",
+                "-rhl",
+                "8"
+                //,"-y"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "C/C++: g++ build active murphi file [romp]",
+            "miDebuggerPath": "/bin/gdb"
+        },
+        {
+            "name": "romp: debug gen of active murphi file",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/romp/romp",
+            "args": [
+                "-acl",
+                "--output",
+                "${workspaceFolder}/romp/tests/${fileBasename}.m.test.cpp",
+                "${file}"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "CMake: build romp",
+            "miDebuggerPath": "/bin/gdb"
+        },
+        {
+            "name": "rumur: rumur->gcc build and debug active murphi file [exhaustive]",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${file}.test",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "C: gcc build active murphi file [rumur,exhaustive]",
+            "miDebuggerPath": "/bin/gdb"
+        },
+        {
+            "name": "rumur: rumur->gcc build and debug active murphi file",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${file}.test",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "C: gcc build active murphi file [rumur]",
+            "miDebuggerPath": "/bin/gdb"
+        },
+        {
+            "name": "Python: Trace Stats",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/romp/tests/trace_stats.py",
+            "args": ["${workspaceFolder}/traces"],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python: symmetry comparison active file",
+            "type": "python",
+            "request": "launch",
+            "program": "romp/tests/symmetry_test.py",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "${relativeFile}"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+    ]
+}

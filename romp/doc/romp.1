@@ -1,0 +1,265 @@
+.TH romp 1
+.SH NAME
+romp \- translate a Murphi model to C++ for model checking via parallel random walks.
+.SH SYNOPSIS
+.B \fB romp\fR \fB[options]\fR [\fB--output\fR \fI OUT_FILE\fR] [\fI IN_FILE\fR]
+.SH DESCRIPTION
+\fB romp \fR is a parallel Murphi based model checker generator,
+meant for large models that other murphi model checkers can't handle.
+The generated model checker utilizes random walks rather than a BFS or DFS, 
+and implements no state hashing.
+Therefore the \fB romp\fR model checker is blind as to when to stop,
+and a number of configurable options are available in the model checker to 
+determine when to end end a ``romp''/random-walk.
+.PP
+PLEASE NOTE: this generates a C++ based model checker not a C based model checker,
+so ensure that you use a C++ compiler when building the model checker.
+Additionally, while \fB romp\fR requires a unix based system to be built,
+the model checker only uses the C++ stdlib 
+\fI (no direct use of OS libs, just use your preferred -pthread flag alternative)\fR
+so you \fI theoretically \fR could build it on any OS (untested).
+.PP
+See
+.BR rumur(1)
+for more information about \fB rumur \fR or Murphi.
+.PP
+See the \fB FEATURE SUPPORT \fR section below for information about
+what murphi and \fB rumur\fR features \fB romp\fR does and does not support.
+.SH ARGUMENTS
+\fBIN_FILE\fR
+.RS
+A File Path/Name of the Murphi model you wish to generate a model for.
+.\" If none provided it can read from STDIN.
+.RE
+.SH OPTIONS
+\fB --help\fR or \fB -h \fR
+.RS
+Display this help page.
+.RE
+.PP
+\fB--output\fR \fI FILE\fR or \fB-o\fR \fI FILE\fR
+.RS
+Set path to write the generated C++ code to. 
+Without this option, code is written to \fI<IN_FILE>.romp.cpp\fR.
+.RE
+.PP
+\fB--rule-history-len\fR \fI NUM\fR or \fB-r\fR \fI NUM\fR
+.RS
+Set the size of the rule history that is displayed in a per walk report,
+and is kept in a walker's buffer.
+Useful for getting more info about what a walk has done, 
+without using trace files.
+Increases the size of a random walker's memory footprint by 8bytes 
+per entry.
+Without this option, the size of the history buffer defaults to 4.
+\fINUM\fR must be a positive integer.
+.RE
+.PP
+\fB--no-symmetry\fR or \fB-s\fR
+.RS
+Disable the approximate/heuristic symmetry reduction, 
+and therefore choose the next rule to apply completely at random.
+.RS
+See the \fB Approximate Symmetry Reduction\fR subsection of the
+\fB FEATURE SUPPORT\fR section below for more details on what this is.
+.RE
+.RE
+.PP
+\fB--enable-assume\fR or \fB-a\fR
+.RS
+Enable support for \fB rumur's\fR \fI assume\fR property.
+This will allow you to specify in your model when a state is invalid,
+but is not in error.
+When reached and it's conditional evaluates to true, that walk will
+stop, but unless specified in the options of the generated model checker,
+this violation will not be reported.
+.RS
+\fI aka\fR this is just like \fIInvariant\fR/\fIAssert\fR but it 
+suppresses report of the violation by default.
+.RE
+.RE
+.PP
+\fB--enable-cover\fR or \fB-c\fR
+.RS
+Enable support for \fB rumur's\fR \fI cover\fR property.
+This will allow you to specify that the model has been checked enough,
+if a random walk has reached all \fI cover\fR statements have been reached,
+and their conditional evaluated to true
+\fIN\fR times, where \fIN\fR can be specified in the options of the
+generated model checker.
+.RS
+.BR NOTE:
+this feature needs to be enabled for each run of the model checker 
+you wish to use it in, as this option just tells the \fB romp\fR tool
+to generate a model checker with this capability.
+.RE
+.RE
+.PP
+\fB--enable-liveness\fR or \fB-l\fR
+.RS
+Enable support for \fB rumur's\fR \fI liveness\fR property.
+This will allow you to specify that the model might be in a deadlock or
+stuck in a loop
+if a random walk has applied \fIN\fR rules without 
+\fI liveness\fR property rules' conditional evaluating to true.
+Where \fIN\fR can be specified in the options of the
+generated model checker.
+.RS
+.BR NOTE:
+this feature needs to be enabled for each run of the model checker 
+you wish to use it in, as this option just tells the \fB romp\fR tool
+to generate a model checker with this capability.
+.RE
+.RE
+.PP
+\fB--ignore-romp-props\fR or \fB-i\fR
+.RS
+suppress generation errors about the existence of unsupported rumur properties
+in the model, when the appropriate enable options are not provided.
+.RE
+.PP
+\fB--value-type\fR \fI TYPE\fR
+.RS
+Change the C/C++ type used to represent scalar values in the emitted code. 
+By default, \fI int\fR is used. 
+\fB romp\fR does not validate that the type you specify
+is a valid C/C++ type, 
+but simply trusts that you have given something that will be
+available when you compile the generated code.
+.RE
+.PP
+\fB--version\fR
+.RS
+Display version information and exit.
+.RE
+.PP
+\fB--do-measure\fR
+.RS
+Enable time measurements and other mildly useful stats 
+in all reports and traces generated by the model checker.
+.RS
+.BR NOTE:
+this can cause noticeable slowdowns as it often requires 
+unnecessary system calls.
+Additionally all time measurements are only given in seconds to the nearest
+second, so short random-walks often result in reported 0s times.
+.RE
+.PP
+\fB--simple-trace\fR
+.RS
+This will reduce the size of rule and state representations in the trace files,
+no data about the trace is removed, but it is not supported in
+any (future) trace viewing utilities.
+It can also help reduce the additional memory and time overhead for 
+producing a trace.
+.RS
+.BR NOTE:
+if the size of trace files are too large it is recommended to instead 
+either reduce the max depth and increase the number of walks performed,
+or if your model needs deep walks 
+just only have the model checker generate traces for single walks
+that you have identified as notable in a normal parallel launch.
+.RE
+.RE
+.PP
+.PP
+.SH FEATURE SUPPORT
+\fBMurphi Types\fR
+.RS
+\fB romp \fR like \fB rumur \fR does not support murphi's 
+\fI scalarsetunion \fR types.
+.PP
+Murphi \fI record\fR types are translated into C/C++ structs that use native, platform-dependent
+member layout. An exception to this is if the input model performs aggregate
+comparisons of record or array expressions (using \fB==\fR or \fB!=\fR). If this
+is the case, the produced structs will be packed (using
+\fB__attribute__((packed))\fR) to ensure they can be compared with \fB memcmp\fR.
+.PP
+.RS
+.BR NOTE:
+The \fB romp\fR generated model checker does not by default perform checks 
+on the bounds of Murphi value types \fI range \fR or \fI scalarset \fR types.
+We recommend you decrease the value of size bounding \fI scalarset \fR types and
+test your model on a traditional murphi model checker before using \fB romp \fR.
+We plan to eventually add this functionality to be enabled when generating a 
+model checker using the \fB romp \fR tool, but to keep the model checker's
+performance as fast as possible it will likely not ever be enabled by default.
+.RE
+.RE
+.PP
+\fB Approximate Symmetry Reduction\fR
+.RS
+The \fB romp \fR model checker implements a \fI approximate\fR symmetry reduction,
+by always performing the rule variants generated by RuleSets in 
+lexicographic order.
+So while any rule can be still be chosen in any order, 
+the values of all of the quantifiers in the \fI RulSet\fR structures a
+\fI Rule\fR is nested inside of will always \fBtry\fR to be applied in 
+lexicographic order.
+If a \fIRule\fR's guard fails to be applied it will still progress
+through the various 
+.RE
+.PP
+\fB Approximate Deadlock Detection\fR
+.RS
+The model checker only implements a \fI heuristic/approximate\fR 
+deadlock protection, in the form(s) of max depth, 
+attempt limits (number of times randomly chosen rules can fail 
+their guard checks in a row before terminating the random walk),
+and other limits imposed by enabling the rumur \fI liveness\fR property
+in generation AND when running the generated model checker.
+.RE
+.PP
+\fB rumur Properties\fR
+.RS
+\fB romp \fR is built upon rumur's excellent murphi parsing library, 
+and therefore has limited optional \fI (heuristic) \fR support for 
+\fB rumur's \fR special property types \fI(assume, cover & liveness).\fR
+To use them you must use the appropriate flag when generating your model checker 
+using the \fB romp \fR tool.
+See the \fB OPTIONS \fR section above for more info on each supported property.
+.RE
+.PP
+\fB Function Side-Effect Protection\fR
+.RS
+We do not allow you to build a model checker that calls a Murphi Function with 
+side effects (\fIi.e.\fR modifies a value in the state) inside a Rule's guard expr,
+or a Property Rule's conditional expr.
+This is for consistancy and safty in your model.
+However, this is enfourced by C++ and your compiler so you will not recive an error about this 
+from the \fB romp\fR tool, but rather your C/C++ compiler, if supported.
+.RE
+.PP
+.SH SEE ALSO
+rumur(1)
+.SH AUTHOR
+All comments, questions and complaints should be directed to the 
+civic-fv research group at the University of Utah.
+.PP
+See <https://civic-fv.github.io/software/romp> for more details on
+the current maintainer(s)
+.SH LICENSE
+This is free and unencumbered software released into the public domain.
+.PP
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+.PP
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+.PP
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+.PP
+For more information, please refer to <http://unlicense.org>

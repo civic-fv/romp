@@ -1,0 +1,48 @@
+{
+    "$type": "romp-trace",
+    "$version": "0.0.1",
+    "metadata": { // we can put details about the model here IDK
+        "model": "str:file-path",
+        "seed": 0, // the int rep fo the rand seed
+        "max-depth": 0, // the starting fuel level
+        "...": "..."  // don't put this in just omit prev ','
+    }, 
+    "trace": [
+        // ^^^ all of this needs to be output before you write any trace info ^^^
+        // \/ \/ all of this section will be output during the RW \/ \/ (you will need to insert commas between objects)
+        { // START of your part of the output
+            "$type": "init",
+            "startstate": // END of your part of the output
+            {} // <- this would be the start state object that you get from the ::__caller__::STARSTATES array
+            , // <- you would need to insert this
+            "state": // <- you would need to insert this
+            {} // <- this should be jsu the state object piped in
+            // if this is the end of the object no comma
+        }, // <- this brace & comma will need to be written manually by you every time
+        // ^^^ all this needs to be written by the end of the constructor ^^^
+        // \/ \/ all of this will be written in the trace function (up until results) \/ \/
+        { // START of your part of the output
+            "$type": "rule-miss", // i.e. when a guard return false record it was tried
+            "rule": // END of your part of the output
+            {} // <- this would be the rule object that you get from the rand_ruleset -> rand_rule methods (locally called `r`) in the code
+        },
+        { // START of your part of the output
+            "$type": "rule-hit", // i.e. when a guard return false record it was tried
+            "rule": // END of your part of the output
+            {}, // <- this would be the rule object that you get from the rand_ruleset -> rand_rule methods (locally called `r`) in the code
+            "state": // <- you would need to insert this
+            {} // <- this should be jsu the state object piped in
+        },
+        {} // this would repeat ...
+    // when exception caught output from here to..
+    ],
+    "error-trace": [ // ... here
+        {} // <- this would be the caught exception (plus more but it will be done automatically for you
+    ], // after outputting exception output the rest ...
+    "results": { // <- best done in a helper function to call whenever you want
+        "depth": 0, // put in this info
+        "valid": true, // if the random walk terminated because fo a property violation or not
+        "is-error": false, // (FOR-LATER) is true if error-trace is not triggered by an assumption (all other properties only throw when state is in error) 
+        "...": "..."  // don't put this in just omit prev ','
+    }
+}

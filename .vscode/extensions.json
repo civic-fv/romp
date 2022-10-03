@@ -1,0 +1,21 @@
+{
+    "recommendations": [
+        "aaron-bond.better-comments",                   // make your comments as pretty as mine (great for identifying things in large files)
+        "jeff-hykin.better-cpp-syntax",                 // improve the basic C/C++ syntax highlighting in vscode
+        "ms-vscode.cpptools",                           // required to properly develop in vscode.
+        "streetsidesoftware.code-spell-checker",        // add spellchecking to vscode (a must for Andrew)
+        "equinusocio.vsc-community-material-theme",     // add some basic themes to vscode (use them if yo like)
+        "stackbreak.comment-divider",                   // generate comment headers with `alt+shift+x` and `alt+x` to mke code organised and pretty
+        "cschlosser.doxdocgen",                         // add supprot for usign doxygen commentign syntax in c/c++ code 
+        "eamodio.gitlens",                              // add a bunch of useful git tools like inline git blame info
+        "github.remotehub",                             // make workign with GitHub a little easier
+        "ms-vscode.hexeditor",                          // useful for doublechecking binaries
+        "ms-vsliveshare.vsliveshare",                   // enable vscode live share for live code editing
+        "pkief.material-icon-theme",                    // add a more full fledged icon theme to vscode
+        "christian-kohler.path-intellisense",           // add smart inteliisense to all vscode languages to recognise and suggest path completions
+        "ms-vscode-remote.remote-ssh",                  // add supprot for remoting in vscode
+        "hankhsu1996.murphi",                           // add basic supprot like syntax highlighting & a basic language server to murphi code
+        "ms-vscode.makefile-tools",                     // add support and integration for the make build system into most aspects of vscode
+        "hankhsu1996.murphi"                            // add syntax highlighting for murphi
+    ]
+}

@@ -1,0 +1,9 @@
+`sig` in:                                                                  `params[0]` in:           status:
+========================================================================================================================
+  operator << (out,sig)                             `&sig`: 0x7ffffffec318   `params[0]`: 0x30         !! BAD !!
+  CGeneraotr::gen_ruleset_array(rules)  `&__for_begin.sig`: 0x7ffffffec318   `params[0]`: 0x30         !! BAD !!
+  // found at final index of SigPerm `index`:3->4 (param_iters[0]: 4 but size was 4 therefore out of bounds)
+  CGeneraotr::gen_ruleset_array(rules) ln:440       `&sig`: 0x7ffffffec318   `params[0]`: 0x83802f0    ✔ GOOD ✔
+  SigPerm::Iterator::operator ++ (it)               `&sig`: 0x7ffffffec318   `params[0]`: 0x83802f0    ✔ GOOD ✔
+  SigPerm::Iterator::increment_item                 `&sig`: 0x7ffffffec318   `params[0]`: 0x83802f0    ✔ GOOD ✔
+  SigPerm::Iterator::Iterator(perm_,iters_)         `&sig`: 0x7ffffffec318   `params[0]`: 0x83505b0    ✔ GOOD ✔
