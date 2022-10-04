@@ -4,18 +4,18 @@
 #include "resources.h"
 #include <cstddef>
 #include <iostream>
-#include <rumur/rumur.h>
+#include <romp/romp.h>
 #include <string>
 #include <vector>
 
-using namespace rumur;
+using namespace romp;
 
 namespace {
 
 class CGenerator : public CLikeGenerator {
 
 public:
-  CGenerator(const std::vector<rumur::Comment> &comments_, std::ostream &out_,
+  CGenerator(const std::vector<romp::Comment> &comments_, std::ostream &out_,
              bool pack_)
       : CLikeGenerator(comments_, out_, pack_) {}
 

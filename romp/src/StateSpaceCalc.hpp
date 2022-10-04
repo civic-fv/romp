@@ -16,10 +16,10 @@
  */
 
 
-#include <rumur/rumur.h>
+#include <romp/romp.h>
 
 namespace romp {
 
-  mpz_class statespace_count(const rumur::Record& n);
+  mpz_class statespace_count(const romp::Record& n);
 
 }

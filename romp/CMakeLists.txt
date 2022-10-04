@@ -48,7 +48,7 @@ add_custom_command(# file with CLI config options
 #   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(ROMP_CMAKE_CXX_FLAGS "-Wmissing-declarations -Wunknown-pragmas")
-set(CMAKE_CXX_FLAGS "${OLD_CMAKE_CXX_FLAGS} -std=c++17 ${RUMUR_CMAKE_CXX_FALGS} ${ROMP_CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${OLD_CMAKE_CXX_FLAGS} -std=c++17 ${ROMP_CMAKE_CXX_FALGS} ${ROMP_CMAKE_CXX_FLAGS}")
 set(ROMP_CMAKE_CXX_FLAGS_DEBUG "-DDEBUG -D_ROMP_DEV_DEBUG_INCLUDE_DIR='\"${CMAKE_CURRENT_SOURCE_DIR}/resources\"'")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${ROMP_CMAKE_CXX_FLAGS_DEBUG}")
 
@@ -83,10 +83,10 @@ add_executable(romp
 target_include_directories(romp
   PRIVATE
   src
-  ${CMAKE_CURRENT_BINARY_DIR}/../librumur)
+  ${CMAKE_CURRENT_BINARY_DIR}/../libromp)
 
 target_link_libraries(romp
-  librumur)
+  libromp)
 
 # Compress manpage
 add_custom_target(man-romp

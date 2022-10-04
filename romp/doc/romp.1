@@ -20,11 +20,11 @@ the model checker only uses the C++ stdlib
 so you \fI theoretically \fR could build it on any OS (untested).
 .PP
 See
-.BR rumur(1)
-for more information about \fB rumur \fR or Murphi.
+.BR romp(1)
+for more information about \fB romp \fR or Murphi.
 .PP
 See the \fB FEATURE SUPPORT \fR section below for information about
-what murphi and \fB rumur\fR features \fB romp\fR does and does not support.
+what murphi and \fB romp\fR features \fB romp\fR does and does not support.
 .SH ARGUMENTS
 \fBIN_FILE\fR
 .RS
@@ -67,7 +67,7 @@ See the \fB Approximate Symmetry Reduction\fR subsection of the
 .PP
 \fB--enable-assume\fR or \fB-a\fR
 .RS
-Enable support for \fB rumur's\fR \fI assume\fR property.
+Enable support for \fB romp's\fR \fI assume\fR property.
 This will allow you to specify in your model when a state is invalid,
 but is not in error.
 When reached and it's conditional evaluates to true, that walk will
@@ -81,7 +81,7 @@ suppresses report of the violation by default.
 .PP
 \fB--enable-cover\fR or \fB-c\fR
 .RS
-Enable support for \fB rumur's\fR \fI cover\fR property.
+Enable support for \fB romp's\fR \fI cover\fR property.
 This will allow you to specify that the model has been checked enough,
 if a random walk has reached all \fI cover\fR statements have been reached,
 and their conditional evaluated to true
@@ -97,7 +97,7 @@ to generate a model checker with this capability.
 .PP
 \fB--enable-liveness\fR or \fB-l\fR
 .RS
-Enable support for \fB rumur's\fR \fI liveness\fR property.
+Enable support for \fB romp's\fR \fI liveness\fR property.
 This will allow you to specify that the model might be in a deadlock or
 stuck in a loop
 if a random walk has applied \fIN\fR rules without 
@@ -114,7 +114,7 @@ to generate a model checker with this capability.
 .PP
 \fB--ignore-romp-props\fR or \fB-i\fR
 .RS
-suppress generation errors about the existence of unsupported rumur properties
+suppress generation errors about the existence of unsupported romp properties
 in the model, when the appropriate enable options are not provided.
 .RE
 .PP
@@ -166,7 +166,7 @@ that you have identified as notable in a normal parallel launch.
 .SH FEATURE SUPPORT
 \fBMurphi Types\fR
 .RS
-\fB romp \fR like \fB rumur \fR does not support murphi's 
+\fB romp \fR like \fB romp \fR does not support murphi's 
 \fI scalarsetunion \fR types.
 .PP
 Murphi \fI record\fR types are translated into C/C++ structs that use native, platform-dependent
@@ -206,15 +206,15 @@ The model checker only implements a \fI heuristic/approximate\fR
 deadlock protection, in the form(s) of max depth, 
 attempt limits (number of times randomly chosen rules can fail 
 their guard checks in a row before terminating the random walk),
-and other limits imposed by enabling the rumur \fI liveness\fR property
+and other limits imposed by enabling the romp \fI liveness\fR property
 in generation AND when running the generated model checker.
 .RE
 .PP
-\fB rumur Properties\fR
+\fB romp Properties\fR
 .RS
-\fB romp \fR is built upon rumur's excellent murphi parsing library, 
+\fB romp \fR is built upon romp's excellent murphi parsing library, 
 and therefore has limited optional \fI (heuristic) \fR support for 
-\fB rumur's \fR special property types \fI(assume, cover & liveness).\fR
+\fB romp's \fR special property types \fI(assume, cover & liveness).\fR
 To use them you must use the appropriate flag when generating your model checker 
 using the \fB romp \fR tool.
 See the \fB OPTIONS \fR section above for more info on each supported property.
@@ -231,7 +231,7 @@ from the \fB romp\fR tool, but rather your C/C++ compiler, if supported.
 .RE
 .PP
 .SH SEE ALSO
-rumur(1)
+romp(1)
 .SH AUTHOR
 All comments, questions and complaints should be directed to the 
 civic-fv research group at the University of Utah.

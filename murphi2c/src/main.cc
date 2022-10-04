@@ -12,7 +12,7 @@
 #include <getopt.h>
 #include <iostream>
 #include <memory>
-#include <rumur/rumur.h>
+#include <romp/romp.h>
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
@@ -86,7 +86,7 @@ static void parse_args(int argc, char **argv) {
       break;
 
     case 131: // --version
-      std::cout << "Murphi2C version " << rumur::get_version() << "\n";
+      std::cout << "Murphi2C version " << romp::get_version() << "\n";
       exit(EXIT_SUCCESS);
 
     default:
@@ -144,10 +144,10 @@ int main(int argc, char **argv) {
     in = make_stdin_dup();
 
   // parse input model
-  rumur::Ptr<rumur::Model> m;
+  romp::Ptr<romp::Model> m;
   try {
-    m = rumur::parse(*in.first);
-  } catch (rumur::Error &e) {
+    m = romp::parse(*in.first);
+  } catch (romp::Error &e) {
     std::cerr << e.loc << ":" << e.what() << "\n";
     return EXIT_FAILURE;
   }
@@ -159,9 +159,9 @@ int main(int argc, char **argv) {
 
   // check the model is valid
   try {
-    resolve_symbols(*m);
+    updateASTs(*m);
     validate(*m);
-  } catch (rumur::Error &e) {
+  } catch (romp::Error &e) {
     std::cerr << e.loc << ":" << e.what() << "\n";
     return EXIT_FAILURE;
   }
@@ -171,14 +171,14 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
 
   // name any rules that are unnamed, so they get valid C symbols
-  rumur::sanitise_rule_names(*m);
+  romp::sanitize_rule_names(*m);
 
   // Determine if we have any == or != involving records or arrays, in which
   // case we will need to pack structs. See generate_c() for why.
   bool pack = compares_complex_values(*m);
 
   // parse comments from the source code
-  std::vector<rumur::Comment> comments = rumur::parse_comments(*in.second);
+  std::vector<romp::Comment> comments = romp::parse_comments(*in.second);
 
   // output code
   if (source) {

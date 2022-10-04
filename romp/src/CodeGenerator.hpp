@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <rumur/rumur.h>
+#include <romp/romp.h>
 #include <cstddef>
 #include <string>
 #include <unordered_set>
@@ -78,7 +78,7 @@ namespace romp {
     static void enable_cover_property();
     static void enable_liveness_property();
     static void enable_measurements();
-    static bool is_prop_enabled(rumur::Property::Category prop);
+    static bool is_prop_enabled(romp::Property::Category prop);
     static void print_preprocessor_options(std::ostream& out);
 
     // make this class abstract

@@ -3,7 +3,7 @@
 #include "CodeGenerator.hpp"
 #include <cstddef>
 #include <iostream>
-#include <rumur/rumur.h>
+#include <romp/romp.h>
 #include <string>
 #include <unordered_map>
 // #include <set>
@@ -14,7 +14,7 @@
 // generator for C-like code
 class __attribute__((visibility("hidden"))) CLikeGenerator
     : public romp::CodeGenerator,
-      public rumur::ConstBaseTraversal {
+      public romp::ConstBaseTraversal {
 
   static id_t anon_id;
 
@@ -38,19 +38,19 @@ public:
   std::unordered_set<size_t> is_pointer;
 
   // list of comments from the original source
-  std::vector<rumur::Comment> comments;
+  std::vector<romp::Comment> comments;
 
   // whether each comment has been written to the output yet
   std::vector<bool> emitted;
 
 public:
-  CLikeGenerator(const std::vector<rumur::Comment> &comments_,
+  CLikeGenerator(const std::vector<romp::Comment> &comments_,
                  std::ostream &out_, bool pack_)
       : out(out_), pack(pack_), comments(comments_),
         emitted(comments_.size(), false) {}
 
   // CLikeGenerator(std::unordered_set<size_t> emitted_tDecls_,
-  //                const std::vector<rumur::Comment> &comments_,
+  //                const std::vector<romp::Comment> &comments_,
   //                std::vector<bool> emitted_comments_,
   //                std::unordered_map<size_t, std::string> enum_typedefs_,
   //                std::ostream &out_, bool pack_)
@@ -60,69 +60,69 @@ public:
   //       enum_typedefs(enum_typedefs_) 
   //        {}
 
-  void visit_add(const rumur::Add &n) final;
-  void visit_aliasdecl(const rumur::AliasDecl &n) final;
-  void visit_aliasrule(const rumur::AliasRule &); // final;
-  void visit_aliasstmt(const rumur::AliasStmt &n) final;
-  void visit_and(const rumur::And &n) final;
-  void visit_array(const rumur::Array &n); // final;
-  void visit_assignment(const rumur::Assignment &n) final;
-  void visit_band(const rumur::Band &n) final;
-  void visit_bnot(const rumur::Bnot &n) final;
-  void visit_bor(const rumur::Bor &n) final;
-  void visit_clear(const rumur::Clear &n) final;
-  void visit_div(const rumur::Div &n) final;
-  void visit_element(const rumur::Element &n) final;
-  void visit_enum(const rumur::Enum &n); // final;
-  void visit_eq(const rumur::Eq &n) final;
-  void visit_errorstmt(const rumur::ErrorStmt &n); // final;
-  void visit_exists(const rumur::Exists &n) final;
-  void visit_exprid(const rumur::ExprID &n) final;
-  void visit_field(const rumur::Field &n) final;
-  void visit_implication(const rumur::Implication &n) final;
-  void visit_isundefined(const rumur::IsUndefined &) final;
-  void visit_for(const rumur::For &n) final;
-  void visit_forall(const rumur::Forall &n) final;
-  void visit_functioncall(const rumur::FunctionCall &n) final;
-  void visit_geq(const rumur::Geq &n) final;
-  void visit_gt(const rumur::Gt &n) final;
-  void visit_if(const rumur::If &n) final;
-  void visit_ifclause(const rumur::IfClause &n) final;
-  void visit_leq(const rumur::Leq &n) final;
-  void visit_lsh(const rumur::Lsh &n) final;
-  void visit_lt(const rumur::Lt &n) final;
-  void visit_mod(const rumur::Mod &n) final;
-  void visit_model(const rumur::Model &n); // final;
-  void visit_mul(const rumur::Mul &n) final;
-  void visit_negative(const rumur::Negative &n) final;
-  void visit_neq(const rumur::Neq &n) final;
-  void visit_not(const rumur::Not &n) final;
-  void visit_number(const rumur::Number &n) final;
-  void visit_or(const rumur::Or &n) final;
-  void visit_procedurecall(const rumur::ProcedureCall &n) final;
-  void visit_property(const rumur::Property &) final;
-  void visit_propertystmt(const rumur::PropertyStmt &n); // final;
-  void visit_put(const rumur::Put &n) final;
-  void visit_quantifier(const rumur::Quantifier &n) ; //final;
-  void visit_range(const rumur::Range &); // final;
-  void visit_record(const rumur::Record &n); // final;
-  void visit_return(const rumur::Return &n) final;
-  void visit_rsh(const rumur::Rsh &n) final;
-  void visit_ruleset(const rumur::Ruleset &) final;
-  void visit_scalarset(const rumur::Scalarset &); // final;
-  void visit_sub(const rumur::Sub &n) final;
-  void visit_switch(const rumur::Switch &n) final;
-  void visit_switchcase(const rumur::SwitchCase &n) final;
-  void visit_ternary(const rumur::Ternary &n) final;
-  void visit_typedecl(const rumur::TypeDecl &n); // final;
-  void visit_typeexprid(const rumur::TypeExprID &n) final;
-  void visit_undefine(const rumur::Undefine &n) final;
-  void visit_while(const rumur::While &n) final;
-  void visit_xor(const rumur::Xor &n) final;
+  void visit_add(const romp::Add &n) final;
+  void visit_aliasdecl(const romp::AliasDecl &n) final;
+  void visit_aliasrule(const romp::AliasRule &); // final;
+  void visit_aliasstmt(const romp::AliasStmt &n) final;
+  void visit_and(const romp::And &n) final;
+  void visit_array(const romp::Array &n); // final;
+  void visit_assignment(const romp::Assignment &n) final;
+  void visit_band(const romp::Band &n) final;
+  void visit_bnot(const romp::Bnot &n) final;
+  void visit_bor(const romp::Bor &n) final;
+  void visit_clear(const romp::Clear &n) final;
+  void visit_div(const romp::Div &n) final;
+  void visit_element(const romp::Element &n) final;
+  void visit_enum(const romp::Enum &n); // final;
+  void visit_eq(const romp::Eq &n) final;
+  void visit_errorstmt(const romp::ErrorStmt &n); // final;
+  void visit_exists(const romp::Exists &n) final;
+  void visit_exprid(const romp::ExprID &n) final;
+  void visit_field(const romp::Field &n) final;
+  void visit_implication(const romp::Implication &n) final;
+  void visit_isundefined(const romp::IsUndefined &) final;
+  void visit_for(const romp::For &n) final;
+  void visit_forall(const romp::Forall &n) final;
+  void visit_functioncall(const romp::FunctionCall &n) final;
+  void visit_geq(const romp::Geq &n) final;
+  void visit_gt(const romp::Gt &n) final;
+  void visit_if(const romp::If &n) final;
+  void visit_ifclause(const romp::IfClause &n) final;
+  void visit_leq(const romp::Leq &n) final;
+  void visit_lsh(const romp::Lsh &n) final;
+  void visit_lt(const romp::Lt &n) final;
+  void visit_mod(const romp::Mod &n) final;
+  void visit_model(const romp::Model &n); // final;
+  void visit_mul(const romp::Mul &n) final;
+  void visit_negative(const romp::Negative &n) final;
+  void visit_neq(const romp::Neq &n) final;
+  void visit_not(const romp::Not &n) final;
+  void visit_number(const romp::Number &n) final;
+  void visit_or(const romp::Or &n) final;
+  void visit_procedurecall(const romp::ProcedureCall &n) final;
+  void visit_property(const romp::Property &) final;
+  void visit_propertystmt(const romp::PropertyStmt &n); // final;
+  void visit_put(const romp::Put &n) final;
+  void visit_quantifier(const romp::Quantifier &n) ; //final;
+  void visit_range(const romp::Range &); // final;
+  void visit_record(const romp::Record &n); // final;
+  void visit_return(const romp::Return &n) final;
+  void visit_rsh(const romp::Rsh &n) final;
+  void visit_ruleset(const romp::Ruleset &) final;
+  void visit_scalarset(const romp::Scalarset &); // final;
+  void visit_sub(const romp::Sub &n) final;
+  void visit_switch(const romp::Switch &n) final;
+  void visit_switchcase(const romp::SwitchCase &n) final;
+  void visit_ternary(const romp::Ternary &n) final;
+  void visit_typedecl(const romp::TypeDecl &n); // final;
+  void visit_typeexprid(const romp::TypeExprID &n) final;
+  void visit_undefine(const romp::Undefine &n) final;
+  void visit_while(const romp::While &n) final;
+  void visit_xor(const romp::Xor &n) final;
 
   // helpers to make output more natural
   CLikeGenerator &operator<<(const std::string &s);
-  CLikeGenerator &operator<<(const rumur::Node &n);
+  CLikeGenerator &operator<<(const romp::Node &n);
 
   // make this class abstract
   virtual ~CLikeGenerator() = 0;
@@ -130,22 +130,22 @@ public:
 private:
   // generate a print statement of the given expression and (possibly
   // not-terminal) type
-  void print(const std::string &suffix, const rumur::TypeExpr &t,
-             const rumur::Expr &e, size_t counter);
+  void print(const std::string &suffix, const romp::TypeExpr &t,
+             const romp::Expr &e, size_t counter);
 
 protected:
   // output comments preceding the given node
-  size_t emit_leading_comments(const rumur::Node &n);
+  size_t emit_leading_comments(const romp::Node &n);
 
   // discard any un-emitted comments preceding the given position
-  size_t drop_comments(const rumur::position &pos);
+  size_t drop_comments(const romp::position &pos);
 
   // output single line comments following the given node
-  size_t emit_trailing_comments(const rumur::Node &n);
+  size_t emit_trailing_comments(const romp::Node &n);
 
   // ensure all internal references to TypeExpressions are ID's referencing 
   // type declarations that have already been emitted.
-  // Throws rumur::Error if this is not the case.
-  void check_type_ref(const rumur::Node &p, const rumur::Ptr<rumur::TypeExpr> &t) const;
+  // Throws romp::Error if this is not the case.
+  void check_type_ref(const romp::Node &p, const romp::Ptr<romp::TypeExpr> &t) const;
 
 };

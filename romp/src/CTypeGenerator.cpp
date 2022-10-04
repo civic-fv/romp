@@ -22,10 +22,10 @@
 #include "nested_escape.hpp"
 #include "ModelSplitter.hpp"
 // #include "../../common/escape.h"
-#include <rumur/rumur.h>
+#include <romp/romp.h>
 #include <sstream>
 
-using namespace rumur;
+using namespace romp;
 
 namespace romp {
 

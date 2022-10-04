@@ -1,0 +1,43 @@
+#pragma once
+
+#include "location.hh"
+#include <cstddef>
+#include <cstdint>
+#include <gmpxx.h>
+#include <iostream>
+#include <romp/Expr.h>
+#include <romp/Ptr.h>
+#include <romp/TypeExpr.h>
+#include <string>
+
+#ifndef ROMP_API_WITH_RTTI
+#define ROMP_API_WITH_RTTI __attribute__((visibility("default")))
+#endif
+
+namespace romp {
+
+struct ROMP_API_WITH_RTTI Number : public Expr {
+
+  mpz_class value;
+
+  Number() = delete;
+  Number(const std::string &value_, const location &loc_);
+  Number(const mpz_class &value_, const location &loc_);
+  Number(const Number &) = default;
+  Number(Number &&) = default;
+  Number &operator=(const Number &) = default;
+  Number &operator=(Number &&) = default;
+  virtual ~Number() = default;
+  Number *clone() const;
+
+  void visit(BaseTraversal &visitor);
+  void visit(ConstBaseTraversal &visitor) const;
+
+  bool constant() const final;
+  Ptr<TypeExpr> type() const final;
+  mpz_class constant_fold() const final;
+  std::string to_string() const final;
+  bool is_pure() const final;
+};
+
+} // namespace romp

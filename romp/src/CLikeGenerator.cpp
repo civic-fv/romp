@@ -7,12 +7,12 @@
 #include <cstddef>
 #include <ctype.h>
 #include <gmpxx.h>
-#include <rumur/rumur.h>
+#include <romp/romp.h>
 #include <string>
 #include <utility>
 #include <vector>
 
-using namespace rumur;
+using namespace romp;
 
 id_t CLikeGenerator::anon_id = 0;
 
@@ -636,7 +636,7 @@ void CLikeGenerator::visit_sub(const Sub &n) {
 
 void CLikeGenerator::visit_switch(const Switch &n) {
 
-  // Rumur permits switch statements with non-constant case expressions, while
+  // Romp permits switch statements with non-constant case expressions, while
   // C’s switch statements do not support this. To deal with this discrepancy,
   // we emit switch statements as more flexible if-then-else blocks instead.
 

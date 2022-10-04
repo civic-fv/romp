@@ -30,9 +30,9 @@
 // #include <cstdio>
 #include <ctype.h>
 #include <gmpxx.h>
-#include <rumur/rumur.h>
-// #include <rumur/except.h>
-// #include <rumur/Comment.h>
+#include <romp/romp.h>
+// #include <romp/except.h>
+// #include <romp/Comment.h>
 // #include <string>
 // #include <utility>
 // #include <vector>
@@ -42,7 +42,7 @@
 
 
 namespace romp {
-using namespace rumur;
+using namespace romp;
 
 // << ========================================================================================== >> 
 // <<                               CONSTRUCTORS & DECONSTRUCTORS                                >> 
@@ -85,7 +85,7 @@ ModelSplitter::~ModelSplitter() {}
 // <<                                 PRIVATE HELPER FUNCTIONS                                   >> 
 // << ========================================================================================== >> 
 
-// bool operator == (const rumur::location& l, const rumur::location& r) {
+// bool operator == (const romp::location& l, const romp::location& r) {
 //   return (l.begin.line == r.begin.line && l.begin.column == r.begin.column
 //        && l.end.column == r.end.column && l.end.line == r.end.line);
 // }
@@ -172,20 +172,20 @@ void ModelSplitter::sort_model(const std::vector<Ptr<Node>> &children) {
 std::string to_json(const Rule& rule, const std::string rule_type) {
   std::stringstream buf;
   buf << "{\"$type\":\"" << rule_type << "\",";
-  if (auto _prop = dynamic_cast<const rumur::PropertyRule*>(&rule)) {
+  if (auto _prop = dynamic_cast<const romp::PropertyRule*>(&rule)) {
     buf << "\"type\":\"";
     switch (_prop->property.category) {
-      case rumur::Property::ASSERTION:
+      case romp::Property::ASSERTION:
         buf << "invariant"; break;
-      case rumur::Property::ASSUMPTION:
+      case romp::Property::ASSUMPTION:
         buf << "assume"; break;
-      case rumur::Property::COVER:
+      case romp::Property::COVER:
         buf << "cover"; break;
-      case rumur::Property::LIVENESS:
+      case romp::Property::LIVENESS:
         buf << "liveness"; break;
     }
     buf << "\",\"expr\":\"" << nEscape(_prop->property.expr->to_string()) << "\",";
-  } else if (auto _r = dynamic_cast<const rumur::SimpleRule*>(&rule)) {
+  } else if (auto _r = dynamic_cast<const romp::SimpleRule*>(&rule)) {
     buf << "\"expr\":\"";
     if (_r->guard != nullptr)
       buf << nEscape(_r->guard->to_string());
@@ -562,7 +562,7 @@ void ModelSplitter::visit_simplerule(SimpleRule &n) {
     // }
   
   if (n.guard == nullptr)
-    n.guard = rumur::True;
+    n.guard = romp::True;
 
   std::vector<Ptr<Decl>> _decls(n.decls.size());
   for (Ptr<Decl> &d : n.decls)
@@ -586,7 +586,7 @@ void ModelSplitter::visit_simplerule(SimpleRule &n) {
   rule_decls.push_back(Ptr<SimpleRule>::make(n));
 }
 
-void ModelSplitter::visit_ruleset(rumur::Ruleset &n) {
+void ModelSplitter::visit_ruleset(romp::Ruleset &n) {
   for (Quantifier& q : n.quantifiers)
       _visit_quantifier(q); 
       // if (auto _td = dynamic_cast<TypeExprID *>(q.type.get())) {
@@ -600,22 +600,22 @@ void ModelSplitter::visit_ruleset(rumur::Ruleset &n) {
       // }
   for (auto _r : n.rules) {
     for (auto _a : n.aliases)
-      _r->aliases.push_back(rumur::Ptr<rumur::AliasDecl>(_a));
+      _r->aliases.push_back(romp::Ptr<romp::AliasDecl>(_a));
     for (auto q : n.quantifiers)
-      _r->quantifiers.push_back(rumur::Quantifier(q));
+      _r->quantifiers.push_back(romp::Quantifier(q));
     dispatch(*_r);
   }
 }
 
 
-void ModelSplitter::visit_aliasrule(rumur::AliasRule &n) {
+void ModelSplitter::visit_aliasrule(romp::AliasRule &n) {
   // for (Quantifier& q : n.quantifiers)
   //     _visit_quantifier(q); 
   for (auto _r : n.rules) {
     for (auto _a : n.aliases)
-      _r->aliases.push_back(rumur::Ptr<rumur::AliasDecl>(_a));
+      _r->aliases.push_back(romp::Ptr<romp::AliasDecl>(_a));
     for (auto q : n.quantifiers)
-      _r->quantifiers.push_back(rumur::Quantifier(q));
+      _r->quantifiers.push_back(romp::Quantifier(q));
     dispatch(*_r);
   }
 }
@@ -716,7 +716,7 @@ void ModelSplitter::set_pretty_str_rep_type(const Node& t, int max_level) {
   ModelSplitter::pretty_type_reprs[t.unique_id] = std::string(psr.str()); 
 }
 
-const std::string ModelSplitter::get_pretty_rep(const rumur::TypeExpr& t) {
+const std::string ModelSplitter::get_pretty_rep(const romp::TypeExpr& t) {
   auto res = ModelSplitter::pretty_type_reprs.find(t.unique_id);
   if (res != ModelSplitter::pretty_type_reprs.end())
     return res->second;

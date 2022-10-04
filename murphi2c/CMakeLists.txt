@@ -36,10 +36,10 @@ add_executable(murphi2c
 target_include_directories(murphi2c
   PRIVATE
   src
-  ${CMAKE_CURRENT_BINARY_DIR}/../librumur)
+  ${CMAKE_CURRENT_BINARY_DIR}/../libromp)
 
 target_link_libraries(murphi2c
-  librumur)
+  libromp)
 
 # Compress manpage
 add_custom_target(man-murphi2c

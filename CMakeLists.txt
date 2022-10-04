@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 
-project(rumur LANGUAGES CXX)
+project(romp LANGUAGES CXX)
 
 # This seems to be some magic to get libraries to install correctly.
 include(GNUInstallDirs)
@@ -30,9 +30,9 @@ if(HAS_WARNING_POINTER_ARITH)
 endif()
 
 set(OLD_CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-set(RUMUR_CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wformat=2 \
+set(ROMP_CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wformat=2 \
   -Wwrite-strings -Wmissing-declarations -Wshadow -Wundef")
-set(CMAKE_CXX_FLAGS "${OLD_CMAKE_CXX_FLAGS} -std=c++11 ${RUMUR_CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${OLD_CMAKE_CXX_FLAGS} -std=c++17 ${ROMP_CMAKE_CXX_FLAGS}")
 
 # Enable --as-needed, present on GNU ld on Linux, to minimise dependencies.
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
@@ -45,25 +45,22 @@ if(${CMAKE_VERSION} VERSION_GREATER 3.11)
   find_package(Python3 REQUIRED COMPONENTS Interpreter)
 endif()
 
-add_subdirectory(librumur)
+add_subdirectory(libromp)
 add_subdirectory(murphi2c)
 add_subdirectory(romp)
-add_subdirectory(murphi2murphi)
-add_subdirectory(murphi2uclid)
-add_subdirectory(murphi2xml)
-add_subdirectory(rumur)
-add_subdirectory(tests/murphi-comment-ls)
+# add_subdirectory(romp-old)
+# add_subdirectory(tests/murphi-comment-ls)
 
-add_custom_target(check
-  COMMAND env PATH=${CMAKE_CURRENT_BINARY_DIR}/rumur:${CMAKE_CURRENT_BINARY_DIR}/murphi2c:${CMAKE_CURRENT_BINARY_DIR}/murphi2murphi:${CMAKE_CURRENT_BINARY_DIR}/murphi2uclid:${CMAKE_CURRENT_BINARY_DIR}/murphi2xml:${CMAKE_CURRENT_BINARY_DIR}/tests/murphi-comment-ls:$ENV{PATH}
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-tests.py --verbose)
-add_dependencies(check murphi2c murphi2murphi murphi2uclid murphi2xml rumur)
-if(NOT CMAKE_CROSSCOMPILING)
-  add_dependencies(check murphi-comment-ls)
-endif()
+# add_custom_target(check
+#   COMMAND env PATH=${CMAKE_CURRENT_BINARY_DIR}/romp:${CMAKE_CURRENT_BINARY_DIR}/murphi2c:${CMAKE_CURRENT_BINARY_DIR}/murphi2murphi:${CMAKE_CURRENT_BINARY_DIR}/murphi2uclid:${CMAKE_CURRENT_BINARY_DIR}/murphi2xml:${CMAKE_CURRENT_BINARY_DIR}/tests/murphi-comment-ls:$ENV{PATH}
+#     ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-tests.py --verbose)
+# add_dependencies(check murphi2cpp murphi2murphi murphi2uclid murphi2xml romp)
+# if(NOT CMAKE_CROSSCOMPILING)
+#   add_dependencies(check murphi-comment-ls)
+# endif()
 
 add_custom_target(format
-  COMMAND git ls-files -z '**/*.cc' '**/*.h' |
+  COMMAND git ls-files -z '**/*.cc' '**/*.h' '**/*.cpp' '**/*.hpp' |
     xargs -0 -- clang-format -i --style=file
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 

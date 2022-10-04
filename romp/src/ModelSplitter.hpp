@@ -26,15 +26,15 @@
 // #include <unordered_map>
 #include <unordered_set>
 #include <unordered_map>
-#include <rumur/rumur.h>
+#include <romp/romp.h>
 #include <sstream>
 #include "romp_def.hpp"
 
 
 namespace romp {
 
-// struct SplitModel { rumur::Model global_decls; rumur::Model state_var_decl;
-//                     rumur::Model funct_decls; rumur::Model rule_decls; };
+// struct SplitModel { romp::Model global_decls; romp::Model state_var_decl;
+//                     romp::Model funct_decls; romp::Model rule_decls; };
 
 
 /**
@@ -48,16 +48,16 @@ namespace romp {
  *        \li allowing lookup of all above mentioned items.
  *        \li preserving a notion of scope.
  */
-class ModelSplitter : public rumur::BaseTraversal {
+class ModelSplitter : public romp::BaseTraversal {
 
   // << ===================================== Class Members ====================================== >> 
 public: // ---- Public Class Members ---- //
-  std::vector<rumur::Ptr<rumur::Decl>> global_decls;
-  std::vector<rumur::Ptr<rumur::VarDecl>> state_var_decls;
-  std::vector<rumur::Ptr<rumur::Function>> funct_decls;
-  std::vector<rumur::Ptr<rumur::StartState>> startstate_decls;
-  std::vector<rumur::Ptr<rumur::SimpleRule>> rule_decls;
-  std::vector<rumur::Ptr<rumur::PropertyRule>> property_decls;
+  std::vector<romp::Ptr<romp::Decl>> global_decls;
+  std::vector<romp::Ptr<romp::VarDecl>> state_var_decls;
+  std::vector<romp::Ptr<romp::Function>> funct_decls;
+  std::vector<romp::Ptr<romp::StartState>> startstate_decls;
+  std::vector<romp::Ptr<romp::SimpleRule>> rule_decls;
+  std::vector<romp::Ptr<romp::PropertyRule>> property_decls;
   static std::unordered_map<size_t,std::string> pretty_type_reprs;
   static size_t model_unique_id;
   std::stringstream funct_info_list;
@@ -74,10 +74,10 @@ public: // ---- Public Class Members ---- //
 
 private: // ---- Private Class Members ---- //
 
-  // rumur::location loc;
+  // romp::location loc;
   
   std::unordered_set<std::string> cTypeNames{ROMP_RESERVED_NAMES};
-  // rumur::Symtab& symtab
+  // romp::Symtab& symtab
   // std::unordered_map<size_t,std::string> cTypeName;  // might end up not needing this
 
 
@@ -87,16 +87,16 @@ private: // ---- Private Class Members ---- //
   // << ============================= Constructors & Deconstructor =============================== >> 
 public:
   ModelSplitter(); // {}
-  // ModelSplitter(rumur::Symtab& symtab_);
+  // ModelSplitter(romp::Symtab& symtab_);
   ~ModelSplitter();
 
 
   // << ========================== Public/External Function Functions ============================ >> 
 public:
 
-  // SplitModel split_model(const rumur::Model &n);
+  // SplitModel split_model(const romp::Model &n);
   
-  void sort_model(const std::vector<rumur::Ptr<rumur::Node>> &children);
+  void sort_model(const std::vector<romp::Ptr<romp::Node>> &children);
 
 
 
@@ -105,104 +105,104 @@ private:
 
   const std::string gen_new_anon_name();
   void make_name_unique(std::string &name);
-  void insert_to_global_decls(rumur::Ptr<rumur::TypeDecl> n);
-  void insert_to_global_decls(rumur::Ptr<rumur::ConstDecl> n);
-  void visit_and_check_quantifier(rumur::Rule& r, rumur::Quantifier& q);
-  // void sort_model(const std::vector<rumur::Ptr<rumur::Node>> &children);
-  // void process_anon_complex_type(rumur::TypeExpr &children);
+  void insert_to_global_decls(romp::Ptr<romp::TypeDecl> n);
+  void insert_to_global_decls(romp::Ptr<romp::ConstDecl> n);
+  void visit_and_check_quantifier(romp::Rule& r, romp::Quantifier& q);
+  // void sort_model(const std::vector<romp::Ptr<romp::Node>> &children);
+  // void process_anon_complex_type(romp::TypeExpr &children);
 
-  void __throw_unreachable_error(const rumur::Node &n);
+  void __throw_unreachable_error(const romp::Node &n);
 
 
   // << =========================== Model Processing Helper Functions ============================ >> 
 public:
   // - most useful ---- 
-  // void visit_model(rumur::Model &n) final;
-  void visit_array(rumur::Array &n) final;
-  void visit_record(rumur::Record &n) final;
-  void visit_function(rumur::Function &n) final;
-  void visit_simplerule(rumur::SimpleRule &n) final;
-  void visit_ruleset(rumur::Ruleset &n) final;
-  void visit_aliasrule(rumur::AliasRule &n) final;
-  void visit_startstate(rumur::StartState &n) final;
-  void visit_propertyrule(rumur::PropertyRule &n) final;
-  // void visit_quantifier(rumur::Quantifier& q) final;
-  void _visit_quantifier(rumur::Quantifier& q);
+  // void visit_model(romp::Model &n) final;
+  void visit_array(romp::Array &n) final;
+  void visit_record(romp::Record &n) final;
+  void visit_function(romp::Function &n) final;
+  void visit_simplerule(romp::SimpleRule &n) final;
+  void visit_ruleset(romp::Ruleset &n) final;
+  void visit_aliasrule(romp::AliasRule &n) final;
+  void visit_startstate(romp::StartState &n) final;
+  void visit_propertyrule(romp::PropertyRule &n) final;
+  // void visit_quantifier(romp::Quantifier& q) final;
+  void _visit_quantifier(romp::Quantifier& q);
 
   // - useful for debugging ---- 
-  void visit_typedecl(rumur::TypeDecl &n) final;
-  void visit_constdecl(rumur::ConstDecl &n) final;
-  void visit_vardecl(rumur::VarDecl &n) final;
-  void visit_enum(rumur::Enum &n) final;
-  void visit_range(rumur::Range &) final;
-  void visit_scalarset(rumur::Scalarset &) final;
-  void visit_typeexprid(rumur::TypeExprID &n) final;
+  void visit_typedecl(romp::TypeDecl &n) final;
+  void visit_constdecl(romp::ConstDecl &n) final;
+  void visit_vardecl(romp::VarDecl &n) final;
+  void visit_enum(romp::Enum &n) final;
+  void visit_range(romp::Range &) final;
+  void visit_scalarset(romp::Scalarset &) final;
+  void visit_typeexprid(romp::TypeExprID &n) final;
 
   // - useless (will only throw an error if called) ---- 
-  virtual void visit_add(rumur::Add &n) { __throw_unreachable_error(n); }
-  virtual void visit_aliasdecl(rumur::AliasDecl &n) { __throw_unreachable_error(n); }
-  virtual void visit_aliasstmt(rumur::AliasStmt &n) { __throw_unreachable_error(n); }
-  virtual void visit_and(rumur::And &n) { __throw_unreachable_error(n); }
-  virtual void visit_assignment(rumur::Assignment &n) { __throw_unreachable_error(n); }
-  virtual void visit_band(rumur::Band &n) { __throw_unreachable_error(n); }
-  virtual void visit_bnot(rumur::Bnot &n) { __throw_unreachable_error(n); }
-  virtual void visit_bor(rumur::Bor &n) { __throw_unreachable_error(n); }
-  virtual void visit_clear(rumur::Clear &n) { __throw_unreachable_error(n); }
-  virtual void visit_div(rumur::Div &n) { __throw_unreachable_error(n); }
-  virtual void visit_element(rumur::Element &n) { __throw_unreachable_error(n); }
-  virtual void visit_eq(rumur::Eq &n) { __throw_unreachable_error(n); }
-  virtual void visit_errorstmt(rumur::ErrorStmt &n) { __throw_unreachable_error(n); }
-  virtual void visit_exists(rumur::Exists &n) { __throw_unreachable_error(n); }
-  virtual void visit_exprid(rumur::ExprID &n) { __throw_unreachable_error(n); }
-  virtual void visit_field(rumur::Field &n) { __throw_unreachable_error(n); }
-  virtual void visit_for(rumur::For &n) { __throw_unreachable_error(n); }
-  virtual void visit_forall(rumur::Forall &n) { __throw_unreachable_error(n); }
-  virtual void visit_functioncall(rumur::FunctionCall &n) { __throw_unreachable_error(n); }
-  virtual void visit_geq(rumur::Geq &n) { __throw_unreachable_error(n); }
-  virtual void visit_gt(rumur::Gt &n) { __throw_unreachable_error(n); }
-  virtual void visit_if(rumur::If &n) { __throw_unreachable_error(n); }
-  virtual void visit_ifclause(rumur::IfClause &n) { __throw_unreachable_error(n); }
-  virtual void visit_implication(rumur::Implication &n) { __throw_unreachable_error(n); }
-  virtual void visit_isundefined(rumur::IsUndefined &n) { __throw_unreachable_error(n); }
-  virtual void visit_leq(rumur::Leq &n) { __throw_unreachable_error(n); }
-  virtual void visit_lsh(rumur::Lsh &n) { __throw_unreachable_error(n); }
-  virtual void visit_lt(rumur::Lt &n) { __throw_unreachable_error(n); }
-  virtual void visit_model(rumur::Model &n) { __throw_unreachable_error(n); }
-  virtual void visit_mod(rumur::Mod &n) { __throw_unreachable_error(n); }
-  virtual void visit_mul(rumur::Mul &n) { __throw_unreachable_error(n); }
-  virtual void visit_negative(rumur::Negative &n) { __throw_unreachable_error(n); }
-  virtual void visit_neq(rumur::Neq &n) { __throw_unreachable_error(n); }
-  virtual void visit_not(rumur::Not &n) { __throw_unreachable_error(n); }
-  virtual void visit_number(rumur::Number &n) { __throw_unreachable_error(n); }
-  virtual void visit_or(rumur::Or &n) { __throw_unreachable_error(n); }
-  virtual void visit_procedurecall(rumur::ProcedureCall &n) { __throw_unreachable_error(n); }
-  virtual void visit_property(rumur::Property &n) { __throw_unreachable_error(n); }
-  virtual void visit_propertystmt(rumur::PropertyStmt &n) { __throw_unreachable_error(n); }
-  virtual void visit_put(rumur::Put &n) { __throw_unreachable_error(n); }
-  virtual void visit_quantifier(rumur::Quantifier &n) { __throw_unreachable_error(n); }
-  virtual void visit_return(rumur::Return &n) { __throw_unreachable_error(n); }
-  virtual void visit_rsh(rumur::Rsh &n) { __throw_unreachable_error(n); }
-  virtual void visit_sub(rumur::Sub &n) { __throw_unreachable_error(n); }
-  virtual void visit_switch(rumur::Switch &n) { __throw_unreachable_error(n); }
-  virtual void visit_switchcase(rumur::SwitchCase &n) { __throw_unreachable_error(n); }
-  virtual void visit_ternary(rumur::Ternary &n) { __throw_unreachable_error(n); }
-  virtual void visit_undefine(rumur::Undefine &n) { __throw_unreachable_error(n); }
-  virtual void visit_while(rumur::While &n) { __throw_unreachable_error(n); }
-  virtual void visit_xor(rumur::Xor &n) { __throw_unreachable_error(n); }
+  virtual void visit_add(romp::Add &n) { __throw_unreachable_error(n); }
+  virtual void visit_aliasdecl(romp::AliasDecl &n) { __throw_unreachable_error(n); }
+  virtual void visit_aliasstmt(romp::AliasStmt &n) { __throw_unreachable_error(n); }
+  virtual void visit_and(romp::And &n) { __throw_unreachable_error(n); }
+  virtual void visit_assignment(romp::Assignment &n) { __throw_unreachable_error(n); }
+  virtual void visit_band(romp::Band &n) { __throw_unreachable_error(n); }
+  virtual void visit_bnot(romp::Bnot &n) { __throw_unreachable_error(n); }
+  virtual void visit_bor(romp::Bor &n) { __throw_unreachable_error(n); }
+  virtual void visit_clear(romp::Clear &n) { __throw_unreachable_error(n); }
+  virtual void visit_div(romp::Div &n) { __throw_unreachable_error(n); }
+  virtual void visit_element(romp::Element &n) { __throw_unreachable_error(n); }
+  virtual void visit_eq(romp::Eq &n) { __throw_unreachable_error(n); }
+  virtual void visit_errorstmt(romp::ErrorStmt &n) { __throw_unreachable_error(n); }
+  virtual void visit_exists(romp::Exists &n) { __throw_unreachable_error(n); }
+  virtual void visit_exprid(romp::ExprID &n) { __throw_unreachable_error(n); }
+  virtual void visit_field(romp::Field &n) { __throw_unreachable_error(n); }
+  virtual void visit_for(romp::For &n) { __throw_unreachable_error(n); }
+  virtual void visit_forall(romp::Forall &n) { __throw_unreachable_error(n); }
+  virtual void visit_functioncall(romp::FunctionCall &n) { __throw_unreachable_error(n); }
+  virtual void visit_geq(romp::Geq &n) { __throw_unreachable_error(n); }
+  virtual void visit_gt(romp::Gt &n) { __throw_unreachable_error(n); }
+  virtual void visit_if(romp::If &n) { __throw_unreachable_error(n); }
+  virtual void visit_ifclause(romp::IfClause &n) { __throw_unreachable_error(n); }
+  virtual void visit_implication(romp::Implication &n) { __throw_unreachable_error(n); }
+  virtual void visit_isundefined(romp::IsUndefined &n) { __throw_unreachable_error(n); }
+  virtual void visit_leq(romp::Leq &n) { __throw_unreachable_error(n); }
+  virtual void visit_lsh(romp::Lsh &n) { __throw_unreachable_error(n); }
+  virtual void visit_lt(romp::Lt &n) { __throw_unreachable_error(n); }
+  virtual void visit_model(romp::Model &n) { __throw_unreachable_error(n); }
+  virtual void visit_mod(romp::Mod &n) { __throw_unreachable_error(n); }
+  virtual void visit_mul(romp::Mul &n) { __throw_unreachable_error(n); }
+  virtual void visit_negative(romp::Negative &n) { __throw_unreachable_error(n); }
+  virtual void visit_neq(romp::Neq &n) { __throw_unreachable_error(n); }
+  virtual void visit_not(romp::Not &n) { __throw_unreachable_error(n); }
+  virtual void visit_number(romp::Number &n) { __throw_unreachable_error(n); }
+  virtual void visit_or(romp::Or &n) { __throw_unreachable_error(n); }
+  virtual void visit_procedurecall(romp::ProcedureCall &n) { __throw_unreachable_error(n); }
+  virtual void visit_property(romp::Property &n) { __throw_unreachable_error(n); }
+  virtual void visit_propertystmt(romp::PropertyStmt &n) { __throw_unreachable_error(n); }
+  virtual void visit_put(romp::Put &n) { __throw_unreachable_error(n); }
+  virtual void visit_quantifier(romp::Quantifier &n) { __throw_unreachable_error(n); }
+  virtual void visit_return(romp::Return &n) { __throw_unreachable_error(n); }
+  virtual void visit_rsh(romp::Rsh &n) { __throw_unreachable_error(n); }
+  virtual void visit_sub(romp::Sub &n) { __throw_unreachable_error(n); }
+  virtual void visit_switch(romp::Switch &n) { __throw_unreachable_error(n); }
+  virtual void visit_switchcase(romp::SwitchCase &n) { __throw_unreachable_error(n); }
+  virtual void visit_ternary(romp::Ternary &n) { __throw_unreachable_error(n); }
+  virtual void visit_undefine(romp::Undefine &n) { __throw_unreachable_error(n); }
+  virtual void visit_while(romp::While &n) { __throw_unreachable_error(n); }
+  virtual void visit_xor(romp::Xor &n) { __throw_unreachable_error(n); }
   
 
 protected:
-  static void set_pretty_str_rep_type(const rumur::Node& t, int max_level=1);
+  static void set_pretty_str_rep_type(const romp::Node& t, int max_level=1);
 public:
-  static const std::string get_pretty_rep(const rumur::TypeExpr& t);
+  static const std::string get_pretty_rep(const romp::TypeExpr& t);
 
   // void visit_constdecl(ConstDecl &n) final; // pretty sure I don't need this!
 
 
   // ModelSplitter &operator<<(std::string &s);
-  // ModelSplitter &operator<<(rumur::Node &n);
+  // ModelSplitter &operator<<(romp::Node &n);
 
-  // void dispatch(const rumur::Node &n);
+  // void dispatch(const romp::Node &n);
 
 };
 

@@ -9,7 +9,7 @@
  * @file SigPerm.hpp
  * 
  * @brief Implements a iterator class that can produce lists of the various permutations
- *        in the quantifiers of rumur's AST Rule's, so that we can call them in our output.
+ *        in the quantifiers of romp's AST Rule's, so that we can call them in our output.
  * 
  *        Note: Note Optimized to be used in more than one file in a compilation (single file construction)
  * 
@@ -20,7 +20,7 @@
 #pragma once
 
 
-#include <rumur/rumur.h>
+#include <romp/romp.h>
 // #include "NestedError.hpp"
 // #include "type_traverse.hpp"
 #include "romp_def.hpp"
@@ -116,7 +116,7 @@ private:
 #pragma region class_QuantExpansion
 struct QuantExpansion {
   std::vector<const SigParam*> values;
-  const rumur::Ptr<const rumur::TypeExpr> type;
+  const romp::Ptr<const romp::TypeExpr> type;
   std::string type_id;
   mpz_class start;
   mpz_class stop;
@@ -124,12 +124,12 @@ struct QuantExpansion {
   size_t size() const;
   std::vector<const SigParam*>::iterator begin() const;
   std::vector<const SigParam*>::iterator end() const;
-  QuantExpansion(const rumur::Quantifier& q);
+  QuantExpansion(const romp::Quantifier& q);
   ~QuantExpansion();
 private:
   size_t _size = 0;
-  void resolve_quantifier_bounds(const rumur::Quantifier& q);
-  void resolve_quantifier_type(const rumur::Quantifier& q_);
+  void resolve_quantifier_bounds(const romp::Quantifier& q);
+  void resolve_quantifier_type(const romp::Quantifier& q_);
 };
 #pragma endregion class_QuantExpansion
 
@@ -147,29 +147,29 @@ protected:
   
 
 public:
-  const rumur::Rule& rule; // the "ruleset" we are creating all the signatures for
+  const romp::Rule& rule; // the "ruleset" we are creating all the signatures for
   const std::string rule_type;
-  const std::vector<rumur::Quantifier>& quantifiers;
+  const std::vector<romp::Quantifier>& quantifiers;
   const size_t param_count;
 
 
 // << ============================= Constructors & Deconstructor =============================== >> 
 private:
 protected:
-  SigPerm(const rumur::Rule& rule_, const char* rule_type_);
+  SigPerm(const romp::Rule& rule_, const char* rule_type_);
 public:
-  SigPerm(const rumur::SimpleRule& rule_) : SigPerm(rule_, "Rule") {}
-  SigPerm(const rumur::StartState& rule_) : SigPerm(rule_, "StartState") {}
-  SigPerm(const rumur::PropertyRule& rule_) : SigPerm(rule_, "PropertyRule") {}
+  SigPerm(const romp::SimpleRule& rule_) : SigPerm(rule_, "Rule") {}
+  SigPerm(const romp::StartState& rule_) : SigPerm(rule_, "StartState") {}
+  SigPerm(const romp::PropertyRule& rule_) : SigPerm(rule_, "PropertyRule") {}
   ~SigPerm() = default;
 
 // << =================================== Member Functions ===================================== >> 
 private:
-  void add_quants(const std::vector<rumur::Quantifier>& qs);
+  void add_quants(const std::vector<romp::Quantifier>& qs);
 
-  void add_quant(const rumur::Quantifier& q) ;
+  void add_quant(const romp::Quantifier& q) ;
 
-  static void add_quant(const std::string& name, const rumur::Quantifier& q);
+  static void add_quant(const std::string& name, const romp::Quantifier& q);
   
   // std::vector<std::vector<const SigParam&>::iterator> get_init_param_iters() const;
   std::vector<size_t> get_init_param_iters() const;

@@ -14,7 +14,7 @@
 #include <getopt.h>
 #include <iostream>
 #include <memory>
-#include <rumur/rumur.h>
+#include <romp/romp.h>
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
@@ -53,7 +53,7 @@ static void parse_args(int argc, char **argv) {
         { "enable-assume",      no_argument,        0,  'a' },
         { "enable-cover",       no_argument,        0,  'c' },
         { "enable-liveness",    no_argument,        0,  'l' },
-        { "ignore-rumur-props", no_argument,        0,  'i' },
+        { "ignore-romp-props", no_argument,        0,  'i' },
         // { "header",             no_argument,       0, 128 },
         // { "source",             no_argument,       0, 129 },
         { "value-type",         required_argument,  0,  130 },
@@ -148,7 +148,7 @@ static void parse_args(int argc, char **argv) {
 
     case 131: // --version
       std::cout << "ROMP version " ROMP_VERSION "\n"
-                   "Rumur version " << rumur::get_version() << "\n";
+                   "Romp version " << romp::get_version() << "\n";
       exit(EXIT_SUCCESS);
 
     default:
@@ -236,10 +236,10 @@ int main(int argc, char **argv) {
     in = make_stdin_dup();
 
   // parse input model
-  rumur::Ptr<rumur::Model> m;
+  romp::Ptr<romp::Model> m;
   try {
-    m = rumur::parse(*in.first);
-  } catch (rumur::Error &e) {
+    m = romp::parse(*in.first);
+  } catch (romp::Error &e) {
     romp::fprint_exception(std::cerr, e);
     // std::cerr << e.loc << ":" << e.what() << "\n";
     return EXIT_FAILURE;
@@ -257,9 +257,9 @@ int main(int argc, char **argv) {
 
   // check the model is valid
   try {
-    resolve_symbols(*m);
+    updateASTs(*m);
     validate(*m);
-  } catch (const rumur::Error& e) {
+  } catch (const romp::Error& e) {
     std::cerr << e << "\n";
     // std::cerr << e.loc << ":" << e.what() << "\n";
     return EXIT_FAILURE;
@@ -275,14 +275,14 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
 
   // name any rules that are unnamed, so they get valid C symbols
-  rumur::sanitise_rule_names(*m);
+  romp::sanitize_rule_names(*m);
 
   // Determine if we have any == or != involving records or arrays, in which
   // case we will need to pack structs. See generate_c() for why.
   bool pack = compares_complex_values(*m);
 
   // parse comments from the source code
-  std::vector<rumur::Comment> comments = rumur::parse_comments(*in.second);
+  std::vector<romp::Comment> comments = romp::parse_comments(*in.second);
 
   try {
   // output code
@@ -295,7 +295,7 @@ int main(int argc, char **argv) {
   // } else {
   //   generate_h(*m, comments, pack, out == nullptr ? std::cout : *out);
   // }
-  } catch (const rumur::Error& e) {
+  } catch (const romp::Error& e) {
     std::cerr << e << "\n";
     // std::cerr << e.loc << ":" << e.what() << "\n";
     return EXIT_FAILURE;

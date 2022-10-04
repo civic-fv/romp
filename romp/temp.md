@@ -4,7 +4,7 @@
 ## Data points and tests
 
 > #### Terms:
-> - **Murphi model checkers**: model checkers that use the Murphi modeling language (rumur, CMurphi BFS, and CMurphi DFS)
+> - **Murphi model checkers**: model checkers that use the Murphi modeling language (romp, CMurphi BFS, and CMurphi DFS)
 > - **all other model checkers**: all model checkers regardless of modeling language (the above plus: spin, spin swarm, TLA+)
 
 

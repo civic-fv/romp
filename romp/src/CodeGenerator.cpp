@@ -64,16 +64,16 @@ void CodeGenerator::enable_measurements() {
   ENABLED_PREPROCESSOR_OPTIONS.push_back(ROMP_MEASURE_PREPROCESSOR_VAR);
 }
 
-bool CodeGenerator::is_prop_enabled(rumur::Property::Category prop) {
+bool CodeGenerator::is_prop_enabled(romp::Property::Category prop) {
   if (CodeGenerator::do_ignore_romp_props) return true;
   switch (prop) {
-  case rumur::Property::ASSERTION:
+  case romp::Property::ASSERTION:
     return true;
-  case rumur::Property::ASSUMPTION:
+  case romp::Property::ASSUMPTION:
     return CodeGenerator::is_assume_enabled;
-  case rumur::Property::COVER:
+  case romp::Property::COVER:
     return CodeGenerator::is_cover_enabled;
-  case rumur::Property::LIVENESS:
+  case romp::Property::LIVENESS:
     return CodeGenerator::is_liveness_enabled;
   default:
     return false;
