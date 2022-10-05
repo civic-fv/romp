@@ -45,7 +45,7 @@ if(${CMAKE_VERSION} VERSION_GREATER 3.11)
   find_package(Python3 REQUIRED COMPONENTS Interpreter)
 endif()
 
-add_subdirectory(libromp)
+add_subdirectory(libmurphi)
 add_subdirectory(murphi2c)
 add_subdirectory(romp)
 # add_subdirectory(romp-old)

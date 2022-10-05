@@ -26,15 +26,15 @@
 // #include <unordered_map>
 #include <unordered_set>
 #include <unordered_map>
-#include <romp/romp.h>
+#include <murphi/rumur.h>
 #include <sstream>
 #include "romp_def.hpp"
 
 
 namespace romp {
 
-// struct SplitModel { romp::Model global_decls; romp::Model state_var_decl;
-//                     romp::Model funct_decls; romp::Model rule_decls; };
+// struct SplitModel { murphi::Model global_decls; murphi::Model state_var_decl;
+//                     murphi::Model funct_decls; murphi::Model rule_decls; };
 
 
 /**
@@ -48,16 +48,16 @@ namespace romp {
  *        \li allowing lookup of all above mentioned items.
  *        \li preserving a notion of scope.
  */
-class ModelSplitter : public romp::BaseTraversal {
+class ModelSplitter : public murphi::BaseTraversal {
 
   // << ===================================== Class Members ====================================== >> 
 public: // ---- Public Class Members ---- //
-  std::vector<romp::Ptr<romp::Decl>> global_decls;
-  std::vector<romp::Ptr<romp::VarDecl>> state_var_decls;
-  std::vector<romp::Ptr<romp::Function>> funct_decls;
-  std::vector<romp::Ptr<romp::StartState>> startstate_decls;
-  std::vector<romp::Ptr<romp::SimpleRule>> rule_decls;
-  std::vector<romp::Ptr<romp::PropertyRule>> property_decls;
+  std::vector<murphi::Ptr<murphi::Decl>> global_decls;
+  std::vector<murphi::Ptr<murphi::VarDecl>> state_var_decls;
+  std::vector<murphi::Ptr<murphi::Function>> funct_decls;
+  std::vector<murphi::Ptr<murphi::StartState>> startstate_decls;
+  std::vector<murphi::Ptr<murphi::SimpleRule>> rule_decls;
+  std::vector<murphi::Ptr<murphi::PropertyRule>> property_decls;
   static std::unordered_map<size_t,std::string> pretty_type_reprs;
   static size_t model_unique_id;
   std::stringstream funct_info_list;
@@ -74,10 +74,10 @@ public: // ---- Public Class Members ---- //
 
 private: // ---- Private Class Members ---- //
 
-  // romp::location loc;
+  // murphi::location loc;
   
   std::unordered_set<std::string> cTypeNames{ROMP_RESERVED_NAMES};
-  // romp::Symtab& symtab
+  // murphi::Symtab& symtab
   // std::unordered_map<size_t,std::string> cTypeName;  // might end up not needing this
 
 
@@ -87,16 +87,16 @@ private: // ---- Private Class Members ---- //
   // << ============================= Constructors & Deconstructor =============================== >> 
 public:
   ModelSplitter(); // {}
-  // ModelSplitter(romp::Symtab& symtab_);
+  // ModelSplitter(murphi::Symtab& symtab_);
   ~ModelSplitter();
 
 
   // << ========================== Public/External Function Functions ============================ >> 
 public:
 
-  // SplitModel split_model(const romp::Model &n);
+  // SplitModel split_model(const murphi::Model &n);
   
-  void sort_model(const std::vector<romp::Ptr<romp::Node>> &children);
+  void sort_model(const std::vector<murphi::Ptr<murphi::Node>> &children);
 
 
 
@@ -105,104 +105,104 @@ private:
 
   const std::string gen_new_anon_name();
   void make_name_unique(std::string &name);
-  void insert_to_global_decls(romp::Ptr<romp::TypeDecl> n);
-  void insert_to_global_decls(romp::Ptr<romp::ConstDecl> n);
-  void visit_and_check_quantifier(romp::Rule& r, romp::Quantifier& q);
-  // void sort_model(const std::vector<romp::Ptr<romp::Node>> &children);
-  // void process_anon_complex_type(romp::TypeExpr &children);
+  void insert_to_global_decls(murphi::Ptr<murphi::TypeDecl> n);
+  void insert_to_global_decls(murphi::Ptr<murphi::ConstDecl> n);
+  void visit_and_check_quantifier(murphi::Rule& r, murphi::Quantifier& q);
+  // void sort_model(const std::vector<murphi::Ptr<murphi::Node>> &children);
+  // void process_anon_complex_type(murphi::TypeExpr &children);
 
-  void __throw_unreachable_error(const romp::Node &n);
+  void __throw_unreachable_error(const murphi::Node &n);
 
 
   // << =========================== Model Processing Helper Functions ============================ >> 
 public:
   // - most useful ---- 
-  // void visit_model(romp::Model &n) final;
-  void visit_array(romp::Array &n) final;
-  void visit_record(romp::Record &n) final;
-  void visit_function(romp::Function &n) final;
-  void visit_simplerule(romp::SimpleRule &n) final;
-  void visit_ruleset(romp::Ruleset &n) final;
-  void visit_aliasrule(romp::AliasRule &n) final;
-  void visit_startstate(romp::StartState &n) final;
-  void visit_propertyrule(romp::PropertyRule &n) final;
-  // void visit_quantifier(romp::Quantifier& q) final;
-  void _visit_quantifier(romp::Quantifier& q);
+  // void visit_model(murphi::Model &n) final;
+  void visit_array(murphi::Array &n) final;
+  void visit_record(murphi::Record &n) final;
+  void visit_function(murphi::Function &n) final;
+  void visit_simplerule(murphi::SimpleRule &n) final;
+  void visit_ruleset(murphi::Ruleset &n) final;
+  void visit_aliasrule(murphi::AliasRule &n) final;
+  void visit_startstate(murphi::StartState &n) final;
+  void visit_propertyrule(murphi::PropertyRule &n) final;
+  // void visit_quantifier(murphi::Quantifier& q) final;
+  void _visit_quantifier(murphi::Quantifier& q);
 
   // - useful for debugging ---- 
-  void visit_typedecl(romp::TypeDecl &n) final;
-  void visit_constdecl(romp::ConstDecl &n) final;
-  void visit_vardecl(romp::VarDecl &n) final;
-  void visit_enum(romp::Enum &n) final;
-  void visit_range(romp::Range &) final;
-  void visit_scalarset(romp::Scalarset &) final;
-  void visit_typeexprid(romp::TypeExprID &n) final;
+  void visit_typedecl(murphi::TypeDecl &n) final;
+  void visit_constdecl(murphi::ConstDecl &n) final;
+  void visit_vardecl(murphi::VarDecl &n) final;
+  void visit_enum(murphi::Enum &n) final;
+  void visit_range(murphi::Range &) final;
+  void visit_scalarset(murphi::Scalarset &) final;
+  void visit_typeexprid(murphi::TypeExprID &n) final;
 
   // - useless (will only throw an error if called) ---- 
-  virtual void visit_add(romp::Add &n) { __throw_unreachable_error(n); }
-  virtual void visit_aliasdecl(romp::AliasDecl &n) { __throw_unreachable_error(n); }
-  virtual void visit_aliasstmt(romp::AliasStmt &n) { __throw_unreachable_error(n); }
-  virtual void visit_and(romp::And &n) { __throw_unreachable_error(n); }
-  virtual void visit_assignment(romp::Assignment &n) { __throw_unreachable_error(n); }
-  virtual void visit_band(romp::Band &n) { __throw_unreachable_error(n); }
-  virtual void visit_bnot(romp::Bnot &n) { __throw_unreachable_error(n); }
-  virtual void visit_bor(romp::Bor &n) { __throw_unreachable_error(n); }
-  virtual void visit_clear(romp::Clear &n) { __throw_unreachable_error(n); }
-  virtual void visit_div(romp::Div &n) { __throw_unreachable_error(n); }
-  virtual void visit_element(romp::Element &n) { __throw_unreachable_error(n); }
-  virtual void visit_eq(romp::Eq &n) { __throw_unreachable_error(n); }
-  virtual void visit_errorstmt(romp::ErrorStmt &n) { __throw_unreachable_error(n); }
-  virtual void visit_exists(romp::Exists &n) { __throw_unreachable_error(n); }
-  virtual void visit_exprid(romp::ExprID &n) { __throw_unreachable_error(n); }
-  virtual void visit_field(romp::Field &n) { __throw_unreachable_error(n); }
-  virtual void visit_for(romp::For &n) { __throw_unreachable_error(n); }
-  virtual void visit_forall(romp::Forall &n) { __throw_unreachable_error(n); }
-  virtual void visit_functioncall(romp::FunctionCall &n) { __throw_unreachable_error(n); }
-  virtual void visit_geq(romp::Geq &n) { __throw_unreachable_error(n); }
-  virtual void visit_gt(romp::Gt &n) { __throw_unreachable_error(n); }
-  virtual void visit_if(romp::If &n) { __throw_unreachable_error(n); }
-  virtual void visit_ifclause(romp::IfClause &n) { __throw_unreachable_error(n); }
-  virtual void visit_implication(romp::Implication &n) { __throw_unreachable_error(n); }
-  virtual void visit_isundefined(romp::IsUndefined &n) { __throw_unreachable_error(n); }
-  virtual void visit_leq(romp::Leq &n) { __throw_unreachable_error(n); }
-  virtual void visit_lsh(romp::Lsh &n) { __throw_unreachable_error(n); }
-  virtual void visit_lt(romp::Lt &n) { __throw_unreachable_error(n); }
-  virtual void visit_model(romp::Model &n) { __throw_unreachable_error(n); }
-  virtual void visit_mod(romp::Mod &n) { __throw_unreachable_error(n); }
-  virtual void visit_mul(romp::Mul &n) { __throw_unreachable_error(n); }
-  virtual void visit_negative(romp::Negative &n) { __throw_unreachable_error(n); }
-  virtual void visit_neq(romp::Neq &n) { __throw_unreachable_error(n); }
-  virtual void visit_not(romp::Not &n) { __throw_unreachable_error(n); }
-  virtual void visit_number(romp::Number &n) { __throw_unreachable_error(n); }
-  virtual void visit_or(romp::Or &n) { __throw_unreachable_error(n); }
-  virtual void visit_procedurecall(romp::ProcedureCall &n) { __throw_unreachable_error(n); }
-  virtual void visit_property(romp::Property &n) { __throw_unreachable_error(n); }
-  virtual void visit_propertystmt(romp::PropertyStmt &n) { __throw_unreachable_error(n); }
-  virtual void visit_put(romp::Put &n) { __throw_unreachable_error(n); }
-  virtual void visit_quantifier(romp::Quantifier &n) { __throw_unreachable_error(n); }
-  virtual void visit_return(romp::Return &n) { __throw_unreachable_error(n); }
-  virtual void visit_rsh(romp::Rsh &n) { __throw_unreachable_error(n); }
-  virtual void visit_sub(romp::Sub &n) { __throw_unreachable_error(n); }
-  virtual void visit_switch(romp::Switch &n) { __throw_unreachable_error(n); }
-  virtual void visit_switchcase(romp::SwitchCase &n) { __throw_unreachable_error(n); }
-  virtual void visit_ternary(romp::Ternary &n) { __throw_unreachable_error(n); }
-  virtual void visit_undefine(romp::Undefine &n) { __throw_unreachable_error(n); }
-  virtual void visit_while(romp::While &n) { __throw_unreachable_error(n); }
-  virtual void visit_xor(romp::Xor &n) { __throw_unreachable_error(n); }
+  virtual void visit_add(murphi::Add &n) { __throw_unreachable_error(n); }
+  virtual void visit_aliasdecl(murphi::AliasDecl &n) { __throw_unreachable_error(n); }
+  virtual void visit_aliasstmt(murphi::AliasStmt &n) { __throw_unreachable_error(n); }
+  virtual void visit_and(murphi::And &n) { __throw_unreachable_error(n); }
+  virtual void visit_assignment(murphi::Assignment &n) { __throw_unreachable_error(n); }
+  virtual void visit_band(murphi::Band &n) { __throw_unreachable_error(n); }
+  virtual void visit_bnot(murphi::Bnot &n) { __throw_unreachable_error(n); }
+  virtual void visit_bor(murphi::Bor &n) { __throw_unreachable_error(n); }
+  virtual void visit_clear(murphi::Clear &n) { __throw_unreachable_error(n); }
+  virtual void visit_div(murphi::Div &n) { __throw_unreachable_error(n); }
+  virtual void visit_element(murphi::Element &n) { __throw_unreachable_error(n); }
+  virtual void visit_eq(murphi::Eq &n) { __throw_unreachable_error(n); }
+  virtual void visit_errorstmt(murphi::ErrorStmt &n) { __throw_unreachable_error(n); }
+  virtual void visit_exists(murphi::Exists &n) { __throw_unreachable_error(n); }
+  virtual void visit_exprid(murphi::ExprID &n) { __throw_unreachable_error(n); }
+  virtual void visit_field(murphi::Field &n) { __throw_unreachable_error(n); }
+  virtual void visit_for(murphi::For &n) { __throw_unreachable_error(n); }
+  virtual void visit_forall(murphi::Forall &n) { __throw_unreachable_error(n); }
+  virtual void visit_functioncall(murphi::FunctionCall &n) { __throw_unreachable_error(n); }
+  virtual void visit_geq(murphi::Geq &n) { __throw_unreachable_error(n); }
+  virtual void visit_gt(murphi::Gt &n) { __throw_unreachable_error(n); }
+  virtual void visit_if(murphi::If &n) { __throw_unreachable_error(n); }
+  virtual void visit_ifclause(murphi::IfClause &n) { __throw_unreachable_error(n); }
+  virtual void visit_implication(murphi::Implication &n) { __throw_unreachable_error(n); }
+  virtual void visit_isundefined(murphi::IsUndefined &n) { __throw_unreachable_error(n); }
+  virtual void visit_leq(murphi::Leq &n) { __throw_unreachable_error(n); }
+  virtual void visit_lsh(murphi::Lsh &n) { __throw_unreachable_error(n); }
+  virtual void visit_lt(murphi::Lt &n) { __throw_unreachable_error(n); }
+  virtual void visit_model(murphi::Model &n) { __throw_unreachable_error(n); }
+  virtual void visit_mod(murphi::Mod &n) { __throw_unreachable_error(n); }
+  virtual void visit_mul(murphi::Mul &n) { __throw_unreachable_error(n); }
+  virtual void visit_negative(murphi::Negative &n) { __throw_unreachable_error(n); }
+  virtual void visit_neq(murphi::Neq &n) { __throw_unreachable_error(n); }
+  virtual void visit_not(murphi::Not &n) { __throw_unreachable_error(n); }
+  virtual void visit_number(murphi::Number &n) { __throw_unreachable_error(n); }
+  virtual void visit_or(murphi::Or &n) { __throw_unreachable_error(n); }
+  virtual void visit_procedurecall(murphi::ProcedureCall &n) { __throw_unreachable_error(n); }
+  virtual void visit_property(murphi::Property &n) { __throw_unreachable_error(n); }
+  virtual void visit_propertystmt(murphi::PropertyStmt &n) { __throw_unreachable_error(n); }
+  virtual void visit_put(murphi::Put &n) { __throw_unreachable_error(n); }
+  virtual void visit_quantifier(murphi::Quantifier &n) { __throw_unreachable_error(n); }
+  virtual void visit_return(murphi::Return &n) { __throw_unreachable_error(n); }
+  virtual void visit_rsh(murphi::Rsh &n) { __throw_unreachable_error(n); }
+  virtual void visit_sub(murphi::Sub &n) { __throw_unreachable_error(n); }
+  virtual void visit_switch(murphi::Switch &n) { __throw_unreachable_error(n); }
+  virtual void visit_switchcase(murphi::SwitchCase &n) { __throw_unreachable_error(n); }
+  virtual void visit_ternary(murphi::Ternary &n) { __throw_unreachable_error(n); }
+  virtual void visit_undefine(murphi::Undefine &n) { __throw_unreachable_error(n); }
+  virtual void visit_while(murphi::While &n) { __throw_unreachable_error(n); }
+  virtual void visit_xor(murphi::Xor &n) { __throw_unreachable_error(n); }
   
 
 protected:
-  static void set_pretty_str_rep_type(const romp::Node& t, int max_level=1);
+  static void set_pretty_str_rep_type(const murphi::Node& t, int max_level=1);
 public:
-  static const std::string get_pretty_rep(const romp::TypeExpr& t);
+  static const std::string get_pretty_rep(const murphi::TypeExpr& t);
 
   // void visit_constdecl(ConstDecl &n) final; // pretty sure I don't need this!
 
 
   // ModelSplitter &operator<<(std::string &s);
-  // ModelSplitter &operator<<(romp::Node &n);
+  // ModelSplitter &operator<<(murphi::Node &n);
 
-  // void dispatch(const romp::Node &n);
+  // void dispatch(const murphi::Node &n);
 
 };
 

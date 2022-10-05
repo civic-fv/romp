@@ -9,7 +9,7 @@
  * @file SigPerm.cpp
  * 
  * @brief Implements a iterator class that can produce lists of the various permutations
- *        in the quantifiers of romp's AST Rule's, so that we can call them in our output.
+ *        in the quantifiers of rumur's AST Rule's, so that we can call them in our output.
  * 
  * @date 2022/06/22
  * @version 0.1
@@ -120,7 +120,7 @@ namespace romp {
   }
 
   const std::string SigParam::to_json(const std::string& value_str, const QuantExpansion& qe, const std::string json_val_type) {
-    // if (auto _tid = dynamic_cast<const romp::TypeExprID*>(qe.type.get())) {
+    // if (auto _tid = dynamic_cast<const murphi::TypeExprID*>(qe.type.get())) {
     //   return "{\"type\":\"" + _tid->referent->name + ": " + _tid->referent->value->to_string() + "\","
     //                 "\"value\":""\"" + value_str +"\"}";
     return "{\"$type\":\""+ nEscape(json_val_type) + "\",\"type\":\"" + nEscape(ModelSplitter::get_pretty_rep(*qe.type)) + "\",\"value\":" + value_str +"}"; 
@@ -138,13 +138,13 @@ namespace romp {
   // std::vector<const SigParam>::iterator QuantExpansion::begin() const { values.begin(); }
   // std::vector<const SigParam>::iterator QuantExpansion::end() const { values.end(); }
 
-  QuantExpansion::QuantExpansion(const romp::Quantifier& q) 
+  QuantExpansion::QuantExpansion(const murphi::Quantifier& q) 
     : type(q.decl->type->clone())
   {
-    if (auto _tid = dynamic_cast<const romp::TypeExprID*>(q.decl->type.get()))
+    if (auto _tid = dynamic_cast<const murphi::TypeExprID*>(q.decl->type.get()))
       type_id = _tid->name;
     else
-      throw romp::Error("Unprocessed anonymous type found in ruleset quantifier!!\t[dev-error]",q.type->loc);
+      throw murphi::Error("Unprocessed anonymous type found in ruleset quantifier!!\t[dev-error]",q.type->loc);
     if (q.type == nullptr)
       resolve_quantifier_bounds(q);
     else
@@ -152,22 +152,22 @@ namespace romp {
     
   }
 
-  void QuantExpansion::resolve_quantifier_bounds(const romp::Quantifier& q) {
+  void QuantExpansion::resolve_quantifier_bounds(const murphi::Quantifier& q) {
     // mpz_class start_mpz, stop_mpz, step_mpz;
     try { 
       start/* _mpz */ = q.from->constant_fold();
       stop/* _mpz */ = q.to->constant_fold();
       if (q.step != nullptr)
         step/* _mpz */ = q.step->constant_fold();
-    } catch (romp::Error& er) { 
-      std::throw_with_nested(romp::Error("You can't have a Ruleset's Quantifier dependent on a variable or a subset of an Enum !!", q.loc)); 
+    } catch (murphi::Error& er) { 
+      std::throw_with_nested(murphi::Error("You can't have a Ruleset's Quantifier dependent on a variable or a subset of an Enum !!", q.loc)); 
     }
     if (not start/* _mpz */.fits_slong_p())
-      throw romp::Error("Couldn't resolve the value of the Expression.", q.from->loc);
+      throw murphi::Error("Couldn't resolve the value of the Expression.", q.from->loc);
     if (not stop/* _mpz */.fits_slong_p())
-      throw romp::Error("Couldn't resolve the value of the Expression.", q.to->loc);
+      throw murphi::Error("Couldn't resolve the value of the Expression.", q.to->loc);
     if (q.step != nullptr && not step/* _mpz */.fits_slong_p())
-      throw romp::Error("Couldn't resolve the value of the Expression (step).", q.step->loc);
+      throw murphi::Error("Couldn't resolve the value of the Expression (step).", q.step->loc);
     // start = start_mpz.get_ui();
     // stop = stop_mpz.get_ui();
     // if (q.step != nullptr)
@@ -187,23 +187,23 @@ namespace romp {
       mpz_class tmp = ((abs(stop-start)+1_mpz)/abs(step));
       _size = tmp.get_ui();
     } catch (...) {
-      std::throw_with_nested(romp::Error("Failed to extrapolate the size of the Quantifier \t[dev-error]",q.loc));
+      std::throw_with_nested(murphi::Error("Failed to extrapolate the size of the Quantifier \t[dev-error]",q.loc));
     }
   }
 
-  void QuantExpansion::resolve_quantifier_type(const romp::Quantifier& q_) {
-    class type_trav : public romp::ConstBaseTypeTraversal {
-      const romp::Quantifier& q;
+  void QuantExpansion::resolve_quantifier_type(const murphi::Quantifier& q_) {
+    class type_trav : public murphi::ConstBaseTypeTraversal {
+      const murphi::Quantifier& q;
       QuantExpansion& qe;
     public:
-      type_trav(const romp::Quantifier& q__, QuantExpansion& parent_) 
+      type_trav(const murphi::Quantifier& q__, QuantExpansion& parent_) 
         : q(q__), qe(parent_),
           ConstBaseTypeTraversal("Not a supported TypeExpr for bounding a quantifier (it may be undefined or too complex) !!") 
       {}
-      void visit_array(const romp::Array& n) { unsupported_traversal(n,"romp::Array"); }
-      void visit_record(const romp::Record& n) { unsupported_traversal(n,"romp::Record"); }
-      void visit_typeexprid(const romp::TypeExprID& n) { unsupported_traversal(n,"undefined romp::TypeExprID");; }
-      void visit_enum(const romp::Enum& n) { 
+      void visit_array(const murphi::Array& n) { unsupported_traversal(n,"murphi::Array"); }
+      void visit_record(const murphi::Record& n) { unsupported_traversal(n,"murphi::Record"); }
+      void visit_typeexprid(const murphi::TypeExprID& n) { unsupported_traversal(n,"undefined murphi::TypeExprID");; }
+      void visit_enum(const murphi::Enum& n) { 
         qe.start = 0_mpz;
         qe.stop = mpz_class(n.members.size()) - 1_mpz;
         qe.step = 1_mpz;
@@ -222,7 +222,7 @@ namespace romp {
                               });
         }
       }
-      void visit_range(const romp::Range& n) {
+      void visit_range(const murphi::Range& n) {
         qe.start = n.min->constant_fold();
         qe.stop = n.max->constant_fold();
         qe.step = 1_mpz;
@@ -236,7 +236,7 @@ namespace romp {
                                 qe
                               });
       }
-      void visit_scalarset(const romp::Scalarset& n) {
+      void visit_scalarset(const murphi::Scalarset& n) {
         qe.start = 0_mpz;
         qe.stop = n.bound->constant_fold();
         qe.step = 1_mpz;
@@ -255,12 +255,12 @@ namespace romp {
     try {
       tt.dispatch(*(q_.type->resolve()));
     } catch (...) {
-      std::throw_with_nested(romp::Error("Could not resolve the bounds of the Type based Quantifier !!", q_.loc));
+      std::throw_with_nested(murphi::Error("Could not resolve the bounds of the Type based Quantifier !!", q_.loc));
     }
     try {
       _size = q_.type->count().get_ui() - 1;
     } catch (...) {
-      std::throw_with_nested(romp::Error("Could not extrapolate the size of the Quantifier !!",q_.loc));
+      std::throw_with_nested(murphi::Error("Could not extrapolate the size of the Quantifier !!",q_.loc));
     }
   }
 
@@ -277,27 +277,27 @@ namespace romp {
 
   std::unordered_map<std::string,std::shared_ptr<const QuantExpansion>> SigPerm::quant_vals_cache{};
 
-  SigPerm::SigPerm(const romp::Rule& rule_, const char* rule_type_) 
+  SigPerm::SigPerm(const murphi::Rule& rule_, const char* rule_type_) 
     : rule_type(rule_type_), rule(rule_), 
       param_count(rule_.quantifiers.size()), quantifiers(rule_.quantifiers)
   {
     quant_vals = std::vector<std::shared_ptr<const QuantExpansion>>(param_count);
     if (param_count == 0) return;
-    // if (quant_vals.size() == 0) throw romp::Error("(SigPerm) array of quantifiers did not start empty !! \t[dev-error]", rule_.loc); 
+    // if (quant_vals.size() == 0) throw murphi::Error("(SigPerm) array of quantifiers did not start empty !! \t[dev-error]", rule_.loc); 
     add_quants(rule.quantifiers);
     while (quant_vals[0] == nullptr) quant_vals.erase(quant_vals.begin()); // remove leading nullptr(s)
-    if (quant_vals.size() != param_count) throw romp::Error("(SigPerm) failed to properly add all quantifiers to permutation (possibly too many nulls added) !! \t[dev-error]",rule_.loc);
+    if (quant_vals.size() != param_count) throw murphi::Error("(SigPerm) failed to properly add all quantifiers to permutation (possibly too many nulls added) !! \t[dev-error]",rule_.loc);
     for (int i=0; i<quant_vals.size(); ++i)
-      if (quant_vals[i] == nullptr) throw romp::Error("(SigPerm) a nullptr was added to the list of quantifiers !! \t[dev-error]", rule_.loc); 
+      if (quant_vals[i] == nullptr) throw murphi::Error("(SigPerm) a nullptr was added to the list of quantifiers !! \t[dev-error]", rule_.loc); 
   }
 
-  void SigPerm::add_quants(const std::vector<romp::Quantifier>& qs) {
+  void SigPerm::add_quants(const std::vector<murphi::Quantifier>& qs) {
     for (const auto& q : qs)
       add_quant(q);
   }
 
-  void SigPerm::add_quant(const romp::Quantifier& q) {
-    if (auto _tid = dynamic_cast<const romp::TypeExprID*>(q.decl->type.get())) {
+  void SigPerm::add_quant(const murphi::Quantifier& q) {
+    if (auto _tid = dynamic_cast<const murphi::TypeExprID*>(q.decl->type.get())) {
       auto qe_i = SigPerm::quant_vals_cache.find(_tid->referent->name);
       // const QuantExpansion& qe = qe_i->second;
       if (qe_i == SigPerm::quant_vals_cache.end()) {
@@ -313,10 +313,10 @@ namespace romp {
       }
       // quant_vals.push_back(qe);
     } else
-      throw romp::Error("Unprocessed anonymous type found in ruleset quantifier!!\t[dev-error]", q.type->loc);
+      throw murphi::Error("Unprocessed anonymous type found in ruleset quantifier!!\t[dev-error]", q.type->loc);
   }
 
-  void SigPerm::add_quant(const std::string& name, const romp::Quantifier& q) {
+  void SigPerm::add_quant(const std::string& name, const murphi::Quantifier& q) {
     SigPerm::quant_vals_cache.emplace(name, new QuantExpansion(q));
     // SigPerm::quant_vals_cache.insert(std::make_pair(name, std::shared_ptr<const QuantExpansion>(new QuantExpansion(q))));
   }
@@ -397,7 +397,7 @@ namespace romp {
 #else
     sig.params[level] = quant.values[ii];
 #endif
-    // if (level > perm.param_count) throw romp::Error("SigPerm::Iterator tried to iterate too far \t[dev-error]",perm.rule.loc);
+    // if (level > perm.param_count) throw murphi::Error("SigPerm::Iterator tried to iterate too far \t[dev-error]",perm.rule.loc);
     // if (level <= 0) { index = perm.size(); return; }
     // param_iters[level-1]++;
     // if (param_iters[level-1] < perm.quant_vals[level-1]->size()) return;

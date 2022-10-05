@@ -2,9 +2,9 @@
 #include <cstddef>
 #include <cstdlib>
 #include <iostream>
-#include <romp/romp.h>
+#include <murphi/murphi.h>
 
-using namespace romp;
+using namespace murphi;
 
 namespace {
 

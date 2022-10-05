@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstddef>
-#include <romp/romp.h>
+#include <murphi/rumur.h>
 
 // Determine whether the given AST contains any comparisons of records or
 // arrays. See main.cc for why this is interesting/relevant.
-bool compares_complex_values(const romp::Node &n);
+bool compares_complex_values(const murphi::Node &n);

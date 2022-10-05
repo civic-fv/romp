@@ -8,7 +8,7 @@
  * @org Ganesh Gopalakrishnan's Research Group
  * @file throw_nested_error.hpp
  * 
- * @brief util function for joining and throwing a nested romp error, for easy nested error traces.
+ * @brief util function for joining and throwing a nested rumur error, for easy nested error traces.
  * 
  * @date 2022/06/28
  * @version 0.1
@@ -16,13 +16,13 @@
 
 #pragma once
 
-#include <romp/except.h>
+#include <murphi/except.h>
 #include <string>
 #include <memory>
 #include <regex>
 #include <ostream>
 
-std::ostream& operator << (std::ostream& out, const romp::Error& er);
+std::ostream& operator << (std::ostream& out, const murphi::Error& er);
 std::ostream& operator << (std::ostream& out, const std::exception& er);
 
 namespace romp {
@@ -32,8 +32,8 @@ namespace romp {
 // template<typename T>
 // void fprint_exception(std::ostream& out, const T& ex, const std::string& prefix) noexcept;
 
-void fprint_exception(std::ostream& out, const romp::Error& ex) noexcept;
-void fprint_exception(std::ostream& out, const romp::Error& ex, const std::string& prefix) noexcept;
+void fprint_exception(std::ostream& out, const murphi::Error& ex) noexcept;
+void fprint_exception(std::ostream& out, const murphi::Error& ex, const std::string& prefix) noexcept;
 
 void fprint_exception(std::ostream& out, const std::exception& ex) noexcept;
 void fprint_exception(std::ostream& out, const std::exception& ex, const std::string& prefix) noexcept;

@@ -4,18 +4,18 @@
 #include "resources.h"
 #include <cstddef>
 #include <iostream>
-#include <romp/romp.h>
+#include <murphi/murphi.h>
 #include <string>
 #include <vector>
 
-using namespace romp;
+using namespace murphi;
 
 namespace {
 
 class CGenerator : public CLikeGenerator {
 
 public:
-  CGenerator(const std::vector<romp::Comment> &comments_, std::ostream &out_,
+  CGenerator(const std::vector<murphi::Comment> &comments_, std::ostream &out_,
              bool pack_)
       : CLikeGenerator(comments_, out_, pack_) {}
 

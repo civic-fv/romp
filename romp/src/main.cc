@@ -14,7 +14,7 @@
 #include <getopt.h>
 #include <iostream>
 #include <memory>
-#include <romp/romp.h>
+#include <murphi/rumur.h>
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
@@ -53,7 +53,7 @@ static void parse_args(int argc, char **argv) {
         { "enable-assume",      no_argument,        0,  'a' },
         { "enable-cover",       no_argument,        0,  'c' },
         { "enable-liveness",    no_argument,        0,  'l' },
-        { "ignore-romp-props", no_argument,        0,  'i' },
+        { "ignore-rumur-props", no_argument,        0,  'i' },
         // { "header",             no_argument,       0, 128 },
         // { "source",             no_argument,       0, 129 },
         { "value-type",         required_argument,  0,  130 },
@@ -148,7 +148,7 @@ static void parse_args(int argc, char **argv) {
 
     case 131: // --version
       std::cout << "ROMP version " ROMP_VERSION "\n"
-                   "Romp version " << romp::get_version() << "\n";
+                   "Rumur version " << murphi::get_version() << "\n";
       exit(EXIT_SUCCESS);
 
     default:
@@ -236,10 +236,10 @@ int main(int argc, char **argv) {
     in = make_stdin_dup();
 
   // parse input model
-  romp::Ptr<romp::Model> m;
+  murphi::Ptr<murphi::Model> m;
   try {
-    m = romp::parse(*in.first);
-  } catch (romp::Error &e) {
+    m = murphi::parse(*in.first);
+  } catch (murphi::Error &e) {
     romp::fprint_exception(std::cerr, e);
     // std::cerr << e.loc << ":" << e.what() << "\n";
     return EXIT_FAILURE;
@@ -257,9 +257,9 @@ int main(int argc, char **argv) {
 
   // check the model is valid
   try {
-    updateASTs(*m);
+    resolve_symbols(*m);
     validate(*m);
-  } catch (const romp::Error& e) {
+  } catch (const murphi::Error& e) {
     std::cerr << e << "\n";
     // std::cerr << e.loc << ":" << e.what() << "\n";
     return EXIT_FAILURE;
@@ -275,14 +275,14 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
 
   // name any rules that are unnamed, so they get valid C symbols
-  romp::sanitize_rule_names(*m);
+  murphi::sanitise_rule_names(*m);
 
   // Determine if we have any == or != involving records or arrays, in which
   // case we will need to pack structs. See generate_c() for why.
   bool pack = compares_complex_values(*m);
 
   // parse comments from the source code
-  std::vector<romp::Comment> comments = romp::parse_comments(*in.second);
+  std::vector<murphi::Comment> comments = murphi::parse_comments(*in.second);
 
   try {
   // output code
@@ -295,7 +295,7 @@ int main(int argc, char **argv) {
   // } else {
   //   generate_h(*m, comments, pack, out == nullptr ? std::cout : *out);
   // }
-  } catch (const romp::Error& e) {
+  } catch (const murphi::Error& e) {
     std::cerr << e << "\n";
     // std::cerr << e.loc << ":" << e.what() << "\n";
     return EXIT_FAILURE;

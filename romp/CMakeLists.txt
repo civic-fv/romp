@@ -86,7 +86,7 @@ target_include_directories(romp
   ${CMAKE_CURRENT_BINARY_DIR}/../libromp)
 
 target_link_libraries(romp
-  libromp)
+  libmurphi)
 
 # Compress manpage
 add_custom_target(man-romp

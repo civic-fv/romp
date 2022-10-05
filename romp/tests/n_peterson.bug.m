@@ -26,7 +26,7 @@
 --        or traditional/old/original Murphi
 --       This is because the getRand function relies 
 --        on bitwise AND, OR & NOT, which og spec does not have.
---       It is designed to work with the parser and AST from the romp-lib 
+--       It is designed to work with the parser and AST from the rumur-lib 
 --------------------------------------------------------------------------
 
 --------------------------------------------------------------------------

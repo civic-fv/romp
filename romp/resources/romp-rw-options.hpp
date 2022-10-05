@@ -86,7 +86,7 @@ void print_help() {
                "    | -nd                   (overrides all property options below)\n"
 #ifdef __romp__ENABLE_liveness_property
                "  --liveness-check {int}  Allows you to enable a heuristic test for\n"
-               "    | -lc {int}             romp's liveness property. Where it \n"
+               "    | -lc {int}             rumur's liveness property. Where it \n"
                "                            require the properties expr to resolve\n"
                "                            to true with in {int} rule applications\n"
                "                            since the start or the last time it was\n"
@@ -96,7 +96,7 @@ void print_help() {
 #endif
 #ifdef __romp__ENABLE_cover_property
                "  --complete-on-cover {int} Allows you to enable a heuristic test"
-               "    | --cover-check {int}     for romp's cover property. Where it\n"
+               "    | --cover-check {int}     for rumur's cover property. Where it\n"
                "    | -cc {int}               considers a walk complete once every\n"
                "                              cover property has been reached {int}\n"
                "                              times.\n"
@@ -136,7 +136,7 @@ void print_help() {
 #ifdef __romp__ENABLE_assume_property
                "                          This also performs --report-assume/-ra.\n"
                "  --report-assume       Report walks that are violate an assume\n"
-               "    | --r-assume          property (defined by romp), rather than\n"
+               "    | --r-assume          property (defined by rumur), rather than\n"
                "    | -ra                 just discarding them as invalid states.\n"
                "                          (NOTE: only effective if --report-error\n"
                "                            is provided)\n"
@@ -654,7 +654,7 @@ const stream_void Options::write_config(ostream_p& out) const noexcept {
   }
   out << out.dedent()                                                               << out.nl();
 #if defined(__romp__ENABLE_assume_property) || defined(__romp__ENABLE_cover_property) || defined(__romp__ENABLE_liveness_property)
-  out << "ENABLED SPECIAL/ROMP PROPERTIES:"                        << out.indent()
+  out << "ENABLED SPECIAL/RUMUR PROPERTIES:"                        << out.indent()
 #ifdef __romp__ENABLE_assume_property
                                                                                     << out.nl()
       << "      assume: YES, " << (r_assume ? "reporting" : "non-reporting \t(default)")  

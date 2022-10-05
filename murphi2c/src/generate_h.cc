@@ -4,11 +4,11 @@
 #include "resources.h"
 #include <cstddef>
 #include <iostream>
-#include <romp/romp.h>
+#include <murphi/murphi.h>
 #include <string>
 #include <vector>
 
-using namespace romp;
+using namespace murphi;
 
 namespace {
 

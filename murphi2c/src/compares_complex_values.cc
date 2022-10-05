@@ -1,8 +1,8 @@
 #include "compares_complex_values.h"
 #include <cstddef>
-#include <romp/romp.h>
+#include <murphi/murphi.h>
 
-using namespace romp;
+using namespace murphi;
 
 namespace {
 

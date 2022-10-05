@@ -8,7 +8,7 @@
  * @org Ganesh Gopalakrishnan's Research Group
  * @file throw_nested_error.hpp
  * 
- * @brief util function for joining and throwing a nested romp error, for easy nested error traces.
+ * @brief util function for joining and throwing a nested rumur error, for easy nested error traces.
  * 
  * @date 2022/06/28
  * @version 0.1
@@ -18,7 +18,7 @@
 #include <sstream>
 // #include <algorithm>
 
-std::ostream& operator << (std::ostream& out, const romp::Error& er) { romp::fprint_exception(out,er,""); return out; }
+std::ostream& operator << (std::ostream& out, const murphi::Error& er) { romp::fprint_exception(out,er,""); return out; }
 std::ostream& operator << (std::ostream& out, const std::exception& er) { romp::fprint_exception(out,er,""); return out; }
 
 namespace romp {
@@ -30,13 +30,13 @@ namespace romp {
   // template<>
   // void fprint_exception<Error>(std::ostream& out, const Error& ex, const std::string& prefix) noexcept {
   
-  void fprint_exception(std::ostream& out, const romp::Error& ex) noexcept { fprint_exception(out,ex,""); }
-  void fprint_exception(std::ostream& out, const romp::Error& ex, const std::string& prefix) noexcept {
+  void fprint_exception(std::ostream& out, const murphi::Error& ex) noexcept { fprint_exception(out,ex,""); }
+  void fprint_exception(std::ostream& out, const murphi::Error& ex, const std::string& prefix) noexcept {
     out << prefix << ex.loc << " :: " << ex.what();
     try {
         std::rethrow_if_nested(ex);
-    } catch(const romp::Error& mod_ex) {
-      fprint_exception/* <romp::Error> */(out, mod_ex, prefix + __romp__nested_exception__print_prefix);
+    } catch(const murphi::Error& mod_ex) {
+      fprint_exception/* <murphi::Error> */(out, mod_ex, prefix + __romp__nested_exception__print_prefix);
     } catch(const std::exception& ex) {
       fprint_exception/* <std::exception> */(out, ex, prefix + __romp__nested_exception__print_prefix);
     } catch(...) {}
@@ -52,8 +52,8 @@ namespace romp {
     out << prefix << ex.what() << '\n';
     try {
         std::rethrow_if_nested(ex);
-    } catch(const romp::Error& mod_ex) {
-      fprint_exception/* <romp::Error> */(out, mod_ex, prefix + __romp__nested_exception__print_prefix);
+    } catch(const murphi::Error& mod_ex) {
+      fprint_exception/* <murphi::Error> */(out, mod_ex, prefix + __romp__nested_exception__print_prefix);
     } catch(const std::exception& ex) {
       fprint_exception/* <std::exception> */(out, ex, prefix + __romp__nested_exception__print_prefix);
     } catch(...) {}

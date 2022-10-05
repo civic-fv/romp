@@ -18,7 +18,7 @@
 #define _ROMP_THREAD_TO_RW_RATIO (8ul)
 
 
-#define __model__filepath "/mnt/g/My Drive/School/UofU/proj/romp/romp-romp/romp/tests/sort5.m"
+#define __model__filepath "/mnt/g/My Drive/School/UofU/proj/romp/rumur-romp/romp/tests/sort5.m"
 
 
 #define __model__filepath_contains_space (true)
@@ -41,7 +41,7 @@ namespace __model__ { struct __Model__; } // helpful pre-definition
 
 #pragma region model_prefixes
 
-#include "/mnt/g/My Drive/School/UofU/proj/romp/romp-romp/romp/resources/c_prefix.cpp"
+#include "/mnt/g/My Drive/School/UofU/proj/romp/rumur-romp/romp/resources/c_prefix.cpp"
 
 #pragma endregion model_prefixes
 
@@ -278,7 +278,7 @@ namespace __info__ {
 /* the number of functions & procedures in the model */
 #define _ROMP_FUNCTS_LEN (3ul)
   /* the info/metadata about the functions/procedures in the model */
-  const ::romp::FunctInfo FUNCT_INFOS[_ROMP_FUNCTS_LEN] = {{"IncrementMod",{{45,1},{52,5}},"{\"$type\":\"procedure\",\"label\":\"IncrementMod\",\"params\":[{\"$type\":\"param\",\"id\":\"v\",\"type\":\"ind_t\"},{\"$type\":\"param\",\"id\":\"m\",\"type\":\"ind_t\"}],\"loc\":{\"$type\":\"location\",\"file\":\"/mnt/g/My Drive/School/UofU/proj/romp/romp-romp/romp/tests/sort5.m\",\"start\":[45,1],\"end\":[52,5]}}","procedure IncrementMod(v: ind_t; var m: ind_t);"},{"Increment",{{54,1},{57,5}},"{\"$type\":\"procedure\",\"label\":\"Increment\",\"params\":[{\"$type\":\"param\",\"id\":\"v\",\"type\":\"ind_t\"}],\"loc\":{\"$type\":\"location\",\"file\":\"/mnt/g/My Drive/School/UofU/proj/romp/romp-romp/romp/tests/sort5.m\",\"start\":[54,1],\"end\":[57,5]}}","procedure Increment(v: ind_t);"},{"Swap",{{59,1},{66,5}},"{\"$type\":\"procedure\",\"label\":\"Swap\",\"params\":[{\"$type\":\"param\",\"id\":\"a\",\"type\":\"arr_t\"}],\"loc\":{\"$type\":\"location\",\"file\":\"/mnt/g/My Drive/School/UofU/proj/romp/romp-romp/romp/tests/sort5.m\",\"start\":[59,1],\"end\":[66,5]}}","procedure Swap(a: arr_t);"},};
+  const ::romp::FunctInfo FUNCT_INFOS[_ROMP_FUNCTS_LEN] = {{"IncrementMod",{{45,1},{52,5}},"{\"$type\":\"procedure\",\"label\":\"IncrementMod\",\"params\":[{\"$type\":\"param\",\"id\":\"v\",\"type\":\"ind_t\"},{\"$type\":\"param\",\"id\":\"m\",\"type\":\"ind_t\"}],\"loc\":{\"$type\":\"location\",\"file\":\"/mnt/g/My Drive/School/UofU/proj/romp/rumur-romp/romp/tests/sort5.m\",\"start\":[45,1],\"end\":[52,5]}}","procedure IncrementMod(v: ind_t; var m: ind_t);"},{"Increment",{{54,1},{57,5}},"{\"$type\":\"procedure\",\"label\":\"Increment\",\"params\":[{\"$type\":\"param\",\"id\":\"v\",\"type\":\"ind_t\"}],\"loc\":{\"$type\":\"location\",\"file\":\"/mnt/g/My Drive/School/UofU/proj/romp/rumur-romp/romp/tests/sort5.m\",\"start\":[54,1],\"end\":[57,5]}}","procedure Increment(v: ind_t);"},{"Swap",{{59,1},{66,5}},"{\"$type\":\"procedure\",\"label\":\"Swap\",\"params\":[{\"$type\":\"param\",\"id\":\"a\",\"type\":\"arr_t\"}],\"loc\":{\"$type\":\"location\",\"file\":\"/mnt/g/My Drive/School/UofU/proj/romp/rumur-romp/romp/tests/sort5.m\",\"start\":[59,1],\"end\":[66,5]}}","procedure Swap(a: arr_t);"},};
 /* the number of error statements in the model */
 #define _ROMP_ERRORS_LEN (0ul)
   /* the info/metadata about the murphi error statements in the model */
@@ -290,15 +290,15 @@ namespace __info__ {
 /* the number of liveness property rules in the model */
 #define _ROMP_LIVENESS_PROP_COUNT (0ul) // the number of property rules (after ruleset expansion) in the model
   /* the info/metadata about the murphi properties in the model */
-  const ::romp::PropertyInfo PROPERTY_INFOS[_ROMP_PROPERTIES_LEN] = {{"property1",::romp::PropertyType::INVARIANT,"exists i : 0..(N - 2) do (a[i] > a[(i + 1)]) endexists",0,{{100,1},{101,40}},"{\"$type\":\"property\",\"type\":\"invariant\",\"expr\":\"exists i : 0..(N - 2) do (a[i] > a[(i + 1)]) endexists\",\"label\":\"property1\",\"loc\":{\"$type\":\"location\",\"file\":\"/mnt/g/My Drive/School/UofU/proj/romp/romp-romp/romp/tests/sort5.m\",\"start\":[100,1],\"end\":[101,40]}"},};
+  const ::romp::PropertyInfo PROPERTY_INFOS[_ROMP_PROPERTIES_LEN] = {{"property1",::romp::PropertyType::INVARIANT,"exists i : 0..(N - 2) do (a[i] > a[(i + 1)]) endexists",0,{{100,1},{101,40}},"{\"$type\":\"property\",\"type\":\"invariant\",\"expr\":\"exists i : 0..(N - 2) do (a[i] > a[(i + 1)]) endexists\",\"label\":\"property1\",\"loc\":{\"$type\":\"location\",\"file\":\"/mnt/g/My Drive/School/UofU/proj/romp/rumur-romp/romp/tests/sort5.m\",\"start\":[100,1],\"end\":[101,40]}"},};
 /* the number of start state rules (before ruleset expansions) in the model */
 #define _ROMP_STARTSTATE_INFO_LEN (1ul)
   /* the info/metadata about the startstate rules in the model */
-  const ::romp::StartStateInfo STARTSTATE_INFOS[_ROMP_STARTSTATE_INFO_LEN] = {{"startstate0",{{91,1},{98,4}},"{\"$type\":\"startstate\",\"label\":\"startstate0\",\"loc\":{\"$type\":\"location\",\"file\":\"/mnt/g/My Drive/School/UofU/proj/romp/romp-romp/romp/tests/sort5.m\",\"start\":[91,1],\"end\":[98,4]}"},};
+  const ::romp::StartStateInfo STARTSTATE_INFOS[_ROMP_STARTSTATE_INFO_LEN] = {{"startstate0",{{91,1},{98,4}},"{\"$type\":\"startstate\",\"label\":\"startstate0\",\"loc\":{\"$type\":\"location\",\"file\":\"/mnt/g/My Drive/School/UofU/proj/romp/rumur-romp/romp/tests/sort5.m\",\"start\":[91,1],\"end\":[98,4]}"},};
 /* the number of rules in the model, BEFORE ruleset expansion */
 #define _ROMP_RULESETS_LEN (3ul)
   /* the info/metadata about the rules in the model */
-  const ::romp::RuleInfo RULE_SET_INFOS[_ROMP_RULESETS_LEN] = {{"i",{{69,1},{74,4}},"{\"$type\":\"rule\",\"expr\":\"true\",\"label\":\"i\",\"loc\":{\"$type\":\"location\",\"file\":\"/mnt/g/My Drive/School/UofU/proj/romp/romp-romp/romp/tests/sort5.m\",\"start\":[69,1],\"end\":[74,4]}"},{"j",{{76,1},{81,4}},"{\"$type\":\"rule\",\"expr\":\"true\",\"label\":\"j\",\"loc\":{\"$type\":\"location\",\"file\":\"/mnt/g/My Drive/School/UofU/proj/romp/romp-romp/romp/tests/sort5.m\",\"start\":[76,1],\"end\":[81,4]}"},{"swap",{{83,1},{88,4}},"{\"$type\":\"rule\",\"expr\":\"((i < j) & (a[i] > a[j]))\",\"label\":\"swap\",\"loc\":{\"$type\":\"location\",\"file\":\"/mnt/g/My Drive/School/UofU/proj/romp/romp-romp/romp/tests/sort5.m\",\"start\":[83,1],\"end\":[88,4]}"},};
+  const ::romp::RuleInfo RULE_SET_INFOS[_ROMP_RULESETS_LEN] = {{"i",{{69,1},{74,4}},"{\"$type\":\"rule\",\"expr\":\"true\",\"label\":\"i\",\"loc\":{\"$type\":\"location\",\"file\":\"/mnt/g/My Drive/School/UofU/proj/romp/rumur-romp/romp/tests/sort5.m\",\"start\":[69,1],\"end\":[74,4]}"},{"j",{{76,1},{81,4}},"{\"$type\":\"rule\",\"expr\":\"true\",\"label\":\"j\",\"loc\":{\"$type\":\"location\",\"file\":\"/mnt/g/My Drive/School/UofU/proj/romp/rumur-romp/romp/tests/sort5.m\",\"start\":[76,1],\"end\":[81,4]}"},{"swap",{{83,1},{88,4}},"{\"$type\":\"rule\",\"expr\":\"((i < j) & (a[i] > a[j]))\",\"label\":\"swap\",\"loc\":{\"$type\":\"location\",\"file\":\"/mnt/g/My Drive/School/UofU/proj/romp/rumur-romp/romp/tests/sort5.m\",\"start\":[83,1],\"end\":[88,4]}"},};
 
 }
 
@@ -371,20 +371,20 @@ const ::romp::StartState STARTSTATES[_ROMP_STARTSTATES_LEN] = {{__StartState__st
 
 #pragma region romp_rw
 
-#include "/mnt/g/My Drive/School/UofU/proj/romp/romp-romp/romp/resources/romp-rw.hpp"
+#include "/mnt/g/My Drive/School/UofU/proj/romp/rumur-romp/romp/resources/romp-rw.hpp"
 
 #pragma endregion romp_rw
 
 
 #pragma region romp_rw_options
 
-#include "/mnt/g/My Drive/School/UofU/proj/romp/romp-romp/romp/resources/romp-rw-options.hpp"
+#include "/mnt/g/My Drive/School/UofU/proj/romp/rumur-romp/romp/resources/romp-rw-options.hpp"
 
 #pragma endregion romp_rw_options
 
 
 #pragma region romp_rw_main
 
-#include "/mnt/g/My Drive/School/UofU/proj/romp/romp-romp/romp/resources/romp-rw-main.hpp"
+#include "/mnt/g/My Drive/School/UofU/proj/romp/rumur-romp/romp/resources/romp-rw-main.hpp"
 
 #pragma endregion romp_rw_main

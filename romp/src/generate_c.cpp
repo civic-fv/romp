@@ -10,7 +10,7 @@
 #include "resources.h"
 #include <cstddef>
 #include <iostream>
-#include <romp/romp.h>
+#include <murphi/rumur.h>
 #include <string>
 #include <vector>
 #include <unordered_set>
@@ -23,7 +23,7 @@
 
 #include "romp_def.hpp"
 
-using namespace romp;
+using namespace murphi;
 
 
 std::string int_to_hex(unsigned long i ) {
@@ -42,9 +42,9 @@ class CGenerator : public CLikeGenerator {
 private:
   static const std::unordered_set<std::string> RESERVED_VAR_NAMES; //{ROMP_RESERVED_NAMES};
   // std::vector<std::string> state_vars;
-  // std::vector<romp::Ptr<romp::SimpleRule>> rules;
-  // std::vector<romp::Ptr<romp::PropertyRule>> property_rules;
-  // std::vector<romp::Ptr<romp::StartState>> startstates;
+  // std::vector<murphi::Ptr<murphi::SimpleRule>> rules;
+  // std::vector<murphi::Ptr<murphi::PropertyRule>> property_rules;
+  // std::vector<murphi::Ptr<murphi::StartState>> startstates;
   std::stringstream prop_info_list;
   std::stringstream error_info_list;
   id_t next_property_rule_id = 0u;
@@ -62,7 +62,7 @@ private:
   enum {GLOBAL, RULE, FUNCT} inType = GLOBAL;
 
 public:
-  CGenerator(const std::vector<romp::Comment> &comments_, std::ostream &out_,
+  CGenerator(const std::vector<murphi::Comment> &comments_, std::ostream &out_,
              bool pack_)
       : CLikeGenerator(comments_, out_, pack_) 
   { 
@@ -501,7 +501,7 @@ public:
     // *this << ")\n";
   }
 
-  void gen_ruleset_array(const std::vector<romp::Ptr<romp::SimpleRule>>& rules) {
+  void gen_ruleset_array(const std::vector<murphi::Ptr<murphi::SimpleRule>>& rules) {
     std::stringstream ruleset_array;
     ruleset_array << indentation() << ROMP_CALLER_RULESETS_DECL " = {";
     std::string rs_sep = "\n\t\t";
@@ -554,7 +554,7 @@ public:
   }
 
 
-  void gen_property_array(const std::vector<romp::Ptr<romp::PropertyRule>>& property_rules) {
+  void gen_property_array(const std::vector<murphi::Ptr<murphi::PropertyRule>>& property_rules) {
     std::stringstream prop_list;
     prop_list << ROMP_CALLER_PROPERTIES_DECL " = {\n";
     id_t _lid = 0u;
@@ -634,7 +634,7 @@ public:
   }
 
 
-  void gen_startstate_array(const std::vector<romp::Ptr<romp::StartState>>& startstates) {
+  void gen_startstate_array(const std::vector<murphi::Ptr<murphi::StartState>>& startstates) {
     std::stringstream prop_list;
     prop_list << ROMP_CALLER_STARTSTATES_DECL " = {";
     id_t info_id = 0u;
@@ -934,7 +934,7 @@ public:
   CGenerator& operator << (const unsigned int val) { out << val; return *this; }
   CGenerator& operator << (const long val) { out << val; return *this; }
   CGenerator& operator << (const unsigned long val) { out << val; return *this; }
-  CGenerator& operator << (const romp::Node& n) { dispatch(n); return *this; }
+  CGenerator& operator << (const murphi::Node& n) { dispatch(n); return *this; }
   CGenerator& operator << (const Sig& sig) { out << sig; return *this; }
   friend CGenerator& operator << (CGenerator& gen, const SigParam& param) { gen.out << param; return gen; }
   // CGenerator& operator << (const SigParam& param) { out << param; return *this; }

@@ -22,18 +22,18 @@
 
 namespace romp {
 
-mpz_class statespace_count(const romp::Record& n) {
-  struct state_perm : public romp::ConstBaseTypeTraversal {
+mpz_class statespace_count(const murphi::Record& n) {
+  struct state_perm : public murphi::ConstBaseTypeTraversal {
     mpz_class perm = 1_mpz;
   public: state_perm() : ConstBaseTypeTraversal("was not a type") {}
   protected:
-    void visit_array(const romp::Array& n) { 
+    void visit_array(const murphi::Array& n) { 
       mpz_class count = n.index_type->count();
       state_perm elm; elm.dispatch(*n.element_type);
       mpz_class arr_perm(std::pow(elm.perm.get_ui(),count.get_ui()));
       perm *= arr_perm;
     }
-    void visit_record(const romp::Record& n) { 
+    void visit_record(const murphi::Record& n) { 
       state_perm field;
       for (const auto& f: n.fields) {
         if (f == nullptr) continue;
@@ -41,16 +41,16 @@ mpz_class statespace_count(const romp::Record& n) {
         perm *= field.perm;
       }
     }
-    void visit_typeexprid(const romp::TypeExprID& n) { 
+    void visit_typeexprid(const murphi::TypeExprID& n) { 
       dispatch(*n.referent->value);
     }
-    void visit_enum(const romp::Enum& n) {
+    void visit_enum(const murphi::Enum& n) {
       perm *= n.count();
     }
-    void visit_range(const romp::Range& n) {
+    void visit_range(const murphi::Range& n) {
       perm *= n.count();
     }
-    void visit_scalarset(const romp::Scalarset& n) {
+    void visit_scalarset(const murphi::Scalarset& n) {
       perm *= n.count();
     }
   };

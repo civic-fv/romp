@@ -3,7 +3,7 @@
 #include "CodeGenerator.h"
 #include <cstddef>
 #include <iostream>
-#include <romp/romp.h>
+#include <murphi/murphi.h>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -12,7 +12,7 @@
 // generator for C-like code
 class __attribute__((visibility("hidden"))) CLikeGenerator
     : public CodeGenerator,
-      public romp::ConstBaseTraversal {
+      public murphi::ConstBaseTraversal {
 
 protected:
   std::ostream &out;
@@ -26,80 +26,80 @@ protected:
   std::unordered_set<size_t> is_pointer;
 
   // list of comments from the original source
-  std::vector<romp::Comment> comments;
+  std::vector<murphi::Comment> comments;
 
   // whether each comment has been written to the output yet
   std::vector<bool> emitted;
 
 public:
-  CLikeGenerator(const std::vector<romp::Comment> &comments_,
+  CLikeGenerator(const std::vector<murphi::Comment> &comments_,
                  std::ostream &out_, bool pack_)
       : out(out_), pack(pack_), comments(comments_),
         emitted(comments_.size(), false) {}
 
-  void visit_add(const romp::Add &n) final;
-  void visit_aliasdecl(const romp::AliasDecl &n) final;
-  void visit_aliasrule(const romp::AliasRule &) final;
-  void visit_aliasstmt(const romp::AliasStmt &n) final;
-  void visit_and(const romp::And &n) final;
-  void visit_array(const romp::Array &n) final;
-  void visit_assignment(const romp::Assignment &n) final;
-  void visit_band(const romp::Band &n) final;
-  void visit_bnot(const romp::Bnot &n) final;
-  void visit_bor(const romp::Bor &n) final;
-  void visit_clear(const romp::Clear &n) final;
-  void visit_div(const romp::Div &n) final;
-  void visit_element(const romp::Element &n) final;
-  void visit_enum(const romp::Enum &n) final;
-  void visit_eq(const romp::Eq &n) final;
-  void visit_errorstmt(const romp::ErrorStmt &n) final;
-  void visit_exists(const romp::Exists &n) final;
-  void visit_exprid(const romp::ExprID &n) final;
-  void visit_field(const romp::Field &n) final;
-  void visit_implication(const romp::Implication &n) final;
-  void visit_isundefined(const romp::IsUndefined &) final;
-  void visit_for(const romp::For &n) final;
-  void visit_forall(const romp::Forall &n) final;
-  void visit_functioncall(const romp::FunctionCall &n) final;
-  void visit_geq(const romp::Geq &n) final;
-  void visit_gt(const romp::Gt &n) final;
-  void visit_if(const romp::If &n) final;
-  void visit_ifclause(const romp::IfClause &n) final;
-  void visit_leq(const romp::Leq &n) final;
-  void visit_lsh(const romp::Lsh &n) final;
-  void visit_lt(const romp::Lt &n) final;
-  void visit_mod(const romp::Mod &n) final;
-  void visit_model(const romp::Model &n) final;
-  void visit_mul(const romp::Mul &n) final;
-  void visit_negative(const romp::Negative &n) final;
-  void visit_neq(const romp::Neq &n) final;
-  void visit_not(const romp::Not &n) final;
-  void visit_number(const romp::Number &n) final;
-  void visit_or(const romp::Or &n) final;
-  void visit_procedurecall(const romp::ProcedureCall &n) final;
-  void visit_property(const romp::Property &) final;
-  void visit_propertystmt(const romp::PropertyStmt &n) final;
-  void visit_put(const romp::Put &n) final;
-  void visit_quantifier(const romp::Quantifier &n) final;
-  void visit_range(const romp::Range &) final;
-  void visit_record(const romp::Record &n) final;
-  void visit_return(const romp::Return &n) final;
-  void visit_rsh(const romp::Rsh &n) final;
-  void visit_ruleset(const romp::Ruleset &) final;
-  void visit_scalarset(const romp::Scalarset &) final;
-  void visit_sub(const romp::Sub &n) final;
-  void visit_switch(const romp::Switch &n) final;
-  void visit_switchcase(const romp::SwitchCase &n) final;
-  void visit_ternary(const romp::Ternary &n) final;
-  void visit_typedecl(const romp::TypeDecl &n) final;
-  void visit_typeexprid(const romp::TypeExprID &n) final;
-  void visit_undefine(const romp::Undefine &n) final;
-  void visit_while(const romp::While &n) final;
-  void visit_xor(const romp::Xor &n) final;
+  void visit_add(const murphi::Add &n) final;
+  void visit_aliasdecl(const murphi::AliasDecl &n) final;
+  void visit_aliasrule(const murphi::AliasRule &) final;
+  void visit_aliasstmt(const murphi::AliasStmt &n) final;
+  void visit_and(const murphi::And &n) final;
+  void visit_array(const murphi::Array &n) final;
+  void visit_assignment(const murphi::Assignment &n) final;
+  void visit_band(const murphi::Band &n) final;
+  void visit_bnot(const murphi::Bnot &n) final;
+  void visit_bor(const murphi::Bor &n) final;
+  void visit_clear(const murphi::Clear &n) final;
+  void visit_div(const murphi::Div &n) final;
+  void visit_element(const murphi::Element &n) final;
+  void visit_enum(const murphi::Enum &n) final;
+  void visit_eq(const murphi::Eq &n) final;
+  void visit_errorstmt(const murphi::ErrorStmt &n) final;
+  void visit_exists(const murphi::Exists &n) final;
+  void visit_exprid(const murphi::ExprID &n) final;
+  void visit_field(const murphi::Field &n) final;
+  void visit_implication(const murphi::Implication &n) final;
+  void visit_isundefined(const murphi::IsUndefined &) final;
+  void visit_for(const murphi::For &n) final;
+  void visit_forall(const murphi::Forall &n) final;
+  void visit_functioncall(const murphi::FunctionCall &n) final;
+  void visit_geq(const murphi::Geq &n) final;
+  void visit_gt(const murphi::Gt &n) final;
+  void visit_if(const murphi::If &n) final;
+  void visit_ifclause(const murphi::IfClause &n) final;
+  void visit_leq(const murphi::Leq &n) final;
+  void visit_lsh(const murphi::Lsh &n) final;
+  void visit_lt(const murphi::Lt &n) final;
+  void visit_mod(const murphi::Mod &n) final;
+  void visit_model(const murphi::Model &n) final;
+  void visit_mul(const murphi::Mul &n) final;
+  void visit_negative(const murphi::Negative &n) final;
+  void visit_neq(const murphi::Neq &n) final;
+  void visit_not(const murphi::Not &n) final;
+  void visit_number(const murphi::Number &n) final;
+  void visit_or(const murphi::Or &n) final;
+  void visit_procedurecall(const murphi::ProcedureCall &n) final;
+  void visit_property(const murphi::Property &) final;
+  void visit_propertystmt(const murphi::PropertyStmt &n) final;
+  void visit_put(const murphi::Put &n) final;
+  void visit_quantifier(const murphi::Quantifier &n) final;
+  void visit_range(const murphi::Range &) final;
+  void visit_record(const murphi::Record &n) final;
+  void visit_return(const murphi::Return &n) final;
+  void visit_rsh(const murphi::Rsh &n) final;
+  void visit_ruleset(const murphi::Ruleset &) final;
+  void visit_scalarset(const murphi::Scalarset &) final;
+  void visit_sub(const murphi::Sub &n) final;
+  void visit_switch(const murphi::Switch &n) final;
+  void visit_switchcase(const murphi::SwitchCase &n) final;
+  void visit_ternary(const murphi::Ternary &n) final;
+  void visit_typedecl(const murphi::TypeDecl &n) final;
+  void visit_typeexprid(const murphi::TypeExprID &n) final;
+  void visit_undefine(const murphi::Undefine &n) final;
+  void visit_while(const murphi::While &n) final;
+  void visit_xor(const murphi::Xor &n) final;
 
   // helpers to make output more natural
   CLikeGenerator &operator<<(const std::string &s);
-  CLikeGenerator &operator<<(const romp::Node &n);
+  CLikeGenerator &operator<<(const murphi::Node &n);
 
   // make this class abstract
   virtual ~CLikeGenerator() = 0;
@@ -107,16 +107,16 @@ public:
 private:
   // generate a print statement of the given expression and (possibly
   // not-terminal) type
-  void print(const std::string &suffix, const romp::TypeExpr &t,
-             const romp::Expr &e, size_t counter);
+  void print(const std::string &suffix, const murphi::TypeExpr &t,
+             const murphi::Expr &e, size_t counter);
 
 protected:
   // output comments preceding the given node
-  size_t emit_leading_comments(const romp::Node &n);
+  size_t emit_leading_comments(const murphi::Node &n);
 
   // discard any un-emitted comments preceding the given position
-  size_t drop_comments(const romp::position &pos);
+  size_t drop_comments(const murphi::position &pos);
 
   // output single line comments following the given node
-  size_t emit_trailing_comments(const romp::Node &n);
+  size_t emit_trailing_comments(const murphi::Node &n);
 };
