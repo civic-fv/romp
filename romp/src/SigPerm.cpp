@@ -12,7 +12,7 @@
  *        in the quantifiers of rumur's AST Rule's, so that we can call them in our output.
  * 
  * @date 2022/06/22
- * @version 0.1
+ * @version 0.2
  */
 
 #include "SigPerm.hpp"

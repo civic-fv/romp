@@ -11,7 +11,7 @@
  * @brief An AST traversing structure that can only handle generating Types.
  * 
  * @date 2022/06/06
- * @version 0.1
+ * @version 0.2
  */
 
 #pragma once

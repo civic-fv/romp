@@ -14,7 +14,7 @@
  *        Note: Note Optimized to be used in more than one file in a compilation (single file construction)
  * 
  * @date 2022/06/22
- * @version 0.1
+ * @version 0.2
  */
 
 #pragma once

@@ -757,10 +757,6 @@ public:
     *this << "\n" << indentation() << "namespace " ROMP_TYPE_NAMESPACE " {\n";
     indent();
 
-    *this << indentation() << "typedef " << value_type << " range_t;\n"
-          << indentation() << "typedef unsigned int scalarset_t;\n"
-          << indentation() << "typedef int enum_backend_t;\n";
-
     CTypeGenerator type_gen(comments, emitted, out, pack, 
       [&](const ConstDecl &_n) -> void {visit_constdecl(_n);});
     for (const Ptr<const Decl> &decl : sorter.global_decls)
@@ -988,6 +984,11 @@ void generate_c(const Node &n, const std::vector<Comment> &comments, bool pack,
   _count = std::count(file_name.begin(), file_name.end(), ' ');
   out << "\n#define __model__filename_contains_space (" 
       << ((_count > 0) ? "true" : "false") << ")\n\n";
+
+  out << "namespace " ROMP_UTIL_NAMESPACE_NAME " {\n"
+         "  typedef " << value_type << " range_t;\n"
+         "  typedef " << scalar_type << " scalar_t;\n"
+         "} // namespace " ROMP_UTIL_NAMESPACE_NAME "\n\n";
 
   romp::CodeGenerator::print_preprocessor_options(out);
 

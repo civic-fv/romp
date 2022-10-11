@@ -13,7 +13,7 @@
  *         and perform some statistics on the traces.
  *
  * @date 2022/05/11
- * @version 0.1
+ * @version 0.2
  *"""
 
 from concurrent.futures import process

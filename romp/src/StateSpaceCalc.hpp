@@ -12,7 +12,7 @@
  *        a murphi models state can be in.
  * 
  * @date 2022/08/19
- * @version 0.1
+ * @version 0.2
  */
 
 

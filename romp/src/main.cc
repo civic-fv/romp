@@ -56,7 +56,8 @@ static void parse_args(int argc, char **argv) {
         { "ignore-rumur-props", no_argument,        0,  'i' },
         // { "header",             no_argument,       0, 128 },
         // { "source",             no_argument,       0, 129 },
-        { "value-type",         required_argument,  0,  130 },
+        { "scalar-type",        required_argument,  0,  130 },
+        { "range-type",         required_argument,  0,  120 },
         { "version",            no_argument,        0,  131 },
         { "do-measure",         no_argument,        0,  132 },
         { "simple-trace-rep",   no_argument,        0,  133 },
@@ -137,11 +138,11 @@ static void parse_args(int argc, char **argv) {
     //   source = false;
     //   break;
 
-    // case 129: // --source
-    //   source = true;
-    //   break;
+    case 129: // --scalar-type
+      scalar_type = optarg;
+      break;
 
-    case 130: // --value-type
+    case 130: // --range-type
       // note that we just assume the type the user gave us exists
       value_type = optarg;
       break;

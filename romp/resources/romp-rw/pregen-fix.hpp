@@ -11,7 +11,7 @@
  * @brief just a bunch of things to get the language support working on our files without doing code gen.
  * 
  * @date 2022/06/29
- * @version 0.1
+ * @version 0.2
  */
 #pragma once
 
@@ -30,6 +30,9 @@
 #endif
 #ifndef _ROMP_RULESETS_LEN
 #define _ROMP_RULESETS_LEN (6ul)
+#endif
+#ifndef _ROMP_RULES_LEN
+#define _ROMP_RULES_LEN (16ul)
 #endif
 #ifndef _ROMP_RULE_COUNT
 #define _ROMP_RULE_COUNT (16ul)
@@ -57,11 +60,15 @@
 namespace __model__ {
   struct __State__;
 }
+
+
 #define __model__filepath "./<model-file>"
 #define __model__filename "<model-file>"
 #define __model__filename_contains_space false
 
 namespace romp {
+  typedef long range_t;
+  typedef long scalar_t;
   template<class O> struct ojstream; 
   struct RuleInfo;
   struct RuleSet;
@@ -77,10 +84,14 @@ namespace romp {
 }
 
 namespace __caller__ { // LANGUAGE SERVER SUPPORT ONLY!!
- const ::romp::RuleSet RULE_SETS[_ROMP_RULES_LEN]; // LANGUAGE SERVER SUPPORT ONLY!!
- const ::romp::Property PROPERTIES[_ROMP_PROPERTY_RULES_LEN]; // LANGUAGE SERVER SUPPORT ONLY!!
- const ::romp::StartState STARTSTATES[_ROMP_STARTSTATES_LEN]; // LANGUAGE SERVER SUPPORT ONLY!!
+ extern const ::romp::RuleSet RULE_SETS[_ROMP_RULESETS_LEN]; // LANGUAGE SERVER SUPPORT ONLY!!
+ extern const ::romp::Property PROPERTIES[_ROMP_PROPERTY_RULES_LEN]; // LANGUAGE SERVER SUPPORT ONLY!!
+ extern const ::romp::StartState STARTSTATES[_ROMP_STARTSTATES_LEN]; // LANGUAGE SERVER SUPPORT ONLY!!
 } // LANGUAGE SERVER SUPPORT ONLY !!
+
+namespace __model__ {// LANGUAGE SERVER SUPPORT ONLY!!
+  enum SCALAR {_UNDEFINED_=0, enum_test, scalar_1, scalar_2 /* , ... */}; // LANGUAGE SERVER SUPPORT ONLY!!
+} // namespace __model__ // LANGUAGE SERVER SUPPORT ONLY!!
 
 namespace __model__ { // LANGUAGE SERVER SUPPORT ONLY!!
   struct __State__ { // LANGUAGE SERVER SUPPORT ONLY !!

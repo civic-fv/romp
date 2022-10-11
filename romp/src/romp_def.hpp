@@ -11,7 +11,7 @@
  *        and other details in the romp codegen tool.
  * 
  * @date 2022/05/11
- * @version 0.1
+ * @version 0.2
  */
 
 #ifndef _romp_src_romp_def_hpp

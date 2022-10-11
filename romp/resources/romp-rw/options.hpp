@@ -8,28 +8,100 @@
  * @org Ganesh Gopalakrishnan's Research Group
  * @file romp-rw-options.hpp
  *
- * @brief
+ * @brief the handler for the configuration of a random walk
  *
- * @date 2022/07/12
- * @version 0.1
+ * @date 2022/10/05
+ * @version 0.2
  */
 
 #ifndef __romp__GENERATED_CODE
 #pragma once
-#include "c_prefix.cpp"
+#include "include.hpp"
+#include "decl.hpp"
+#include "writers.hpp"
+#include "error.hpp"
 #include <functional>
 #include <iostream>
 #include <string>
 #endif
 
 namespace romp {
-namespace options {
+
+#define EXIT_FAILURE 1
+#define EXIT_SUCCESS 0
+
+    /**
+     * @brief the number of concurrent threads a system supports \n
+     *        \b NOTE: if \c 0 then number is unknown & user must provide with \c -ptn / \c --threads flags.
+     */
+    const unsigned int __SYSTEM_THREAD_COUNT = ::std::thread::hardware_concurrency();
+    unsigned int get_default_thread_count() {
+      switch (__SYSTEM_THREAD_COUNT) {
+      case 0: return 0;
+      case 1: 
+      case 2:
+        return 1;
+      default:
+        return __SYSTEM_THREAD_COUNT - 2;
+      }
+    }
+
+#define _ROMP_ATTEMPT_LIMIT_DEFAULT UINT16_MAX
+#define _ROMP_START_ID_DEFAULT ((unsigned)(~(0u)))
+struct Options {
+  // size_t history_length = 4;
+  bool do_trace = false;
+  unsigned int threads =  get_default_thread_count(); 
+  size_t depth = 1024ul; // INT16_MAX;      
+  unsigned int walks = threads*_ROMP_THREAD_TO_RW_RATIO; 
+  unsigned int rand_seed = ROMP_ID; 
+  std::string seed_str = std::to_string(ROMP_ID);
+  bool do_single = false;
+  bool do_even_start = false;
+  id_t start_id = _ROMP_START_ID_DEFAULT;
+  bool skip_launch_prompt = false;
+  size_t attempt_limit = _ROMP_ATTEMPT_LIMIT_DEFAULT; // disabled if _ROMP_ATTEMPT_LIMIT_DEFAULT
+  std::string trace_dir = "./traces/"; // path for the trace file to be created during each walk
+  bool deadlock = true; // do deadlock protections
+#ifdef __romp__ENABLE_liveness_property
+  bool liveness = false;
+  size_t lcount = INT16_MAX;
+#endif
+#ifdef __romp__ENABLE_cover_property
+  bool complete_on_cover = false;
+  id_t cover_count = INT16_MAX; 
+#endif
+  bool r_cover = false;
+// #ifdef __romp__ENABLE_assume_property
+  bool r_assume = false;
+// #endif
+  bool report_error = false; // print results for each walker in addition to the summery
+  bool report_all = false;
+  bool report_show_type = false;
+  bool report_emit_state = true;
+  unsigned int tab_size = 2;
+  char tab_char = ' ';
+  const std::string get_trace_dir() const noexcept {
+    if (do_single) return trace_dir;
+    std::stringstream buf; buf << INIT_TIME_STAMP;
+    return trace_dir + "/" __model__filename "_" + buf.str();
+  }
+  const std::string get_trace_file_path(id_t rw_id) const noexcept {
+    if (not do_single)
+      return get_trace_dir() + "/" + std::to_string(rw_id) + ".trace.json";
+    std::stringstream buf; buf << INIT_TIME_STAMP;
+    return trace_dir + "/" + __model__filename + "_" + buf.str() + ".trace.json"; 
+  }
+  bool report_any() const {
+    return (report_all || do_single || report_error || r_assume || r_cover);
+  }
+
+  template<class O>
+  friend ojstream<O>& operator << (ojstream<O>& json, const Options& opts) noexcept;
 
 // input model's path
 // extern std::string input_filename;
 
-#define EXIT_FAILURE 1
-#define EXIT_SUCCESS 0
 
 void print_help() {
   using namespace std;
@@ -590,7 +662,7 @@ void Options::parse_args(int argc, char **argv) {
 #endif
 }
 
-const stream_void Options::write_config(ostream_p& out) const noexcept {
+const stream_void write_config(ostream_p& out) const noexcept {
   Options defaults;
   std::string sep = "";
   std::string startstate_str = ((start_id < _ROMP_STARTSTATES_LEN)
@@ -725,7 +797,7 @@ const stream_void Options::write_config(ostream_p& out) const noexcept {
 } // namespace options
 
 template<class O>
-ojstream<O>& operator << (ojstream<O>& json, const options::Options& opts) noexcept {
+friend ojstream<O>& operator << (ojstream<O>& json, const Options& opts) noexcept {
   json << "{"
             "\"model\":\"" __model__filepath "\","
             "\"romp-id\":" << ROMP_ID << ","
@@ -790,5 +862,9 @@ ojstream<O>& operator << (ojstream<O>& json, const options::Options& opts) noexc
        << "}";
   return json;
 }
+
+};
+
+// Options OPTIONS;
 
 } // namespace romp

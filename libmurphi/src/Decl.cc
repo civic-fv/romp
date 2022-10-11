@@ -106,6 +106,11 @@ void TypeDecl::update() {
               ? (Ptr<Scalarset>::make(_s->bound,value->loc)) // make a "inplace" nivea copy
               : (Ptr<Scalarset>(_s)));
     t->name = name;
+  } else if (auto _u = dynamic_cast<ScalarsetUnion*>(value->resolve().get())) {
+    auto t = ((isa<TypeExprID>(value))
+              ? (Ptr<ScalarsetUnion>::make(_u->members,value->loc)) // make a "inplace" nivea copy
+              : (Ptr<ScalarsetUnion>(_u)));
+    t->name = name;
   }
 }
 

@@ -447,6 +447,8 @@ public:
     disambiguate(n.rhs);
   }
 
+  // void visit_typedecl(TypeDecl& n) final {} // add this if scalarset names are not updated appropriately
+
   void visit_typeexprid(TypeExprID &n) final {
     if (n.referent == nullptr) {
       // This reference is unresolved

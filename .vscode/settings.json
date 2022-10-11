@@ -3,6 +3,12 @@
     "cmake.configureOnOpen": true,
     "git.mergeEditor": true,
     "files.associations": {
+        "*.json.liquid": "json",
+        "*.yaml.liquid": "yaml",
+        "*.md.liquid": "markdown",
+        "*.js.liquid": "liquid-javascript",
+        "*.css.liquid": "liquid-css",
+        "*.scss.liquid": "liquid-scss",
         "known_hosts": "plaintext",
         "*.tcc": "cpp",
         "*.C": "cpp",
@@ -72,7 +78,11 @@
         "shared_mutex": "cpp",
         "__config": "cpp",
         "thread": "cpp",
-        "mutex": "cpp"
+        "mutex": "cpp",
+        "complex": "cpp",
+        "cfenv": "cpp",
+        "typeindex": "cpp",
+        "variant": "cpp"
     },
     "doxdocgen.file.fileOrder": [
         "custom",
