@@ -5,6 +5,7 @@
 #include <exception>
 #include <type_traits>
 
+#ifndef __INCLUDE_SCALAR__
 namespace __model__ {
   enum SCALAR {_UNDEFINED_=0, enum_test1, enum_test2, enum_test3, scalarset_1_1, scalarset_2_1, scalarset_2_2, other_enum, final_enum, anon_enum };
 } // namespace __model__
@@ -29,11 +30,13 @@ namespace __info__ {
     }
     return "<UNKNOWN_ENUM>";
   }
+#endif
 
   typedef ::__model__::SCALAR SCALAR_ENUM_t;
 
   // << ------------------------------------------------------------------------------------------ >> 
 
+#ifndef __INCLUDE_SCALAR__
   template<size_t NAME_ID, typename T>
   class TypeIdType : public T {
   public:
@@ -44,6 +47,7 @@ namespace __info__ {
       return "{\"$type\":\"type-id\",\"id\":\"" + __id() + "\",\"referent\":" + T::__json_type() + '}';
     }
   };
+#endif
 
   template<size_t ENUM_ID, size_t BOUND> class EnumType;
   template<size_t NAME_ID, size_t ENUM_ID, size_t BOUND> class ScalarsetType;
@@ -322,6 +326,8 @@ namespace __info__ {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
+#ifndef __INCLUDE_SCALAR__
+
 const char* to_str(const bool val) { return ((val) ? "true" : "false"); }
 
 
@@ -394,3 +400,5 @@ auto main() -> int {
   std::cout << "\n\n" << std::flush;
   return 0;
 }
+
+#endif

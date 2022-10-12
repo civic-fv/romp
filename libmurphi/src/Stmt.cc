@@ -116,6 +116,16 @@ void Clear::validate() const {
 
   if (rhs->is_readonly())
     throw Error("invalid clear of read-only expression", loc);
+
+  struct NoMultiset : ConstTraversal {
+    const location& loc;
+    NoMultiset(const location& loc_) : loc(loc_) {}
+    void visit_multiset(const Multiset& n) final { 
+      throw Error("invalid clear of a multiset type", loc);
+    }
+  };
+  NoMultiset nm(loc);
+  nm.dispatch(*rhs->type());
 }
 
 void Clear::visit(BaseTraversal &visitor) { visitor.visit_clear(*this); }
@@ -145,7 +155,10 @@ void ErrorStmt::visit(ConstBaseTraversal &visitor) const {
 
 For::For(const Quantifier &quantifier_, const std::vector<Ptr<Stmt>> &body_,
          const location &loc_)
-    : Stmt(loc_), quantifier(quantifier_), body(body_) {}
+    : Stmt(loc_), quantifier(quantifier_), body(body_) {
+      if (quantifier.type != nullptr) // set type based for loop quantifiers to readonly for validation purposes
+        quantifier.decl->readonly = true;
+    }
 
 For *For::clone() const { return new For(*this); }
 

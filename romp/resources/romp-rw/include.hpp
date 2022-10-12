@@ -29,6 +29,7 @@
 #include <string.h>  // required for memset
 #include <fstream>
 #include <sstream>
+#include <tuple>
 #include <exception>
 #include <vector>
 #include <queue>

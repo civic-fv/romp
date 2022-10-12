@@ -45,7 +45,7 @@ void IsMember::validate_types() const {
     if (not _u->contains(*type_value))
       throw Error("IsMember will ALWAYS evaluate to false",loc);
   } else 
-    throw Error("IsMember use error : `" + designator->to_string() 
+    throw Error("`" + designator->to_string() 
                 + "` is not of type scalarset union, as IsMember expects", 
                 designator->loc);
 }

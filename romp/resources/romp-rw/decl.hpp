@@ -195,7 +195,7 @@ namespace romp {
    * @brief Abstract parent of The Random Walker that the model will hold a reference to 
    *        in order to bea ble to call it for various handlers
    */
-  class IRandWalker {
+  struct IRandWalker {
     /**
      * @brief the handler the model will call when it reaches an inline `assert`/`invariant` statement
      * @param eval_expr the expression to be evaluated (technically it will be evaluated before reaching this)
@@ -239,7 +239,12 @@ namespace romp {
      * @return \c bool - the negation of whether or not the caller should report an error. ( \c true = DO throw, \c false = do NOT throw)
      */
     virtual bool error_handler(id_t error_id) = 0;
-    friend State_t;
+    /**
+     * @brief A handler to use to select a random number between [0, \c occupancy ) to use for choose rules.
+     * @param occupancy the current occupancy of the calling multiset
+     * @return \c size_t - the index in the multiset that has been choosen
+     */
+    virtual size_t choose_handler(size_t occupancy) = 0;
   };
 
   struct Result {

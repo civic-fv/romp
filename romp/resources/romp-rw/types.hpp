@@ -120,6 +120,8 @@ namespace romp {
     size_t __get_index_val() const { return static_cast<size_t>(get()) - LB; }
     static constexpr range_t __LB() { return LB; } 
     static constexpr range_t __UB() { return UB; } 
+    static constexpr range_t __STEP() { return static_cast<range_t>(1); }
+    static constexpr size_t __COUNT() { return static_cast<size_t>((UB-LB)/__STEP); }
     friend ostream_p& operator << (ostream_p& out, BaseType& val) { 
       return (out << get());
     }
@@ -167,8 +169,10 @@ namespace romp {
     
     static constexpr size_t __ENUM_ID() { return ENUM_ID; }
     static constexpr size_t __BOUND() { return BOUND; }
-    static constexpr size_t __LB() { return ENUM_ID; }
-    static constexpr size_t __UB() { return ENUM_ID+BOUND-1; }
+    static constexpr SCALAR_ENUM_t __LB() { return static_cast<SCALAR_ENUM_t>(ENUM_ID); }
+    static constexpr SCALAR_ENUM_t __UB() { return static_cast<SCALAR_ENUM_t>(ENUM_ID+BOUND-1); }
+    static constexpr SCALAR_ENUM_t __STEP() { return static_cast<SCALAR_ENUM_t>(1); }
+    static constexpr SCALAR_ENUM_t __COUNT() { return BOUND; }
 
     // cast to index operator
     inline size_t __get_index_val() const {
@@ -273,18 +277,16 @@ namespace romp {
     static const size_t BOUNDS[sizeof...(UNION_MEMBERS)+1];
     
     template<size_t E_ID, size_t B>
-#   if __cplusplus >= 201703L
     static constexpr bool ContainsMember() {
+#     if __cplusplus >= 201703L
         return (((UNION_MEMBERS::__ENUM_ID() == E_ID) || ...) && ((UNION_MEMBERS::__BOUND() == B) || ...)); // [[requires C++17]]
-    }
-#   else
-    static constexpr bool ContainsMember() {
+#     else
         bool res = false;
         for (size_t i=1; i<(sizeof...(UNION_MEMBERS)+1); ++i)
           res |= ((ENUM_IDS[i] == E_ID) && (BOUNDS[i] == B));
         return res;
+#     endif
     }
-#   endif
     static inline bool MembersContain(const SCALAR_ENUM_t& v) {
       if (v == SCALAR_ENUM_t::_UNDEFINED_) return true;
 #     if __cplusplus >= 201703L
@@ -323,10 +325,11 @@ namespace romp {
       size_t i;
       for (i=0ul; i<(sizeof...(UNION_MEMBERS)+1); ++i) {
         if (ENUM_IDS[i] <= value && value <= (ENUM_IDS[i]+BOUNDS[i]-1)) 
-          break;
+          return offset + static_cast<size_t>(value) - ENUM_IDS[i];
         offset += BOUNDS[i];
+        throw std::runtime_error("DEV ERROR : could not convert union to index value");
       }
-      return offset + static_cast<size_t>(value) - ENUM_IDS[i];
+      
     }
     const SCALAR_ENUM_t& __get_value() const { return value; }
 
@@ -360,6 +363,44 @@ namespace romp {
     friend inline bool IsMember(const ScalarsetUnionType<U_M...>& u);
     template<size_t EID, size_t B, class... U_M>
     friend inline bool IsMember(const ScalarsetUnionType<U_M...>& u);
+
+    class iterator {
+      ScalarsetUnionType u;
+      size_t i;
+      size_t j;
+    public:
+      iterator(size_t i_, size_t j_) 
+        : i(i_), j(j_), 
+          u(static_cast<SCALAR_ENUM_t>(ScalarsetUnionType::ENUM_IDS[i_]+j_)) 
+        {}
+      ScalarsetUnionType& operator*() const { return u; }
+      ScalarsetUnionType* operator->() { return &u; }
+      iterator& operator += (int _) {
+        if (++j > u.BOUNDS[i]) {
+          ++u.value;
+          return *this;
+        }
+        ++i; j=0;
+        u.value = static_cast<SCALAR_ENUM_t>(ScalarsetUnionType::ENUM_IDS[i]+j);
+        return *this;
+      }
+      friend bool operator <= (const iterator& l, const iterator& r) {
+        return (l.i<=r.i && l.j <= r.j);
+      }
+      operator ScalarsetUnionType () { return ScalarsetUnionType(u); }
+      iterator& operator = (const ScalarsetUnionType& other) {
+        throw std::bad_cast("you cannot assign to a quantifier or for loop iterator")
+      }
+    };
+    static constexpr iterator __LB() { return iterator(1, 0); }
+    static constexpr iterator __UB() { return iterator(sizeof...(UNION_MEMBERS), BOUNDS[sizeof...(UNION_MEMBERS)]); }
+    static constexpr int __STEP() { return 1; }
+    static constexpr size_t __COUNT() {
+      size_t res=0; 
+      for (size_t i=1; i<=sizeof...(UNION_MEMBERS); ++i) 
+        res += BOUNDS[i];
+      return res;
+    }
     
     friend ostream_p& operator << (ostream_p& out, const ScalarsetUnionType& val) { return (out << to_str(val.value)); }
     template<class O>
@@ -388,7 +429,7 @@ namespace romp {
 
   template<typename INDEX_t, typename ELEMENT_t>
   class ArrayType {
-    ELEMENT_t data[INDEX_t::__count()];
+    ELEMENT_t data[INDEX_t::__COUNT()];
   };
 
 

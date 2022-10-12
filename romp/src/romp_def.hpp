@@ -35,7 +35,7 @@
 
 #define ROMP_STATE_RAND_WALKER_VAR "__rw__"
 
-#define ROMP_RAND_WALKER_DECL  "" ROMP_RAND_WALKER_TYPE "* " ROMP_STATE_RAND_WALKER_VAR "; // reference to associated romp rand walker"
+#define ROMP_RAND_WALKER_DECL  "" ROMP_RAND_WALKER_TYPE "* " ROMP_STATE_RAND_WALKER_VAR "; // pointer to associated romp rand walker"
 
 #define ROMP_MODEL_NAMESPACE_NAME "__model__"
 
