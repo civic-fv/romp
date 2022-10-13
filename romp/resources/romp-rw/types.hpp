@@ -132,9 +132,11 @@ namespace romp {
     template<class O>
 #   ifndef __ROMP__SIMPLE_TRACE
     friend ojstream<O>& operator << (ojstream<O>& out, const RangeType& val) {
-      out << "{\"$type\":\"value\",\"type\":{\"$type\":\"type-expr\",\"type\":\"range\","
-            "\"lower-bound\":" << LB << ",\"upper-bound\":" << UB << "},"
-            "\"value\":" << val.get() << '}';
+      out << "{\"$type\":\"undefinable-value\",\"type\":"<< __json_type() <<","
+            "\"value\":";
+      if (val.IsUndefined())
+        return (out << "null}");
+      return (out << val.get() << '}');
     }
 #   endif
   };
