@@ -293,7 +293,8 @@ def get_state_simple(json:JSON_t) -> STATE_t:
         for val in json:
             if isinstance(val,dict) or isinstance(val,list):
                 raise Exception("simple state contained a mutable object (dict/obj or list/array)")
-    return tuple(json)
+    recurse = lambda i: get_state_simple(i) if isinstance(i,list) else i
+    return tuple([recurse(i) for i in json])
 #? END def get_state_simple: NormState
 
 @dataclass()

@@ -95,7 +95,7 @@ namespace __info__ {
         throw std::logic_error("value was undefined");
       return static_cast<size_t>(value)-ENUM_ID; 
     }
-    const SCALAR_ENUM_t& __get_value() const { return value; }
+    const SCALAR_ENUM_t& __get_scalar_value() const { return value; }
 
     template<size_t EID, size_t B, class... U_M>
     friend inline void __assign(EnumType<EID,B>& _this, const ScalarsetUnionType<U_M...>& other);
@@ -222,7 +222,7 @@ namespace __info__ {
     ScalarsetUnionType(const EnumType<E_ID,B>& value_) { 
       if (not ContainsMember<E_ID,B>()) // this is evaluate-able at compile time (if c++17)
         throw std::out_of_range("`"+ to_str(value) +"` is not a member of the union (scalarset union)");
-      value = value_.__get_value();
+      value = value_.__get_scalar_value();
     }
 
     static inline bool IsMember(const SCALAR_ENUM_t& val) { return MembersContain(val); }
@@ -243,7 +243,7 @@ namespace __info__ {
       }
       throw std::runtime_error("DEV ERROR : could not convert union to index value");
     }
-    const SCALAR_ENUM_t& __get_value() const { return value; }
+    const SCALAR_ENUM_t& __get_scalar_value() const { return value; }
 
     template<size_t EID, size_t B>
     explicit inline operator EnumType<EID,B> () {
@@ -271,7 +271,7 @@ namespace __info__ {
     }
 
     template<size_t E_ID, size_t B>
-    inline ScalarsetUnionType& operator = (const EnumType<E_ID,B>& other) { return (*this = other.__get_value()); }
+    inline ScalarsetUnionType& operator = (const EnumType<E_ID,B>& other) { return (*this = other.__get_scalar_value()); }
     inline ScalarsetUnionType& operator = (const SCALAR_ENUM_t& val) {
       if (not MembersContain(val)) // this is evaluate-able at compile time
         throw std::out_of_range("`"+ to_str(value) +"` is not a member of the union (scalarset union)");
@@ -334,13 +334,15 @@ namespace __info__ {
     static constexpr int __STEP() { return 1; }
 
     static constexpr size_t __COUNT() {
-      size_t counts[sizeof...(UNION_MEMBERS)] = {(UNION_MEMBERS::__COUNT())...};
-      // return std::accumulate(std::begin(counts), std::end(counts));
-      size_t res=0; 
-      for (size_t i=0; i<sizeof...(UNION_MEMBERS); ++i) 
-        res += counts[i];
-      return res;
-      // return __sum_bounds<0,UNION_MEMBERS...>(std::tuple<UNION_MEMBERS...>());
+#     if __cplusplus >= 201703L
+        return ((UNION_MEMBERS::__COUNT() == E_ID) + ...); // [[requires C++17]]
+#     else
+        size_t counts[sizeof...(UNION_MEMBERS)] = {(UNION_MEMBERS::__COUNT())...};
+        size_t res=0; 
+        for (size_t i=0; i<sizeof...(UNION_MEMBERS); ++i) 
+          res += counts[i];
+        return res;
+#     endif
     }
     
     friend std::ostream& operator << (std::ostream& out, const ScalarsetUnionType& val) { return (out << to_str(val.value)); }
@@ -356,12 +358,12 @@ namespace __info__ {
   // << ------------------------------------------------------------------------------------------ >> 
 
   // template<size_t ENUM_ID, size_t BOUND, size_t EID, size_t B>
-  // EnumType<ENUM_ID,BOUND>::EnumType(const ENUM_TYPE<EID,B>& other) : value(other.__get_value()) {
+  // EnumType<ENUM_ID,BOUND>::EnumType(const ENUM_TYPE<EID,B>& other) : value(other.__get_scalar_value()) {
   //   if ((ENUM_ID != EID || BOUND != B) && not other.IsUndefined())
   //     throw std::logic_error("value not member of this enum type");
   // }
   // template<size_t EID, size_t B, class... U_M>
-  // EnumType<EID,B>::EnumType(const ScalarsetUnionType<U_M...>& other) : EnumType(other.__get_value()) {}
+  // EnumType<EID,B>::EnumType(const ScalarsetUnionType<U_M...>& other) : EnumType(other.__get_scalar_value()) {}
   // template<class... U_M, size_t EID, size_t B>
   // inline ScalarsetUnionType<U_M...> __convert(const EnumType<EID,B>& _this) {
   //   static_assert((ScalarsetUnionType<U_M...>::ContainsMember<EID,B>()),
@@ -376,9 +378,9 @@ namespace __info__ {
   // }
 
   template<size_t EID, size_t B, class... U_M>
-  inline void __assign(EnumType<EID,B>& _this, const ScalarsetUnionType<U_M...>& other) { _this = other.__get_value(); }
+  inline void __assign(EnumType<EID,B>& _this, const ScalarsetUnionType<U_M...>& other) { _this = other.__get_scalar_value(); }
   template<size_t NID, size_t EID, size_t B, class... U_M>
-  inline void __assign(ScalarsetType<NID,EID,B>& _this, const ScalarsetUnionType<U_M...>& other) { _this = other.__get_value(); }
+  inline void __assign(ScalarsetType<NID,EID,B>& _this, const ScalarsetUnionType<U_M...>& other) { _this = other.__get_scalar_value(); }
 
   template<size_t L_ID, size_t L_B, size_t R_ID, size_t R_B>
   inline bool operator == (const EnumType<L_ID,L_B>& l, const EnumType<R_ID,R_B> r) { 

@@ -143,6 +143,7 @@ namespace __info__ {            //     0               1          2             
     void MultisetAdd(const ELEMENT_t& val) {
       if (occupancy >= MAX || val.IsUndefined()) 
         return;
+      is_defined = true;
       data[occupancy++] = val;
     }
     void MultisetRemove(const size_t i) {
@@ -202,7 +203,7 @@ namespace __info__ {            //     0               1          2             
   class RecordType {
     std::tuple<MEMBERS...> data;
   protected:
-    static const std::string& GET_MEMBER_NAME(size_t i) { return ::__info__::TYPE_IDS[NAME_ID_START+i]; }
+    static const std::string& _GET_MEMBER_NAME(size_t i) { return ::__info__::TYPE_IDS[NAME_ID_START+i]; }
     template<size_t I>
     inline typename std::enable_if<(I>=sizeof...(MEMBERS)),bool>::type _IsUndefined() const { return true; }
     template<size_t I>
@@ -255,10 +256,10 @@ namespace __info__ {            //     0               1          2             
     template<size_t I>
     typename std::enable_if<(I<sizeof...(MEMBERS)),void>::type _write(std::ostream& out) const {
       if (I > 0) out << ", ";
-      out << '`' << GET_MEMBER_NAME(I) << "`: " << std::get<I>(data);
+      out << '`' << _GET_MEMBER_NAME(I) << "`: " << std::get<I>(data);
       if (I < sizeof...(MEMBERS)) _write<I+1>(out);
     }
-
+  public:
     friend std::ostream& operator << (std::ostream& out, const RecordType& val) {
       if (val.IsUndefined()) return (out << "<UNDEFINED>");
       out << "{"; val._write<0>(out); return (out << '}');
