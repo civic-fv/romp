@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstddef>
-#include <murphi/rumur.h>
+#include <murphi/murphi.h>
 
 // Determine whether the given AST contains any comparisons of records or
 // arrays. See main.cc for why this is interesting/relevant.

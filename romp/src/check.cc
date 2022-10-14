@@ -2,7 +2,7 @@
 #include <cstddef>
 #include <cstdlib>
 #include <iostream>
-#include <murphi/rumur.h>
+#include <murphi/murphi.h>
 
 using namespace murphi;
 

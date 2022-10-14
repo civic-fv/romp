@@ -19,6 +19,7 @@
 #pragma once
 #include "include.hpp"
 #include "decl.hpp"
+#include "options.hpp"
 #endif
 
 namespace romp {
@@ -117,13 +118,13 @@ namespace romp {
     std::string _indentation;
   public:
     std::ostream& out;
-    ostream_p(std::ostream& out_, const Options& OPTIONS_, unsigned int level_=0) 
-        : out(out_), _width(level_*OPTIONS.tab_size), OPTIONS(OPTIONS_)
-      { _indentation = std::string(_width,OPTIONS.tab_char); }
+    ostream_p(std::ostream& out_, const Options& OPTIONS_, unsigned int level_=0);
+      //   : out(out_), _width(level_*OPTIONS.tab_size), OPTIONS(OPTIONS_)
+      // { _indentation = std::string(_width,OPTIONS.tab_char); }
     inline int width() { return _width; }
-    inline const stream_void indent() { _indentation = std::string((_width+=OPTIONS.tab_size),OPTIONS.tab_char); return S_VOID; }
+    inline const stream_void indent(); // { _indentation = std::string((_width+=OPTIONS.tab_size),OPTIONS.tab_char); return S_VOID; }
     inline const std::string _indent() { indent(); return indentation(); }
-    inline const stream_void dedent() { _indentation = std::string((_width-=OPTIONS.tab_size),OPTIONS.tab_char); return S_VOID; }
+    inline const stream_void dedent(); // { _indentation = std::string((_width-=OPTIONS.tab_size),OPTIONS.tab_char); return S_VOID; }
     inline const std::string _dedent() { dedent(); return indentation(); }
     inline const std::string indentation() { return _indentation; }
     inline const stream_void new_line() { out << '\n' << indentation(); return S_VOID; }

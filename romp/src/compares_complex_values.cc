@@ -1,6 +1,6 @@
 #include "compares_complex_values.h"
 #include <cstddef>
-#include <murphi/rumur.h>
+#include <murphi/murphi.h>
 
 using namespace murphi;
 

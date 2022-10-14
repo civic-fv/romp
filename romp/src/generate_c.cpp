@@ -2,15 +2,15 @@
 #include "nested_escape.hpp"
 // #include "../../common/escape.h"
 #include "CLikeGenerator.hpp"
-#include "CTypeGenerator.hpp"
-#include "ModelSplitter.hpp"
-#include "SigPerm.hpp"
+// #include "CTypeGenerator.hpp"
+// #include "ModelSplitter.hpp"
+// #include "SigPerm.hpp"
 #include "StateSpaceCalc.hpp"
 #include "options.h"
 #include "resources.h"
 #include <cstddef>
 #include <iostream>
-#include <murphi/rumur.h>
+#include <murphi/murphi.h>
 #include <string>
 #include <vector>
 #include <unordered_set>
@@ -58,8 +58,6 @@ private:
   id_t next_assume_id = 0u;
   id_t next_error_id = 0u;
   size_t rule_count = 0ul;
-  bool processing_global_prop = false;
-  enum {GLOBAL, RULE, FUNCT} inType = GLOBAL;
 
 public:
   CGenerator(const std::vector<murphi::Comment> &comments_, std::ostream &out_,

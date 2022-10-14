@@ -8,26 +8,43 @@
 extern const unsigned char doc_romp_1[];
 extern const size_t doc_romp_1_len;
 
-// ../resources/c_prefix.c
-extern const unsigned char resources_c_prefix_cpp[];
-extern const size_t resources_c_prefix_cpp_len;
-
 // ../resources/h_prefix.h
 // extern const unsigned char resources_h_prefix_h[];
 // extern const size_t resources_h_prefix_h_len;
 
-// ../resources/lib/nlohmann_json.hpp
-extern const unsigned char resources_lib_nlohmann_json_hpp[];
-extern const size_t resources_lib_nlohmann_json_hpp_len;
 
-// ../resources/romp-rw.hpp
-extern const unsigned char resources_romp_rw_hpp[];
-extern const size_t resources_romp_rw_hpp_len;
+// ../resources/romp-rw/include.hpp
+extern const unsigned char resources_romp_rw_include_hpp[];
+extern const size_t resources_romp_rw_include_hpp_len;
 
-// ../resources/romp-rw-options.hpp
+// ../resources/romp-rw/decl.hpp
+extern const unsigned char resources_romp_rw_decl_hpp[];
+extern const size_t resources_romp_rw_decl_hpp_len;
+
+// ../resources/romp-rw/writers.hpp
+extern const unsigned char resources_romp_rw_writers_hpp[];
+extern const size_t resources_romp_rw_writers_hpp_len;
+
+// ../resources/romp-rw/types.hpp
+extern const unsigned char resources_romp_rw_types_hpp[];
+extern const size_t resources_romp_rw_types_hpp_len;
+
+// ../resources/romp-rw/error.hpp
+extern const unsigned char resources_romp_rw_error_hpp[];
+extern const size_t resources_romp_rw_error_hpp_len;
+
+// ../resources/romp-rw/options.hpp
 extern const unsigned char resources_romp_rw_options_hpp[];
 extern const size_t resources_romp_rw_options_hpp_len;
 
-// ../resources/romp-rw-main.hpp
+// ../resources/romp-rw/walker.hpp
+extern const unsigned char resources_romp_rw_walker_hpp[];
+extern const size_t resources_romp_rw_walker_hpp_len;
+
+// ../resources/romp-rw/impls.hpp
+extern const unsigned char resources_romp_rw_impls_hpp[];
+extern const size_t resources_romp_rw_impls_hpp_len;
+
+// ../resources/romp-rw/main.hpp
 extern const unsigned char resources_romp_rw_main_hpp[];
 extern const size_t resources_romp_rw_main_hpp_len;

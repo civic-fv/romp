@@ -18,7 +18,7 @@
 
 #include "CLikeGenerator.hpp"
 // #include "IndType.hpp"
-// #include <murphi/rumur.h>
+// #include <murphi/murphi.h>
 #include <unordered_set>
 #include <functional>
 

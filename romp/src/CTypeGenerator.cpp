@@ -22,7 +22,7 @@
 #include "nested_escape.hpp"
 #include "ModelSplitter.hpp"
 // #include "../../common/escape.h"
-#include <murphi/rumur.h>
+#include <murphi/murphi.h>
 #include <sstream>
 
 using namespace murphi;

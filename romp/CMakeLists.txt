@@ -82,25 +82,24 @@ add_executable(romp
   ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_decl.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_writers.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_types.cpp
-  ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_errors.cpp
+  ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_error.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_options.cpp
+  ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_impls.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_walker.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_main.cpp
-  # ${CMAKE_CURRENT_BINARY_DIR}/resources_lib_nlohmann_json.cpp
   ../common/escape.cc
   ../common/help.cc
-  src/check.cc
+  # src/check.cc
   src/CLikeGenerator.cpp
   src/CodeGenerator.cpp
-  src/compares_complex_values.cc
-  src/SigPerm.cpp
+  # src/compares_complex_values.cc
+  # src/SigPerm.cpp
   src/generate_c.cpp
-  # src/generate_h.cc
   src/main.cc
   src/options.cc
   src/romp_def.cpp
-  src/ModelSplitter.cpp
-  src/CTypeGenerator.cpp
+  # src/ModelSplitter.cpp
+  # src/CTypeGenerator.cpp
   src/NestedError.cpp
   src/SigPerm.cpp
   src/nested_escape.cpp

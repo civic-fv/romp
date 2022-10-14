@@ -2,7 +2,7 @@
 
 #include <cstddef>
 #include <iostream>
-#include <murphi/rumur.h>
+#include <murphi/murphi.h>
 #include <vector>
 #include <string>
 

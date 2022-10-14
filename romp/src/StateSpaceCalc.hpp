@@ -16,7 +16,7 @@
  */
 
 
-#include <murphi/rumur.h>
+#include <murphi/murphi.h>
 
 namespace romp {
 

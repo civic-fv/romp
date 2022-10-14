@@ -30,7 +30,7 @@
 // #include <cstdio>
 #include <ctype.h>
 #include <gmpxx.h>
-#include <murphi/rumur.h>
+#include <murphi/murphi.h>
 // #include <murphi/except.h>
 // #include <murphi/Comment.h>
 // #include <string>

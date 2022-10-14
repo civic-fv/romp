@@ -201,6 +201,7 @@ namespace romp {
           ConstBaseTypeTraversal("Not a supported TypeExpr for bounding a quantifier (it may be undefined or too complex) !!") 
       {}
       void visit_array(const murphi::Array& n) { unsupported_traversal(n,"murphi::Array"); }
+      void visit_array(const murphi::Multiset& n) { unsupported_traversal(n,"murphi::Multiset"); }
       void visit_record(const murphi::Record& n) { unsupported_traversal(n,"murphi::Record"); }
       void visit_typeexprid(const murphi::TypeExprID& n) { unsupported_traversal(n,"undefined murphi::TypeExprID");; }
       void visit_enum(const murphi::Enum& n) { 

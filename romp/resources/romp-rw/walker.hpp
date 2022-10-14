@@ -22,6 +22,7 @@
 #include "writer.hpp"  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
 #include "error.hpp"    // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
 #include "options.hpp"    // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+#include "impls.hpp"    // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
 #endif
 
 // << =================================== Type Declarations ==================================== >>

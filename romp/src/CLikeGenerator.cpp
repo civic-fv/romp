@@ -1,5 +1,4 @@
-#include "CLikeGenerator.hpp"
-#include "romp_def.hpp"
+#include "CLikeGenerator.h"
 #include "../../common/escape.h"
 #include "../../common/isa.h"
 #include "options.h"
@@ -7,14 +6,12 @@
 #include <cstddef>
 #include <ctype.h>
 #include <gmpxx.h>
-#include <murphi/rumur.h>
+#include <murphi/murphi.h>
 #include <string>
 #include <utility>
 #include <vector>
 
 using namespace murphi;
-
-id_t CLikeGenerator::anon_id = 0;
 
 void CLikeGenerator::visit_add(const Add &n) {
   *this << "(" << *n.lhs << " + " << *n.rhs << ")";
@@ -54,7 +51,29 @@ void CLikeGenerator::visit_and(const And &n) {
 }
 
 void CLikeGenerator::visit_array(const Array &n) {
-  throw Error("Type Expression (Array) found in unsupported portion of code!!", n.loc);
+  //TODO: update visit_array to new standards
+  mpz_class count = n.index_type->count();
+
+  assert(count > 0 && "index type of array does not include undefined");
+  count--;
+
+  // wrap the array in a struct so that we do not have the awkwardness of
+  // having to emit its type and size on either size of another node
+  *this << "struct " << (pack ? "__attribute__((packed)) " : "") << "{ "
+        << *n.element_type << " data[" << count.get_str() << "];";
+
+  // The index for this array may be an enum declared inline:
+  //
+  //   array [enum {A, B}] of foo
+  //
+  // If so, we need to emit it somehow so that the enum’s members can be
+  // referenced later. We define it within this struct to avoid any awkward
+  // lexical issues.
+  if (auto e = dynamic_cast<const Enum *>(n.index_type.get())) {
+    *this << " " << *e << ";";
+  }
+
+  *this << " }";
 }
 
 void CLikeGenerator::visit_assignment(const Assignment &n) {
@@ -75,7 +94,15 @@ void CLikeGenerator::visit_bor(const Bor &n) {
   *this << "(" << *n.lhs << " | " << *n.rhs << ")";
 }
 
+void CLikeGenerator::visit_chooserule(const ChooseRule &n) {
+  // this is unreachable because generate_c is only ever called with a Model
+  // and all rules are flattened during visit_model
+  assert(!"unreachable");
+  __builtin_unreachable();
+}
+
 void CLikeGenerator::visit_clear(const Clear &n) {
+  //TODO update visit_clear to new standards
   *this << indentation() << "memset(&" << *n.rhs << ", 0, sizeof(" << *n.rhs
         << "));";
   emit_trailing_comments(n);
@@ -87,6 +114,7 @@ void CLikeGenerator::visit_div(const Div &n) {
 }
 
 void CLikeGenerator::visit_element(const Element &n) {
+  //TODO: update visit_element to new standards
 
   // rather than simply indexing into the array based on the value of the index
   // expression, we need to account for the fact that the generated C array will
@@ -106,7 +134,12 @@ void CLikeGenerator::visit_element(const Element &n) {
 }
 
 void CLikeGenerator::visit_enum(const Enum &n) {
-  throw Error("Type Expression (Enum) found in unsupported portion of code!!", n.loc);
+  //TODO: update visit_enum to new standards
+  *this << "enum { ";
+  for (const std::pair<std::string, location> &m : n.members) {
+    *this << m.first << ", ";
+  }
+  *this << "}";
 }
 
 void CLikeGenerator::visit_eq(const Eq &n) {
@@ -133,9 +166,8 @@ void CLikeGenerator::visit_errorstmt(const ErrorStmt &n) {
 }
 
 void CLikeGenerator::visit_exists(const Exists &n) {
-  std::string id = std::to_string(anon_id++);
-  *this << "({ bool res_" << id << " = false; " << n.quantifier << " { res_" << id << " |= " << *n.expr
-        << "; } res_" << id << "; })";
+  *this << "({ bool res_ = false; " << n.quantifier << " { res_ |= " << *n.expr
+        << "; } res_; })";
 }
 
 void CLikeGenerator::visit_exprid(const ExprID &n) {
@@ -152,6 +184,7 @@ void CLikeGenerator::visit_exprid(const ExprID &n) {
 }
 
 void CLikeGenerator::visit_field(const Field &n) {
+  //TODO: update visit_field to new standards
   *this << "(" << *n.record << "." << n.field << ")";
 }
 
@@ -185,7 +218,7 @@ void CLikeGenerator::visit_for(const For &n) {
 }
 
 void CLikeGenerator::visit_forall(const Forall &n) {
-  std::string id = std::to_string(CLikeGenerator::anon_id++);
+
   // open a GNU statement expression
   *this << "({ ";
 
@@ -194,12 +227,12 @@ void CLikeGenerator::visit_forall(const Forall &n) {
     *this << *e << "; ";
   }
 
-  *this << "bool res_"<< id <<" = true; " << n.quantifier << " { res_"<< id <<"&= " << *n.expr
-        << "; } res_"<< id <<"; })";
+  *this << "bool res_ = true; " << n.quantifier << " { res_ &= " << *n.expr
+        << "; } res_; })";
 }
 
 void CLikeGenerator::visit_functioncall(const FunctionCall &n) {
-  *this << ROMP_STATE_TYPE "::" << n.name << "(";
+  *this << n.name << "(";
   assert(n.function != nullptr && "unresolved function call in AST");
   auto it = n.function->parameters.begin();
   bool first = true;
@@ -207,9 +240,9 @@ void CLikeGenerator::visit_functioncall(const FunctionCall &n) {
     if (!first) {
       *this << ", ";
     }
-    // if (!(*it)->readonly) {  // in C++ we can use references instead of pointers
-    //   *this << "&";
-    // }
+    if (!(*it)->readonly) {
+      *this << "&";
+    }
     *this << *a;
     first = false;
     it++;
@@ -269,7 +302,12 @@ void CLikeGenerator::visit_implication(const Implication &n) {
   *this << "(!" << *n.lhs << " || " << *n.rhs << ")";
 }
 
-void CLikeGenerator::visit_isundefined(const IsUndefined &) {
+void CLikeGenerator::visit_ismember(const IsMember& n) {
+  //TODO update visit_ismember to new standards
+}
+
+void CLikeGenerator::visit_isundefined(const IsUndefined &n) {
+  //TODO update visit_isundefined to new standards
   // check() prevents a model with isundefined expressions from making it
   // through to here
   assert(!"unreachable");
@@ -304,7 +342,7 @@ void CLikeGenerator::visit_model(const Model &n) {
     // hierarchy of rulesets, aliasrules, etc.
     if (auto r = dynamic_cast<const Rule *>(c.get())) {
       std::vector<Ptr<Rule>> rs = r->flatten();
-      for (const Ptr<const Rule> &r2 : rs)
+      for (const Ptr<Rule> &r2 : rs)
         *this << *r2 << "\n";
 
     } else {
@@ -315,6 +353,36 @@ void CLikeGenerator::visit_model(const Model &n) {
 
 void CLikeGenerator::visit_mul(const Mul &n) {
   *this << "(" << *n.lhs << " * " << *n.rhs << ")";
+}
+
+void CLikeGenerator::visit_multiset(const Multiset &n) {
+  //TODO: update visit_multiset to new standards
+}
+
+void CLikeGenerator::visit_multisetadd(const MultisetAdd &n) {
+  //TODO: update visit_multisetadd to new standards
+}
+
+void CLikeGenerator::visit_multisetcount(const MultisetCount &n) {
+  //TODO: update visit_multisetcount to new standards
+}
+
+void CLikeGenerator::visit_multisetelement(const MultisetElement &n) {
+  //TODO: update visit_multisetelement to new standards
+}
+
+void CLikeGenerator::visit_multisetremove(const MultisetRemove &n) {
+  //TODO: update visit_multisetremove to new standards
+}
+
+void CLikeGenerator::visit_multisetremovepred(const MultisetRemovePred &n) {
+  //TODO: update visit_multisetremovepred to new standards
+}
+
+void CLikeGenerator::visit_multisetquantifier(const MultisetQuantifier &n) {
+  // this is unreachable because we handle all multiset loops internally
+  assert(!"unreachable");
+  __builtin_unreachable();
 }
 
 void CLikeGenerator::visit_negative(const Negative &n) {
@@ -529,20 +597,16 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
 }
 
 void CLikeGenerator::visit_put(const Put &n) {
-  *this << indentation() 
-        << "// INFO: put/print statements are disabled in romp; use trace files instead.\n"
-        << indentation() 
-        << "// put ";
+
   // is this a put of a literal string?
   if (n.expr == nullptr) {
-    *this << "\"" << escape(n.value) << "\"";
-    // *this << indentation() << "printf(\"%s\\n\", \"" << n.value << "\");";
+    *this << indentation() << "printf(\"%s\\n\", \"" << n.value << "\");";
+
   } else {
-    *this << "(" << n.expr->to_string() << ")";
-    // const Ptr<TypeExpr> type = n.expr->type();
-    // print("", *type, *n.expr, 0);
-  }
+    const Ptr<TypeExpr> type = n.expr->type();
+    print("", *type, *n.expr, 0);
     *this << ";";
+  }
 
   emit_trailing_comments(n);
   *this << "\n";
@@ -574,7 +638,7 @@ void CLikeGenerator::visit_quantifier(const Quantifier &n) {
             << "++)";
     } else {
       // common case
-      *this << "for (enum_backend_t " << n.name
+      *this << "for (__typeof__(" << e->members[0].first << ") " << n.name
             << " = " << e->members[0].first << "; " << n.name
             << " <= " << e->members[e->members.size() - 1].first << "; "
             << n.name << "++)";
@@ -590,19 +654,27 @@ void CLikeGenerator::visit_quantifier(const Quantifier &n) {
 
   if (auto s = dynamic_cast<const Scalarset *>(resolved.get())) {
     *this << "for (" << value_type << " " << n.name << " = 0; " << n.name
-          << " < " << *s->bound << "; " << n.name << "++)";  // modified for consistency w/ SigPerm
+          << " <= " << *s->bound << "; " << n.name << "++)";
     return;
   }
 
   assert(!"missing case in visit_quantifier()");
 }
 
-void CLikeGenerator::visit_range(const Range &n) { 
-  throw Error("Type Expression (Range) found in unsupported portion of code!!", n.loc);
+void CLikeGenerator::visit_range(const Range &) {
+  //TODO: update visit_range to new standards
+  *this << value_type;
 }
 
 void CLikeGenerator::visit_record(const Record &n) {
-  throw Error("Type Expression (Record) found in unsupported portion of code!!", n.loc);
+  //TODO: update visit_record to new standards
+  *this << "struct " << (pack ? "__attribute__((packed)) " : "") << "{\n";
+  indent();
+  for (const Ptr<VarDecl> &f : n.fields) {
+    *this << *f;
+  }
+  dedent();
+  *this << indentation() << "}";
 }
 
 void CLikeGenerator::visit_return(const Return &n) {
@@ -626,8 +698,17 @@ void CLikeGenerator::visit_ruleset(const Ruleset &) {
   __builtin_unreachable();
 }
 
-void CLikeGenerator::visit_scalarset(const Scalarset &n) { 
-  throw Error("Type Expression (Scalarset) found in unsupported portion of code!!", n.loc);
+void CLikeGenerator::visit_scalarset(const Scalarset &n) {
+  //TODO: update visit_scalarset to new standards
+  *this << value_type;
+}
+
+void CLikeGenerator::visit_scalarsetunion(const ScalarsetUnion &n) { 
+  //TODO: update visit_scalarsetunion to new standards
+}
+
+void CLikeGenerator::visit_sucast(const SUCast &n) { 
+  //TODO: update visit_sucast to new standards
 }
 
 void CLikeGenerator::visit_sub(const Sub &n) {
@@ -636,7 +717,7 @@ void CLikeGenerator::visit_sub(const Sub &n) {
 
 void CLikeGenerator::visit_switch(const Switch &n) {
 
-  // Rumur permits switch statements with non-constant case expressions, while
+  // Murphi permits switch statements with non-constant case expressions, while
   // C’s switch statements do not support this. To deal with this discrepancy,
   // we emit switch statements as more flexible if-then-else blocks instead.
 
@@ -707,16 +788,21 @@ void CLikeGenerator::visit_ternary(const Ternary &n) {
 }
 
 void CLikeGenerator::visit_typedecl(const TypeDecl &n) {
-  throw Error("Type Declaration found in unsupported portion of code!!", n.loc);
+  //TODO update visit_typedecl to new standards
+  // If we are typedefing something that is an enum, save this for later lookup.
+  // See CGenerator/HGenerator::visit_constdecl for the purpose of this.
+  if (auto e = dynamic_cast<const Enum *>(n.value.get()))
+    enum_typedefs[e->unique_id] = n.name;
+
+  // *this << indentation() << "typedef " << *n.value << " " << n.name << ";";
+  // emit_trailing_comments(n);
+  // *this << "\n";
 }
 
-void CLikeGenerator::visit_typeexprid(const TypeExprID &n) { 
-  // if (emitted_tDecls.find(n.referent->name) == emitted_tDecls.end())
-  //   throw Error("TypeExprID references a currently undefined type declaration!", n.loc);
-  *this << "::" ROMP_TYPE_NAMESPACE "::" << n.referent->name; // n.name; // change me if loss of specificity occurs
-}
+void CLikeGenerator::visit_typeexprid(const TypeExprID &n) { *this << n.name; }
 
 void CLikeGenerator::visit_undefine(const Undefine &n) {
+  //TODO update visit_undefine to new standards
   *this << indentation() << "memset(&" << *n.rhs << ", 0, sizeof(" << *n.rhs
         << "));";
   emit_trailing_comments(n);
@@ -849,19 +935,6 @@ size_t CLikeGenerator::emit_trailing_comments(const Node &n) {
     ++i;
   }
   return count;
-}
-
-// const std::unordered_set<std::string> CLikeGenerator::reserved_type_names{ROMP_PREDEFINED_TYPES, ROMP_RESERVED_NAMES};
-// const std::unordered_set<std::string> CLikeGenerator::reserved_var_names{ROMP_RESERVED_NAMES};
-
-void CLikeGenerator::check_type_ref(const Node &p, const Ptr<TypeExpr> &t) const {
-  if (t->is_boolean()) return;
-  if (const TypeExprID *_tid = dynamic_cast<const TypeExprID *>(t.get())) {
-    if (CLikeGenerator::reserved_type_names.find(_tid->name) != CLikeGenerator::reserved_type_names.end()) return;
-    else if (emitted_tDecls.find(_tid->referent->name) == emitted_tDecls.end())
-      throw Error("BAD Type Reference to currently undefined type!", p.loc);
-  } else
-    throw Error("BAD AST Transform, type object still had a reference to a undeclared type", p.loc);
 }
 
 CLikeGenerator::~CLikeGenerator() {}

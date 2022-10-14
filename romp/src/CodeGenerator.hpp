@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <murphi/rumur.h>
+#include <murphi/murphi.h>
 #include <cstddef>
 #include <string>
 #include <unordered_set>

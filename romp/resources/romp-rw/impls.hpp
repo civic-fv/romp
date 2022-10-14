@@ -23,7 +23,7 @@
 #include "writers.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
 #include "types.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
 #include "error.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-#include "walker.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
+// #include "walker.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
 #endif
 
 namespace romp {
@@ -81,6 +81,16 @@ namespace romp {
   inline bool IsMember(const ScalarsetUnionType<U_M...>& u) {
     return EnumType<EID,B>::IsMember(u.value);
   }
+
+  // << ------------------------------------------------------------------------------------------ >> 
+
+  ostream_p::ostream_p(std::ostream& out_, const Options& OPTIONS_, unsigned int level_=0) 
+    : out(out_), _width(level_*OPTIONS.tab_size), OPTIONS(OPTIONS_)
+    { _indentation = std::string(_width,OPTIONS.tab_char); }
+  inline const stream_void ostream_p::dedent() { _indentation = std::string((_width-=OPTIONS.tab_size),OPTIONS.tab_char); return S_VOID; }
+  inline const stream_void ostream_p::indent() { _indentation = std::string((_width+=OPTIONS.tab_size),OPTIONS.tab_char); return S_VOID; }
+
+  // << ------------------------------------------------------------------------------------------ >> 
 
   ResultTree::~ResultTree() {
     for (auto p : unknown_causes) if (p!=nullptr) delete p;

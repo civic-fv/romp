@@ -14,7 +14,7 @@
 #include <getopt.h>
 #include <iostream>
 #include <memory>
-#include <murphi/rumur.h>
+#include <murphi/murphi.h>
 #include <sstream>
 #include <string>
 #include <sys/stat.h>

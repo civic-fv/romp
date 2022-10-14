@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include <murphi/rumur.h>
+#include <murphi/murphi.h>
 #include <string> 
 
 namespace murphi {
