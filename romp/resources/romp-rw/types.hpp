@@ -23,16 +23,30 @@
 namespace __model__ { // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
   enum SCALAR {_UNDEFINED_=0}; // useful pre-decl // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
 } // namespace __model__  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
+namespace romp { // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
+  typedef ::__model__::SCALAR SCALAR_ENUM_t;  // typemask for the enum type holding all scalar and enum values // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
+} // namespace __model__  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
 #endif
 
 namespace romp {
 
-  typedef ::__model__::SCALAR SCALAR_ENUM_t;  // typemask for the enum type holding all scalar and enum values
-
   // << ====================================== Base Types ======================================== >> 
 
+  /**
+   * @brief A 0 width type to ensure all types have access to the metadata generated for them
+   * @tparam TID the location in \c ::__info__::TYPE_INFOS that this type's metadata is stored.
+   */
+  // template<size_t TID>
+  // class BaseType {
+  // public:
+  //   static inline constexpr const TypeInfo& __INFO() { return ::__info__::TYPE_INFOS[0]; }
+  // protected:
+  //   template<typename T, typename ET>
+  //   static inline void throw_(std::string msg);
+  // };
+
   template<typename T>
-  class BaseType {
+  class BaseUndefinableType {
     T value;
     bool is_defined;
   protected:
@@ -41,28 +55,28 @@ namespace romp {
         throw std::logic_error("value was undefined");
       return value;
     }
-    inline BaseType& set(const T& value_) {
+    inline BaseUndefinableType& set(const T& value_) {
       value = value_;
       is_defined = true;
       return *this;
     }
     inline T unsafe_get() { return value; }
   public:
-    BaseType() { Undefine(); }
-    BaseType(T value_) : is_defined(true), value(value_) {}
+    BaseUndefinableType() { Undefine(); }
+    BaseUndefinableType(T value_) : is_defined(true), value(value_) {}
     inline void Undefine() { is_defined = false; std::memset(&value, 0u, sizeof(T)); }
     inline bool IsUndefined() const { return not is_defined; }
 
     explicit inline operator T () { return value; }
 
-    friend ostream_p& operator << (ostream_p& out, BaseType& val) { 
+    friend ostream_p& operator << (ostream_p& out, BaseUndefinableType& val) { 
       if (val.IsUndefined())
         return (out << "<UNDEFINED>");
       return (out << val.get()); 
     }
     static inline const std::string __json_type() { return "null"; }
     template<class O>
-    friend ojstream<O>& operator << (ojstream<O>& out, const BaseType& val) {
+    friend ojstream<O>& operator << (ojstream<O>& out, const BaseUndefinableType& val) {
 #     ifdef __ROMP__SIMPLE_TRACE
         return (out << val.IsUndefined() << "," << val.get())
 #     else
@@ -77,12 +91,13 @@ namespace romp {
 
   // << ===================================== Type ID Mask ======================================= >> 
 
-  template<size_t NAME_ID, typename T>
+  template<size_t TID, typename T>
   class TypeIdType : public T {
   public:
     template<typename... Args>
     TypeIdType(Args &&... args) : T(std::forward<Args>(args)...) {}
-    static inline const std::string __id() { return __info__::TYPE_IDS[NAME_ID]; }
+    static inline constexpr const TypeInfo& __INFO() { return ::__info__::TYPE_INFOS[0]; }
+    static inline const std::string& __id() { return __INFO().label; }
     static inline const std::string __json_type() {
       return "{\"$type\":\"type-id\",\"id\":\"" + __id() + "\",\"referent\":" + T::__json_type() + '}';
     }
@@ -91,15 +106,17 @@ namespace romp {
 
   // << ===================================== Simple Types ======================================= >>
 
-  class BooleanType : public BaseType<bool> {
+  class BooleanType : public BaseUndefinableType<bool>, public BaseType<0ul> {
   public:
     void Clear() { set(false); }
     inline operator bool () { return get(); }
     inline BooleanType operator = (const bool val) { return ((BooleanType&)set(val)); }
-    static constexpr bool __LB() { return false; } 
-    static constexpr bool __UB() { return true; } 
-    static constexpr bool __STEP() { return static_cast<bool>(1); }
-    static constexpr size_t __COUNT() { return 2u; }
+
+    static inline constexpr const TypeInfo& __INFO() { return ::__info__::TYPE_INFOS[0]; }
+    static inline constexpr bool __LB() { return false; } 
+    static inline constexpr bool __UB() { return true; } 
+    static inline constexpr bool __STEP() { return static_cast<bool>(1); }
+    static inline constexpr size_t __COUNT() { return 2u; }
 
     static inline const std::string __json_type() { return "{\"$type\":\"boolean-type\"}"; }
 
@@ -110,11 +127,11 @@ namespace romp {
     }
   };
 
-  template<range_t LB, range_t UB>
-  class RangeType : public BaseType<range_t> {
+  template<size_t TID, range_t LB, range_t UB>
+  class RangeType : public BaseUndefinableType<range_t> {
   public:
-    RangeType() : BaseType<range_t>() {}
-    RangeType(range_t value_) : BaseType<range_t>(value_) {
+    RangeType() : BaseUndefinableType<range_t>() {}
+    RangeType(range_t value_) : BaseUndefinableType<range_t>(value_) {
       if (value_ < LB || value_ > UB)
         throw std::out_of_range("value " +
                                 std::to_string(value_) +
@@ -173,7 +190,7 @@ namespace romp {
     template<range_t RLB, range_t RUB>
     friend inline bool operator > (const RangeType& l, const RangeType<RLB,RUB>& r) { return l.get() > r.get(); }
 
-    friend ostream_p& operator << (ostream_p& out, BaseType& val) { 
+    friend ostream_p& operator << (ostream_p& out, BaseUndefinableType& val) { 
       return (out << get());
     }
     static const std::string __json_type() { 
@@ -198,12 +215,11 @@ namespace romp {
 
   // useful pre-decls
   template<size_t ENUM_ID, size_t BOUND> class EnumType;
-  template<size_t NAME_ID, size_t ENUM_ID, size_t BOUND> class ScalarsetType;
+  template<size_t TID, size_t ENUM_ID, size_t BOUND> class ScalarsetType;
   template<class... UNION_MEMBERS> class ScalarsetUnionType;
 
-# ifndef __romp__GENERATED_CODE // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
-  inline std::string to_str(const SCALAR_ENUM_t& val) { return "<UNDEFINED>"; } // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
-# endif                         // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+
+  inline std::string to_str(const SCALAR_ENUM_t& scalar) { return ::__info__::SCALAR_IDS[static_cast<size_t>(scalar)]; }
   inline std::ostream& operator << (std::ostream& out, const SCALAR_ENUM_t& val) { return (out << to_str(val)); }
   inline ostream_p& operator << (ostream_p& out, const SCALAR_ENUM_t& val) { return (out << to_str(val)); }
   template<class O>
@@ -294,7 +310,7 @@ namespace romp {
     }
   };
 
-  template<size_t NAME_ID, size_t ENUM_ID, size_t BOUND>
+  template<size_t TID, size_t ENUM_ID, size_t BOUND>
   class ScalarsetType : public EnumType<ENUM_ID,BOUND> {
   public:
     ScalarsetType() : EnumType<ENUM_ID,BOUND>() {}
@@ -303,7 +319,7 @@ namespace romp {
         throw std::logic_error("`"+ value_ +"` is not a member of this scalarset type");
       this->value = value_;
     }
-    static inline const std::string __id() { return ::__info__::TYPE_IDS[NAME_ID]; }
+    static inline const std::string __id() { return ::__info__::TYPE_INFOS[TID].label; }
 
     template<class... U_M>
     explicit inline operator ScalarsetUnionType<U_M...> () { return __convert(*this); }
@@ -413,13 +429,13 @@ namespace romp {
                   "enum type must be a member of the union type to be cast to it");
       return ScalarsetUnionType(_this.value);
     }
-    template<size_t NID, size_t EID, size_t B>
-    explicit inline operator ScalarsetType<NID,EID,B> () {
+    template<size_t TID, size_t EID, size_t B>
+    explicit inline operator ScalarsetType<TID,EID,B> () {
       static_assert(ScalarsetUnionType::ContainsMember<EID,B>(), 
                     "union must contain scalarset member type to cast to it!");
-      return ScalarsetType<NID,EID,B>(value);
+      return ScalarsetType<TID,EID,B>(value);
     }
-    template<size_t NID, size_t EID, size_t B>
+    template<size_t TID, size_t EID, size_t B>
     friend inline ScalarsetUnionType __convert(const EnumType<EID,B>& _this) {
       static_assert((ScalarsetUnionType::ContainsMember<EID,B>()),
                   "scalarset type must be a member of the union type to be cast to it");
@@ -454,8 +470,8 @@ namespace romp {
     /* this IsMember is the one associated with the IsMember() Murphi language operator */
     template<class ET, class... U_M>
     friend inline bool IsMember(const ScalarsetUnionType<U_M...>& u);
-    template<size_t EID, size_t B, class... U_M>
-    friend inline bool IsMember(const ScalarsetUnionType<U_M...>& u);
+    // template<size_t EID, size_t B, class... U_M>
+    // friend inline bool IsMember(const ScalarsetUnionType<U_M...>& u);
 
     class iterator {
       ScalarsetUnionType u;
@@ -749,11 +765,11 @@ namespace romp {
   };
 
 
-  template<size_t NAME_ID_START, typename... MEMBERS>
+  template<size_t TID_START, typename... MEMBERS>
   class RecordType {
     std::tuple<MEMBERS...> data;
   protected:
-    static const std::string& _GET_MEMBER_NAME(size_t i) { return ::__info__::TYPE_IDS[NAME_ID_START+i]; }
+    static const std::string& _GET_MEMBER_NAME(size_t i) { return ::__info__::RECORD_MEMBER_LABELS[TID_START+i]; }
     template<size_t I>
     inline typename std::enable_if<(I>=sizeof...(MEMBERS)),bool>::type _IsUndefined() const { return true; }
     template<size_t I>

@@ -90,13 +90,14 @@ add_executable(romp
   ../common/escape.cc
   ../common/help.cc
   # src/check.cc
-  src/CLikeGenerator.cpp
   src/CodeGenerator.cpp
+  src/ModelGenerator.cpp
+  src/ScalarEnumGenerator.cpp
   # src/compares_complex_values.cc
   # src/SigPerm.cpp
-  src/generate_c.cpp
+  src/generate.cpp
   src/main.cc
-  src/options.cc
+  # src/options.cc
   src/romp_def.cpp
   # src/ModelSplitter.cpp
   # src/CTypeGenerator.cpp

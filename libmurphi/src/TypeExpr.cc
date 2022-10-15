@@ -134,8 +134,10 @@ static bool equal(const TypeExpr &t1, const TypeExpr &t2) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
+id_t TypeExpr::next_type_id = 0u;
 
-TypeExpr::TypeExpr(const location &loc_) : Node(loc_) {}
+TypeExpr::TypeExpr(const location &loc_) : Node(loc_), type_id(next_type_id++) {}
+TypeExpr::TypeExpr(id_t type_id_, const location &loc_) : Node(loc_), type_id(type_id_) {}
 
 bool TypeExpr::is_simple() const { return false; }
 
@@ -228,7 +230,7 @@ void Range::visit(ConstBaseTraversal &visitor) const {
 mpz_class Range::count() const {
   mpz_class lb = min->constant_fold();
   mpz_class ub = max->constant_fold();
-  return ub - lb + 2;
+  return ub - lb + 1;
 }
 
 bool Range::is_simple() const { return true; }
@@ -280,7 +282,7 @@ mpz_class Scalarset::count() const {
   mpz_class b = bound->constant_fold();
   assert(b > 0 && "non-positive bound for scalarset");
 
-  return b + 1;
+  return b;
 }
 
 bool Scalarset::is_simple() const { return true; }
@@ -324,7 +326,7 @@ void Enum::visit(ConstBaseTraversal &visitor) const {
 
 mpz_class Enum::count() const {
   mpz_class members_size = members.size();
-  return members_size + 1;
+  return members_size;
 }
 
 bool Enum::is_simple() const { return true; }
@@ -408,10 +410,10 @@ mpz_class Record::count() const {
 }
 
 std::string Record::to_string() const {
-  std::string s = "record ";
+  std::string s = "Record ";
   for (const Ptr<VarDecl> &v : fields)
     s += v->name + " : " + v->type->to_string() + "; ";
-  return s + "endrecord";
+  return s + "EndRecord";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
@@ -476,7 +478,7 @@ bool Array::is_useful() const {
 
 TypeExprID::TypeExprID(const std::string &name_, const Ptr<TypeDecl> &referent_,
                        const location &loc_)
-    : TypeExpr(loc_), name(name_), referent(referent_) {}
+    : TypeExpr(~(0u), loc_), name(name_), referent(referent_) {}
 
 TypeExprID *TypeExprID::clone() const { return new TypeExprID(*this); }
 
@@ -515,6 +517,8 @@ Ptr<TypeExpr> TypeExprID::resolve() const {
 void TypeExprID::validate() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
+  if (type_id == ~(0u))
+    throw Error("DEV ERROR : internal type_id was not found and updated after symbol resolution", loc);
 }
 
 bool TypeExprID::is_useful() const {
@@ -541,6 +545,11 @@ bool TypeExprID::constant() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
   return referent->value->constant();
+}
+
+void TypeExprID::update() {
+  assert(referent != nullptr && "symbol resolution has occurred");
+  type_id = referent->type_id;
 }
 
 } // namespace murphi

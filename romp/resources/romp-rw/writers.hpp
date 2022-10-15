@@ -264,12 +264,18 @@ namespace romp {
 
 // << =================================== Metadata Writers ===================================== >> 
 
-  template<class O>
-  ojstream<O>& operator << (ojstream<O>& json, const ::__model__::SCALAR scalar) { 
-    return (json << ::__info__::SCALAR_IDS[scalar]); 
-  }
-  std::ostream& operator << (std::ostream& out, const ::__model__::SCALAR scalar) { 
-    return (out << ::__info__::SCALAR_IDS[scalar]); 
+  std::ostream& operator << (std::ostream& out, const TypeType& val) { 
+    switch (val) { 
+      case TypeType::BOOLEAN: return out << "Boolean"; 
+      case TypeType::RANGE: return out << "Range";
+      case TypeType::ENUM: return out << "Enum";
+      case TypeType::SCALARSET: return out << "Scalarset";
+      case TypeType::SCALARSET_UNION: return out << "Union";
+      case TypeType::ARRAY: return out << "Array";
+      case TypeType::MULTISET: return out << "Multiset";
+      case TypeType::RECORD: return out << "Record";
+      case TypeType::TYPE_EXPR_ID: return out; // write nothing
+      default: return out << "<UNKNOWN_TYPE>";}
   }
 
 
@@ -312,7 +318,7 @@ namespace romp {
       case PropertyType::LIVENESS: return out << "liveness";
       case PropertyType::INVARIANT: return out << "invariant";
       default: return out << "UNKNOWN";}
-   }
+  }
   template<class O> ojstream<O>& operator << (ojstream<O>& json, const PropertyType& val) { json.out << val; return json; }
 
   std::ostream& operator << (std::ostream& out, const PropertyInfo& pi) noexcept { 

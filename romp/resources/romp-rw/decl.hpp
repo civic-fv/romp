@@ -41,7 +41,7 @@
 
 // << =================================== Useful Pre-decls ===================================== >> 
 namespace romp {
-  struct RuleInfo; struct PropertyInfo; struct StartStateInfo; struct MErrorInfo; struct FunctInfo;
+  struct TypeInfo; struct RuleInfo; struct PropertyInfo; struct StartStateInfo; struct MErrorInfo; struct FunctInfo;
   struct RuleSet; struct StartState; struct Property;
   class stream_void { nullptr_t none = nullptr; };
   const stream_void S_VOID;
@@ -59,8 +59,9 @@ namespace __caller__ {
 } // namespace __caller__
 
 namespace __info__ {
-  extern const std::string TYPE_IDS[];
   extern const std::string SCALAR_IDS[];
+  extern const std::string RECORD_MEMBER_LABELS[];
+  extern const ::romp::TypeInfo TYPE_INFOS[];
   extern const ::romp::RuleInfo RULE_SET_INFOS[];
   extern const ::romp::PropertyInfo PROPERTY_INFOS[]; 
   extern const ::romp::StartStateInfo STARTSTATE_INFOS[]; 
@@ -113,7 +114,18 @@ namespace romp {
     file_position end;
   };
 
-  typedef enum { INVARIANT, ASSERTION, ASSUMPTION, COVER, LIVENESS } PropertyType;
+  enum TypeType { BOOLEAN, RANGE, ENUM, SCALARSET, SCALARSET_UNION, ARRAY, MULTISET, RECORD, RECORD_MEMBER, TYPE_EXPR_ID };
+
+  struct TypeInfo {
+    std::string label;
+    TypeType type;
+    std::string repr;
+    location loc;
+    std::vector<id_t> dependents;
+  };
+
+
+  enum PropertyType { INVARIANT, ASSERTION, ASSUMPTION, COVER, LIVENESS };
 
   struct PropertyInfo {
     std::string label;

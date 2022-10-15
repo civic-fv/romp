@@ -37,11 +37,11 @@ void ScalarsetUnion::visit(ConstBaseTraversal &visitor) const { visitor.visit_sc
 mpz_class ScalarsetUnion::count() const {
   mpz_class count = 0_mpz;
   for (const Ptr<TypeExpr> m : members)
-    count += m->count() - 1; //remove undefined from considerations of each union member
-  return count + 1;  // add in undefined value for the scalarset
+    count += m->count();
+  return count;
 }
 std::string ScalarsetUnion::upper_bound() const {
-  mpz_class size = count() - 1; // -1 to remove undefined value added in count 
+  mpz_class size = count();
   return "VALUE_C(" + size.get_str() + ")";
 }
 std::string ScalarsetUnion::lower_bound() const { return "VALUE_C(1)"; }

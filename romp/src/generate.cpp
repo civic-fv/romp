@@ -1,7 +1,8 @@
 #include "generate_c.hpp"
 #include "nested_escape.hpp"
 // #include "../../common/escape.h"
-#include "CLikeGenerator.hpp"
+#include "ScalarEnumGenerator.hpp"
+#include "ModelGenerator.hpp"
 // #include "CTypeGenerator.hpp"
 // #include "ModelSplitter.hpp"
 // #include "SigPerm.hpp"
@@ -24,6 +25,7 @@
 #include "romp_def.hpp"
 
 using namespace murphi;
+using namespace romp;
 
 
 std::string int_to_hex(unsigned long i ) {
@@ -37,7 +39,7 @@ std::string int_to_hex(unsigned long i ) {
 
 namespace romp {
 
-class CGenerator : public CLikeGenerator {
+class CGenerator : public ModelGenerator {
 
 private:
   static const std::unordered_set<std::string> RESERVED_VAR_NAMES; //{ROMP_RESERVED_NAMES};
@@ -45,422 +47,28 @@ private:
   // std::vector<murphi::Ptr<murphi::SimpleRule>> rules;
   // std::vector<murphi::Ptr<murphi::PropertyRule>> property_rules;
   // std::vector<murphi::Ptr<murphi::StartState>> startstates;
-  std::stringstream prop_info_list;
-  std::stringstream error_info_list;
-  id_t next_property_rule_id = 0u;
-  id_t next_rule_id = 0u;
-  id_t next_startstate_id = 0u;
-  id_t next_funct_id = 0u;
-  id_t next_property_id = 0u;
-  id_t next_cover_id = 0u;
-  id_t next_liveness_id = 0u;
-  id_t next_assert_id = 0u;
-  id_t next_assume_id = 0u;
-  id_t next_error_id = 0u;
-  size_t rule_count = 0ul;
+  // std::stringstream prop_info_list;
+  // std::stringstream error_info_list;
 
 public:
   CGenerator(const std::vector<murphi::Comment> &comments_, std::ostream &out_,
              bool pack_)
-      : CLikeGenerator(comments_, out_, pack_) 
+      : ModelGenerator(comments_, out_, pack_) 
   { 
-    error_info_list << ROMP_INFO_ERRORS_DECL " = {";
+    // error_info_list << ROMP_INFO_ERRORS_DECL " = {";
   }
 
-  void visit_constdecl(const ConstDecl &n) final {
-    *this << indentation() << "const ";
+  // << ------------------------------------------------------------------------------------------ >> 
 
-    // if this constant has an explicit type, use that
-    if (n.type != nullptr) {
-      *this << *n.type;
+  // << ------------------------------------------------------------------------------------------ >> 
 
-    } else {
+  
 
-      // otherwise, if it was a previously typedefed enum, use its typedefed
-      // name (to avoid later -Wsign-compare warnings on GCC)
-      const Ptr<TypeExpr> type = n.value->type();
-      auto it = enum_typedefs.find(type->unique_id);
-      if (it != enum_typedefs.end()) {
-        *this << " ::" ROMP_TYPE_NAMESPACE "::" << it->second;
+  // << ------------------------------------------------------------------------------------------ >> 
 
-      } else { // fallback on the type of the right hand side
-        *this << "__typeof__(" << *n.value << ")";
-      }
-    }
-    *this << " " << n.name << " = " << *n.value << ";";
-    emit_trailing_comments(n);
-    *this << "\n";
-  }
+  
 
-  void visit_function(const Function &n) final {
-    inType = FUNCT;
-    id_t id = next_funct_id++;
-    *this << indentation() << CodeGenerator::M_FUNCTION__FUNC_ATTRS << "\n"
-          << indentation();
-    if (n.return_type == nullptr) {
-      *this << "void";
-    } else {
-      *this << *n.return_type;
-    }
-    *this << " " << n.name << "(";
-    if (n.parameters.empty()) {
-      *this << "void";
-    } else {
-      std::string sep;
-      for (const Ptr<VarDecl> &p : n.parameters) {
-        *this << sep;
-        if (p->readonly)
-          *this << "const ";
-        *this << *p->type; // << " ";
-        // if this is a var parameter, it needs to be a ~~pointer~~ reference
-        if (!p->readonly) {
-          // (void)is_pointer.insert(p->unique_id);  // no need for pointer shenanigans in C++
-          *this << "&"; // "*";
-        }
-        *this << " " << p->name;
-        sep = ", ";
-      }
-    }
-    *this << ") ";
-    if (n.is_pure()) *this << "const "; // if function never changes the state mark it as const (allowed in guards and property_rules)
-    *this << " " /* "throw (" ROMP_MODEL_EXCEPTION_TYPE ")" */  "{\n";
-    indent();
-    *this << indentation() << "using namespace ::" ROMP_TYPE_NAMESPACE ";\n";
-    
-    *this << indentation() << "try {\n";
-    indent(); 
-
-    for (const Ptr<Decl> &d : n.decls) {
-      emit_leading_comments(*d);
-      *this << *d;
-    }
-    for (const Ptr<Stmt> &s : n.body) {
-      emit_leading_comments(*s);
-      *this << *s;
-    }
-
-    dedent();
-    // *this << indentation() << "} catch (...) { ::std::throw_with_nested( " 
-    //                       ROMP_MAKE_MODEL_ERROR_FUNCT(n,id) " ); }\n";
-    *this << indentation() << "} catch (...) { throw " 
-                          ROMP_MAKE_MODEL_ERROR_FUNCT(n,id) "; }\n";
-
-    dedent();
-    *this << "}\n"; 
-    inType = GLOBAL;
-#ifdef DEBUG
-    out << std::flush;  // flush output more frequently for easier debug
-#endif
-  }
-
-  void visit_propertyrule(const PropertyRule &n) final {
-    inType = RULE;
-    id_t prop_id = next_property_rule_id++;
-    // property_rules.push_back(Ptr<const PropertyRule>::make(n));
-    // function prototype
-    *this << indentation() << CodeGenerator::M_PROPERTY__FUNC_ATTRS << "\n"
-          // << indentation() << "void " ROMP_PROPERTYRULE_PREFIX << n.name << "(";
-          << indentation() << "bool " ROMP_PROPERTYRULE_PREFIX << n.name << "(";
-
-    // parameters
-    if (n.quantifiers.empty()) {
-      *this << "void";
-    } else {
-      std::string sep;
-      for (const Quantifier &q : n.quantifiers) {
-        if (q.type == nullptr || q.decl == nullptr || q.decl->type == nullptr)
-          throw Error("(property-rule) Quantifier is missing type/decl info !! \t[dev-error]",q.loc);
-        *this << sep // ;
-              << "const " // quantifier parameters should never be edited
-              << *(q.type) << " " << q.name;
-        // if (auto t = dynamic_cast<const TypeExprID *>(q.type.get()))
-        //   *this << *t; //t->name;
-        // else
-        //   *this << value_type;
-        // *this << " " << q.name;
-        sep = ", ";
-      }
-    }
-
-    *this << ") const "  /* " throw (" ROMP_MODEL_EXCEPTION_TYPE ")" */  "{\n";
-    indent();
-    *this << indentation() << "using namespace ::" ROMP_TYPE_NAMESPACE ";\n";
-    
-    *this << indentation() << "try {\n";
-    indent(); 
-
-    // any aliases this property uses
-    for (const Ptr<AliasDecl> &a : n.aliases) {
-      *this << *a;
-    }
-
-    // processing_global_prop = true;
-    // const auto stmt = Ptr<PropertyStmt>::make(n.property,n.name,n.loc);
-    //       << *stmt;
-    // processing_global_prop = false;
-
-    *this << indentation() << "return ";
-    id_t _id = 0;
-    switch (n.property.category) {
-    case Property::ASSERTION:
-      // if (not CodeGenerator::is_prop_enabled(Property::ASSERTION)) // not needed always enabled
-      //   throw Error("`assert`/`invariant` properties are not enabled !!", n.loc);
-      *this << ROMP_INVARIANT_HANDLER(n,prop_id);
-      break;
-
-    case Property::ASSUMPTION:
-      if (not CodeGenerator::is_prop_enabled(Property::ASSUMPTION))
-        throw Error("`assume` properties are not enabled !!", n.loc);
-      *this  << ROMP_ASSUMPTION_HANDLER(n,prop_id);
-      break;
-
-    case Property::COVER:
-    if (not CodeGenerator::is_prop_enabled(Property::COVER))
-        throw Error("`cover` properties are not enabled !!", n.loc);
-      _id = next_cover_id++;
-      *this  << ROMP_COVER_HANDLER(n,prop_id,_id);
-      break;
-
-    case Property::LIVENESS:
-    if (not CodeGenerator::is_prop_enabled(Property::LIVENESS))
-        throw Error("`liveness` properties are not enabled !!", n.loc);
-      _id = next_liveness_id++;
-      *this << ROMP_LIVENESS_HANDLER(n,prop_id,_id);
-      break;
-    }
-    *this << ";\n";
-
-    // *this << "(" << *n.property.expr << ");\n";
-
-    // clean up any aliases we defined
-    for (const Ptr<AliasDecl> &a : n.aliases) {
-      *this << "#undef " << a->name << "\n";
-    }
-
-    dedent();
-    // *this << indentation() << "} catch (...) { ::std::throw_with_nested( " 
-    //                       ROMP_MAKE_MODEL_ERROR_PROPERTY(n,prop_id) " ); }\n";
-    *this << indentation() << "} catch (...) { throw " 
-                          ROMP_MAKE_MODEL_ERROR_PROPERTY(n,prop_id) "; }\n";
-
-    dedent();
-    *this << indentation() << "}\n";
-    inType = GLOBAL;
-#ifdef DEBUG
-    out << std::flush;  // flush output more frequently for easier debug
-#endif
-  }
-
-  void visit_simplerule(const SimpleRule &n) final {
-    inType = RULE;
-    // rules.push_back(Ptr<const SimpleRule>(&n));
-    id_t id = next_rule_id++;
-
-    *this << indentation() << CodeGenerator::M_RULE_GUARD__FUNC_ATTRS << "\n"
-          << indentation() << "bool " ROMP_RULE_GUARD_PREFIX << n.name << "(";
-
-    // parameters
-    if (n.quantifiers.empty()) {
-      *this << "void";
-    } else {
-      std::string sep;
-      for (const Quantifier &q : n.quantifiers) {
-        if (q.type == nullptr || q.decl == nullptr || q.decl->type == nullptr)
-          throw Error("(rule-guard) Quantifier is missing type/decl info !! \t[dev-error]",q.loc);
-        *this << sep // ;
-              << "const "  // quantifier parameters should never be edited
-              << *(q.type) << " " << q.name;
-        /// if (auto t = dynamic_cast<const TypeExprID *>(q.type.get()))
-        //   *this << *t; //t->name;
-        // else
-        //   *this << value_type;
-        // *this << " " << q.name;
-        sep = ", ";
-      }
-    }
-
-    *this << ") const "  /* " throw (" ROMP_MODEL_EXCEPTION_TYPE ")" */  "{\n";
-    indent();
-    *this << indentation() << "using namespace ::" ROMP_TYPE_NAMESPACE ";\n";
-    
-    *this << indentation() << "try {\n";
-    indent(); 
-
-    // any aliases that are defined in an outer scope
-    for (const Ptr<AliasDecl> &a : n.aliases) {
-      *this << *a;
-    }
-
-    *this << indentation() << "return ";
-    if (n.guard == nullptr) {
-      *this << "true";
-    } else {
-      *this << *n.guard;
-    }
-    *this << ";\n";
-
-    // clean up aliases
-    for (const Ptr<AliasDecl> &a : n.aliases) {
-      *this << "#undef " << a->name << "\n";
-    }
-
-    dedent();
-    // *this << indentation() << "} catch (...) { ::std::throw_with_nested( "
-    //                               ROMP_MAKE_MODEL_ERROR_RULE_GUARD(n,id) " ); }\n";
-    *this << indentation() << "} catch (...) { throw "
-                                  ROMP_MAKE_MODEL_ERROR_RULE_GUARD(n,id) "; }\n";
-
-    dedent();
-    *this << indentation() << "}\n\n";
-
-#ifdef DEBUG
-    out << std::flush;  // flush output more frequently for easier debug
-#endif
-
-    *this << indentation() << CodeGenerator::M_RULE_ACTION__FUNC_ATTRS << "\n"
-          << indentation() << "void " ROMP_RULE_ACTION_PREFIX << n.name << "(";
-
-    // parameters
-    if (n.quantifiers.empty()) {
-      *this << "void";
-    } else {
-      std::string sep;
-      for (const Quantifier &q : n.quantifiers) {
-        if (q.type == nullptr || q.decl == nullptr || q.decl->type == nullptr)
-          throw Error("(rule-action) Quantifier is missing type/decl info !! \t[dev-error]",q.loc);
-        *this << sep // ;
-              << "const " // quantifier parameters should never be edited
-              << *(q.type) << " " << q.name;
-        // if (auto t = dynamic_cast<const TypeExprID *>(q.type.get()))
-        //   *this << *t; //t->name;
-        // else
-        //   *this << value_type;
-        // *this << " " << q.name;
-        sep = ", ";
-      }
-    }
-
-    *this << ") " /* " throw (" ROMP_MODEL_EXCEPTION_TYPE ")" */ "{\n";
-    indent();
-    *this << indentation() << "using namespace ::" ROMP_TYPE_NAMESPACE ";\n";
-    
-    *this << indentation() << "try {\n";
-    indent(); 
-
-    // aliases, variables, local types, etc.
-    for (const Ptr<AliasDecl> &a : n.aliases) {
-      emit_leading_comments(*a);
-      *this << *a;
-    }
-    for (const Ptr<Decl> &d : n.decls) {
-      if (d == nullptr) continue; // (TMP FIX) not sure why vector's keep getting null Ptr values
-      emit_leading_comments(*d);
-      *this << *d;
-    }
-
-    for (const Ptr<Stmt> &s : n.body) {
-      emit_leading_comments(*s);
-      *this << *s;
-    }
-
-    // clean up any aliases we defined
-    for (const Ptr<Decl> &d : n.decls) {
-      if (auto a = dynamic_cast<const AliasDecl *>(d.get())) {
-        *this << "#undef " << a->name << "\n";
-      }
-    }
-    for (const Ptr<AliasDecl> &a : n.aliases) {
-      *this << "#undef " << a->name << "\n";
-    }
-
-    dedent();
-    // *this << indentation() << "} catch (...) { ::std::throw_with_nested( " 
-    //                       ROMP_MAKE_MODEL_ERROR_RULE_ACTION(n,id) " ); }\n";
-    *this << indentation() << "} catch (...) { throw " 
-                          ROMP_MAKE_MODEL_ERROR_RULE_ACTION(n,id) "; }\n";
-
-    dedent();
-    *this << indentation() << "}\n";
-    inType = GLOBAL;
-
-#ifdef DEBUG
-    out << std::flush;  // flush output more frequently for easier debug
-#endif
-  }
-
-  void visit_startstate(const StartState &n) final {
-    inType = RULE;
-    // startstates.push_back(Ptr<const StartState>(&n));
-    id_t id = next_startstate_id++;
-    
-    *this << indentation() << CodeGenerator::M_STARTSTATE__FUNC_ATTRS 
-          << " void " ROMP_STARTSTATE_PREFIX << n.name << "(";
-
-    // parameters
-    if (n.quantifiers.empty()) {
-      *this << "void";
-    } else {
-      std::string sep;
-      for (const auto q : n.quantifiers) {
-        if (q.type == nullptr || q.decl == nullptr || q.decl->type == nullptr)
-          throw Error("(startstate) Quantifier is missing type/decl info !! \t[dev-error]",q.loc);
-        *this << sep // ;
-              << "const " // quantifier parameters should never be edited
-              << *(q.type) << " " << q.name;
-        /// if (auto t = dynamic_cast<const TypeExprID *>(q.type.get()))
-        //   *this << *t; //t->name;
-        // else
-        //   *this << value_type;
-        // *this << " " << q.name;
-        sep = ", ";
-      }
-    }
-
-    *this << ")"  /* " throw (" ROMP_MODEL_EXCEPTION_TYPE ")" */  "{\n";
-    indent();
-    *this << indentation() << "using namespace ::" ROMP_TYPE_NAMESPACE ";\n"; 
-
-    *this << indentation() << "try {\n";
-    indent(); 
-
-    // aliases, variables, local types, etc.
-    for (const Ptr<AliasDecl> &a : n.aliases) {
-      emit_leading_comments(*a);
-      *this << *a;
-    }
-    for (const Ptr<Decl> &d : n.decls) {
-      emit_leading_comments(*d);
-      *this << *d;
-    }
-
-    for (const Ptr<Stmt> &s : n.body) {
-      emit_leading_comments(*s);
-      *this << *s;
-    }
-
-    // clean up any aliases we defined
-    for (const Ptr<Decl> &d : n.decls) {
-      if (auto a = dynamic_cast<const AliasDecl *>(d.get())) {
-        *this << "#undef " << a->name << "\n";
-      }
-    }
-    for (const Ptr<AliasDecl> &a : n.aliases) {
-      *this << "#undef " << a->name << "\n";
-    }
-
-    dedent();
-    // *this << indentation() << "} catch (...) { ::std::throw_with_nested( " 
-    //                       ROMP_MAKE_MODEL_ERROR_STARTSTATE(n, id) " ); }\n";
-    *this << indentation() << "} catch (...) { throw " 
-                          ROMP_MAKE_MODEL_ERROR_STARTSTATE(n, id) "; }\n";
-
-    dedent();
-    *this << indentation() << "}\n\n";
-    inType = GLOBAL;
-#ifdef DEBUG
-    out << std::flush;  // flush output more frequently for easier debug
-#endif
-  }
+  // << ------------------------------------------------------------------------------------------ >> 
 
   void visit_vardecl(const VarDecl &n) final {
     if (CGenerator::RESERVED_VAR_NAMES.find(n.name) != CGenerator::RESERVED_VAR_NAMES.end())
@@ -665,76 +273,6 @@ public:
     this->out << std::flush;
   }
 
-  void visit_propertystmt(const PropertyStmt &n) {
-    id_t id = next_property_id++;
-    id_t _id = 0u;
-
-    // *this << indentation() << "if (";
-    // indent();
-
-    switch (n.property.category) {
-    case Property::ASSERTION:
-    // if (not CodeGenerator::is_prop_enabled(Property::ASSUMPTION))  // not needed always enabled
-    //     throw Error("`assert`/`invariant` properties are not enabled !!", n.loc);
-      *this << indentation() << "if (" << ROMP_ASSERTION_HANDLER(n,id) << ") "
-            /* << indentation() */ << "throw " ROMP_MAKE_MODEL_ERROR_PROPERTY(n,id) ";\n";
-      prop_info_list << ROMP_MAKE_PROPERTY_INFO_STRUCT(n,id,n.message,ROMP_PROPERTY_TYPE_ASSERT, to_json(n,"assert")) ",";
-      break;
-
-    case Property::ASSUMPTION:
-    if (not CodeGenerator::is_prop_enabled(Property::ASSUMPTION))
-        throw Error("`assume` properties are not enabled !!", n.loc);
-      *this << "#ifdef " ROMP_ASSUME_PREPROCESSOR_VAR "\n"
-            << indentation() << "if (" << ROMP_ASSUMPTION_HANDLER(n,id) << ") "
-            /* << indentation() */ << "throw " ROMP_MAKE_MODEL_ERROR_PROPERTY(n,id) ";\n"
-               "#endif\n";
-      if (not processing_global_prop)
-        prop_info_list << ROMP_MAKE_PROPERTY_INFO_STRUCT(n,id,n.message,ROMP_PROPERTY_TYPE_ASSUME, to_json(n,"assume")) ",";
-      break;
-
-    case Property::COVER:
-      if (not CodeGenerator::is_prop_enabled(Property::COVER))
-        throw Error("`cover` properties are not enabled !!", n.loc);
-      _id = next_cover_id++;
-      *this << "#ifdef " ROMP_COVER_PREPROCESSOR_VAR "\n"
-            << indentation() << "if (" << ROMP_COVER_HANDLER(n,id,_id) << ")"
-            /* << indentation() */ << "throw " ROMP_MAKE_MODEL_ERROR_PROPERTY(n,id) ";\n"
-            << "#endif\n";
-      if (not processing_global_prop)
-        prop_info_list << ROMP_MAKE_PROPERTY_INFO_STRUCT(n,_id,n.message,ROMP_PROPERTY_TYPE_COVER, to_json(n,"cover")) ",";
-      break;
-
-    case Property::LIVENESS:
-      if (not processing_global_prop)
-        throw Error("liveness properties are NOT supported as embedded statements only global rules!", n.loc);
-      // _id = next_liveness_id++;
-      // *this << indentation() << "if (" << ROMP_LIVENESS_HANDLER(n,id,_id) << ")\n"
-      //       << indentation() << "throw " ROMP_MAKE_MODEL_ERROR_PROPERTY(n,id) ";\n";
-      // prop_info_list << ROMP_MAKE_PROPERTY_INFO_STRUCT(n,_id,n.message,ROMP_PROPERTY_TYPE_LIVENESS, to_json(n,"liveness")) ",";
-      break;
-    }
-    // dedent();
-
-    emit_trailing_comments(n);
-    *this << "\n";
-#ifdef DEBUG
-    out << std::flush;  // flush output more frequently for easier debug
-#endif
-  }
-
-  void visit_errorstmt(const ErrorStmt &n) {
-    id_t id = next_error_id++;
-    *this << indentation() << "if (" ROMP_ERROR_HANDLER(id) ")\n";
-    indent();
-    *this << indentation() << "throw " ROMP_MAKE_MODEL_ERROR_ERROR(n,id) ";\n";
-    dedent();
-    emit_trailing_comments(n);
-    *this << "\n";
-    error_info_list << ROMP_MAKE_ERROR_INFO_STRUCT(n,(inType==FUNCT),to_json(n)) ",";
-#ifdef DEBUG
-    out << std::flush;  // flush output more frequently for easier debug
-#endif
-  }
 
   void visit_model(const Model &n) {
     ModelSplitter sorter;
@@ -961,9 +499,9 @@ void output_embedded_code_file(std::ostream& out, const unsigned char* ecf, cons
 
 
 
-void generate_c(const Node &n, const std::vector<Comment> &comments, bool pack,
-                std::ostream &out, const std::string& build_cmds) {
-
+void generate(const Node &n, const std::vector<Comment> &comments,
+                romp::CodeGenerator &out, const std::string& build_cmds) {
+  
   out << ROMP_GENERATED_FILE_PREFACE("\tGenerated code for a romp \"parallel random walker\" verification tool based off of the Murphi Model described in:\n"
                                      "\t\tOriginal Murphi Model: " + romp::CodeGenerator::input_file_path.filename().string() + "\n"
                                      "\tPlease build with the following command(s):\n\t\t" + build_cmds + "") "\n";
@@ -985,55 +523,102 @@ void generate_c(const Node &n, const std::vector<Comment> &comments, bool pack,
 
   out << "namespace " ROMP_UTIL_NAMESPACE_NAME " {\n"
          "  typedef " << value_type << " range_t;\n"
-         "  typedef " << scalar_type << " scalar_t;\n"
+        //  "  typedef " << scalar_type << " scalar_t;\n"
          "} // namespace " ROMP_UTIL_NAMESPACE_NAME "\n\n";
 
   romp::CodeGenerator::print_preprocessor_options(out);
 
 
-  out << "\n#pragma region inline_library_includes\n\n";
+  // out << "\n#pragma region inline_library_includes\n\n";
   // write json library to the file
   // output_embedded_code_file(out, resources_lib_nlohmann_json_hpp, resources_lib_nlohmann_json_hpp_len);
-  out << "\n#pragma endregion inline_library_includes\n\n" << std::flush;
+  // out << "\n#pragma endregion inline_library_includes\n\n" << std::flush;
 
   out << "namespace " ROMP_MODEL_NAMESPACE_NAME " { struct " ROMP_STATE_CLASS_NAME "; } // helpful pre-definition\n\n";
 
-  out << "\n#pragma region model_prefixes\n\n";
-  // write the static prefix to the beginning of the source file
-#ifdef _ROMP_DEV_DEBUG_INCLUDE_DIR
-  out << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/c_prefix.cpp\"\n";
-#else
-  output_embedded_code_file(out, resources_c_prefix_cpp, resources_c_prefix_cpp_len);
-#endif
-  out << "\n#pragma endregion model_prefixes\n\n" << std::flush;
+  // write the static prefixes to the beginning of the source file
+  out << "\n#pragma region romp_prefix\n\n";
+# ifdef _ROMP_DEV_DEBUG_INCLUDE_DIR
+    out << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/include.hpp\"\n";
+    out << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/decl.hpp\"\n";
+    out << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/writers.hpp\"\n";
+# else
+    output_embedded_code_file(out, resources_romp_rw_include_hpp, resources_romp_rw_include_hpp_len);
+    output_embedded_code_file(out, resources_romp_rw_decl_hpp, resources_romp_rw_decl_hpp_len);
+    output_embedded_code_file(out, resources_romp_rw_writers_hpp, resources_romp_rw_writers_hpp_len);
+# endif
+  out << "\n#pragma endregion romp_prefix\n\n" << std::flush;
 
 
-  out << "\n\n#pragma region generated_code\n\n";
-  romp::CGenerator gen(comments, out, pack);
+  out << "\n\n#pragma region scalar_enums__generated_code\n"
+      << out.indentation() << "namespace " ROMP_MODEL_NAMESPACE_NAME " {\n";
+  out.indent()
+  romp::ScalarEnumGenerator se_gen(comments, out, pack);
+  se_gen.dispatch(n);
+  out.dedent();
+  out << "\n" << out.indentation() << "} // namespace " ROMP_MODEL_NAMESPACE_NAME "\n"
+      << out.indentation() << "namespace " ROMP_UTIL_NAMESPACE_NAME " { typedef " ROMP_SCALAR_ENUM_TYPE " SCALAR_ENUM_t; }\n"
+      << out.indentation() << "namespace " ROMP_INFO_NAMESPACE_NAME " { std::string SCALAR_IDS[] = { ";
+  { std::string sep;
+    for (auto name : se_gen._enum_ids) {
+      out << sep << name;
+      sep = ", ";
+  } }
+  out << " }; }\n"
+      << "\n\n#pragma endregion scalar_enums__generated_code\n\n" << std::flush;
+
+  // write the static infixes to the "middle" of the source file
+  out << "\n#pragma region romp_infix\n\n";
+# ifdef _ROMP_DEV_DEBUG_INCLUDE_DIR
+    out << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/options.hpp\"\n";
+    out << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/types.hpp\"\n";
+    out << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/error.hpp\"\n";
+# else
+    output_embedded_code_file(out, resources_romp_rw_types_hpp, resources_romp_rw_options_hpp_len);
+    output_embedded_code_file(out, resources_romp_rw_types_hpp, resources_romp_rw_types_hpp_len);
+    output_embedded_code_file(out, resources_romp_rw_error_hpp, resources_romp_rw_error_hpp_len);
+# endif
+  out << "\n#pragma endregion romp_infix\n\n" << std::flush;
+
+  out << "\n\n#pragma region model__generated_code\n\n";
+  romp::ModelGenerator gen(out, se_gen.enum_ids, comments);
   gen.dispatch(n);
-  out << "\n\n#pragma endregion generated_code\n\n" << std::flush;
+  out << "\n\n#pragma endregion model__generated_code\n\n" << std::flush;
 
-  out << "\n#pragma region romp_rw\n\n";
-#ifdef _ROMP_DEV_DEBUG_INCLUDE_DIR
-  out << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw.hpp\"\n";
-#else
-  output_embedded_code_file(out, resources_romp_rw_hpp, resources_romp_rw_hpp_len);
-#endif
-  out << "\n#pragma endregion romp_rw\n\n" << std::flush;
-  out << "\n#pragma region romp_rw_options\n\n";
-#ifdef _ROMP_DEV_DEBUG_INCLUDE_DIR
-  out << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw-options.hpp\"\n";
-#else
-  output_embedded_code_file(out, resources_romp_rw_options_hpp, resources_romp_rw_options_hpp_len);
-#endif
-  out << "\n#pragma endregion romp_rw_options\n\n" << std::flush;
-  out << "\n#pragma region romp_rw_main\n\n";
-#ifdef _ROMP_DEV_DEBUG_INCLUDE_DIR
-  out << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw-main.hpp\"\n";
-#else
-  output_embedded_code_file(out, resources_romp_rw_main_hpp, resources_romp_rw_main_hpp_len);
-#endif
-  out << "\n#pragma endregion romp_rw_main\n" << std::flush;
+  out << "\n\n#pragma region model__generated_code\n"
+      << out.indentation() << "namespace " ROMP_MODEL_NAMESPACE_NAME " {\n\n";
+  out.indent()
+  romp::ModelGenerator m_gen(out);
+  m_gen.dispatch(n);
+  out.dedent();
+  out << "\n\n" << out.indentation() << "} // namespace " ROMP_MODEL_NAMESPACE_NAME "\n"
+         "#pragma endregion metadata__generated_code\n\n" << std::flush;
+
+  out << "\n\n#pragma region rule_caller__generated_code\n\n";
+  romp::CGenerator gen(comments, out, pack);  //TODO update this to new metadata generator
+  gen.dispatch(n);
+  out << "\n\n#pragma endregion rule_caller__generated_code\n\n" << std::flush;
+
+  // write the static postfixes to the end of the source file
+  out << "\n#pragma region romp_postfix\n\n";
+# ifdef _ROMP_DEV_DEBUG_INCLUDE_DIR
+    out << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/impls.hpp\"\n";
+    out << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/walker.hpp\"\n";
+# else
+    output_embedded_code_file(out, resources_romp_rw_impls_hpp, resources_romp_rw_impls_hpp_len);
+    output_embedded_code_file(out, resources_romp_rw_walker_hpp, resources_romp_rw_walker_hpp_len);
+# endif
+  out << "\n#pragma endregion romp_postfix\n\n" << std::flush;
+
+  // write the static postfixes to the end of the source file
+  out << "\n#pragma region romp_main\n\n";
+# ifdef _ROMP_DEV_DEBUG_INCLUDE_DIR
+    out << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/main.hpp\"\n";
+# else
+    output_embedded_code_file(out, resources_romp_rw_main_hpp, resources_romp_rw_main_hpp_len);
+# endif
+  out << "\n#pragma endregion romp_main\n\n" 
+         "/* << === EOF === >> */\n"<< std::flush;
 
 
   // out << buffer.rdbuf() << "\n\n";

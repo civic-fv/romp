@@ -84,7 +84,7 @@ void ConstDecl::validate() const {
 
 TypeDecl::TypeDecl(const std::string &name_, const Ptr<TypeExpr> &value_,
                    const location &loc_)
-    : Decl(name_, loc_), value(value_) {}
+    : Decl(name_, loc_), value(value_), type_id(TypeExpr::next_type_id++) {}
 
 TypeDecl *TypeDecl::clone() const { return new TypeDecl(*this); }
 

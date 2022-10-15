@@ -1,5 +1,6 @@
 #pragma once
 
+#include "CodeGenerator.hpp"
 #include <cstddef>
 #include <iostream>
 #include <murphi/murphi.h>
@@ -13,6 +14,6 @@
 /// \param pack Whether all structs are packed
 /// \param out Stream to write translation to
 void generate_c(const murphi::Node &n,
-                const std::vector<murphi::Comment> &comments, bool pack,
-                std::ostream &out,
+                const std::vector<murphi::Comment> &comments,
+                romp::CodeGenerator &out,
                 const std::string& build_cmds);

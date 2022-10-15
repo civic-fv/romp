@@ -1,8 +1,23 @@
+/**
+ * @proj romp
+ * @author Andrew Osterhout
+ * @author Ajantha Varadharaaj
+ * @org University of Utah (UofU) School of Computing (SoC)
+ * @org Center for Parallel compute at Utah (CPU)
+ * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
+ * @org Ganesh Gopalakrishnan's Research Group
+ * @file ModelGenerator.hpp
+ * 
+ * @brief generates the C++ code for the model itself
+ * 
+ * @date 2022/10/14
+ * @version 0.2
+ */
+
 #pragma once
 
 #include "CodeGenerator.hpp"
 #include <cstddef>
-#include <iostream>
 #include <murphi/murphi.h>
 #include <string>
 #include <unordered_map>
@@ -10,21 +25,25 @@
 #include <unordered_set>
 #include <vector>
 
+namespace romp {
 
 // generator for C-like code
-class __attribute__((visibility("hidden"))) CLikeGenerator
+class __attribute__((visibility("hidden"))) ModelGenerator
     : public romp::CodeGenerator,
       public murphi::ConstBaseTraversal {
 protected:
-  std::ostream &out;
-  bool pack;
 
-  // mapping of Enum unique_ids to the name of a TypeDecl to them
-  std::unordered_map<size_t, std::string> enum_typedefs;
+  // TODO get rid of the need for enum_typedefs
+  // // mapping of Enum unique_ids to the name of a TypeDecl to them
+  // std::unordered_map<size_t, std::string> enum_typedefs;
 
-  // collection of unique_ids that were emitted as pointers instead of standard
-  // variables
-  std::unordered_set<size_t> is_pointer;
+  // mapping of an enum/scalar name to it's id in the model scalar/enum space
+  std::unordered_set<std::string,size_t> enum_ids
+
+  // TODO get rid of the need for is_pointer
+  // // collection of unique_ids that were emitted as pointers instead of standard
+  // // variables
+  // std::unordered_set<size_t> is_pointer;
 
   // list of comments from the original source
   std::vector<murphi::Comment> comments;
@@ -33,10 +52,11 @@ protected:
   std::vector<bool> emitted;
 
 public:
-  CLikeGenerator(const std::vector<murphi::Comment> &comments_,
-                 std::ostream &out_, bool pack_)
-      : out(out_), pack(pack_), comments(comments_),
-        emitted(comments_.size(), false) {}
+  ModelGenerator(const romp::CodeGenerator& cg_,
+                 const std::unordered_set<std::string,size_t>& enum_ids_,
+                 const std::vector<murphi::Comment> &comments_)
+      : romp::CodeGenerator(cg_), enum_ids(enum_ids_),
+        comments(comments_), emitted(comments_.size(), false) {}
 
   void visit_add(const murphi::Add &n) final;
   void visit_aliasdecl(const murphi::AliasDecl &n) final;
@@ -50,6 +70,7 @@ public:
   void visit_bor(const murphi::Bor &n) final;
   void visit_chooserule(const murphi::ChooseRule &n) final;
   void visit_clear(const murphi::Clear &n) final;
+  void visit_constdecl(const murphi::ConstDecl &n) final;
   void visit_div(const murphi::Div &n) final;
   void visit_element(const murphi::Element &n) final;
   void visit_enum(const murphi::Enum &n) final;
@@ -57,12 +78,13 @@ public:
   void visit_errorstmt(const murphi::ErrorStmt &n) final;
   void visit_exists(const murphi::Exists &n) final;
   void visit_exprid(const murphi::ExprID &n) final;
-  void visit_field(const murphi::Field &n) final;
   void visit_implication(const murphi::Implication &n) final;
   void visit_ismember(const murphi::IsMember &n) final;
   void visit_isundefined(const murphi::IsUndefined &n) final;
+  void visit_field(const murphi::Field &n) final;
   void visit_for(const murphi::For &n) final;
   void visit_forall(const murphi::Forall &n) final;
+  void visit_function(const murphi::Function &n) final;
   void visit_functioncall(const murphi::FunctionCall &n) final;
   void visit_geq(const murphi::Geq &n) final;
   void visit_gt(const murphi::Gt &n) final;
@@ -88,6 +110,7 @@ public:
   void visit_or(const murphi::Or &n) final;
   void visit_procedurecall(const murphi::ProcedureCall &n) final;
   void visit_property(const murphi::Property &) final;
+  void visit_propertyrule(const murphi::PropertyRule &n) final;
   void visit_propertystmt(const murphi::PropertyStmt &n) final;
   void visit_put(const murphi::Put &n) final;
   void visit_quantifier(const murphi::Quantifier &n) final;
@@ -100,6 +123,8 @@ public:
   void visit_scalarsetunion(const murphi::ScalarsetUnion &n) final;
   void visit_sucast(const murphi::SUCast &n) final;
   void visit_sub(const murphi::Sub &n) final;
+  void visit_simplerule(const murphi::SimpleRule &n) final;
+  void visit_startstate(const murphi::StartState &n) final;
   void visit_switch(const murphi::Switch &n) final;
   void visit_switchcase(const murphi::SwitchCase &n) final;
   void visit_ternary(const murphi::Ternary &n) final;
@@ -110,11 +135,11 @@ public:
   void visit_xor(const murphi::Xor &n) final;
 
   // helpers to make output more natural
-  CLikeGenerator &operator<<(const std::string &s);
-  CLikeGenerator &operator<<(const murphi::Node &n);
+  ModelGenerator &operator<<(const std::string &s);
+  
 
   // make this class abstract
-  virtual ~CLikeGenerator() = 0;
+  virtual ~ModelGenerator() = 0;
 
 private:
   // generate a print statement of the given expression and (possibly
@@ -132,4 +157,5 @@ protected:
   // output single line comments following the given node
   size_t emit_trailing_comments(const murphi::Node &n);
 };
-};
+  
+} // namespace romp

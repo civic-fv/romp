@@ -12,6 +12,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+// #include <unordered_map>
 
 #ifndef MURPHI_API_WITH_RTTI
 #define MURPHI_API_WITH_RTTI __attribute__((visibility("default")))
@@ -24,6 +25,8 @@ struct TypeDecl;
 struct VarDecl;
 
 struct MURPHI_API_WITH_RTTI TypeExpr : public Node {
+
+  id_t type_id;
 
   TypeExpr(const location &loc_);
   virtual ~TypeExpr() = default;
@@ -66,8 +69,13 @@ struct MURPHI_API_WITH_RTTI TypeExpr : public Node {
   virtual bool is_useful() const;
 
 protected:
+  TypeExpr(id_t type_id_, const location &loc_);
   TypeExpr(const TypeExpr &) = default;
   TypeExpr &operator=(const TypeExpr &) = default;
+
+  // static std::unordered_map<std::string,Ptr<TypeExpr>> type_mash;
+  static id_t next_type_id;
+  friend TypeDecl;
 };
 
 // << ------------------------------------------------------------------------------------------ >> 
@@ -211,6 +219,8 @@ struct MURPHI_API_WITH_RTTI TypeExprID : public TypeExpr {
   Ptr<TypeExpr> resolve() const final;
   void validate() const final;
   bool is_useful() const final;
+
+  void update() final;
 
   std::string lower_bound() const final;
   std::string upper_bound() const final;

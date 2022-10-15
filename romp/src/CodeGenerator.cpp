@@ -5,7 +5,10 @@
 #include <vector>
 
 
+
 namespace romp {
+
+void set_out(CodeGenerator& gen, std::shared_ptr<std::ostream>& out) { gen.out = out; }
 
 std::filesystem::path CodeGenerator::input_file_path = "stdin";
 std::filesystem::path CodeGenerator::output_file_path = "./romp.cpp";
@@ -65,7 +68,7 @@ void CodeGenerator::enable_measurements() {
 }
 
 bool CodeGenerator::is_prop_enabled(murphi::Property::Category prop) {
-  if (CodeGenerator::do_ignore_romp_props) return true;
+  if (CodeGenerator::do_ignore_rumur_props) return true;
   switch (prop) {
   case murphi::Property::ASSERTION:
     return true;
@@ -80,11 +83,28 @@ bool CodeGenerator::is_prop_enabled(murphi::Property::Category prop) {
   }
 }
 
-bool CodeGenerator::do_ignore_romp_props = false;
+bool CodeGenerator::do_ignore_rumur_props = false;
 void CodeGenerator::disable_romp_prop_errors() {
-  CodeGenerator::do_ignore_romp_props = true;
+  CodeGenerator::do_ignore_rumur_props = true;
 }
 
 CodeGenerator::~CodeGenerator() {}
 
+CodeGenerator& CodeGenerator::operator << (const Node &n) {
+  dispatch(n);
+  return *this;
 }
+
+CodeGenerator& CodeGenerator::operator << (bool val) {
+  *out << ((val) ? "true" : "false");
+  return *this;
+}
+
+template<typename T>
+CodeGenerator& CodeGenerator::operator << (const T& val) {
+  *out << val;
+  return *this;
+}
+
+
+} // namespace romp

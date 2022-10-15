@@ -100,6 +100,7 @@ struct MURPHI_API_WITH_RTTI ConstDecl : public ExprDecl {
 struct MURPHI_API_WITH_RTTI TypeDecl : public Decl {
 
   Ptr<TypeExpr> value;
+  id_t type_id;
 
   TypeDecl(const std::string &name, const Ptr<TypeExpr> &value_,
            const location &loc);

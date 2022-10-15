@@ -1,7 +1,5 @@
 #include "../../common/help.h"
-#include "check.h"
-#include "compares_complex_values.h"
-#include "generate_c.hpp"
+#include "generate.hpp"
 #include "NestedError.hpp"
 #include "CodeGenerator.hpp"
 // #include "generate_h.h"
@@ -21,6 +19,7 @@
 #include <unistd.h>
 #include <utility>
 #include <vector>
+#include <regex>
 
 // a pair of input streams
 using dup_t =
@@ -40,7 +39,7 @@ std::filesystem::path make_path(std::string p) {
     return _p;
 }
 
-static void parse_args(int argc, char **argv) {
+void parse_args(int argc, char **argv) {
   bool no_sym_provided = false;
   unsigned int hist_len = ROMP_HISTORY_SIZE_PREPROCESSOR_VAR_DEFAULT_VALUE;
   for (;;) {
@@ -88,7 +87,7 @@ static void parse_args(int argc, char **argv) {
         exit(EXIT_FAILURE);
       }
       out = o;
-      romp::CodeGenerator::output_file_path = make_path(optarg);
+      gen.output_file_path = make_path(optarg);
       break;
     }
 
@@ -111,27 +110,27 @@ static void parse_args(int argc, char **argv) {
       break;
 
     case 'a': // --enable-assume
-      romp::CodeGenerator::enable_assume_property();
+      gen.enable_assume_property();
       break;
 
     case 'c': // --enable-cover
-      romp::CodeGenerator::enable_cover_property();
+      gen.enable_cover_property();
       break;
 
     case 'l': // --enable-liveness
-      romp::CodeGenerator::enable_liveness_property();
+      gen.enable_liveness_property();
       break;
 
     case 'i': // --enable-liveness
-      romp::CodeGenerator::disable_romp_prop_errors();
+      gen.disable_romp_prop_errors();
       break;
 
     case 132: // --do-measure
-      romp::CodeGenerator::enable_preprocessor_option(ROMP_MEASURE_PREPROCESSOR_VAR);
+      gen.enable_preprocessor_option(ROMP_MEASURE_PREPROCESSOR_VAR);
       break;
 
     case 133: // --simple-trace-rep
-      romp::CodeGenerator::enable_preprocessor_option(ROMP_SIMPLE_TRACE_PREPROCESSOR_VAR);
+      gen.enable_preprocessor_option(ROMP_SIMPLE_TRACE_PREPROCESSOR_VAR);
       break;
 
     // case 128: // --header
@@ -181,7 +180,7 @@ static void parse_args(int argc, char **argv) {
       exit(EXIT_FAILURE);
     }
     in = dup_t(i, j);
-    romp::CodeGenerator::input_file_path = make_path(in_filename);
+    gen.input_file_path = make_path(in_filename);
   }
   if (out == nullptr) {
     auto o = std::make_shared<std::ofstream>(in_filename + ".romp.cpp");
@@ -190,13 +189,14 @@ static void parse_args(int argc, char **argv) {
       exit(EXIT_FAILURE);
     }
     out = o;
-    romp::CodeGenerator::output_file_path = make_path(in_filename + ".romp.cpp");
+    gen.output_file_path = make_path(in_filename + ".romp.cpp");
   }
-  romp::CodeGenerator::enable_preprocessor_option(
+  gen.enable_preprocessor_option(
       ROMP_HISTORY_SIZE_PREPROCESSOR_VAR " (" + std::to_string(hist_len) + "ul)"
     );
   if (not no_sym_provided)
-    romp::CodeGenerator::enable_preprocessor_option(ROMP_SYMMETRY_PREPROCESSOR_VAR);
+    gen.enable_preprocessor_option(ROMP_SYMMETRY_PREPROCESSOR_VAR);
+  romp::set_out(gen,(out == nullptr) ? std::make_shared_ptr(std::cout) : out));
 }
 
 static dup_t make_stdin_dup() {
@@ -228,8 +228,9 @@ std::string trim(const std::string &s)
 
 int main(int argc, char **argv) {
 
+  romp::CodeGenerator gen 
   // parse command line options
-  parse_args(argc, argv);
+  parse_args(gen, argc, argv);
 
   // if we are reading from stdin, duplicate it so that we can parse it both as
   // Murphi and for comments
@@ -238,8 +239,16 @@ int main(int argc, char **argv) {
 
   // parse input model
   murphi::Ptr<murphi::Model> m;
+  std::regex bad_name_regex("_+[Rr][Oo][Mm][Pp]_+.*");
   try {
-    m = murphi::parse(*in.first);
+    m = murphi::parse(*in.first, [&](auto name, auto type, auto loc) {
+                        if (std::regex_search(name, bad_name_regex))
+                          throw murphi::Error("name/id starts with protected romp key phrase "
+                                              "(regex:/_+[Rr][Oo][Mm][Pp]_+.*/)",loc);
+                        if (name == "romp")
+                          throw murphi::Error("name/id is a reserved word",loc);
+                        return {name};
+                      });
   } catch (murphi::Error &e) {
     romp::fprint_exception(std::cerr, e);
     // std::cerr << e.loc << ":" << e.what() << "\n";
@@ -272,15 +281,15 @@ int main(int argc, char **argv) {
   }
 
   // validate that this model is OK to translate
-  if (!check(*m))
-    return EXIT_FAILURE;
+  // if (!check(*m))
+  //   return EXIT_FAILURE;
 
   // name any rules that are unnamed, so they get valid C symbols
-  murphi::sanitise_rule_names(*m);
+  // murphi::sanitise_rule_names(*m);
 
   // Determine if we have any == or != involving records or arrays, in which
   // case we will need to pack structs. See generate_c() for why.
-  bool pack = compares_complex_values(*m);
+  // bool pack = compares_complex_values(*m);
 
   // parse comments from the source code
   std::vector<murphi::Comment> comments = murphi::parse_comments(*in.second);
@@ -292,7 +301,7 @@ int main(int argc, char **argv) {
     // auto start = ((in_filename[0]=='"') ? ++(in_filename.begin()) : in_filename.begin() );
     // auto stop = ((in_filename[in_filename.size()-1]=='"') ? --(in_filename.end()) : in_filename.end() );
     // file_path = std::string(start,stop);
-    generate_c(*m, comments, pack, (out == nullptr) ? std::cout : *out, "<not-implemented-yet>");
+    generate(*m, comments, gen, "<not-implemented-yet>");
   // } else {
   //   generate_h(*m, comments, pack, out == nullptr ? std::cout : *out);
   // }

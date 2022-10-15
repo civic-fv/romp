@@ -77,10 +77,10 @@ namespace romp {
   inline bool IsMember(const ScalarsetUnionType<U_M...>& u) {
     return ET::IsMember(u.value);
   }
-  template<size_t EID, size_t B, class... U_M>
-  inline bool IsMember(const ScalarsetUnionType<U_M...>& u) {
-    return EnumType<EID,B>::IsMember(u.value);
-  }
+  // template<size_t EID, size_t B, class... U_M>
+  // inline bool IsMember(const ScalarsetUnionType<U_M...>& u) {
+  //   return EnumType<EID,B>::IsMember(u.value);
+  // }
 
   // << ------------------------------------------------------------------------------------------ >> 
 
