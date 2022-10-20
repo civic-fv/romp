@@ -40,6 +40,7 @@ namespace romp {
   // class BaseType {
   // public:
   //   static inline constexpr const TypeInfo& __INFO() { return ::__info__::TYPE_INFOS[0]; }
+  //   static inline const std::string __json_type() { return std::to_string(TID); }
   // protected:
   //   template<typename T, typename ET>
   //   static inline void throw_(std::string msg);
@@ -80,7 +81,7 @@ namespace romp {
 #     ifdef __ROMP__SIMPLE_TRACE
         return (out << val.IsUndefined() << "," << val.get())
 #     else
-        out << "{\"$type\":\"undefinable-value\",\"type\":null,\"value\":";
+        out << "{\"$type\":\"undefinable-value\",\"type-id\":null,\"value\":";
         if (val.IsUndefined())
           return (out << "null}");
         return (out << val.get() << '}');
@@ -96,10 +97,11 @@ namespace romp {
   public:
     template<typename... Args>
     TypeIdType(Args &&... args) : T(std::forward<Args>(args)...) {}
-    static inline constexpr const TypeInfo& __INFO() { return ::__info__::TYPE_INFOS[0]; }
-    static inline const std::string& __id() { return __INFO().label; }
-    static inline const std::string __json_type() {
-      return "{\"$type\":\"type-id\",\"id\":\"" + __id() + "\",\"referent\":" + T::__json_type() + '}';
+    // static inline constexpr const TypeInfo& __INFO() { return ::__info__::TYPE_INFOS[0]; }
+    static inline const std::string& __id() { return ::__info__::TYPE_IDS[TID]; }
+    static inline constexpr const std::string __json_type() {
+      return std::to_string(TID);
+      return "{\"$type\":\"type-id\",\"tid\":"+std::to_string(TID)+",\"id\":\"" + __id() + "\",\"referent\":" + T::__json_type() + '}';
     }
   };
 
@@ -108,57 +110,88 @@ namespace romp {
 
   class BooleanType : public BaseUndefinableType<bool>, public BaseType<0ul> {
   public:
+    BooleanType() : BaseUndefinableType<bool>() {}
+
     void Clear() { set(false); }
     inline operator bool () { return get(); }
     inline BooleanType operator = (const bool val) { return ((BooleanType&)set(val)); }
 
-    static inline constexpr const TypeInfo& __INFO() { return ::__info__::TYPE_INFOS[0]; }
-    static inline constexpr bool __LB() { return false; } 
-    static inline constexpr bool __UB() { return true; } 
-    static inline constexpr bool __STEP() { return static_cast<bool>(1); }
+    // static inline constexpr const TypeInfo& __INFO() { return ::__info__::TYPE_INFOS[0]; }
+    // static inline constexpr BooleanType __LB() { return false; } 
+    // static inline constexpr BooleanType __UB() { return true; } 
+    // BooleanType& __step() { set(true); return *this; }
     static inline constexpr size_t __COUNT() { return 2u; }
 
-    static inline const std::string __json_type() { return "{\"$type\":\"boolean-type\"}"; }
+    static inline const std::string __p_type() { return "Boolean"; }
 
     friend inline ostream_p& operator << (ostream_p& out, const BooleanType& val) {
       if (val.IsUndefined())
         return (out << "<UNDEFINED>");
       return (out << ((val.get()) ? "true" : "false"));
     }
+    static inline const std::string __json_type() { return "{\"$type\":\"boolean-type\"}"; }
+    template<class O>
+#   ifndef __ROMP__SIMPLE_TRACE
+    friend ojstream<O>& operator << (ojstream<O>& out, const RangeType& val) {
+      out << "{\"$type\":\"undefinable-value\",\"type-id\":"<< __json_type() <<","
+            "\"value\":";
+      if (val.IsUndefined())
+        return (out << "null}");
+      return (out << val.get() << '}');
+    }
+#   endif
   };
 
-  template<size_t TID, range_t LB, range_t UB>
+  template<range_t LB, range_t UB, range_t STEP=(range_t)((LB<UB) ? 1 : -1)>
   class RangeType : public BaseUndefinableType<range_t> {
+    static_assert(not ((LB<UB) xor (STEP>0)), "step must go in the same direction as bounds");
+    static_assert((not (STEP==0) || (LB==UB)), "if STEP is 0, then LB must equal UB");
+  protected:
+    void _check(range_t value_) {
+      if (LB<=UB) { // compiler should optimize this top level if-else out
+        if (LB <= value_ && value_ <= UB) return;
+      } else {
+        if (UB <= value_ && value_ <= LB) return;
+      }
+      throw std::out_of_range("value (`" +
+                              std::to_string(value_) +
+                              "`) is out of range (`"+ 
+                              std::to_string(LB) +
+                              ".."+
+                              std::to_string(UB) +
+                              "`)");
+    }
   public:
     RangeType() : BaseUndefinableType<range_t>() {}
-    RangeType(range_t value_) : BaseUndefinableType<range_t>(value_) {
-      if (value_ < LB || value_ > UB)
-        throw std::out_of_range("value " +
-                                std::to_string(value_) +
-                                " being assigned is out of range (`"+ 
-                                std::to_string(LB) +
-                                ".."+
-                                std::to_string(UB) +
-                                "`)");
-    }
+    RangeType(range_t value_) : BaseUndefinableType<range_t>(value_) { _check(value_); }
     void Clear() { set(LB); }
     inline operator range_t () { return get(); }
     inline RangeType& operator = (range_t other) { 
-      if (other < LB || other > UB)
-        throw std::out_of_range("value " +
-                                std::to_string(other) +
-                                " being assigned is out of range (i.e. `"+ 
-                                std::to_string(LB) +
-                                ".."+
-                                std::to_string(UB) +
-                                "`)");
+      _check(other);
       return ((RangeType&)set(other));
     }
+    template<range_t N_LB, range_t N_UB, range_t N_STEP>
+    inline RangeType& operator = (const RangeType<N_LB,N_UB,N_STEP>& other) { 
+      if (other.IsUndefined) {
+        Undefine();
+        return *this;
+      }
+      return (*this = other.value);
+    }
     size_t __get_index_val() const { return static_cast<size_t>(get() - LB); }
-    static constexpr range_t __LB() { return LB; } 
-    static constexpr range_t __UB() { return UB; } 
-    static constexpr range_t __STEP() { return static_cast<range_t>(1); }
-    static constexpr size_t __COUNT() { return static_cast<size_t>((UB-LB+1)/__STEP()); }
+    static constexpr RangeType __LB() { return RangeType(LB); }
+    static constexpr RangeType __UB() { RangeType tmp(UB); tmp.set(UB+STEP); } 
+    static constexpr size_t __COUNT() { return static_cast<size_t>((UB-LB+1)/STEP); }
+    RangeType& __step() {
+      // step needs to account for uneven ranges or modifying values in model between steps
+      range_t val = get() + STEP;
+      if (LB<=UB) { // compiler should optimize this top level if-else out
+        set((val <= UB) ? val : UB+STEP); 
+      } else {
+        set((val >= UB) ? val : UB+STEP);
+      }
+      return *this;
+    }
 
     template<range_t RLB, range_t RUB>
     friend inline range_t operator + (const RangeType& l, const RangeType<RLB,RUB>& r) { return l.get() + r.get(); }
@@ -190,17 +223,23 @@ namespace romp {
     template<range_t RLB, range_t RUB>
     friend inline bool operator > (const RangeType& l, const RangeType<RLB,RUB>& r) { return l.get() > r.get(); }
 
+
+    static constexpr const std::string __p_type() { 
+      if (-1 <= STEP && STEP <= 1) // compiler should optimize this out
+        return std::to_string(LB) + ".." + std::to_string(UB);
+      return std::to_string(LB) + " to " + std::to_string(UB) + " by " + std::to_string(STEP);
+    }
     friend ostream_p& operator << (ostream_p& out, BaseUndefinableType& val) { 
       return (out << get());
     }
-    static const std::string __json_type() { 
+    static constexpr const std::string __json_type() { 
       return "{\"$type\":\"range-type\","
                 "\"bounds\":["+std::to_string(LB)+","+std::string(UB)+"]}";
     }
     template<class O>
 #   ifndef __ROMP__SIMPLE_TRACE
     friend ojstream<O>& operator << (ojstream<O>& out, const RangeType& val) {
-      out << "{\"$type\":\"undefinable-value\",\"type\":"<< __json_type() <<","
+      out << "{\"$type\":\"undefinable-value\",\"type-id\":"<< __json_type() <<","
             "\"value\":";
       if (val.IsUndefined())
         return (out << "null}");
@@ -215,7 +254,7 @@ namespace romp {
 
   // useful pre-decls
   template<size_t ENUM_ID, size_t BOUND> class EnumType;
-  template<size_t TID, size_t ENUM_ID, size_t BOUND> class ScalarsetType;
+  template<size_t ENUM_ID, size_t BOUND> class ScalarsetType;
   template<class... UNION_MEMBERS> class ScalarsetUnionType;
 
 
@@ -246,9 +285,9 @@ namespace romp {
     
     static constexpr size_t __ENUM_ID() { return ENUM_ID; }
     static constexpr size_t __BOUND() { return BOUND; }
-    static constexpr SCALAR_ENUM_t __LB() { return make_SCALAR_ENUM_t(ENUM_ID); }
-    static constexpr SCALAR_ENUM_t __UB() { return make_SCALAR_ENUM_t(ENUM_ID+BOUND-1); }
-    static constexpr SCALAR_ENUM_t __STEP() { return make_SCALAR_ENUM_t(1); }
+    static constexpr EnumType __LB() { return make_SCALAR_ENUM_t(ENUM_ID); }
+    static constexpr EnumType __UB() { return make_SCALAR_ENUM_t(ENUM_ID+BOUND); }
+    EnumType& __step() { value = make_SCALAR_ENUM_t(static_cast<size_t>(value)+1); return *this; }
     static constexpr size_t __COUNT() { return BOUND; }
 
     // cast to index operator
@@ -274,35 +313,41 @@ namespace romp {
     template<class... U_M>
     explicit inline operator ScalarsetUnionType<U_M...> () { return __convert(*this); }
     template<class... U_M>
-    ScalarsetUnionType<U_M...> __convert(const EnumType& _this);
+    friend ScalarsetUnionType<U_M...> __convert(const EnumType& _this);
 
-    template<size_t L_ID, size_t L_B, size_t R_ID, size_t R_B>
-    friend inline bool operator == (const EnumType<L_ID,L_B>& l, const EnumType<R_ID,R_B> r);
-    template<size_t L_ID, size_t L_B, size_t R_ID, size_t R_B>
-    friend inline bool operator != (const EnumType<L_ID,L_B>& l, const EnumType<R_ID,R_B> r);
-
-    template<size_t EID, size_t B, class... U_M>
-    friend inline bool operator == (const EnumType<EID,B>& e, const ScalarsetUnionType<U_M...>& u);
-    template<size_t EID, size_t B, class... U_M>
-    friend inline bool operator != (const EnumType<EID,B>& e, const ScalarsetUnionType<U_M...>& u);
-    template<class... U_M, size_t EID, size_t B>
-    friend inline bool operator == (const ScalarsetUnionType<U_M...>& u, const EnumType<EID,B>& e);
-    template<class... U_M, size_t EID, size_t B>
-    friend inline bool operator != (const ScalarsetUnionType<U_M...>& u, const EnumType<EID,B>& e);
+    template<size_t R_EID, size_t R_B>
+    friend inline bool operator == (const EnumType& l, const EnumType<R_EID,R_B> r) { 
+      return l.value == r.value;
+    }
+    template<size_t R_EID, size_t R_B>
+    friend inline bool operator != (const EnumType& l, const EnumType<R_EID,R_B> r) {
+      return l.value == r.value;
+    }
 
     /* this IsMember is the one associated with the IsMember() Murphi language operator */
-    template<size_t EID, size_t B, class... U_M>
+    template<typename T, class... U_M>
     friend inline bool IsMember(const ScalarsetUnionType<U_M...> u);
     
-    friend ostream_p& operator << (ostream_p& out, const ScalarsetUnionType& val) { return (out << val.value); }
+    static inline const std::string __p_type() { 
+      std::string res = "enum {";
+      std::string sep;
+      for (auto i=__LB(), i!=__UB(); i.__step()) {
+        res += sep + to_str(make_SCALAR_ENUM_t(i.__get_value()));
+        sep = ",";
+      }
+      return res + "}";
+    }
+    friend ostream_p& operator << (ostream_p& out, const EnumType& val) { return (out << val.value); }
     template<class O>
-    static inline const std::string __json_type() { return "{\"$type\":\"enum-type\",\"bound\":"+std::to_string(BOUND)+'}'; }
+    static inline const std::string __json_type() { 
+      return "{\"$type\":\"enum-type\",\"first-member\":"+to_str(make_SCALAR_ENUM_t(ENUM_ID))+",""\"member-count\":"+std::to_string(BOUND)+'}';
+    }
     template<class O>
     friend ojstream<O>& operator << (ojstream<O>& out, const EnumType& val) {
 #     ifdef __ROMP__SIMPLE_TRACE
         return (out << val.IsUndefined() << "," << val.value)
 #     else
-        out << "{\"$type\":\"undefinable-value\",\"type\":" << __json_type() << ",\"value\":";
+        out << "{\"$type\":\"undefinable-value\",\"type-id\":" << __json_type() << ",\"value\":";
         if (val.IsUndefined())
           return (out << "null}");
         return (out << "\"" << val.value << "\"}");
@@ -310,7 +355,7 @@ namespace romp {
     }
   };
 
-  template<size_t TID, size_t ENUM_ID, size_t BOUND>
+  template<size_t ENUM_ID, size_t BOUND>
   class ScalarsetType : public EnumType<ENUM_ID,BOUND> {
   public:
     ScalarsetType() : EnumType<ENUM_ID,BOUND>() {}
@@ -319,32 +364,34 @@ namespace romp {
         throw std::logic_error("`"+ value_ +"` is not a member of this scalarset type");
       this->value = value_;
     }
-    static inline const std::string __id() { return ::__info__::TYPE_INFOS[TID].label; }
+    // static inline const std::string __id() { return ::__info__::TYPE_INFOS[TID].label; }
 
     template<class... U_M>
     explicit inline operator ScalarsetUnionType<U_M...> () { return __convert(*this); }
     template<class... U_M>
-    friend inline ScalarsetUnionType<U_M...> __convert(const ScalarsetType& _this);
+    friend ScalarsetUnionType<U_M...> __convert(const ScalarsetType& _this);
 
-    template<size_t EID, size_t B, class... U_M>
-    friend inline void __assign(EnumType<EID,B>& _this, const ScalarsetUnionType<U_M...>& other);
+    template<class... U_M>
+    friend inline void __assign(EnumType& _this, const ScalarsetUnionType<U_M...>& other);
     template<class... U_M>
     inline ScalarsetType& operator = (const ScalarsetUnionType<U_M...>& other) { __assign(*this,other); return *this; }
     inline ScalarsetType& operator = (const SCALAR_ENUM_t& val) {
-      if (not EnumType<ENUM_ID,BOUND>::IsMember(val))
+      if (not EnumType<TID,ENUM_ID,BOUND>::IsMember(val))
         throw std::logic_error("`"+ to_str(val) +"` is not a member of this scalarset type" 
                   + ((__id() != "") ? " (`"+ __id() +"`)" : std::string()));
       this->value = val;
       return *this;
     }
-    friend ostream_p& operator << (ostream_p& out, const ScalarsetUnionType& val) { return (out << val.value); }
-    static inline const std::string __json_type() { return "{\"$type\":\"scalarset-type\",\"id\":\""+__id()+"\",\"bound\":"+std::to_string(BOUND)+'}'; }
+
+    static inline const std::string __p_type() { return "scalarset("+std::to_string(BOUND)+')'; }
+    friend ostream_p& operator << (ostream_p& out, const ScalarsetType& val) { return (out << val.value); }
+    static inline const std::string __json_type() { return "{\"$type\":\"scalarset-type\",\"bound\":"+std::to_string(BOUND)+'}'; }
     template<class O>
     friend ojstream<O>& operator << (ojstream<O>& out, const ScalarsetType& val) {
 #     ifdef __ROMP__SIMPLE_TRACE
         return (out << val.IsUndefined() << "," << val.value)
 #     else
-        out << "{\"$type\":\"undefinable-value\",\"type\":" << __json_type() << ",\"value\":";
+        out << "{\"$type\":\"undefinable-value\",\"type-id\":" << __json_type() << ",\"value\":";
         if (val.IsUndefined())
           return (out << "null}");
         return (out << "\"" << val.value << "\"}");
@@ -429,14 +476,14 @@ namespace romp {
                   "enum type must be a member of the union type to be cast to it");
       return ScalarsetUnionType(_this.value);
     }
-    template<size_t TID, size_t EID, size_t B>
-    explicit inline operator ScalarsetType<TID,EID,B> () {
+    template<size_t EID, size_t B>
+    explicit inline operator ScalarsetType<EID,B> () {
       static_assert(ScalarsetUnionType::ContainsMember<EID,B>(), 
                     "union must contain scalarset member type to cast to it!");
-      return ScalarsetType<TID,EID,B>(value);
+      return ScalarsetType<EID,B>(value);
     }
-    template<size_t TID, size_t EID, size_t B>
-    friend inline ScalarsetUnionType __convert(const EnumType<EID,B>& _this) {
+    template<size_t EID, size_t B>
+    friend inline ScalarsetUnionType __convert(const ScalarsetType<EID,B>& _this) {
       static_assert((ScalarsetUnionType::ContainsMember<EID,B>()),
                   "scalarset type must be a member of the union type to be cast to it");
       return ScalarsetUnionType(_this.value);
@@ -450,26 +497,30 @@ namespace romp {
       value = val;
     }
     
-    template<class... L_M, class... R_M>
-    friend inline bool operator == (const ScalarsetUnionType<L_M...>& l, const ScalarsetUnionType<R_M...> r);
-    template<class... L_M, class... R_M>
-    friend inline bool operator != (const ScalarsetUnionType<L_M...>& l, const ScalarsetUnionType<R_M...> r);
+    template<class... R_M>
+    friend inline bool operator == (const ScalarsetUnionType& l, const ScalarsetUnionType<R_M...> r) {
+      return l.value == r.value;
+    }
+    template<class... R_M>
+    friend inline bool operator != (const ScalarsetUnionType& l, const ScalarsetUnionType<R_M...> r) {
+      return l.value != r.value;
+    }
 
     bool operator == (const SCALAR_ENUM_t& other) const { return value == other; }
     bool operator != (const SCALAR_ENUM_t& other) const { return value != other; }
+    template<size_t EID, size_t B>
+    bool operator == (const EnumType<EID,B>& other) const { return value == other.__get_value(); }
+    template<size_t EID, size_t B>
+    bool operator != (const EnumType<EID,B>& other) const { return value != other.__get_value(); }
 
+    template<size_t EID, size_t B>
+    friend inline bool operator == (const EnumType<EID,B>& e, const ScalarsetUnionType& u) { return u == e; }
     template<size_t EID, size_t B, class... U_M>
-    friend inline bool operator == (const EnumType<EID,B>& e, const ScalarsetUnionType<U_M...>& u);
-    template<size_t EID, size_t B, class... U_M>
-    friend inline bool operator != (const EnumType<EID,B>& e, const ScalarsetUnionType<U_M...>& u);
-    template<class... U_M, size_t EID, size_t B>
-    friend inline bool operator == (const ScalarsetUnionType<U_M...>& u, const EnumType<EID,B>& e);
-    template<class... U_M, size_t EID, size_t B>
-    friend inline bool operator != (const ScalarsetUnionType<U_M...>& u, const EnumType<EID,B>& e);
+    friend inline bool operator != (const EnumType<EID,B>& e, const ScalarsetUnionType& u) { return u == e; }
 
     /* this IsMember is the one associated with the IsMember() Murphi language operator */
-    template<class ET, class... U_M>
-    friend inline bool IsMember(const ScalarsetUnionType<U_M...>& u);
+    // template<class ET, class... U_M>
+    // friend inline bool IsMember(const ScalarsetUnionType<U_M...>& u);
     // template<size_t EID, size_t B, class... U_M>
     // friend inline bool IsMember(const ScalarsetUnionType<U_M...>& u);
 
@@ -481,15 +532,29 @@ namespace romp {
       iterator(size_t i_, size_t j_) 
         : i(i_), j(j_), 
           u(make_SCALAR_ENUM_t(ScalarsetUnionType::ENUM_IDS[i_]+j_)) 
-        {}
+        {
+          if (i>sizeof...(UNION_MEMBERS)) {
+            j = 0; u.value = SCALAR_ENUM_t::_UNDEFINED_;
+            return *this;
+          }
+        }
       ScalarsetUnionType& operator*() const { return u; }
       ScalarsetUnionType* operator->() { return &u; }
-      iterator& operator += (int _) {
+      iterator& operator += (int _) { return (__step()); }
+      iterator& __step() {
+        if (i>sizeof...(UNION_MEMBERS)) {
+          j = 0; u.value = SCALAR_ENUM_t::_UNDEFINED_;
+          return *this;
+        } 
         if (++j > u.BOUNDS[i]) {
           ++u.value;
           return *this;
         }
         ++i; j=0;
+        if (i>sizeof...(UNION_MEMBERS)) {
+          u.value = SCALAR_ENUM_t::_UNDEFINED_;
+          return *this;
+        }
         u.value = make_SCALAR_ENUM_t(ScalarsetUnionType::ENUM_IDS[i]+j);
         return *this;
       }
@@ -500,14 +565,16 @@ namespace romp {
       iterator& operator = (const ScalarsetUnionType& other) {
         throw std::logic_error("you cannot assign to a quantifier or for-loop iterator");
       }
+      friend inline bool operator == (const iterator& l, const iterator& r) { return (l.i==r.i && l.j==r.j); }
+      friend inline bool operator != (const iterator& l, const iterator& r) { return (l.i!=r.i || l.j!=r.j); }
     };
     static constexpr iterator __LB() { return iterator(1, 0); }
-    static constexpr iterator __UB() { return iterator(sizeof...(UNION_MEMBERS), BOUNDS[sizeof...(UNION_MEMBERS)]); }
-    static constexpr int __STEP() { return 1; }
+    static constexpr iterator __UB() { return iterator(sizeof...(UNION_MEMBERS)+1, 0); }
+    // static constexpr int __STEP() { return 1; }
 
     static constexpr size_t __COUNT() {
 #     if __cplusplus >= 201703L
-        return ((UNION_MEMBERS::__COUNT() == E_ID) + ...); // [[requires C++17]]
+        return ((UNION_MEMBERS::__COUNT()) + ...); // [[requires C++17]]
 #     else
         size_t counts[sizeof...(UNION_MEMBERS)] = {(UNION_MEMBERS::__COUNT())...};
         size_t res=0; 
@@ -517,6 +584,22 @@ namespace romp {
 #     endif
     }
     
+    static constexpr const std::string __p_type() {
+#     if __cplusplus >= 201703L
+        return "union {" + ((UNION_MEMBERS::__p_type()) + ...) + "}"; // [[requires C++17]]
+#     else
+        const std::string member_types[sizeof...(UNION_MEMBERS)] = {(UNION_MEMBER::__p_type())...};
+        std::string res = "union {";
+        std::string sep;
+        for (size_t i=0; i<sizeof...(UNION_MEMBERS); ++i) {
+          res += sep + member_types[i];
+          sep = ", ";
+        }
+        return res + "}";
+#     endif
+      
+      for () 
+    }
     friend ostream_p& operator << (ostream_p& out, const ScalarsetUnionType& val) { return (out << val.value); }
     static inline const std::string __json_type() { 
       return "{\"$type\":\"scalarset-union-type\","
@@ -528,7 +611,7 @@ namespace romp {
 #     ifdef __ROMP__SIMPLE_TRACE
         return (out << val.IsUndefined() << "," << val.value)
 #     else
-        out << "{\"$type\":\"undefinable-value\",\"type\":" << __json_type() << ",\"value\":";
+        out << "{\"$type\":\"undefinable-value\",\"type-id\":" << __json_type() << ",\"value\":";
         if (val.IsUndefined())
           return (out << "null}");
         return (out << "\"" << val.value << "\"}");
@@ -541,6 +624,13 @@ namespace romp {
 
   template<class... UNION_MEMBERS>
   const size_t ScalarsetUnionType<UNION_MEMBERS...>::BOUNDS[sizeof...(UNION_MEMBERS)+1] = {1,UNION_MEMBERS::__BOUND()...};
+
+
+  /* this IsMember is the one associated with the IsMember() Murphi language operator */
+  template<class ET, typename VT>
+  inline bool IsMember(const VT& u) {
+    return ET::IsMember(u.__get_value());
+  }
 
 
   // << ===================================== Complex Types ====================================== >> 
@@ -578,7 +668,7 @@ namespace romp {
           return false;
       return true;
     }
-    template<typename LI, typename LE, typename RI, typename RE> 
+    template<typename RI, typename RE> 
     friend bool operator != (const ArrayType& l, const ArrayType<RI,RE>& r) {
       if (INDEX_t::__COUNT() != RI::__COUNT()) return true; // evaluate-able at compile time
       for (size_t i=0; i<INDEX_t::__COUNT(); ++i)
@@ -592,15 +682,8 @@ namespace romp {
     inline typename std::enable_if<(sizeof(ELEMENT_t)*INDEX_t::__COUNT()>sizeof(RangeType<0,1>)*6),void>::type _pWrite(ostream_p& out) {
       std::string sep;
       out.indent(); out.indent();
-      { const auto __LB__ = INDEX_t::__LB();
-        const auto __UB__ = INDEX_t::__UB();
-        const auto __STEP__ = INDEX_t::__STEP();
-        const auto __COND__ = ((__STEP__>0) 
-                                ? [](i)->bool { return i<=__UB__; }
-                                : [](i)->bool { return i>=__LB__; });
-        for (auto i=__LB__; __COND__(i); i+=__STEP__) {
-          out << sep << out.nl() << i << ": " << val[i]; sep = ",";
-        }
+      for (auto i = INDEX_t::__LB(); i!=INDEX_t::__UB(); i.__step()) {
+        out << sep << out.nl() << i << ": " << (*this)[i]; sep = ",";
       }
       out.dedent(); out.dedent();
     }
@@ -612,6 +695,9 @@ namespace romp {
       }
     }
   public:
+    static constexpr const std::string __p_type() { 
+      return "Array["+INDEX_t::__p_type()+"] of " + ELEMENT_t::__p_type(); 
+    }
     // template<typename It, typename Et>
     // friend inline ostream_p& operator << (ostream_p& out, const ArrayType<It,Et>& val) {
     friend inline ostream_p& operator << (ostream_p& out, const ArrayType& val) {
@@ -620,13 +706,9 @@ namespace romp {
       val._pWrite(out);
       return (out << '}');
     }
-    // template<size_t EID, size_t B, typename Et>
-    // friend inline ostream_p& operator << (ostream_p& out, const ArrayType<EnumType<EID,B>,Et>& val) {/* might need latter */}
-    // template<class... U_M, typename Et>
-    // friend inline ostream_p& operator << (ostream_p& out, const ArrayType<ScalarsetUnionType<U_M...>,Et>& val) {/* might need latter */}
-    static constexpr std::string __json_type() { 
-      return "{\"$type\":\"array-type\",\"length\":"+ std::to_string(INDEX_t::__COUNT())+'}';
-    }
+    // static constexpr std::string __json_type() { 
+    //   return "{\"$type\":\"array-type\",\"length\":"+ std::to_string(INDEX_t::__COUNT())+'}';
+    // }
     template<class O>
     friend inline ojstream<O>& operator << (ojstream<O>& json, const ArrayType& val) {
 #     ifdef __ROMP__SIMPLE_TRACE
@@ -652,6 +734,8 @@ namespace romp {
 
   template<size_t MAX, typename ELEMENT_t>
   class MultisetType {
+    static_assert(MAX != ~((size_t)0u), "multiset is not the same size as the empty option");
+    static_assert(MAX != 0, "multiset is not of zero size");
     ELEMENT_t data[MAX];
     size_t occupancy = 0;
     bool is_defined = false;
@@ -675,25 +759,26 @@ namespace romp {
       is_defined = true;
       data[occupancy++] = val;
     }
+  protected:
     void MultisetRemove(const size_t i) {
       if (i != occupancy-1) {
         data[i] = data[occupancy-1];
       }
       data[--occupancy].Undefine();
     }
+  public:
     void MultisetRemovePred(const std::function<bool(const size_t)>& pred) {
       for (long i=occupancy; i>0; --i)
         if (pred(i-1)) MultisetRemove(i-1);
     }
 
-    // always call IsUndefined() before using this, else exception thrown if empty/undefined
-    const size_t Choose(IRandWalker* __rw__) const {
-      if (occupancy == 0)
-        throw std::logic_error("tried to choose from an empty/undefined multiset");
-      return __rw__->choose_handler(occupancy);
-    }
+    // size_t Choose(IRandWalker* __rw__) const {
+    //   if (not is_defined || occupancy == 0)
+    //     return ~((size_t)0u); // no choice possible value
+    //   return __rw__->choose_handler(occupancy);
+    // }
 
-    friend const ELEMENT_t& __multiset_element(const MultisetType& ms, const size_t i) {
+    friend const ELEMENT_t& MultisetElement(const MultisetType& ms, const size_t i) {
       return ms.data[i];
     }
     template<size_t RM, typename RE>  
@@ -733,13 +818,16 @@ namespace romp {
       }
     }
   public:
+    static constexpr const std::string __p_type() { 
+      return "Multiset["+std::to_string(MAX)+"] of " + ELEMENT_t::__p_type();
+    }
     friend inline ostream_p& operator << (ostream_p& out, const MultisetType& val) {
       if (val.IsUndefined()) return (out << "<UNDEFINED>");
       out << '(' << val.occupancy << "/" << MAX << "){";
       val._pWrite(out);
       return (out << '}');
     }
-    static constexpr std::string __json_type() { 
+    static constexpr const std::string __json_type() { 
       return "{\"$type\":\"multiset-type\",\"max\":"+std::to_string(MAX)+'}';
     }
     template<class O>
@@ -765,36 +853,37 @@ namespace romp {
   };
 
 
-  template<size_t TID_START, typename... MEMBERS>
+  template<typename... FIELDS, size_t FID_START>
   class RecordType {
-    std::tuple<MEMBERS...> data;
+    std::tuple<FIELDS...> data;
   protected:
-    static const std::string& _GET_MEMBER_NAME(size_t i) { return ::__info__::RECORD_MEMBER_LABELS[TID_START+i]; }
     template<size_t I>
-    inline typename std::enable_if<(I>=sizeof...(MEMBERS)),bool>::type _IsUndefined() const { return true; }
+    static constexpr std::string& _GET_FIELD_NAME() { return ::__info__::RECORD_FIELD_LABELS[TID_START+I]; }
     template<size_t I>
-    inline typename std::enable_if<(I<sizeof...(MEMBERS)),bool>::type _IsUndefined() const {
+    inline typename std::enable_if<(I>=sizeof...(FIELDS)),bool>::type _IsUndefined() const { return true; }
+    template<size_t I>
+    inline typename std::enable_if<(I<sizeof...(FIELDS)),bool>::type _IsUndefined() const {
       if (not std::get<I>(data).IsUndefined()) return false;
       return _IsUndefined<I+1>();
     }
     template<size_t I>
-    inline typename std::enable_if<(I>=sizeof...(MEMBERS)),void>::type _Clear() { return; }
+    inline typename std::enable_if<(I>=sizeof...(FIELDS)),void>::type _Clear() { return; }
     template<size_t I>
-    inline typename std::enable_if<(I<sizeof...(MEMBERS)),void>::type _Clear() {
+    inline typename std::enable_if<(I<sizeof...(FIELDS)),void>::type _Clear() {
       std::get<I>(data).Clear();
       _Clear<I+1>();
     }
     template<size_t I>
-    static inline typename std::enable_if<(I>=sizeof...(MEMBERS)),bool>::type _Equal(const RecordType& l, const RecordType& r) { return true; }
+    static inline typename std::enable_if<(I>=sizeof...(FIELDS)),bool>::type _Equal(const RecordType& l, const RecordType& r) { return true; }
     template<size_t I>
-    static inline typename std::enable_if<(I<sizeof...(MEMBERS)),bool>::type _Equal(const RecordType& l, const RecordType& r) {
+    static inline typename std::enable_if<(I<sizeof...(FIELDS)),bool>::type _Equal(const RecordType& l, const RecordType& r) {
       if (std::get<I>(l.data) != std::get<I>(r.data)) return false;
       return _Equal<I+1>(l,r);
     }
     template<size_t I>
-    static inline typename std::enable_if<(I>=sizeof...(MEMBERS)),bool>::type _NEqual(const RecordType& l, const RecordType& r) { return true; }
+    static inline typename std::enable_if<(I>=sizeof...(FIELDS)),bool>::type _NEqual(const RecordType& l, const RecordType& r) { return true; }
     template<size_t I>
-    static inline typename std::enable_if<(I<sizeof...(MEMBERS)),bool>::type _NEqual(const RecordType& l, const RecordType& r) {
+    static inline typename std::enable_if<(I<sizeof...(FIELDS)),bool>::type _NEqual(const RecordType& l, const RecordType& r) {
       if (std::get<I>(l.data) == std::get<I>(r.data)) return false;
       return _NEqual<I+1>(l,r);
     }
@@ -804,48 +893,58 @@ namespace romp {
     bool IsUndefined() const { return _IsUndefined<0>(); }
     void Undefine() { std::memset(&data, 0u, sizeof(data)); } // for now design still allows for setting all to 0 to undefine
     void Clear() { _Clear<0>(); }
-    template<size_t I>
-    typename std::enable_if<(I>=sizeof...(MEMBERS)),typename std::tuple_element<I,std::tuple<MEMBERS...>>::type>::type& get() { 
-      throw std::out_of_range("member does not exist in record"); 
-    }
-    template<size_t I>
-    typename std::enable_if<(I<sizeof...(MEMBERS)),typename std::tuple_element<I,std::tuple<MEMBERS...>>::type>::type& get() { 
-      return std::get<I>(data); 
-    }
+    // template<size_t I>
+    // typename std::enable_if<(I>=sizeof...(FIELDS)),typename std::tuple_element<I,std::tuple<FIELDS...>>::type>::type& get() { 
+    //   throw std::out_of_range("field does not exist in record"); 
+    // }
+    // template<size_t I>
+    // typename std::enable_if<(I<sizeof...(FIELDS)),typename std::tuple_element<I,std::tuple<FIELDS...>>::type>::type& get() { 
+    //   return std::get<I>(data); 
+    // }
 
-    friend bool operator == (const RecordType& l, const RecordType& r) { return RecordType::_Equal<0>(l,r); }
-    friend bool operator != (const RecordType& l, const RecordType& r) { return RecordType::_NEqual<0>(l,r); }
+    // template<size_t O_FID>
+    // friend bool operator == (const RecordType& l, const RecordType<O_FID,FIELDS...>& r) { return RecordType::_Equal<0>(l,r); }
+    // template<size_t O_FID>
+    // friend bool operator != (const RecordType& l, const RecordType<O_FID,FIELDS...>& r) { return RecordType::_NEqual<0>(l,r); }
+    template<size_t O_FID>
+    friend bool operator == (const RecordType& l, const RecordType<FIELDS...,O_FID>& r) { return l.data == r.data; }
+    template<size_t O_FID>
+    friend bool operator != (const RecordType& l, const RecordType<FIELDS...,O_FID>& r) { return l.data != r.data; }
 
   protected:
     template<size_t I>
-    typename std::enable_if<(I>=sizeof...(MEMBERS)),void>::type _pWrite(ostream_p& out, const std::string& sep) const { return; }
+    typename std::enable_if<(I>=sizeof...(FIELDS)),void>::type _pWrite(ostream_p& out, const std::string& sep) const { return; }
     template<size_t I>
-    typename std::enable_if<(I<sizeof...(MEMBERS)),void>::type _pWrite(ostream_p& out, const std::string& sep) const {
-      if (I > 0) out << sep;
-      if ((sizeof(std::tuple<MEMBERS...>)>sizeof(RangeType<0,1>)*8) || (sizeof...(MEMBERS)>3)) out.nl();
-      out << '`' << _GET_MEMBER_NAME(I) << "`: " << std::get<I>(data);
+    typename std::enable_if<(I<sizeof...(FIELDS)),void>::type _pWrite(ostream_p& out, const std::string& sep) const {
+      // if (I > 0) out << sep;
+      if ((sizeof(std::tuple<FIELDS...>)>sizeof(RangeType<0,1>)*8) || (sizeof...(FIELDS)>3)) out.nl();
+      if (out.OPTIONS.report_show_type)
+        out << _GET_FIELD_NAME<I>() << ": " << std::get<I>(data).__p_type() << " = " << std::get<I>(data) << sep;
+      else
+        out << _GET_FIELD_NAME<I>() << ":= " << std::get<I>(data) << sep;
       _pWrite<I+1>(out,sep);
     }
     template<class O, size_t I>
-    typename std::enable_if<(I>=sizeof...(MEMBERS)),void>::type _jWrite(ojstream<O>& json) const { return; }
+    typename std::enable_if<(I>=sizeof...(FIELDS)),void>::type _jWrite(ojstream<O>& json) const { return; }
     template<class O, size_t I>
-    typename std::enable_if<(I<sizeof...(MEMBERS)),void>::type _jWrite(ojstream<O>& json) const {
+    typename std::enable_if<(I<sizeof...(FIELDS)),void>::type _jWrite(ojstream<O>& json) const {
 #     ifdef __ROMP__SIMPLE_TRACE
         if (I > 0) json << ',';
         json << std::get<I>(data);
         _jWrite<I+1>(json);
 #     else
         if (I > 0) json << ',';
-        json << "{\"$type\":\"kv-pair\",\"key\":" << _GET_MEMBER_NAME(I) << ","
+        json << "{\"$type\":\"kv-pair\",\"key\":" << _GET_FIELD_NAME(I) << ","
                   "\"value\":" << std::get<I>(data) << '}';
         _jWrite<I+1>(json);
 #     endif
     }
   public:
+    static constexpr const std::string __p_type() { return "Record"; }
     friend ostream_p& operator << (ostream_p& out, const RecordType& val) {
       if (val.IsUndefined()) return (out << "<UNDEFINED>");
       out << "{";
-      if ((sizeof(std::tuple<MEMBERS...>)>sizeof(RangeType<0,1>)*8) || (sizeof...(MEMBERS)>3)) {
+      if ((sizeof(std::tuple<FIELDS...>)>sizeof(RangeType<0,1>)*8) || (sizeof...(FIELDS)>3)) {
         out.indent(); out.indent();
         val._pWrite<0>(out, ";");
         out << out._dedent() << '}'; out.dedent(); 
@@ -855,7 +954,7 @@ namespace romp {
       }
     }
     static constexpr std::string __json_type() {
-      return "{\"$type\":\"record-type\",\"member-count\":"+std::to_string(sizeof...(MEMBERS))+'}';
+      return "{\"$type\":\"record-type\",\"field-count\":"+std::to_string(sizeof...(FIELDS))+'}';
     }
     template<class O>
     friend inline ojstream<O>& operator << (ojstream<O>& json, const RecordType& val) {
@@ -864,7 +963,7 @@ namespace romp {
         val._jWrite(json);
         return (json << ']');
 #     else
-        json << "{\"$type\":\"complex-value\",\"type\":" << RecordType::__json_type() << ","
+        json << "{\"$type\":\"complex-value\",\"type-id\":" << RecordType::__json_type() << ","
                   "\"value\":";
         if (val.IsUndefined())
           return (json << "null}");

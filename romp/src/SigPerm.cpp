@@ -16,7 +16,6 @@
  */
 
 #include "SigPerm.hpp"
-#include "ModelSplitter.hpp"
 #include "type_traverse.hpp"
 // #include "../../common/escape.h"
 #include "nested_escape.hpp"
@@ -115,15 +114,15 @@ namespace romp {
   const std::string& SigParam::to_string() const {return str_rep;}
   const std::string& SigParam::to_json() const {return json_rep;}
 
-  const std::string SigParam::to_string(const std::string& value_str, const QuantExpansion& qe) { 
-    return "(::" ROMP_TYPE_NAMESPACE "::" + qe.type_id + ") " + value_str; 
+  inline const std::string SigParam::to_string(const std::string& value_str, const QuantExpansion& qe) { 
+    return /* "(::" ROMP_TYPE_NAMESPACE "::" + qe.type_id + ") " + */ value_str; 
   }
 
-  const std::string SigParam::to_json(const std::string& value_str, const QuantExpansion& qe, const std::string json_val_type) {
+  inline const std::string SigParam::to_json(const size_t& index, const std::string& value_str, const QuantExpansion& qe, const std::string json_val_type) {
     // if (auto _tid = dynamic_cast<const murphi::TypeExprID*>(qe.type.get())) {
     //   return "{\"type\":\"" + _tid->referent->name + ": " + _tid->referent->value->to_string() + "\","
     //                 "\"value\":""\"" + value_str +"\"}";
-    return "{\"$type\":\""+ nEscape(json_val_type) + "\",\"type\":\"" + nEscape(ModelSplitter::get_pretty_rep(*qe.type)) + "\",\"value\":" + value_str +"}"; 
+    return "{\"$type\":\"value\",\"display-type\":\""+nEscape(json_val_type)+"\",\"value\":" + value_str +"}"; 
   }
 
   // << ========================================================================================== >> 
@@ -173,12 +172,16 @@ namespace romp {
     // if (q.step != nullptr)
     //   step = step_mpz.get_ui();
     this->values = std::vector<const SigParam*>();
+    size_t index = 0;
     for (mpz_class i = start; i<=stop; i += step)
       values.push_back(new SigParam{
                             i,
                             i.get_str(),
-                            SigParam::to_string(i.get_str(), *this),
-                            "{\"$type\":\"quantifier-value\","
+                            SigParam::to_string("",i.get_str(), *this),
+                            "{\"$type\":\"quantifier\","
+                              "\"id\":\""+q.name+"\","
+                              "\"type\":\"stepped-range-quantifier\""
+                              "\"index\":"+std::to_string(index++)+","
                               "\"type\":\"" + nEscape(q.to_string()) + "\","
                               "\"value\":" + i.get_str() +"}",
                             *this
@@ -195,65 +198,108 @@ namespace romp {
     class type_trav : public murphi::ConstBaseTypeTraversal {
       const murphi::Quantifier& q;
       QuantExpansion& qe;
+      std::string _json_prefix;
+      std::string json_affix = "}";
+      const std::string display_type;
+      std::string json_wrap(size_t index, const std::string& json_value) { 
+        return _json_prefix + ",\"index\":"+std::to_string(index)+",\"value\":" + json_value + json_affix; 
+      }
     public:
-      type_trav(const murphi::Quantifier& q__, QuantExpansion& parent_) 
-        : q(q__), qe(parent_),
+      type_trav(const murphi::Quantifier& q__, QuantExpansion& parent_, const std::string& display_type_) 
+        : q(q__), qe(parent_), _json_prefix("\"$type\":\"quantifier\",\"id\":\""+q__.name+'"'),
+          display_type(display_type_),
           ConstBaseTypeTraversal("Not a supported TypeExpr for bounding a quantifier (it may be undefined or too complex) !!") 
       {}
       void visit_array(const murphi::Array& n) { unsupported_traversal(n,"murphi::Array"); }
       void visit_array(const murphi::Multiset& n) { unsupported_traversal(n,"murphi::Multiset"); }
       void visit_record(const murphi::Record& n) { unsupported_traversal(n,"murphi::Record"); }
-      void visit_typeexprid(const murphi::TypeExprID& n) { unsupported_traversal(n,"undefined murphi::TypeExprID");; }
+      void visit_typeexprid(const murphi::TypeExprID& n) { dispatch(*n.resolve()); }
       void visit_enum(const murphi::Enum& n) { 
+        _json_prefix += ",\"type\":\"enum-quantifier\"";
         qe.start = 0_mpz;
         qe.stop = mpz_class(n.members.size()) - 1_mpz;
         qe.step = 1_mpz;
         qe._size = n.members.size();
-        qe.values = std::vector<const SigParam*>(qe.size());
-        for (int i=0; i<n.members.size(); ++i) {
-          std::string val = qe.type_id + "::" + n.members[i].first;
+        // qe.values = std::vector<const SigParam*>(qe.size());
+        for (int i=0; i<n.members.size(); ++i)
           qe.values.push_back(new SigParam{
                                 mpz_class(i),
-                                val,
-                                "::" ROMP_TYPE_NAMESPACE "::" + val,
-                                SigParam::to_json(nEscape("\""+n.members[i].first+"\""), qe, "enum-value"),
-                                // "{\"type\":\"" + qe.type_id + "\","
-                                //   "\"value\":\"" + n.members[i].first + "\"}",
+                                n.members[i].first,
+                                SigParam::to_string(n.members[i], qe),
+                                json_wrap(i,SigParam::to_json(nEscape("\""+n.members[i].first+"\""), qe, json_type)),
                                 qe
                               });
-        }
       }
       void visit_range(const murphi::Range& n) {
+        _json_prefix += ",\"type\":\"range-quantifier\"";
         qe.start = n.min->constant_fold();
         qe.stop = n.max->constant_fold();
         qe.step = 1_mpz;
-        qe.values = std::vector<const SigParam*>(/* qe.size() */);
+        // qe.values = std::vector<const SigParam*>(/* qe.size() */);
+        size_t index = 0u;
         for (mpz_class i = qe.start; i<=qe.stop; i += qe.step)
           qe.values.push_back(new SigParam{
                                 i,
                                 i.get_str(),
                                 SigParam::to_string(i.get_str(), qe),
-                                SigParam::to_json(i.get_str(), qe, "range-value"),
+                                json_wrap(index++,SigParam::to_json(i.get_str(), qe, display_type)),
                                 qe
                               });
       }
       void visit_scalarset(const murphi::Scalarset& n) {
-        qe.start = 0_mpz;
-        qe.stop = n.bound->constant_fold();
+        _json_prefix += ",\"type\":\"scalarset-quantifier\"";
+        qe.start = 1_mpz;
+        qe.stop = n.count();
         qe.step = 1_mpz;
-        qe.values = std::vector<const SigParam*>(/* qe.size() */);
-        for (mpz_class i = qe.start; i<qe.stop; i += qe.step)
+        std::string pre_prefix = ((n.name != "") ? "_romp_" : "__romp__");
+        std::string prefix = (((n.name != "") ? name : "scalarset")
+                               + '_' + n.count()->get_str() + '_');
+        // qe.values = std::vector<const SigParam*>(/* qe.size() */);
+        size_t index = 0u;
+        for (mpz_class i = qe.start; i<=qe.stop; i += qe.step)
           qe.values.push_back(new SigParam{
                                 i,
-                                i.get_str(),
-                                SigParam::to_string(i.get_str(), qe),
-                                SigParam::to_json(i.get_str(), qe, "scalarset-value"),
+                                pre_prefix+prefix+i.get_str(),
+                                SigParam::to_string(prefix+i.get_str(), qe),
+                                json_wrap(index++,SigParam::to_json(i, prefix+i.get_str(), qe, display_type)),
                                 qe
                               });
       }
+      void visit_scalarsetunion(const murphi::Scalarsetunion& n) {
+        _json_prefix += ",\"type\":\"scalarset-union-quantifier\"";
+        size_t index = 0u;
+        for (const auto& m : n.members)
+          if (const auto _s = dynamic_cast<const Scalarset*>(m->resolve().get())) {
+            mpz_class stop = _s->count();
+            std::string pre_prefix = ((n.name != "") ? "_romp_" : "__romp__");
+            std::string prefix = (((n.name != "") ? name : "scalarset")
+                                    + '_' + n.count()->get_str() + '_');
+            for (mpz_class i=1_mpz; i<=stop; i+=1)
+              qe.values.push_back(new SigParam{
+                                    i,
+                                    pre_prefix+prefix+i.get_str(),
+                                    SigParam::to_string(pre_prefix,prefix+i.get_str(), qe),
+                                    json_wrap(index++,SigParam::to_json(i,prefix+i.get_str(), qe, display_type)),
+                                    qe
+                                  });
+          } else if (const auto _e = dynamic_cast<const Enum*>(m->resolve().get())) {
+            for (int i=0; i<_e->members.size(); ++i)
+              qe.values.push_back(new SigParam{
+                                    mpz_class(i),
+                                    _e->members[i].first,
+                                    SigParam::to_string("",_e->members[i], qe),
+                                    json_wrap(i,SigParam::to_json(nEscape("\""+_e->.members[i].first+"\""), qe, json_type)),
+                                    qe
+                                  });
+          }
+        qe.start = 1_mpz;
+        qe.stop = n.count();
+        qe.step = 1_mpz;
+      }
     };
-    type_trav tt(q_, *this);
+    // this->values.clear();
     try {
+      type_trav tt(q_, *this, q_->type->to_string());
       tt.dispatch(*(q_.type->resolve()));
     } catch (...) {
       std::throw_with_nested(murphi::Error("Could not resolve the bounds of the Type based Quantifier !!", q_.loc));
@@ -298,29 +344,32 @@ namespace romp {
   }
 
   void SigPerm::add_quant(const murphi::Quantifier& q) {
-    if (auto _tid = dynamic_cast<const murphi::TypeExprID*>(q.decl->type.get())) {
-      auto qe_i = SigPerm::quant_vals_cache.find(_tid->referent->name);
-      // const QuantExpansion& qe = qe_i->second;
-      if (qe_i == SigPerm::quant_vals_cache.end()) {
-        SigPerm::add_quant(_tid->name, q);
-        auto tmp = SigPerm::quant_vals_cache[_tid->referent->name];
-        if (tmp == nullptr) return; // avoid adding a null to the list
-        quant_vals.push_back(tmp);
-        this->_size *= tmp->size();
-      } else {
-        if (qe_i->second == nullptr) return; // avoid adding a null to the list
-        quant_vals.push_back(qe_i->second);
-        this->_size *= qe_i->second->size();
-      }
-      // quant_vals.push_back(qe);
-    } else
-      throw murphi::Error("Unprocessed anonymous type found in ruleset quantifier!!\t[dev-error]", q.type->loc);
+    quant_vals.push_back(std::make_shared(QuantExpansion(q)));
   }
+  // void SigPerm::add_quant(const murphi::Quantifier& q) {
+  //   if (auto _tid = dynamic_cast<const murphi::TypeExprID*>(q.decl->type.get())) {
+  //     auto qe_i = SigPerm::quant_vals_cache.find(_tid->referent->name);
+  //     // const QuantExpansion& qe = qe_i->second;
+  //     if (qe_i == SigPerm::quant_vals_cache.end()) {
+  //       SigPerm::add_quant(_tid->name, q);
+  //       auto tmp = SigPerm::quant_vals_cache[_tid->referent->name];
+  //       if (tmp == nullptr) return; // avoid adding a null to the list
+  //       quant_vals.push_back(tmp);
+  //       this->_size *= tmp->size();
+  //     } else {
+  //       if (qe_i->second == nullptr) return; // avoid adding a null to the list
+  //       quant_vals.push_back(qe_i->second);
+  //       this->_size *= qe_i->second->size();
+  //     }
+  //     // quant_vals.push_back(qe);
+  //   } else
+  //     throw murphi::Error("Unprocessed anonymous type found in ruleset quantifier!!\t[dev-error]", q.type->loc);
+  // }
 
-  void SigPerm::add_quant(const std::string& name, const murphi::Quantifier& q) {
-    SigPerm::quant_vals_cache.emplace(name, new QuantExpansion(q));
-    // SigPerm::quant_vals_cache.insert(std::make_pair(name, std::shared_ptr<const QuantExpansion>(new QuantExpansion(q))));
-  }
+  // void SigPerm::add_quant(const std::string& name, const murphi::Quantifier& q) {
+  //   SigPerm::quant_vals_cache.emplace(name, new QuantExpansion(q));
+  //   // SigPerm::quant_vals_cache.insert(std::make_pair(name, std::shared_ptr<const QuantExpansion>(new QuantExpansion(q))));
+  // }
 
   std::vector<size_t> SigPerm::get_init_param_iters() const {
     std::vector<size_t> param_iters(param_count);

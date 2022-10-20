@@ -1,5 +1,6 @@
 #include "../../common/help.h"
 #include "generate.hpp"
+#include "check.h"
 #include "NestedError.hpp"
 #include "CodeGenerator.hpp"
 // #include "generate_h.h"
@@ -39,7 +40,7 @@ std::filesystem::path make_path(std::string p) {
     return _p;
 }
 
-void parse_args(int argc, char **argv) {
+void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
   bool no_sym_provided = false;
   unsigned int hist_len = ROMP_HISTORY_SIZE_PREPROCESSOR_VAR_DEFAULT_VALUE;
   for (;;) {
@@ -55,11 +56,12 @@ void parse_args(int argc, char **argv) {
         { "ignore-rumur-props", no_argument,        0,  'i' },
         // { "header",             no_argument,       0, 128 },
         // { "source",             no_argument,       0, 129 },
-        { "scalar-type",        required_argument,  0,  130 },
+        // { "scalar-type",        required_argument,  0,  130 },
         { "range-type",         required_argument,  0,  120 },
         { "version",            no_argument,        0,  131 },
         { "do-measure",         no_argument,        0,  132 },
         { "simple-trace-rep",   no_argument,        0,  133 },
+        { "default-walk-multiplier",   required_argument,        0,  'w' },
         { 0, 0, 0, 0 },
         // clang-format on
     };
@@ -93,7 +95,7 @@ void parse_args(int argc, char **argv) {
 
     case 'r': // --rule-history-length <size>
       try {
-        hist_len = std::stoul(optarg, nullptr, 0);
+        gen.hist_len = std::stoul(optarg, nullptr, 0);
       } catch (std::invalid_argument &ia) {
         std::cerr << "invalid argument : provided rule history length value was not a number (NaN) !! (for -r/--rule-history-len flag)\n"
                   << std::flush;
@@ -125,6 +127,20 @@ void parse_args(int argc, char **argv) {
       gen.disable_romp_prop_errors();
       break;
 
+    case 'w': // --default-walk-multiplier <uint:size>
+      try {
+        gen.default_walk_multiplier = std::stoul(optarg, nullptr, 0);
+      } catch (std::invalid_argument &ia) {
+        std::cerr << "invalid argument : provided default walk multiplier value was not a number (NaN) !! (for -w/--default-wal-multiplier flag)\n"
+                  << std::flush;
+        exit(EXIT_FAILURE);
+      } catch (std::out_of_range &oor) {
+        std::cerr << "invalid argument : provided default walk multiplier value was out of range (pos ints only) !! (for -w/--default-wal-multiplier flag)\n"
+                  << std::flush;
+        exit(EXIT_FAILURE);
+      }
+      break;
+
     case 132: // --do-measure
       gen.enable_preprocessor_option(ROMP_MEASURE_PREPROCESSOR_VAR);
       break;
@@ -137,9 +153,9 @@ void parse_args(int argc, char **argv) {
     //   source = false;
     //   break;
 
-    case 129: // --scalar-type
-      scalar_type = optarg;
-      break;
+    // case 129: // --scalar-type
+    //   scalar_type = optarg;
+    //   break;
 
     case 130: // --range-type
       // note that we just assume the type the user gave us exists
@@ -191,12 +207,16 @@ void parse_args(int argc, char **argv) {
     out = o;
     gen.output_file_path = make_path(in_filename + ".romp.cpp");
   }
-  gen.enable_preprocessor_option(
-      ROMP_HISTORY_SIZE_PREPROCESSOR_VAR " (" + std::to_string(hist_len) + "ul)"
-    );
+  // gen.enable_preprocessor_option(
+  //     ROMP_HISTORY_SIZE_PREPROCESSOR_VAR " (" + std::to_string(gen.hist_len) + "ul)"
+  //   );
+  if (gen.default_walk_multiplier == 0) {
+    gen.default_walk_multiplier = 1u;
+    std::cerr << "WARNING : `0` is an invalid value for default walk multiplier, `1` will used instead !! (for -w/--default-wal-multiplier flag)\n" 
+  }
   if (not no_sym_provided)
     gen.enable_preprocessor_option(ROMP_SYMMETRY_PREPROCESSOR_VAR);
-  romp::set_out(gen,(out == nullptr) ? std::make_shared_ptr(std::cout) : out));
+  romp::set_out(gen,(out == nullptr) ? std::make_shared_ptr(&std::cout) : out));
 }
 
 static dup_t make_stdin_dup() {
@@ -269,6 +289,7 @@ int main(int argc, char **argv) {
   try {
     resolve_symbols(*m);
     validate(*m);
+    check(*m);
   } catch (const murphi::Error& e) {
     std::cerr << e << "\n";
     // std::cerr << e.loc << ":" << e.what() << "\n";
@@ -280,12 +301,8 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  // validate that this model is OK to translate
-  // if (!check(*m))
-  //   return EXIT_FAILURE;
-
-  // name any rules that are unnamed, so they get valid C symbols
-  // murphi::sanitise_rule_names(*m);
+  // name any rules that are unnamed, so they get valid C++ symbols
+  murphi::sanitize_rule_names(*m);
 
   // Determine if we have any == or != involving records or arrays, in which
   // case we will need to pack structs. See generate_c() for why.

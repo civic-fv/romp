@@ -22,8 +22,8 @@ namespace romp {
 
 using namespace murphi;
 
-ScalarEnumGenerator::ScalarEnumGenerator(const CodeGenerator& cg_)
-  : CodeGenerator(cg_) {}
+ScalarEnumGenerator::ScalarEnumGenerator(const CodeGenerator& gen_)
+  : CodeGenerator(gen_) {}
 
 
 void ScalarEnumGenerator::visit_model(const murphi::Model& m) {
@@ -40,39 +40,52 @@ void ScalarEnumGenerator::visit_model(const murphi::Model& m) {
   *this << indentation() << "};\n" << std::flush;
 }
 
-size_t ScalarEnumGenerator::add_enum_id(const std::string& name) {
+bool ScalarEnumGenerator::add_enum_id(const std::string& name) {
   if (enum_ids.find(name) != enum_ids.end()) {
       enum_ids[name] = enum_ids.size();
       _enum_ids.push_back(name);
       *this << sep << '\n' << indentation() << name;
       sep = ",";
-      return 1;
+      return true;
     }
   }
-  return 0;
+  return false;
 }
 
 
 void ScalarEnumGenerator::visit_enum(const murphi::Enum& n) {
-  n.unique_id_limit = 0;
+  // n.unique_id_limit = 0;
+  id_t added = 0u;
+  auto last_bad = n.member[0];
   *this << "\n" << indentation() << "/* " << n.to_string() << " */\n";
   sep = "";
-  for (const auto& m : n.members)
-    n.unique_id_limit += add_enum_id(n.first);
+  for (auto& m : n.members)
+    if (not add_enum_id(m.first)) {
+      ++added;
+      last_bad = m;
+    }
+  
+  if (added != n.count() && added != 0)
+      throw Error("there exists name conflicts with this enum value (`" + last_bad.first + "`) "
+                "and some other enum, scalarset, variable, alias, or parameter "
+                "(romp does not support scope masking enums & all enums are considered global, "
+                  "regardless of declaration location or scope. "
+                  "Try separating and union-ing enums to mix and match)", last_bad.second);
 }
 
 
 void ScalarEnumGenerator::visit_scalarset(const murphi::Scalarset& n) {
-  int added = 0;
+  id_t added = 0u;
   // these complex names are to both avoid collisions and because I scrub names that contain `_romp_` at parse time none should exist
-  std::string prefix = (((n.name == "") ? "_romp_"+name : "__romp__scalarset")
-                          + '_' + ->get_str() + '_');
+  std::string prefix = (((n.name != "") ? "_romp_"+name : "__romp__scalarset")
+                          + '_' + n.bound->constant_fold()->get_str() + '_');
   *this << "\n" << indentation() << "/* " 
         << ((name != "") ? name + ": " : "")
         << n.to_string() << " */\n";
   sep = "";
   for (size_t i=1; i<=n.count(); ++i)
-    added += add_enum_id(prefix + std::to_string(i));
+    if (add_enum_id(prefix + std::to_string(i)))
+      ++added;
     
   if (added != n.count() && added != 0)
     throw Error("there exists (generated) name conflicts with this scalarset "
@@ -82,5 +95,10 @@ void ScalarEnumGenerator::visit_scalarset(const murphi::Scalarset& n) {
 
 // void ScalarEnumGenerator::visit_scalarsetunion(const murphi::ScalarsetUnion& n) {}
 
+
+void ScalarEnumGenerator::visit_ismember(const murphi::IsMember& n) {
+  dispatch(*n.rhs);
+  // DO NOT DISPATCH ON THE INTERNAL TYPE SPECIFIER OF THIS NODE !!
+}
 
 } // namespace romp

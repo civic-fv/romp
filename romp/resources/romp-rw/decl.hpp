@@ -59,9 +59,9 @@ namespace __caller__ {
 } // namespace __caller__
 
 namespace __info__ {
-  extern const std::string SCALAR_IDS[];
-  extern const std::string RECORD_MEMBER_LABELS[];
-  extern const ::romp::TypeInfo TYPE_INFOS[];
+  extern const std::string TYPE_IDS[];
+  extern const std::string RECORD_FIELD_LABELS[];
+  // extern const ::romp::TypeInfo TYPE_INFOS[];
   extern const ::romp::RuleInfo RULE_SET_INFOS[];
   extern const ::romp::PropertyInfo PROPERTY_INFOS[]; 
   extern const ::romp::StartStateInfo STARTSTATE_INFOS[]; 
@@ -114,15 +114,15 @@ namespace romp {
     file_position end;
   };
 
-  enum TypeType { BOOLEAN, RANGE, ENUM, SCALARSET, SCALARSET_UNION, ARRAY, MULTISET, RECORD, RECORD_MEMBER, TYPE_EXPR_ID };
+  // enum TypeType { BOOLEAN, RANGE, ENUM, SCALARSET, SCALARSET_UNION, ARRAY, MULTISET, RECORD, RECORD_MEMBER, TYPE_EXPR_ID };
 
-  struct TypeInfo {
-    std::string label;
-    TypeType type;
-    std::string repr;
-    location loc;
-    std::vector<id_t> dependents;
-  };
+  // struct TypeInfo {
+  //   std::string label;
+  //   TypeType type;
+  //   std::string repr;
+  //   location loc;
+  //   std::vector<id_t> dependents;
+  // };
 
 
   enum PropertyType { INVARIANT, ASSERTION, ASSUMPTION, COVER, LIVENESS };
@@ -190,7 +190,7 @@ namespace romp {
   struct MErrorInfo {
     const std::string label;
     location loc;
-    bool isFunct;
+    // bool isFunct;
     const std::string json;
   };
 
@@ -254,9 +254,16 @@ namespace romp {
     /**
      * @brief A handler to use to select a random number between [0, \c occupancy ) to use for choose rules.
      * @param occupancy the current occupancy of the calling multiset
+     * @param location the location of the choose rule's MultisetQualifier decl
      * @return \c size_t - the index in the multiset that has been choosen
      */
-    virtual size_t choose_handler(size_t occupancy) = 0;
+    // virtual size_t choose_handler(size_t occupancy, const location& loc) = 0;
+    /**
+     * @brief A handler for determining where and how things should be printed
+     * @param put_action - a function that will perform the writing.
+     * @param location the location of the put statement
+     */
+    virtual void put_handler(const std::function<void(ostream_p&)>& put_action, const location& loc) = 0;
   };
 
   struct Result {

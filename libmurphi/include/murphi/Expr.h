@@ -684,10 +684,10 @@ struct MURPHI_API_WITH_RTTI Element : public Expr {
   bool constant() const final;
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
-  void validate() const;
+  void validate() const final;
   bool is_lvalue() const final;
   bool is_readonly() const final;
-  std::string to_string() const;
+  std::string to_string() const final;
   bool is_pure() const final;
 
   void update() override;
@@ -933,17 +933,26 @@ struct MURPHI_API_WITH_RTTI MultisetQuantifier : public Quantifier {
  *        NOTE: this AST node can't produced by parsing an Murphi file, only by code after the fact
  *              (currently in the disambiguate function of the symbol-resolver)  
  */
-struct MURPHI_API_WITH_RTTI MultisetElement : public Element {
+struct MURPHI_API_WITH_RTTI MultisetElement : public Expr {
+
+  Ptr<ExprID> index;
+  Ptr<Expr> multiset;
 
   MultisetElement(const Ptr<Expr>& multiset_, 
-                  const Ptr<Expr> index_, const location& loc_);
+                  const Ptr<ExprID> index_, const location& loc_);
   MultisetElement *clone() const override;
   ~MultisetElement() = default;
 
   void visit(BaseTraversal& visitor) override;
   void visit(ConstBaseTraversal& visitor) const override;
 
-  void validate() const final;
+  bool constant() const final;
+  Ptr<TypeExpr> type() const final;
+  mpz_class constant_fold() const final;
+  void validate() const;
+  bool is_lvalue() const final;
+  bool is_readonly() const final;
+  bool is_pure() const final;
   void update() final;
 
   std::string to_string() const final;

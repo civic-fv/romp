@@ -145,13 +145,6 @@ namespace romp {
   }
   ostream_p& operator << (ostream_p& out, const Options& opts) noexcept { opts.write_config(out); return out; }
 
-  template<typename ratio1, typename ratio2>
-  struct CompareRatios { 
-    // std::static_assert(std::is_base_of<std::ratio,ratio1>::value, "ratio1, must be a ratio");
-    // std::static_assert(std::is_base_of<std::ratio,ratio1>::value, "ratio2, must be a ratio");
-    static constexpr long double dif() { return (ratio1::num/ratio1::den) - (ratio2::num/ratio2::den); };
-  };
-
 
 // << ========================================================================================== >> 
 // <<                          WRITER STREAM OPERATOR IMPLEMENTATIONS                            >> 
@@ -159,6 +152,14 @@ namespace romp {
 
 
 // << =================================== Fancy Time Writer ==================================== >> 
+
+  template<typename ratio1, typename ratio2>
+  struct CompareStdRatios {
+    // std::static_assert(std::is_base_of<std::ratio,ratio1>::value, "ratio1, must be a ratio");
+    // std::static_assert(std::is_base_of<std::ratio,ratio1>::value, "ratio2, must be a ratio");
+    static constexpr long double dif() { return (ratio1::num/ratio1::den) - (ratio2::num/ratio2::den); };
+  };
+
   template<typename T, class R> 
   const std::string _pre0(const std::chrono::duration<T,R> dur) { return ((dur.count()<10) ? "0" : ""); }
   template<typename T, class R>
@@ -180,7 +181,7 @@ namespace romp {
     picosecond_t ps(0);
     // femtosecond_t fs(0);
     TimeUnit msu = _fs;
-    if (CompareRatios<R,std::milli>::dif() > 0.0l // case: lower precision clock
+    if (CompareStdRatios<R,std::milli>::dif() > 0.0l // case: lower precision clock
         || dur > seconds(10)) { // case: "large"/"macro" time format(s)
       if (dur > day_t(3)) {
         d = duration_cast<day_t>(dur);
@@ -201,7 +202,7 @@ namespace romp {
       if (msu > _ms || dur >= microseconds(1)) {
         ms = duration_cast<milliseconds>(dur);
       } else msu = __ms;  // case: measured essentially 0 time ms
-    } else /* if (CompareRatios<R,std::milli>::dif() < 0.0l) */ { // case: higher precision clock
+    } else /* if (CompareStdRatios<R,std::milli>::dif() < 0.0l) */ { // case: higher precision clock
       if (dur >= microseconds(10)) { // case: "small"/milli+micro time format
         ms = duration_cast<milliseconds>(dur);
         us = duration_cast<microseconds>(dur -= ms);
@@ -264,19 +265,19 @@ namespace romp {
 
 // << =================================== Metadata Writers ===================================== >> 
 
-  std::ostream& operator << (std::ostream& out, const TypeType& val) { 
-    switch (val) { 
-      case TypeType::BOOLEAN: return out << "Boolean"; 
-      case TypeType::RANGE: return out << "Range";
-      case TypeType::ENUM: return out << "Enum";
-      case TypeType::SCALARSET: return out << "Scalarset";
-      case TypeType::SCALARSET_UNION: return out << "Union";
-      case TypeType::ARRAY: return out << "Array";
-      case TypeType::MULTISET: return out << "Multiset";
-      case TypeType::RECORD: return out << "Record";
-      case TypeType::TYPE_EXPR_ID: return out; // write nothing
-      default: return out << "<UNKNOWN_TYPE>";}
-  }
+  // std::ostream& operator << (std::ostream& out, const TypeType& val) { 
+  //   switch (val) { 
+  //     case TypeType::BOOLEAN: return out << "Boolean"; 
+  //     case TypeType::RANGE: return out << "Range";
+  //     case TypeType::ENUM: return out << "Enum";
+  //     case TypeType::SCALARSET: return out << "Scalarset";
+  //     case TypeType::SCALARSET_UNION: return out << "Union";
+  //     case TypeType::ARRAY: return out << "Array";
+  //     case TypeType::MULTISET: return out << "Multiset";
+  //     case TypeType::RECORD: return out << "Record";
+  //     case TypeType::TYPE_EXPR_ID: return out; // write nothing
+  //     default: return out << "<UNKNOWN_TYPE>";}
+  // }
 
 
   template<class O>

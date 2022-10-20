@@ -40,21 +40,6 @@ struct Sig;
 struct SigParam;
 struct QuantExpansion;
 
-//TODO fix this mess !!
-// using vec_MTypeVals_t = ::std::vector<const ::romp::SigParam&>;
-// using QuantExpansion_Iter_t = ::romp::vec_MTypeVals_t::iterator ;
-// using SigParam_Iter_t = ::romp::vec_MTypeVals_t::iterator ;
-// using quant_vals_cache_t = ::std::unordered_map<::std::string, const ::romp::QuantExpansion>> ;
-// using quant_vals_cache_iter_t = ::romp::quant_vals_cache_t::iterator ;
-// using vec_quant_vals_t = ::std::vector<const ::romp::quant_vals_cache_iter_t> ;
-// using quant_vals_iter_t = ::romp::vec_quant_vals_t::iterator ;
-// typedef ::std::vector<const ::romp::Sig::Param> vec_MTypeVals_t;
-// typedef ::romp::vec_MTypeVals_t::iterator QuantExpansion_Iter_t;
-// typedef ::romp::vec_MTypeVals_t::iterator SigParam_Iter_t;
-// typedef ::std::unordered_map<::std::string, const ::romp::QuantExpansion>> quant_vals_cache_t;
-// typedef ::romp::quant_vals_cache_t::iterator quant_vals_cache_iter_t;
-// typedef ::std::vector<const ::romp::quant_vals_cache_iter_t> vec_quant_vals_t;
-// typedef ::romp::vec_quant_vals_t::iterator quant_vals_iter_t;
 
 
 // << ========================================================================================== >> 
@@ -102,8 +87,8 @@ struct SigParam {
   const std::string& to_json() const;
 private:
   friend struct QuantExpansion;
-  static const std::string to_string(const std::string& value_str, const QuantExpansion& qe);
-  static const std::string to_json(const std::string& value_str, const QuantExpansion& qe, const std::string json_val_type);
+  inline static const std::string to_string(const std::string& value_str, const QuantExpansion& qe);
+  inline static const std::string to_json(const size_t& index, const std::string& value_str, const QuantExpansion& qe, const std::string json_val_type);
   friend std::ostream& operator << (std::ostream& out, const SigParam& param);
   friend CGenerator& operator << (CGenerator& out, const SigParam& param);
 };
@@ -141,8 +126,9 @@ class SigPerm {
 private:
 
 protected:
-  static std::unordered_map<std::string,std::shared_ptr<const QuantExpansion>> quant_vals_cache;
-  std::vector<std::shared_ptr<const QuantExpansion>> quant_vals;
+  // static std::unordered_map<std::string,std::shared_ptr<const QuantExpansion>> quant_vals_cache;
+  // std::vector<std::shared_ptr<const QuantExpansion>> quant_vals;
+  std::vector<std::shared_ptr<QuantExpansion>> quant_vals;
   size_t _size = 1;
   
 
@@ -169,7 +155,7 @@ private:
 
   void add_quant(const murphi::Quantifier& q) ;
 
-  static void add_quant(const std::string& name, const murphi::Quantifier& q);
+  // static void add_quant(const std::string& name, const murphi::Quantifier& q);
   
   // std::vector<std::vector<const SigParam&>::iterator> get_init_param_iters() const;
   std::vector<size_t> get_init_param_iters() const;

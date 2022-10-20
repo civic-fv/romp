@@ -104,6 +104,7 @@
         "@org <a href=\"https://civic-fv.github.io\">Civic-fv NSF Grant</a>",
         "@org Ganesh Gopalakrishnan's Research Group",
     ],
+    "doxdocgen.file.versionTag": "@version 0.2", // update me with new versions
     //<<================================================================================================>>//
     //<<                                           (LANG):                                              >>//
     //<<                                            C/C++                                               >>//

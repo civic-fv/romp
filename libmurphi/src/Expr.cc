@@ -998,18 +998,19 @@ bool Element::constant() const { return false; }
 
 Ptr<TypeExpr> Element::type() const {
   const Ptr<TypeExpr> t = array->type()->resolve();
-  const Array *a = dynamic_cast<const Array *>(t.get());
 
   // if we are called during symbol resolution on a malformed expression, our
   // left hand side may not be an array
-  if (a == nullptr)
-    throw Error("array reference based on something that is not an array", loc);
-
-  return a->element_type;
+  if (const auto a = dynamic_cast<const Array *>(t.get()))
+    return a->element_type;
+  // // if called before disambiguated during symbol resolution look at it like a multiset
+  // else if (const auto m = dynamic_cast<const Multiset *>(t.get()))
+  //   return m->element_type;
+  throw Error("array reference based on something that is not an array", loc);
 }
 
 mpz_class Element::constant_fold() const {
-  throw Error("array element used in constant", loc);
+  throw Error("array element used in a constant expresion", loc);
 }
 
 void Element::validate() const {

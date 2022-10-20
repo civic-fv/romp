@@ -84,6 +84,9 @@ void Assignment::update() {
 }
 void Assignment::validate() const {
 
+  // if (isa<MultisetElement>(lhs))
+  //   throw Error("you cannot assign into a multiset with the element operator", loc);
+
   if (!lhs->is_lvalue())
     throw Error("non-lvalue expression cannot be assigned to", loc);
 

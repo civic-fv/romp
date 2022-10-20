@@ -19,7 +19,7 @@
 namespace romp
 {
 
-  //TODO add the static methods for defined classes
+  //[X]TODO add the static methods for defined classes (none needed so far)
 
 
 }

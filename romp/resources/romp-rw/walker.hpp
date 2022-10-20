@@ -56,11 +56,11 @@ class RandWalker : public ::romp::IRandWalker {
 private:
   static id_t next_id;
   const id_t id;
+  const Options& OPTIONS;
   id_t start_id;
   const unsigned int init_rand_seed;
   unsigned int rand_seed;
-  State_t state;
-  size_t _fuel = OPTIONS.depth;
+  size_t _fuel; // = OPTIONS.depth;
   bool _valid = true;  // legacy 
   bool _is_error = false; // legacy
   Result::Cause status = Result::RUNNING;
@@ -68,8 +68,8 @@ private:
   // tripped thing
   IModelError* tripped = nullptr;
   IModelError* tripped_inside = nullptr;
-  size_t _attempt_limit = OPTIONS.attempt_limit;
-  const size_t init_attempt_limit = OPTIONS.attempt_limit;
+  size_t _attempt_limit; // = OPTIONS.attempt_limit;
+  const size_t init_attempt_limit; // = OPTIONS.attempt_limit;
   struct History {
     const Rule* rule;
   };
@@ -156,13 +156,20 @@ public:
   bool is_done() const { return not (_valid && _fuel > 0 && _attempt_limit > 0); }
 #endif
 
-  RandWalker(unsigned int rand_seed_) 
-    : rand_seed(rand_seed_),
-      init_rand_seed(rand_seed_),
+  RandWalker(unsigned int rand_seed_, const Options& OPTIONS_) 
+    : id(RandWalker::next_id++),
+      rand_seed(rand_seed_), init_rand_seed(rand_seed_),
+      OPTIONS(OPTIONS_),
       sim1Step(((OPTIONS.do_trace) 
                   ? std::function<void()>([this](){sim1Step_trace();}) 
                   : std::function<void()>([this](){sim1Step_no_trace();}))),
-      id(RandWalker::next_id++) 
+#     ifdef __romp__ENABLE_cover_property
+        enable_cover(OPTIONS_.complete_on_cover), goal_cover_count(OPTIONS_.cover_count),
+#     endif
+#     ifdef __romp__ENABLE_liveness_property
+        enable_liveness(OPTIONS_.liveness), init_lcount(OPTIONS.lcount),
+#     endif
+      fuel(OPTIONS_.depth), attempt_limit(OPTIONS_.attempt_limit), init_attempt_limit(OPTIONS_.attempt_limit),
   { 
     if (OPTIONS.start_id != ~0u) {
       rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN); // burn one rand operation for consistency
@@ -194,6 +201,7 @@ public:
     if (json != nullptr) delete json; 
     if (tripped != nullptr) delete tripped;
     if (tripped_inside != nullptr) delete tripped_inside; 
+    if (_put_stream_out != nullptr) delete _put_stream_out;
     // if (history != nullptr) delete[] history; 
   }
 
@@ -474,6 +482,18 @@ public:
             << *rw.tripped_inside                                   << out.dedent() << out.nl();
             // << '}'                                                                  << out.nl(); 
     }
+    if (put_msgs.size() > 0) {
+      out << "Put Statements: \"\"\""               << out.indent() << out.indent() << out.nl();
+      for (auto msg : put_msgs) {
+        try {
+          msg.first(out);
+        } catch (std::exception& ex) {
+          out << out.indent() << out.nl() << out.second << " :: error occurred while evaluating put statement" 
+              << out.nl() << ex << out.dedent() << out.nl();
+        }
+      }
+      out << out.dedent() << out.nl() << "\"\"\"" << out.dedent() << out.nl();
+    }
         
 #ifdef __ROMP__DO_MEASURE
     out << out.dedent()                                                             << out.nl()
@@ -491,6 +511,14 @@ public:
   //  the calling context should ensure that the RandWalker is not being used else where & safe output to the ostream 
   friend std::ostream& operator << (std::ostream& out, const RandWalker& rw) 
   { ostream_p _out(out,0); _out << rw; return out; }
+
+  // NOTE: currently not supporting choose rules
+  // size_t choose_handler(size_t occupance, const location& loc) {}
+
+  std::vector<std::pair<std::function<void(ostream_p&)>,location>> put_msgs;
+  void put_handler(const std::function<void(ostream_p&)>& put_action, const location& loc) {
+    put_msgs.push_back(std::make_pair(put_action,loc));
+  }
 
   bool error_handler(id_t error_id) {
     tripped = new ModelMErrorError(error_id);
@@ -533,8 +561,8 @@ public:
   }
 #endif
 #ifdef __romp__ENABLE_cover_property
-  const bool enable_cover = OPTIONS.complete_on_cover;
-  const id_t goal_cover_count = OPTIONS.cover_count;
+  const bool enable_cover; // = OPTIONS.complete_on_cover;
+  const id_t goal_cover_count; // = OPTIONS.cover_count;
   size_t cover_counts[_ROMP_COVER_PROP_COUNT];
   bool cover_handler(bool expr, id_t cover_id, id_t prop_id) {
     if (expr) cover_counts[cover_id]++;
@@ -557,8 +585,8 @@ public:
 #endif
 #ifdef __romp__ENABLE_liveness_property
 private:
-  const bool enable_liveness = OPTIONS.liveness;
-  const size_t init_lcount = OPTIONS.lcount;
+  const bool enable_liveness; // = OPTIONS.liveness;
+  const size_t init_lcount; // = OPTIONS.lcount;
   size_t lcounts[_ROMP_LIVENESS_PROP_COUNT];
 public:
   bool liveness_handler(bool expr, id_t liveness_id, id_t prop_id) {
@@ -571,13 +599,17 @@ public:
     _valid = false;
     _is_error = true;
     tripped = new ModelPropertyError(prop_id);
-    return true;  // TODO actually handle this as described in the help page
+    return true;  // [?]TODO actually handle this as described in the help page
   }
 #else
   bool liveness_handler(bool expr, id_t liveness_id, id_t prop_id) {
     return false;  // never throw anything if cover is not enabled by romp generator
   }
 #endif
+
+protected:
+  // always have this at the end of the RandWalker object def
+  State_t state;
 }; //? END class RandomWalker
 
 id_t RandWalker::next_id = 0u;
@@ -681,7 +713,7 @@ void launch_OpenMP(unsigned int root_seed) {
   //   std::cerr << "\nModel raised an error when initializing our start state(s)!! (message below)\n"
   //             << ex << std::endl;
   // }
-  //TODO: launch the random walkers !!
+  //[?]TODO: launch the random walkers !!
 }
 
 /**

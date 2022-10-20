@@ -18,7 +18,8 @@ namespace murphi {
 class MURPHI_API_WITH_RTTI Indexer : public BaseTraversal {
 
 private:
-  size_t next = 0;
+  size_t next = 0u;
+  id_t next_record_field_id = 0u;
 
 public:
   void visit_add(Add &n) final;

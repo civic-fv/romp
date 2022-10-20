@@ -28,19 +28,21 @@
 namespace romp {
 
 // generator for C-like code
-class __attribute__((visibility("hidden"))) ModelGenerator
-    : public romp::CodeGenerator,
-      public murphi::ConstBaseTraversal {
+class ModelGenerator :  public romp::CodeGenerator,
+                        public murphi::ConstBaseTraversal {
+
+  // romp::CodeGenerator& gen;
+
 protected:
 
-  // TODO get rid of the need for enum_typedefs
+  // [X]TODO get rid of the need for enum_typedefs
   // // mapping of Enum unique_ids to the name of a TypeDecl to them
   // std::unordered_map<size_t, std::string> enum_typedefs;
 
   // mapping of an enum/scalar name to it's id in the model scalar/enum space
   std::unordered_set<std::string,size_t> enum_ids
 
-  // TODO get rid of the need for is_pointer
+  // [X]TODO get rid of the need for is_pointer
   // // collection of unique_ids that were emitted as pointers instead of standard
   // // variables
   // std::unordered_set<size_t> is_pointer;
@@ -51,11 +53,25 @@ protected:
   // whether each comment has been written to the output yet
   std::vector<bool> emitted;
 
+  // id_t next_property_rule_id = 0u;
+  id_t next_rule_id = 0u;
+  id_t next_startstate_id = 0u;
+  id_t next_funct_id = 0u;
+  id_t next_property_id = 0u;
+  id_t next_cover_id = 0u;
+  id_t next_liveness_id = 0u;
+  id_t next_assert_id = 0u;
+  id_t next_assume_id = 0u;
+  id_t next_error_id = 0u;
+  // id_t next_type_id = 0u;
+  // id_t next_enum_id = 0u;
+  // id_t next_record_member_id = 0u;
+
 public:
-  ModelGenerator(const romp::CodeGenerator& cg_,
+  ModelGenerator(const romp::CodeGenerator& gen_,
                  const std::unordered_set<std::string,size_t>& enum_ids_,
                  const std::vector<murphi::Comment> &comments_)
-      : romp::CodeGenerator(cg_), enum_ids(enum_ids_),
+      : romp::CodeGenerator(gen_), enum_ids(enum_ids_),
         comments(comments_), emitted(comments_.size(), false) {}
 
   void visit_add(const murphi::Add &n) final;
@@ -114,7 +130,7 @@ public:
   void visit_propertystmt(const murphi::PropertyStmt &n) final;
   void visit_put(const murphi::Put &n) final;
   void visit_quantifier(const murphi::Quantifier &n) final;
-  void visit_range(const murphi::Range &) final;
+  void visit_range(const murphi::Range &n) final;
   void visit_record(const murphi::Record &n) final;
   void visit_return(const murphi::Return &n) final;
   void visit_rsh(const murphi::Rsh &n) final;

@@ -89,9 +89,12 @@ add_executable(romp
   ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_main.cpp
   ../common/escape.cc
   ../common/help.cc
-  # src/check.cc
+  src/check.cc
   src/CodeGenerator.cpp
   src/ModelGenerator.cpp
+  src/generate_state_stream.cpp
+  src/generate_metadata.cpp
+  src/generate_callers.cpp
   src/ScalarEnumGenerator.cpp
   # src/compares_complex_values.cc
   # src/SigPerm.cpp

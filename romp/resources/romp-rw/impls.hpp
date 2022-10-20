@@ -30,53 +30,53 @@ namespace romp {
 
   template<size_t EID, size_t B, class... U_M>
   inline void __assign(EnumType<EID,B>& _this, const ScalarsetUnionType<U_M...>& other) { _this = other.__get_value(); }
-  template<size_t NID, size_t EID, size_t B, class... U_M>
-  inline void __assign(ScalarsetType<NID,EID,B>& _this, const ScalarsetUnionType<U_M...>& other) { _this = other.__get_value(); }
-
-  template<size_t L_ID, size_t L_B, size_t R_ID, size_t R_B>
-  inline bool operator == (const EnumType<L_ID,L_B>& l, const EnumType<R_ID,R_B> r) { 
-    return ((L_ID == R_ID) // this static expr should help the compiler optimize this per type definition. 
-            && (l.value == r.value)); 
-  }
-  template<size_t L_ID, size_t L_B, size_t R_ID, size_t R_B>
-  inline bool operator != (const EnumType<L_ID,L_B>& l, const EnumType<R_ID,R_B> r) { 
-    return ((L_ID != R_ID) // this should help the compiler optimize this per type definition. 
-            || (l.value != r.value)); 
-  }
-
-  template<class... L_M, class... R_M>
-  inline bool operator == (const ScalarsetUnionType<L_M...>& l, const ScalarsetUnionType<R_M...> r) { return l.value == r.value; }
-  template<class... L_M, class... R_M>
-  inline bool operator != (const ScalarsetUnionType<L_M...>& l, const ScalarsetUnionType<R_M...> r) { return l.value != r.value; }
-
   template<size_t EID, size_t B, class... U_M>
-  inline bool operator == (const EnumType<EID,B>& e, const ScalarsetUnionType<U_M...>& u) {
-#   if __cplusplus >= 201703L
-      return ((ScalarsetUnionType<U_M...>::ContainsMember<EID,B>()) // this should help the compiler optimize this per specific templated instance. [[requires c++17]] to be static
-              && (e.value == u.value));
-#   else
-      return e.value == u.value;
-#   endif
-  }
-  template<size_t EID, size_t B, class... U_M>
-  inline bool operator != (const EnumType<EID,B>& e, const ScalarsetUnionType<U_M...>& u) {
-#   if __cplusplus >= 201703L
-      return (not (ScalarsetUnionType<U_M...>::ContainsMember<EID,B>()) // this should help the compiler optimize this per specific templated instance. [[requires c++17]]
-              || (e.value != u.value));
-#   else
-      return e.value != u.value;
-#   endif
-  }
-  template<class... U_M, size_t EID, size_t B>
-  inline bool operator == (const ScalarsetUnionType<U_M...>& u, const EnumType<EID,B>& e) { return (e == u); }
-  template<class... U_M, size_t EID, size_t B>
-  inline bool operator != (const ScalarsetUnionType<U_M...>& u, const EnumType<EID,B>& e) { return (e != u); }
+  inline void __assign(ScalarsetType<EID,B>& _this, const ScalarsetUnionType<U_M...>& other) { _this = other.__get_value(); }
 
-  /* this IsMember is the one associated with the IsMember() Murphi language operator */
-  template<class ET, class... U_M>
-  inline bool IsMember(const ScalarsetUnionType<U_M...>& u) {
-    return ET::IsMember(u.value);
-  }
+  // template<size_t L_ID, size_t L_B, size_t R_ID, size_t R_B>
+  // inline bool operator == (const EnumType<L_ID,L_B>& l, const EnumType<R_ID,R_B> r) { 
+  //   return ((L_ID == R_ID) // this static expr should help the compiler optimize this per type definition. 
+  //           && (l.value == r.value)); 
+  // }
+  // template<size_t L_ID, size_t L_B, size_t R_ID, size_t R_B>
+  // inline bool operator != (const EnumType<L_ID,L_B>& l, const EnumType<R_ID,R_B> r) { 
+  //   return ((L_ID != R_ID) // this should help the compiler optimize this per type definition. 
+  //           || (l.value != r.value)); 
+  // }
+
+  // template<class... L_M, class... R_M>
+  // inline bool operator == (const ScalarsetUnionType<L_M...>& l, const ScalarsetUnionType<R_M...> r) { return l.value == r.value; }
+  // template<class... L_M, class... R_M>
+  // inline bool operator != (const ScalarsetUnionType<L_M...>& l, const ScalarsetUnionType<R_M...> r) { return l.value != r.value; }
+
+//   template<size_t EID, size_t B, class... U_M>
+//   inline bool operator == (const EnumType<EID,B>& e, const ScalarsetUnionType<U_M...>& u) {
+// #   if __cplusplus >= 201703L
+//       return ((ScalarsetUnionType<U_M...>::ContainsMember<EID,B>()) // this should help the compiler optimize this per specific templated instance. [[requires c++17]] to be static
+//               && (e.value == u.value));
+// #   else
+//       return e.value == u.value;
+// #   endif
+//   }
+//   template<size_t EID, size_t B, class... U_M>
+//   inline bool operator != (const EnumType<EID,B>& e, const ScalarsetUnionType<U_M...>& u) {
+// #   if __cplusplus >= 201703L
+//       return (not (ScalarsetUnionType<U_M...>::ContainsMember<EID,B>()) // this should help the compiler optimize this per specific templated instance. [[requires c++17]]
+//               || (e.value != u.value));
+// #   else
+//       return e.value != u.value;
+// #   endif
+//   }
+//   template<class... U_M, size_t EID, size_t B>
+//   inline bool operator == (const ScalarsetUnionType<U_M...>& u, const EnumType<EID,B>& e) { return (e == u); }
+//   template<class... U_M, size_t EID, size_t B>
+//   inline bool operator != (const ScalarsetUnionType<U_M...>& u, const EnumType<EID,B>& e) { return (e != u); }
+
+  // /* this IsMember is the one associated with the IsMember() Murphi language operator */
+  // template<class ET, typename VT>
+  // inline bool IsMember(const VT& u) {
+  //   return ET::IsMember(u.__get_value());
+  // }
   // template<size_t EID, size_t B, class... U_M>
   // inline bool IsMember(const ScalarsetUnionType<U_M...>& u) {
   //   return EnumType<EID,B>::IsMember(u.value);

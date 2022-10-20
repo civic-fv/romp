@@ -641,8 +641,8 @@ stmt: category STRING expr {
 // extended statements
 } | MULTISETADD '(' expr ',' designator ')' {
   $$ = murphi::Ptr<murphi::MultisetAdd>::make($3, $5, @$);
-} | MULTISETREMOVE '(' expr ',' designator ')' {
-  $$ = murphi::Ptr<murphi::MultisetRemove>::make($3, $5, @$);
+} | MULTISETREMOVE '(' ID ',' designator ')' {
+  $$ = murphi::Ptr<murphi::MultisetRemove>::make(murphi::Ptr<murphi::ExprID>::make($3,nullptr,@3), $5, @$);
 } | MULTISETREMOVEPRED '(' multisetquantifier ',' expr ')' {
   $$ = murphi::Ptr<murphi::MultisetRemovePred>::make(*$3, $5, @$);
 };

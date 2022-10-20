@@ -378,7 +378,7 @@ bool Enum::is_boolean() const {
 
 
 Record::Record(const std::vector<Ptr<VarDecl>> &fields_, const location &loc_)
-    : TypeExpr(loc_), fields(fields_) {
+    : TypeExpr(loc_), fields(fields_), first_field_id(~0u) {
 
   std::unordered_set<std::string> names;
   for (const Ptr<VarDecl> &f : fields) {
@@ -548,8 +548,8 @@ bool TypeExprID::constant() const {
 }
 
 void TypeExprID::update() {
-  assert(referent != nullptr && "symbol resolution has occurred");
-  type_id = referent->type_id;
+  // assert(referent != nullptr && "symbol resolution has occurred");
+  // type_id = referent->type_id;
 }
 
 } // namespace murphi

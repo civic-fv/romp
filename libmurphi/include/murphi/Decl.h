@@ -112,6 +112,8 @@ struct MURPHI_API_WITH_RTTI TypeDecl : public Decl {
 
   // void validate() const final;
   void update() override;
+protected:
+  static id_t next_type_id;
 };
 
 struct MURPHI_API_WITH_RTTI VarDecl : public ExprDecl {

@@ -43,6 +43,10 @@ namespace romp {
     std::filesystem::path input_file_path;
     // the filepath of the output romp model checker
     std::filesystem::path output_file_path;
+    // the number of rule applications to keep track of for trace reports
+    size_t hist_len = 4u;
+    // the number of rule applications to keep track of for trace reports
+    size_t default_walk_multiplier = 16u;
     // function attributes to prepend before the definition of any murphi function's C/C++ function.
     std::string M_FUNCTION__FUNC_ATTRS;
     // function attributes to prepend before the definition of any murphi simple rule's guard C/C++ function.
@@ -66,18 +70,19 @@ namespace romp {
     
 
   protected:
-    id_t next_property_rule_id = 0u;
-    id_t next_rule_id = 0u;
-    id_t next_startstate_id = 0u;
-    id_t next_funct_id = 0u;
-    id_t next_property_id = 0u;
-    id_t next_cover_id = 0u;
-    id_t next_liveness_id = 0u;
-    id_t next_assert_id = 0u;
-    id_t next_assume_id = 0u;
-    id_t next_error_id = 0u;
-    id_t next_type_id = 0u;
-    id_t next_enum_id = 0u;
+    // id_t next_property_rule_id = 0u;
+    // id_t next_rule_id = 0u;
+    // id_t next_startstate_id = 0u;
+    // id_t next_funct_id = 0u;
+    // id_t next_property_id = 0u;
+    // id_t next_cover_id = 0u;
+    // id_t next_liveness_id = 0u;
+    // id_t next_assert_id = 0u;
+    // id_t next_assume_id = 0u;
+    // id_t next_error_id = 0u;
+    // // id_t next_type_id = 0u;
+    // // id_t next_enum_id = 0u;
+    // id_t next_record_member_id = 0u;
     
 
     // get a white space string for the current indentation level
@@ -100,8 +105,8 @@ namespace romp {
     void print_preprocessor_options(std::ostream& out);
 
 
-    CodeGenerator& operator << (const murphi::Node &n);
     CodeGenerator& operator << (bool val);
+    CodeGenerator& operator << (const murphi::Node &n);
     template<typename T>
     CodeGenerator& operator << (const T &val);
 

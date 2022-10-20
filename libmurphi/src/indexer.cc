@@ -240,6 +240,8 @@ void Indexer::visit_record(Record &n) {
   n.unique_id = next++;
   for (auto &f : n.fields)
     dispatch(*f);
+  n.first_field_id = next_record_field_id;
+  next_record_field_id += n.fields.size();
 }
 
 void Indexer::visit_return(Return &n) {
@@ -368,7 +370,7 @@ void Indexer::visit_multisetcount(MultisetCount& n) {
 
 void Indexer::visit_multisetelement(MultisetElement& n) {
   n.unique_id = next++;
-  dispatch(*n.array);
+  dispatch(*n.multiset);
   dispatch(*n.index);
 }
 

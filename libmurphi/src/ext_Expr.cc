@@ -91,15 +91,45 @@ std::string SUCast::to_string() const {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-MultisetElement::MultisetElement(const Ptr<Expr>& designator_, const Ptr<Expr> index_, const location& loc_)
-  : Element(designator_,index_,loc_) {}
+MultisetElement::MultisetElement(const Ptr<Expr>& multiset_, const Ptr<ExprID> index_, const location& loc_)
+  : Expr(loc_), index(index_), multiset(multiset_) {}
 MultisetElement *MultisetElement::clone() const { return new MultisetElement(*this); }
 
 void MultisetElement::visit(BaseTraversal& visitor) { visitor.visit_multisetelement(*this); }
 void MultisetElement::visit(ConstBaseTraversal& visitor) const { visitor.visit_multisetelement(*this); }
 
+bool MultisetElement::constant() const { return false; }
+
+Ptr<TypeExpr> MultisetElement::type() const {
+  const Ptr<TypeExpr> t = multiset->type()->resolve();
+  // if we are called during symbol resolution on a malformed expression, our
+  // left hand side may not be an array
+  if (const auto m = dynamic_cast<const Multiset *>(t.get()))
+    return m->element_type;
+
+  throw Error("multiset element based on something that is not an multiset", loc);
+}
+
+mpz_class MultisetElement::constant_fold() const {
+  throw Error("multiset element used in a constant expression", loc);
+}
+
+bool MultisetElement::is_lvalue() const { 
+  // multiset element can't ever be used to change value internally
+  return false;  // moved to a check in assignment
+  // return multiset->is_lvalue();
+}
+
+bool MultisetElement::is_readonly() const {
+  // multiset element can't ever be used to change value internally
+  return true;
+  // return multiset->is_readonly(); 
+}
+
+bool MultisetElement::is_pure() const { return true; }
+
 void MultisetElement::validate() const {
-  const Ptr<TypeExpr> t = array->type()->resolve();
+  const Ptr<TypeExpr> t = multiset->type()->resolve();
 
   if (not isa<Multiset>(t))
     throw murphi::Error("multiset index on an expression that is not a multiset", loc);

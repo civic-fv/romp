@@ -23,11 +23,11 @@
 
 namespace romp {
 
-class ScalarEnumGenerator : public romp::CodeGenerator,
-                            public murphi::Traversal {
+class ScalarEnumGenerator : public CodeGenerator,
+                            public murphi::ConstTraversal {
 protected:
   std::string sep;
-  size_t add_enum_id(const std::string& name);
+  bool add_enum_id(const std::string& name);
 
 public:
 
@@ -35,15 +35,18 @@ public:
   std::list<std::string> _enum_ids = {ROMP_SCALAR_ENUM_UNDEFINED_NAME};
   
   
-  ScalarEnumGenerator(const CodeGenerator& cg_);
+  ScalarEnumGenerator(const CodeGenerator& gen_);
   ~ScalarEnumGenerator() = default;
 
 
-  void visit_model(murphi::Model& m) final;
+  void visit_model(const murphi::Model& m) final;
 
-  void visit_enum(murphi::Enum& n) final;
-  void visit_scalarset(murphi::Scalarset& n) final;
+  void visit_enum(const murphi::Enum& n) final;
+  void visit_scalarset(const murphi::Scalarset& n) final;
   // void visit_scalarsetunion(murphi::ScalarsetUnion& n) final;
+
+  // overriden because we don't want to explore enums in it's type specifier
+  void visit_ismember(const murphi::IsMember& n) final;
 };
 
 } // namespace romp

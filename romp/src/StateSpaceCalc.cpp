@@ -18,11 +18,12 @@
 
 #include "StateSpaceCalc.hpp"
 #include "type_traverse.hpp"
+#include <murphi/murphi.h>
 #include <cmath>
 
 namespace romp {
 
-mpz_class statespace_count(const murphi::Record& n) {
+mpz_class statespace_count(const murphi::Model& m) {
   struct state_perm : public murphi::ConstBaseTypeTraversal {
     mpz_class perm = 1_mpz;
   public: state_perm() : ConstBaseTypeTraversal("was not a type") {}
@@ -54,7 +55,12 @@ mpz_class statespace_count(const murphi::Record& n) {
       perm *= n.count();
     }
   };
-  state_perm sp; sp.dispatch(n);
+  std::vector<murphi::Ptr<murphi::VarDecl>> _tmp;
+  for (const auto& c : m.children)
+    if (const auto _vd = dynamic_cast<const murphi::VarDecl*>(c.get())) {
+      _tmp.push_back(murphi::Ptr<murphi::VarDecl>::make(*_vd));
+    }
+  state_perm sp; sp.dispatch(murphi::Record(_tmp,murphi::location()));
   return sp.perm;
 }
 }

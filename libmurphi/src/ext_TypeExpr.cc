@@ -56,7 +56,23 @@ void ScalarsetUnion::validate() const {
     } else if (isa<TypeExprID>(_m) && isa<Scalarset>(m)) {
       continue;
     }
-    throw Error("ScalarsetUnion can only union: enums, and named Scalarsets.", _m->loc);
+    throw Error("a ScalarsetUnion can only union enums, and *named* Scalarsets.", _m->loc);
+  }
+  for (size_t i=0; i<members.size(); ++i) {
+    const auto i_r = members[i]->resolve();
+    if (const auto i_s = dynamic_cast<const Scalarset*>(i_r.get())) {
+      for (size_t j=i+1; j<members.size(); ++j)
+        if (const auto j_s = dynamic_cast<const Scalarset*>(members[j]->resolve().get())) {
+          if (i_s->name != j_s->name || i_s->count() != j_s->count())
+            throw Error("duplicate (scalarset) type in union", j_s->loc);
+        }
+    } else if (const auto i_e = dynamic_cast<const Enum*>(i_r.get())) {
+      for (size_t j=i+1; j<members.size(); ++j)
+        if (const auto j_e = dynamic_cast<const Enum*>(members[j]->resolve().get())) {
+          if (i_e->equal_to(*j_e))
+            throw Error("duplicate (enum) type in union", j_e->loc);
+        }
+    }
   }
 }
 bool ScalarsetUnion::is_useful() const {

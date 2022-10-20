@@ -118,19 +118,19 @@ void ConstTypeTraversal::visit_multisetcount(const MultisetCount& n) {  //not us
 
 
 void Traversal::visit_multisetelement(MultisetElement& n) {
-  dispatch(*n.array);
+  dispatch(*n.multiset);
   dispatch(*n.index);
 }
 void ConstTraversal::visit_multisetelement(const MultisetElement& n) {
-  dispatch(*n.array);
+  dispatch(*n.multiset);
   dispatch(*n.index);
 }
 void ConstStmtTraversal::visit_multisetelement(const MultisetElement& n) {
-  dispatch(*n.array);
+  dispatch(*n.multiset);
   dispatch(*n.index);
 }
 void ConstTypeTraversal::visit_multisetelement(const MultisetElement& n) {  //not used for a type expr
-  dispatch(*n.array);
+  dispatch(*n.multiset);
   dispatch(*n.index);
 }
 

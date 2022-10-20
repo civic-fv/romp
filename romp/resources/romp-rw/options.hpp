@@ -569,7 +569,7 @@ void Options::parse_args(int argc, char **argv) {
     }
     
     // check for inconsistent or contradictory options here
-    // TODO (OPTIONAL) check OPTIONS to make sure config is valid and output
+    //[X]TODO (OPTIONAL) check OPTIONS to make sure config is valid and output
     // if (history_length == 0) {
     //   std::cerr << "\nERROR : history size cannot be 0 (--r-history/-rhl)\n" << std::flush;
     //   exit(EXIT_FAILURE);

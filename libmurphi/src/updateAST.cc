@@ -458,6 +458,7 @@ public:
         throw Error("unknown type symbol \"" + n.name + "\"", n.loc);
 
       n.referent = t;
+      n.type_id = t->value->type_id;
     }
   }
 
@@ -527,20 +528,19 @@ public:
   }
   
   void visit_multisetelement(MultisetElement& n) final {
-    dispatch(*n.array);
+    dispatch(*n.multiset);
     dispatch(*n.index);
-    disambiguate(n.array);
-    disambiguate(n.index);
+    disambiguate(n.multiset);
+    // disambiguate(n.index);
   }
   
   void visit_multisetremove(MultisetRemove& n) final {
     dispatch(*n.index);
     dispatch(*n.multiset);
-    disambiguate(n.index);
+    // disambiguate(n.index);
     disambiguate(n.multiset);
-    if (const auto eid = dynamic_cast<const ExprID*>(n.index.get())) {
-      n.ms_quantifier = ms_quantifiers.lookup<MultisetQuantifier>(eid->id, eid->loc);
-    }
+    n.ms_quantifier = ms_quantifiers.lookup<MultisetQuantifier>(n.index->id, n.index->loc);
+
   }
   
   void visit_multisetremovepred(MultisetRemovePred& n) final {
@@ -684,7 +684,7 @@ private:
                 && (msq->decl->is_readonly() && _eid->is_readonly())) {
                 // biggest flaw left is ensuring that the multiset being refereed to is the same as the ms_quantifier's
                 // if (_e->array->to_string() == msq->multiset->to_string()) // approximate rough check for the above
-              e = Ptr<MultisetElement>::make(_e->array, _e->index, e->loc);
+              e = Ptr<MultisetElement>::make(_e->array, Ptr<ExprID>::make(*_eid), e->loc);
             }
           }
         }

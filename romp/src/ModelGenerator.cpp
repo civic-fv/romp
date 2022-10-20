@@ -1,4 +1,6 @@
-#include "ModelGenerator.h"
+#include "ModelGenerator.hpp"
+#include "SubRangeSet.hpp"
+#include "generate_state_stream.hpp"
 #include "../../common/escape.h"
 #include "../../common/isa.h"
 #include "options.h"
@@ -65,37 +67,27 @@ void visit_and(const And &n) {
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_array(const Array &n) {
-  //TODO: update visit_array to new standards
-  mpz_class count = n.index_type->count();
-
-  assert(count > 0 && "index type of array does not include undefined");
-  count--;
-
-  // wrap the array in a struct so that we do not have the awkwardness of
-  // having to emit its type and size on either size of another node
-  *this << "struct " << (pack ? "__attribute__((packed)) " : "") << "{ "
-        << *n.element_type << " data[" << count.get_str() << "];";
-
-  // The index for this array may be an enum declared inline:
-  //
-  //   array [enum {A, B}] of foo
-  //
-  // If so, we need to emit it somehow so that the enum’s members can be
-  // referenced later. We define it within this struct to avoid any awkward
-  // lexical issues.
-  if (auto e = dynamic_cast<const Enum *>(n.index_type.get())) {
-    *this << " " << *e << ";";
-  }
-
-  *this << " }";
+  //[X] TODO: update visit_array to new standards
+  *this << ROMP_TYPE_ARRAY "<" << *n.index_type << ',' 
+                               << *n.element_type << '>'; 
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_assignment(const Assignment &n) {
-  *this << indentation() << *n.lhs << " = " << *n.rhs << ";";
+  //[X]TODO: add assignment error handling
+  // open anonymous scope 
+  *this << indentation() << "{\n";
+  indent();
+  *this << indentation() << "auto _romp_asg_rhs = " << *n.rhs << ";\n"
+        << indentation() << "auto& _romp_asg_lhs = " << *n.lhs << ";\n"
+        << indentation() << "try { _romp_asg_lhs = _romp_asg_rhs;";
   emit_trailing_comments(n);
-  *this << "\n";
+  *this << indentation() << "} catch (...) { throw " 
+                                            ROMP_MAKE_MODEL_ERROR_TYPE(n,"assignment error") 
+                                            "; }\n";
+  dedent();
+  *this << indentation() << "}\n"; // close anonymous scope
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
@@ -128,9 +120,8 @@ void visit_chooserule(const ChooseRule &n) {
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_clear(const Clear &n) {
-  //TODO: update visit_clear to new standards
-  *this << indentation() << "memset(&" << *n.rhs << ", 0, sizeof(" << *n.rhs
-        << "));";
+  //[X]TODO: update visit_clear to new standards
+  *this << indentation() << '(' << *n.rhs << ").Clear();";
   emit_trailing_comments(n);
   *this << "\n";
 }
@@ -138,7 +129,7 @@ void visit_clear(const Clear &n) {
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_constdecl(const ConstDecl &n) {
-  //TODO: update visit_constdecl to new standards
+  //[X]TODO: update visit_constdecl to new standards
   *this << indentation() << "const ";
 
   // if this constant has an explicit type, use that
@@ -146,17 +137,7 @@ void visit_constdecl(const ConstDecl &n) {
     *this << *n.type;
 
   } else {
-
-    // otherwise, if it was a previously typedefed enum, use its typedefed
-    // name (to avoid later -Wsign-compare warnings on GCC)
-    const Ptr<TypeExpr> type = n.value->type();
-    auto it = enum_typedefs.find(type->unique_id);
-    if (it != enum_typedefs.end()) {
-      *this << ROMP_SCALAR_ENUM_TYPE;
-
-    } else { // fallback on the type of the right hand side
-      *this << "__typeof__(" << *n.value << ")";
-    }
+    *this << "__typeof__(" << *n.value << ")";
   }
   *this << " " << n.name << " = " << *n.value << ";";
   emit_trailing_comments(n);
@@ -173,59 +154,40 @@ void visit_div(const Div &n) {
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_element(const Element &n) {
-  //TODO: update visit_element to new standards
-
-  // rather than simply indexing into the array based on the value of the index
-  // expression, we need to account for the fact that the generated C array will
-  // start from 0 while the Murphi array will start from a custom lower bound
-
-  // find the type of the array expression
-  const Ptr<TypeExpr> t = n.array->type()->resolve();
-  auto a = dynamic_cast<const Array *>(t.get());
-  assert(a != nullptr && "non-array on LHS of array indexing expression");
-
-  // find the lower bound of its index type, using some hacky mangling to align
-  // with one of the macros from ../resources/c_prefix.c
-  const std::string lb = value_type + "_" + a->index_type->lower_bound();
-
-  // emit an indexing operation, now account for this
-  *this << "(" << *n.array << ".data[(" << *n.index << ") - " << lb << "])";
+  //[X]TODO: update visit_element to new standards
+  // use anon lambda to nest a try catch (latter design with std::result should avoid this as a need)
+  if (const auto _a = dynamic_cast<const Array*>(n.array->type().get())) {
+    *this << "(([&]() -> " << *_a->element_type << "& { "
+                "try { return " << *n.array << "[" << *n.index << "]; "
+                "} catch (...) { throw " ROMP_MAKE_MODEL_ERROR_TYPE(n,"array index access error") "; } }"
+              ")())"; 
+    return;
+  }
+  assert(!"unreachable");
+  __builtin_unreachable();
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_enum(const Enum &n) {
-  //TODO: update visit_enum to new standards
-  *this << "enum { ";
-  for (const std::pair<std::string, location> &m : n.members) {
-    *this << m.first << ", ";
-  }
-  *this << "}";
+  //[X]TODO: update visit_enum to new standards
+  if (n.members.size() <= 0)
+    throw Error("empty enum types are not allowed", n.loc);
+  *this << ROMP_TYPE_ENUM << "<(/*"<< n.members[0].first << "*/" enum_ids[n.members[0].first] << "),"
+                                  "(" << n.members.size() << ")>";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_eq(const Eq &n) {
-
-  if (!n.lhs->type()->is_simple()) {
-    // This is a comparison of an array or struct. We cannot use the built-in
-    // == operator, so we use memcmp. This only works if all members are
-    // packed, hence why `__attribute__((pack))` is emitted in other places.
-    assert(pack && "comparison of complex types is present but structures "
-                   "are not packed");
-    *this << "(memcmp(&" << *n.lhs << ", &" << *n.rhs << ", sizeof" << *n.lhs
-          << ") == 0)";
-
-    return;
-  }
-
+  //[X]TODO: update visit_eq to new standards
   *this << "(" << *n.lhs << " == " << *n.rhs << ")";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_errorstmt(const ErrorStmt &n) {
-  //TODO: update visit_errorstmt to new standards
+  //[X]TODO: update visit_errorstmt to new standards
   id_t id = next_error_id++;
   *this << indentation() << "if (" ROMP_ERROR_HANDLER(id) ")\n";
   indent();
@@ -233,7 +195,6 @@ void visit_errorstmt(const ErrorStmt &n) {
   dedent();
   emit_trailing_comments(n);
   *this << "\n";
-  error_info_list << ROMP_MAKE_ERROR_INFO_STRUCT(n,(inType==FUNCT),to_json(n)) ",";
 # ifdef DEBUG
     *this << std::flush;  // flush output more frequently for easier debug
 # endif
@@ -250,9 +211,9 @@ void visit_exists(const Exists &n) {
 
 void visit_exprid(const ExprID &n) {
   *this << "(";
-  if (is_pointer.count(n.value->unique_id) > 0) {
-    *this << "*";
-  }
+  // if (is_pointer.count(n.value->unique_id) > 0) {
+  //   *this << "*";
+  // }
   *this << n.id;
   // if this refers to an alias, it will have been emitted as a macro
   if (isa<AliasDecl>(n.value)) {
@@ -264,25 +225,22 @@ void visit_exprid(const ExprID &n) {
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_field(const Field &n) {
-  //TODO: update visit_field to new standards
-  *this << "(" << *n.record << "." << n.field << ")";
+  //[X]TODO: update visit_field to new standards
+  if (const auto _r = dynamic_cast<const Record*>(n.record->type())) {
+    size_t i=0;
+    for (; i<_r->members.size(); ++i)
+      if (_r->members[i].first == n.field)
+        break;
+    *this << "(" << *n.record << ".get<(/*"<<n.field<<"*/("<<i<<"))>())";
+    return;
+  }
+  throw Error("expected a record type", n.record->loc);
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_for(const For &n) {
-
-  // open a scope to make all of this appear as a single statement to any
-  // enclosing code
-  *this << indentation() << "do {\n";
-  indent();
-
-  // if the type of the quantifier is an enum defined inline, we need to
-  // define this in advance because C does not permit this to be defined
-  // within the for loop initialiser
-  if (auto e = dynamic_cast<const Enum *>(n.quantifier.type.get())) {
-    *this << indentation() << *e << ";\n";
-  }
+  //[X]TODO: update visit_for to new standards
 
   *this << indentation() << n.quantifier << " {\n";
   indent();
@@ -292,9 +250,6 @@ void visit_for(const For &n) {
   }
   dedent();
   *this << indentation() << "}\n";
-
-  dedent();
-  *this << indentation() << "} while (0);";
   emit_trailing_comments(n);
   *this << "\n";
 }
@@ -302,23 +257,16 @@ void visit_for(const For &n) {
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_forall(const Forall &n) {
-
+  //[X]TODO: update visit_forall to new standards
   // open a GNU statement expression
-  *this << "({ ";
-
-  // see corresponding logic in visit_for() for an explanation
-  if (auto e = dynamic_cast<const Enum *>(n.quantifier.type.get())) {
-    *this << *e << "; ";
-  }
-
-  *this << "bool res_ = true; " << n.quantifier << " { res_ &= " << *n.expr
+  *this << "({bool res_ = true; " << n.quantifier << " { res_ &= " << *n.expr
         << "; } res_; })";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_function(const Function &n) {
-  //TODO: update visit_function to new standards
+  //[X]TODO: update visit_function to new standards
   id_t id = next_funct_id++;
   *this << indentation() << CodeGenerator::M_FUNCTION__FUNC_ATTRS << "\n"
         << indentation();
@@ -350,7 +298,7 @@ void visit_function(const Function &n) {
   if (n.is_pure()) *this << "const "; // if function never changes the state mark it as const (allowed in guards and property_rules)
   *this << " " /* "throw (" ROMP_MODEL_EXCEPTION_TYPE ")" */  "{\n";
   indent();
-  *this << indentation() << "using namespace ::" ROMP_TYPE_NAMESPACE ";\n";
+  // *this << indentation() << "using namespace ::" ROMP_TYPE_NAMESPACE ";\n";
   
   *this << indentation() << "try {\n";
   indent(); 
@@ -463,17 +411,15 @@ void visit_implication(const Implication &n) {
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_ismember(const IsMember& n) {
-  //TODO: update visit_ismember to new standards
+  //[X]TODO: update visit_ismember to new standards
+  *this << "(" ROMP_UTIL_NAMESPACE "::IsMember<" << *n.type_value << ">(" << *n.designator << "))";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_isundefined(const IsUndefined &n) {
-  //TODO: update visit_isundefined to new standards
-  // check() prevents a model with isundefined expressions from making it
-  // through to here
-  assert(!"unreachable");
-  __builtin_unreachable();
+  //[X]TODO: update visit_isundefined to new standards
+  *this << '(' << n.lhs << ".IsUndefined())";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
@@ -506,7 +452,7 @@ void visit_model(const Model &n) {
 
   emit_leading_comments(n);
 
-  this* << indentation() << "class " ROMP_STATE_CLASS_NAME " {\n\n";
+  this* << indentation() << "struct " ROMP_STATE_CLASS_NAME " {\n\n";
   indent();
 
   for (const Ptr<Node> &c : n.children) {
@@ -526,6 +472,8 @@ void visit_model(const Model &n) {
   }
 
   *this << "\n"
+  generate_state_stream(*this,n);
+  *this << "\n"
   dedent();
   *this << indentation() << "};\n\n" << std::flush;
 }
@@ -539,43 +487,64 @@ void visit_mul(const Mul &n) {
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_multiset(const Multiset &n) {
-  //TODO: update visit_multiset to new standards
+  //[X]TODO: update visit_multiset to new standards
+  *this << ROMP_TYPE_MULTISET << "<(/*" << n.size->to_string() << "*/(" << n.size->constant_fold().to_str() << ")),"
+                              <<  *n.element_type << '>';
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_multisetadd(const MultisetAdd &n) {
-  //TODO: update visit_multisetadd to new standards
+  //[X]TODO: update visit_multisetadd to new standards
+  *this << indentation() << "(" << *n.multiset << ").MultisetAdd((" << n.value <<"));";
+  emit_trailing_comments(n);
+  *this << '\n';
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_multisetcount(const MultisetCount &n) {
-  //TODO: update visit_multisetcount to new standards
+  //[X]TODO: update visit_multisetcount to new standards
+  *this << "((" << *n.multiset << ").MultisetCount([&](size_t " << n.ms_quantifier.name << ") -> bool { " 
+                                                  "return ("<< n.cond <<"); }))";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_multisetelement(const MultisetElement &n) {
-  //TODO: update visit_multisetelement to new standards
+  //[X]TODO: update visit_multisetelement to new standards
+  //[X]TODO: implement error traces for bad accesses -- nvm validate and structure should prevent issues
+  *this << "(" ROMP_UTIL_NAMESPACE "::MultisetElement((" << *n.multiset << "),(" <<  *n.index << ")))";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_multisetremove(const MultisetRemove &n) {
-  //TODO: update visit_multisetremove to new standards
+  //[X]TODO: update visit_multisetremove to new standards
+  // this is unreachable because we dont' support choose rule's and this is useless without them
+  assert(!"unreachable");
+  __builtin_unreachable();
+  // *this << "((" << *n.multiset << ").MultisetRemove((" << *n.index << ")));";
+  // emit_trailing_comments(n);
+  // *this << '\n';
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_multisetremovepred(const MultisetRemovePred &n) {
-  //TODO: update visit_multisetremovepred to new standards
+  //[X]TODO: update visit_multisetremovepred to new standards
+  *this << "(" << *n.multiset << ").MultisetRemovePred([&](size_t " << *n.multiset.name << ") -> bool { "
+                                          "return (" << *n.pred << "); }));";
+  emit_trailing_comments(n);
+  *this << '\n';
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_multisetquantifier(const MultisetQuantifier &n) {
-  // this is unreachable because we handle all multiset loops internally
+  //[X]TODO: update visit_multisetquantifier to new standards
+  // this is unreachable because we let the Multiset type handle this for everything but choose rules
+  //   which we don't support at all
   assert(!"unreachable");
   __builtin_unreachable();
 }
@@ -589,17 +558,7 @@ void visit_negative(const Negative &n) {
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_neq(const Neq &n) {
-
-  if (!n.lhs->type()->is_simple()) {
-    // see explanation in visit_eq()
-    assert(pack && "comparison of complex types is present but structures "
-                   "are not packed");
-    *this << "(memcmp(&" << *n.lhs << ", &" << *n.rhs << ", sizeof" << *n.lhs
-          << ") != 0)";
-
-    return;
-  }
-
+  //[X]TODO: update visit_neq to new standards
   *this << "(" << *n.lhs << " != " << *n.rhs << ")";
 }
 
@@ -639,8 +598,8 @@ void visit_property(const Property &) {
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_propertyrule(const PropertyRule &n) {
-  //TODO: update visit_propertyrule to new standards
-  id_t prop_id = next_property_rule_id++;
+  //[X]TODO: update visit_propertyrule to new standards
+  id_t prop_id = next_property_id++;
   // property_rules.push_back(Ptr<const PropertyRule>::make(n));
   // function prototype
   *this << indentation() << CodeGenerator::M_PROPERTY__FUNC_ATTRS << "\n"
@@ -679,35 +638,37 @@ void visit_propertyrule(const PropertyRule &n) {
     *this << *a;
   }
 
-  // processing_global_prop = true;
-  // const auto stmt = Ptr<PropertyStmt>::make(n.property,n.name,n.loc);
-  //       << *stmt;
-  // processing_global_prop = false;
+  // choose rule quantifiers
+  for (const MultisetQuantifier& msq : n.ms_quantifiers) {
+    *this << msq;
+    // check choose rule's for choice validity
+    *this << indentation() << "if (" << msq.name << " == (~((size_t)0u))) return true;\n";
+  }
 
   *this << indentation() << "return ";
   id_t _id = 0;
   switch (n.property.category) {
   case Property::ASSERTION:
-    // if (not CodeGenerator::is_prop_enabled(Property::ASSERTION)) // not needed always enabled
+    // if (not is_prop_enabled(Property::ASSERTION)) // not needed always enabled
     //   throw Error("`assert`/`invariant` properties are not enabled !!", n.loc);
     *this << ROMP_INVARIANT_HANDLER(n,prop_id);
     break;
 
   case Property::ASSUMPTION:
-    if (not CodeGenerator::is_prop_enabled(Property::ASSUMPTION))
+    if (not is_prop_enabled(Property::ASSUMPTION))
       throw Error("`assume` properties are not enabled !!", n.loc);
     *this  << ROMP_ASSUMPTION_HANDLER(n,prop_id);
     break;
 
   case Property::COVER:
-  if (not CodeGenerator::is_prop_enabled(Property::COVER))
+  if (not is_prop_enabled(Property::COVER))
       throw Error("`cover` properties are not enabled !!", n.loc);
     _id = next_cover_id++;
     *this  << ROMP_COVER_HANDLER(n,prop_id,_id);
     break;
 
   case Property::LIVENESS:
-  if (not CodeGenerator::is_prop_enabled(Property::LIVENESS))
+  if (not is_prop_enabled(Property::LIVENESS))
       throw Error("`liveness` properties are not enabled !!", n.loc);
     _id = next_liveness_id++;
     *this << ROMP_LIVENESS_HANDLER(n,prop_id,_id);
@@ -730,7 +691,6 @@ void visit_propertyrule(const PropertyRule &n) {
 
   dedent();
   *this << indentation() << "}\n";
-  inType = GLOBAL;
 # ifdef DEBUG
     *this << std::flush;  // flush output more frequently for easier debug
 # endif
@@ -739,7 +699,7 @@ void visit_propertyrule(const PropertyRule &n) {
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_propertystmt(const PropertyStmt &n) {
-  //TODO: update visit_propertystmt to new romp standards
+  //[X]TODO: update visit_propertystmt to new romp standards
   id_t id = next_property_id++;
   id_t _id = 0u;
 
@@ -748,34 +708,34 @@ void visit_propertystmt(const PropertyStmt &n) {
 
   switch (n.property.category) {
   case Property::ASSERTION:
-  // if (not CodeGenerator::is_prop_enabled(Property::ASSUMPTION))  // not needed always enabled
+  // if (not is_prop_enabled(Property::ASSUMPTION))  // not needed always enabled
   //     throw Error("`assert`/`invariant` properties are not enabled !!", n.loc);
     *this << indentation() << "if (" << ROMP_ASSERTION_HANDLER(n,id) << ") "
           /* << indentation() */ << "throw " ROMP_MAKE_MODEL_ERROR_PROPERTY(n,id) ";\n";
-    prop_info_list << ROMP_MAKE_PROPERTY_INFO_STRUCT(n,id,n.message,ROMP_PROPERTY_TYPE_ASSERT, to_json(n,"assert")) ",";
+    // prop_info_list << ROMP_MAKE_PROPERTY_INFO_STRUCT(n,id,n.message,ROMP_PROPERTY_TYPE_ASSERT, to_json(n,"assert")) ",";
     break;
 
   case Property::ASSUMPTION:
-  if (not CodeGenerator::is_prop_enabled(Property::ASSUMPTION))
+  if (not is_prop_enabled(Property::ASSUMPTION))
       throw Error("`assume` properties are not enabled !!", n.loc);
     *this << "#ifdef " ROMP_ASSUME_PREPROCESSOR_VAR "\n"
           << indentation() << "if (" << ROMP_ASSUMPTION_HANDLER(n,id) << ") "
           /* << indentation() */ << "throw " ROMP_MAKE_MODEL_ERROR_PROPERTY(n,id) ";\n"
               "#endif\n";
-    if (not processing_global_prop)
-      prop_info_list << ROMP_MAKE_PROPERTY_INFO_STRUCT(n,id,n.message,ROMP_PROPERTY_TYPE_ASSUME, to_json(n,"assume")) ",";
+    // if (not processing_global_prop)
+    //   prop_info_list << ROMP_MAKE_PROPERTY_INFO_STRUCT(n,id,n.message,ROMP_PROPERTY_TYPE_ASSUME, to_json(n,"assume")) ",";
     break;
 
   case Property::COVER:
-    if (not CodeGenerator::is_prop_enabled(Property::COVER))
+    if (not is_prop_enabled(Property::COVER))
       throw Error("`cover` properties are not enabled !!", n.loc);
     _id = next_cover_id++;
     *this << "#ifdef " ROMP_COVER_PREPROCESSOR_VAR "\n"
           << indentation() << "if (" << ROMP_COVER_HANDLER(n,id,_id) << ")"
           /* << indentation() */ << "throw " ROMP_MAKE_MODEL_ERROR_PROPERTY(n,id) ";\n"
           << "#endif\n";
-    if (not processing_global_prop)
-      prop_info_list << ROMP_MAKE_PROPERTY_INFO_STRUCT(n,_id,n.message,ROMP_PROPERTY_TYPE_COVER, to_json(n,"cover")) ",";
+    // if (not processing_global_prop)
+    //   prop_info_list << ROMP_MAKE_PROPERTY_INFO_STRUCT(n,_id,n.message,ROMP_PROPERTY_TYPE_COVER, to_json(n,"cover")) ",";
     break;
 
   case Property::LIVENESS:
@@ -797,144 +757,29 @@ void visit_propertystmt(const PropertyStmt &n) {
 }
 
 
-
-// << ========================================================================================== >> 
-// <<                                     UTILITY FUNCTIONS                                      >> 
-// << ========================================================================================== >> 
-
-void ModelGenerator::print(const std::string &suffix, const TypeExpr &t,
-                           const Expr &e, size_t counter) {
-
-  const Ptr<TypeExpr> type = t.resolve();
-
-  // if this is boolean, handle it separately to other Enums to avoid
-  // -Wswitch-bool warnings and cope with badly behaved users setting non-0/1
-  // values
-  if (type->is_boolean()) {
-
-    *this << indentation() << "printf(\"%s\", ((" << e << suffix
-          << ") ? \"true\" : \"false\"))";
-
-    return;
-  }
-
-  // if this is an enum, print the member corresponding to its value
-  if (auto en = dynamic_cast<const Enum *>(type.get())) {
-
-    *this << indentation() << "do {\n";
-    indent();
-
-    *this << indentation() << "switch (" << e << suffix << ") {\n";
-    indent();
-    size_t i = 0;
-    for (const std::pair<std::string, location> &m : en->members) {
-      *this << indentation() << "case " << std::to_string(i) << ":\n";
-      indent();
-      *this << indentation() << "printf(\"%s\", \"" << m.first << "\");\n"
-            << indentation() << "break;\n";
-      dedent();
-      ++i;
-    }
-    *this << indentation() << "default:\n";
-    indent();
-    *this << indentation() << "assert(!\"invalid enum value\");\n"
-          << indentation() << "__builtin_unreachable();\n";
-    dedent();
-    dedent();
-    *this << indentation() << "}\n";
-
-    dedent();
-    *this << indentation() << "} while (0)";
-
-    return;
-  }
-
-  if (auto a = dynamic_cast<const Array *>(type.get())) {
-
-    // printing opening “[”
-    *this << indentation() << "do {\n";
-    indent();
-    *this << indentation() << "printf(\"[\");\n";
-
-    // invent a unique symbol using our counter
-    const std::string i = "array_index" + std::to_string(counter);
-
-    // get the bounds of the index and hackily prepend the value type to produce
-    // something corresponding to one of the macros in ../resources/c_prefix.c
-    const std::string lb = value_type + "_" + a->index_type->lower_bound();
-    const std::string ub = value_type + "_" + a->index_type->upper_bound();
-
-    *this << indentation() << "for (size_t " << i << " = 0; ; ++" << i
-          << ") {\n";
-    indent();
-
-    // construct a print statement of the element at this index
-    print(suffix + ".data[" + i + "]", *a->element_type, e, counter + 1);
-    *this << ";\n";
-
-    *this << indentation() << "if (" << i << " == (size_t)" << ub
-          << " - (size_t)" << lb << ") {\n";
-    indent();
-    *this << indentation() << "break;\n";
-    dedent();
-    *this << indentation() << "} else {\n";
-    indent();
-    *this << indentation() << "printf(\", \");\n";
-    dedent();
-    *this << indentation() << "}\n";
-    dedent();
-    *this << indentation() << "}\n";
-
-    // print closing “]”
-    *this << indentation() << "printf(\"]\");\n";
-    dedent();
-    *this << indentation() << "} while (0)";
-
-    return;
-  }
-
-  if (auto r = dynamic_cast<const Record *>(type.get())) {
-
-    // print opening “{”
-    *this << indentation() << "do {\n";
-    indent();
-    *this << indentation() << "printf(\"{\");\n";
-
-    // print contained fields as a comma-separated list
-    std::string sep;
-    for (const Ptr<VarDecl> &f : r->fields) {
-      *this << indentation() << "printf(\"%s\", \"" << sep << "\");\n";
-      const Ptr<TypeExpr> ft = f->get_type();
-      print(suffix + "." + f->name, *ft, e, counter);
-      *this << ";\n";
-      sep = ", ";
-    }
-
-    // print closing “}”
-    *this << indentation() << "printf(\"}\");\n";
-    dedent();
-    *this << indentation() << "} while (0)";
-
-    return;
-  }
-
-  // fall back case, for Ranges and Scalarsets
-  *this << indentation() << "print_" << value_type << "(" << e << suffix << ")";
-}
-
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_put(const Put &n) {
+  //[X]TODO: update visit_put to new standards (aka actually supported)
 
+  // this lambda needs a by value/copy closure instead of the normal reference closure
+  *this << _ROMP_PUT_HANDLER << "([=](" ROMP_OUT_STREAM_TYPE "& _romp_out) -> void { _romp_out";
   // is this a put of a literal string?
   if (n.expr == nullptr) {
-    *this << indentation() << "printf(\"%s\\n\", \"" << n.value << "\");";
+    size_t pos; 
+    std::string s = n.value;
+    std::string token;
+    while ((pos = s.find("\n")) != std::string::npos) {
+      token = s.substr(0, pos);
+      *this <<  " << \"" << escape(token) << "\" << _romp_out.nl()";
+      s.erase(0, pos + delimiter.length());
+    }
+    *this <<  " << \"" << escape(s) << '"';
 
   } else {
-    const Ptr<TypeExpr> type = n.expr->type();
-    print("", *type, *n.expr, 0);
-    *this << ";";
+    *this << " << (" << *n.expr << ')';
   }
+  *this << " << _romp_out.nl(); }, " ROMP_MAKE_LOCATION_STRUCT(n.loc) ");";
 
   emit_trailing_comments(n);
   *this << "\n";
@@ -943,12 +788,12 @@ void visit_put(const Put &n) {
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_quantifier(const Quantifier &n) {
-
+  //[X]TODO: update visit_quantifier to new standards
   if (n.type == nullptr) {
-    bool down_count = n.from->constant() && n.to->constant() &&
-                      n.to->constant_fold() < n.from->constant_fold();
-    *this << "for (" << value_type << " " << n.name << " = " << *n.from << "; "
-          << n.name << " " << (down_count ? ">=" : "<=") << " " << *n.to << "; "
+    *this << "for (range_t " << n.name << "=" *n.from << "; "
+             "((" << ((n.step!=nullptr) ? *n.step : Number(1_mpz,location())) << ">0) "
+                "? ("<<n.name<<"<="<<*n.to<<") "
+                ": ("<<n.name<<">="<<*n.to<<")); "
           << n.name << " += ";
     if (n.step == nullptr) {
       *this << "1";
@@ -958,57 +803,35 @@ void visit_quantifier(const Quantifier &n) {
     *this << ")";
     return;
   }
-
-  const Ptr<TypeExpr> resolved = n.type->resolve();
-
-  if (auto e = dynamic_cast<const Enum *>(resolved.get())) {
-    if (e->members.empty()) {
-      // degenerate loop
-      *this << "for (int " << n.name << " = 0; " << n.name << " < 0; " << n.name
-            << "++)";
-    } else {
-      // common case
-      *this << "for (__typeof__(" << e->members[0].first << ") " << n.name
-            << " = " << e->members[0].first << "; " << n.name
-            << " <= " << e->members[e->members.size() - 1].first << "; "
-            << n.name << "++)";
-    }
-    return;
+  if (const auto _tid = dynamic_cast<const TypeExprID*>(n.type.get())) {
+    if (_tid->name == "Boolean" || _tid->name == "boolean")
+      throw Error("quantifiers of boolean types is not supported "
+                  "(there is probably a better way to do whatever you are doing)", n.loc);
   }
-
-  if (auto r = dynamic_cast<const Range *>(resolved.get())) {
-    *this << "for (" << value_type << " " << n.name << " = " << *r->min << "; "
-          << n.name << " <= " << *r->max << "; " << n.name << "++)";
-    return;
-  }
-
-  if (auto s = dynamic_cast<const Scalarset *>(resolved.get())) {
-    *this << "for (" << value_type << " " << n.name << " = 0; " << n.name
-          << " <= " << *s->bound << "; " << n.name << "++)";
-    return;
-  }
-
-  assert(!"missing case in visit_quantifier()");
+  *this << "for (auto " << n.name << "=" << *n.type << "::__LB(); "
+            << n.name << "!=" << *n.type << "::__UB(); "
+            << n.name << ".__step())";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_range(const Range &) {
-  //TODO: update visit_range to new standards
-  *this << value_type;
+void visit_range(const Range &n) {
+  //[X]TODO: update visit_range to new standards
+  *this << ROMP_TYPE_RANGE "<(/*(" << n.min->to_string() << ")*/(" << n.min->constant_fold().get_str() << ")),"
+                            "(/*(" << n.max->to_string() << ")*/(" << n.max->constant_fold().get_str() << "))>";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_record(const Record &n) {
-  //TODO: update visit_record to new standards
-  *this << "struct " << (pack ? "__attribute__((packed)) " : "") << "{\n";
-  indent();
+  //[X]TODO: update visit_record to new standards
+  *this << ROMP_TYPE_RECORD "<";
+  std::string sep;
   for (const Ptr<VarDecl> &f : n.fields) {
-    *this << *f;
+    *this << sep << "/*" << f->name << "*/" << *f->type;
+    sep = ",";
   }
-  dedent();
-  *this << indentation() << "}";
+  *this << ',' << n.first_field_id << '>';
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
@@ -1016,7 +839,7 @@ void visit_record(const Record &n) {
 void visit_return(const Return &n) {
   *this << indentation() << "return";
   if (n.expr != nullptr) {
-    *this << " " << *n.expr;
+    *this << " (" << *n.expr << ')';
   }
   *this << ";";
   emit_trailing_comments(n);
@@ -1041,21 +864,31 @@ void visit_ruleset(const Ruleset &) {
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_scalarset(const Scalarset &n) {
-  //TODO: update visit_scalarset to new standards
-  *this << value_type;
+  //[X]TODO: update visit_scalarset to new standards
+  std::string name1 = (((n.name == "") ? "_romp_"+name : "__romp__scalarset")
+                          + '_' + ->get_str() + "_1");
+  *this << ROMP_TYPE_SCALARSET "<" << enum_ids[name1] << ","
+                                   "(/*("<< *n.bound <<")*/(" << n.count().get_str() << "))>";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_scalarsetunion(const ScalarsetUnion &n) { 
-  //TODO: update visit_scalarsetunion to new standards
+  //[X]TODO: update visit_scalarsetunion to new standards
+  *this << ROMP_TYPE_SCALAR_UNION "<";
+  std::string sep;
+  for (const auto& m : n.members) {
+    *this << sep << *m;
+    sep = ",";
+  }
+  *this << '>';
 }
 
 
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_simplerule(const SimpleRule &n) {
-  //TODO: update visit_simplerule to new standards
+  //[X]TODO: update visit_simplerule to new standards
   id_t id = next_rule_id++;
 
   *this << indentation() << CodeGenerator::M_RULE_GUARD__FUNC_ATTRS << "\n"
@@ -1092,6 +925,14 @@ void visit_simplerule(const SimpleRule &n) {
   for (const Ptr<AliasDecl> &a : n.aliases) {
     *this << *a;
   }
+
+  // NOTE: not supporting choose rules
+  // // choose rule quantifiers
+  // for (const MultisetQuantifier& msq : n.ms_quantifiers) {
+  //   *this << msq;
+  //   // check choose rule's for choice validity
+  //   *this << indentation() << "if (" << msq.name << " == (~((size_t)0u))) return false;\n";
+  // }
 
   *this << indentation() << "return ";
   if (n.guard == nullptr) {
@@ -1193,7 +1034,7 @@ void visit_simplerule(const SimpleRule &n) {
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_startstate(const StartState &n) {
-  //TODO: update visit_startstate to new standards
+  //[X]TODO: update visit_startstate to new standards
   id_t id = next_startstate_id++;
   
   *this << indentation() << CodeGenerator::M_STARTSTATE__FUNC_ATTRS 
@@ -1267,7 +1108,8 @@ void visit_startstate(const StartState &n) {
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_sucast(const SUCast &n) { 
-  //TODO: update visit_sucast to new standards
+  //[X]TODO: update visit_sucast to new standards
+  *this << "((" << *n.target << ')' << *n.lhs << ')';
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
@@ -1357,15 +1199,12 @@ void visit_ternary(const Ternary &n) {
 // << ------------------------------------------------------------------------------------------ >> 
 
 void visit_typedecl(const TypeDecl &n) {
-  //TODO: update visit_typedecl to new standards
-  // If we are typedefing something that is an enum, save this for later lookup.
-  // See CGenerator/HGenerator::visit_constdecl for the purpose of this.
-  if (auto e = dynamic_cast<const Enum *>(n.value.get()))
-    enum_typedefs[e->unique_id] = n.name;
-
-  // *this << indentation() << "typedef " << *n.value << " " << n.name << ";";
-  // emit_trailing_comments(n);
-  // *this << "\n";
+  //[X]TODO: update visit_typedecl to new standards
+  *this << indentation() << "typedef " ROMP_TYPE_TYPEID "<" << n.type_id << ',' 
+                                                            << *n.value << "> " 
+                                      << n.name << ";";
+  emit_trailing_comments(n);
+  *this << "\n";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
@@ -1377,7 +1216,7 @@ void visit_typeexprid(const TypeExprID &n) { *this << n.name; }
 void visit_undefine(const Undefine &n) {
   *this << indentation() << '(' << *n.rhs << ").Undefine();";
   emit_trailing_comments(n);
-  *this << std::endl;
+  *this << '\n';
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
@@ -1427,6 +1266,12 @@ static void write_content(const Comment &c, std::ostream &out) {
 
   out << c.content.substr(0, i);
 }
+
+
+
+// << ========================================================================================== >> 
+// <<                                     UTILITY FUNCTIONS                                      >> 
+// << ========================================================================================== >>
 
 size_t ModelGenerator::emit_leading_comments(const Node &n) {
   size_t count = 0;

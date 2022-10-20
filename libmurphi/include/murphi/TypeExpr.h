@@ -164,6 +164,8 @@ struct MURPHI_API_WITH_RTTI Record : public TypeExpr {
 
   std::vector<Ptr<VarDecl>> fields;
 
+  id_t first_field_id;
+
   Record(const std::vector<Ptr<VarDecl>> &fields_, const location &loc_);
   Record *clone() const;
   virtual ~Record() = default;

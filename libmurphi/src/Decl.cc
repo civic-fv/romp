@@ -82,9 +82,11 @@ void ConstDecl::validate() const {
     throw Error("const definition is not a constant", value->loc);
 }
 
+id_t TypeDecl::next_type_id = 0;
+
 TypeDecl::TypeDecl(const std::string &name_, const Ptr<TypeExpr> &value_,
                    const location &loc_)
-    : Decl(name_, loc_), value(value_), type_id(TypeExpr::next_type_id++) {}
+    : Decl(name_, loc_), value(value_), type_id(next_type_id++) {}
 
 TypeDecl *TypeDecl::clone() const { return new TypeDecl(*this); }
 

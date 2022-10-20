@@ -307,13 +307,13 @@ struct MURPHI_API_WITH_RTTI MultisetAdd : public Stmt {
 
 struct MURPHI_API_WITH_RTTI MultisetRemove : public Stmt {
 
-  Ptr<Expr> index;
+  Ptr<ExprID> index;
   Ptr<Expr> multiset;
 
   // is nullptr until after symbol resolution (updateAST)
   Ptr<MultisetQuantifier> ms_quantifier;
 
-  MultisetRemove(const Ptr<Expr>& index_, const Ptr<Expr>& multiset_, const location& loc_);
+  MultisetRemove(const Ptr<ExprID>& index_, const Ptr<Expr>& multiset_, const location& loc_);
   MultisetRemove *clone() const override;
   ~MultisetRemove() = default;
 

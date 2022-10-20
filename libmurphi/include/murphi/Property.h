@@ -22,7 +22,6 @@ struct MURPHI_API_WITH_RTTI Property : public Node {
     COVER,
     LIVENESS,
   };
-
   Category category;
   Ptr<Expr> expr;
 
@@ -32,6 +31,7 @@ struct MURPHI_API_WITH_RTTI Property : public Node {
 
   void visit(BaseTraversal &visitor);
   void visit(ConstBaseTraversal &visitor) const;
+
 };
 
 } // namespace murphi

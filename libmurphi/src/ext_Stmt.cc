@@ -30,7 +30,7 @@ void MultisetAdd::update() {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-MultisetRemove::MultisetRemove(const Ptr<Expr>& index_, const Ptr<Expr>& multiset_, const location& loc_)
+MultisetRemove::MultisetRemove(const Ptr<ExprID>& index_, const Ptr<Expr>& multiset_, const location& loc_)
   : Stmt(loc_), index(index_), multiset(multiset_) {}
 MultisetRemove *MultisetRemove::clone() const { return new MultisetRemove(*this); }
 

@@ -253,18 +253,20 @@ struct ModelPropertyError : public IModelError {
 
   // << =================================== Model Type Errors ==================================== >> 
 
-  template<typename T>
-  struct ModelTypeError : public ModelError {
-    T value;
-    ModelTypeError(T value_) : value(value_) {}
-    void what(std::ostream& out) const noexcept { value._romp_violation_msg(out); }
-    void to_json(json_file_t& json) const noexcept = 0;
-    void to_json(json_str_t& json) const noexcept = 0;
-    size_t hash() const noexcept { return reinterpret_cast<size_t>(&this); }
-    const std::string& label() const noexcept = 0;
-    virtual const std::string& quants() const noexcept = 0;
-    virtual bool is_generic() const noexcept = 0;
-    virtual std::string get_type() const noexcept = 0;
+  struct ModelTypeError : public IModelError {
+    std::string msg; 
+    location loc;
+    ModelTypeError(const std::string& msg_, const location& loc_) : msg(msg_), loc(loc_) {}
+    void what(std::ostream& out) const noexcept { 
+      out << loc << " :: " << msg;
+    }
+    void to_json(json_file_t& json) const noexcept {  }
+    void to_json(json_str_t& json) const noexcept {}
+    size_t hash() const noexcept { return reinterpret_cast<size_t>(&(*this)); }
+    const std::string& label() const noexcept {  }
+    virtual const std::string& quants() const noexcept { return EMPTY_STR; }
+    virtual bool is_generic() const noexcept { return true; }
+    virtual std::string get_type() const noexcept { return "type"; }
   }
 
 
