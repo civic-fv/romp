@@ -88,7 +88,7 @@ struct SigParam {
 private:
   friend struct QuantExpansion;
   inline static const std::string to_string(const std::string& value_str, const QuantExpansion& qe);
-  inline static const std::string to_json(const size_t& index, const std::string& value_str, const QuantExpansion& qe, const std::string json_val_type);
+  inline static const std::string to_json(const std::string& value_str, const QuantExpansion& qe, const std::string json_val_type);
   friend std::ostream& operator << (std::ostream& out, const SigParam& param);
   friend CGenerator& operator << (CGenerator& out, const SigParam& param);
 };

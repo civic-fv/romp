@@ -15,15 +15,15 @@
  */
 
 #ifndef _romp_src_romp_def_hpp
-#define _romp_src_romp_def_hpp
+# define _romp_src_romp_def_hpp
 
-#ifdef DEBUG  // CMAKE debug config should take care of this
-#ifndef _ROMP_DEV_DEBUG_INCLUDE_DIR  // manually adjust this here if you want it to be different than the auto cmake system config default
-/* Define to make debugging the generated model checker easier
-     set it to the path from the generated model checker file to the romp/resources dir to work */
-#define _ROMP_DEV_DEBUG_INCLUDE_DIR "../romp/resources"
-#endif
-#endif
+# ifdef DEBUG  // CMAKE debug config should take care of this
+#   ifndef _ROMP_DEV_DEBUG_INCLUDE_DIR  // manually adjust this here if you want it to be different than the auto cmake system config default
+      /* Define to make debugging the generated model checker easier
+      set it to the path from the generated model checker file to the romp/resources dir to work */
+#     define _ROMP_DEV_DEBUG_INCLUDE_DIR "../romp/resources"
+#   endif
+# endif
 
 #define ROMP_VERSION "0.0.1"
 
@@ -68,7 +68,7 @@
 #define ROMP_TYPE_NAME_TYPEID "TypeIdType" 
 #define ROMP_TYPE_TYPEID "::" ROMP_TYPE_NAMESPACE "::" ROMP_TYPE_NAME_TYPEID
 
-#define ROMP_SCALAR_ENUM_NAME "__SCALAR_ENUM_t__"
+#define ROMP_SCALAR_ENUM_NAME "__romp__SCALAR_ENUM_t__"
 #define ROMP_SCALAR_ENUM_TYPE "::" ROMP_MODEL_NAMESPACE_NAME "::" ROMP_SCALAR_ENUM_NAME
 #define ROMP_SCALAR_ENUM_DECL_h "enum " ROMP_SCALAR_ENUM_NAME " { "
 #define ROMP_SCALAR_ENUM_UNDEFINED_NAME "_UNDEFINED_"
@@ -226,3 +226,6 @@
 #define ROMP_ERROR_HANDLER(_id) _ROMP_ERROR_HANDLER "(" << (_id) << "u" ")"
 // #define ROMP_CHOOSE_HANDLER(_msq) _ROMP_CHOOSE_HANDLER "((" << (_id) << "u" ")"
 #define ROMP_PUT_HANDLER(_msg) _ROMP_PUT_HANDLER "((" << (_id) << "u" ")"
+
+
+#endif

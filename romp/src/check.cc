@@ -7,7 +7,7 @@
 
 using namespace murphi;
 
-namespace {
+namespace  {
 
 class Check : public ConstTraversal {
 
@@ -21,9 +21,9 @@ public:
   }
 };
 
-} // namespace
+} // namespace <anon>
 
-bool check(const Node &n) {
+void check(const Node &n) {
   Check c;
   c.dispatch(n);
 }

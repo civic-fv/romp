@@ -113,7 +113,7 @@ add_executable(romp
 target_include_directories(romp
   PRIVATE
   src
-  ${CMAKE_CURRENT_BINARY_DIR}/../libromp)
+  ${CMAKE_CURRENT_BINARY_DIR}/../libmurphi)
 
 target_link_libraries(romp
   libmurphi)

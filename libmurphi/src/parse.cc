@@ -21,6 +21,7 @@ std::string& _to_lower(std::string& data) {
   return result;
 }
 
+
 // implementation ignores case for these items
 const std::unordered_set<std::string> RESERVED_FUNCT_NAMES{"clear", "ismember", "isundefined", "multisetadd", "multisetcount", "multisetremove", "multisetremovepred", "undefine", "undefined"};
 const std::unordered_set<std::string> RESERVED_TYPE_NAMES{"array", "boolean", "enum", "multiset", "range", "scalarset" /* , "real" */, "undefined", "union"};

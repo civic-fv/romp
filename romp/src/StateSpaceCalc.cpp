@@ -34,6 +34,10 @@ mpz_class statespace_count(const murphi::Model& m) {
       mpz_class arr_perm(std::pow(elm.perm.get_ui(),count.get_ui()));
       perm *= arr_perm;
     }
+    void visit_multiset(const murphi::Multiset& n) {
+      state_perm elm; elm.dispatch(*n.element_type);
+      perm *= n.count() * elm.perm;
+    }
     void visit_record(const murphi::Record& n) { 
       state_perm field;
       for (const auto& f: n.fields) {
@@ -53,6 +57,12 @@ mpz_class statespace_count(const murphi::Model& m) {
     }
     void visit_scalarset(const murphi::Scalarset& n) {
       perm *= n.count();
+    }
+    void visit_scalarsetunion(const murphi::ScalarsetUnion& n) {
+      mpz_class sum = 0_mpz;
+      for (const auto& m : n.members)
+        sum += m->count();
+      perm *= sum;
     }
   };
   std::vector<murphi::Ptr<murphi::VarDecl>> _tmp;

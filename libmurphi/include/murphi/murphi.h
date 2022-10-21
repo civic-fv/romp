@@ -34,7 +34,7 @@ class MURPHI_API parser;
 #include <murphi/except.h>
 #include <murphi/indexer.h>
 #include <murphi/parse.h>
-#include <murphi/updateASTs.h>
+#include <murphi/updateAST.h>
 #include <murphi/sanitize_rule_names.h>
 #include <murphi/scanner.h>
 #include <murphi/traverse.h>

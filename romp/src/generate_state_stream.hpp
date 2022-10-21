@@ -25,7 +25,7 @@ namespace romp {
    * @brief Generate the stream operators for the state data object 
    *        used to output the state to json traces and the console output
    */
-  void generate_state_stream(romp::ModelGenerator& gen, murphi::Model& m);
+  void generate_state_stream(romp::ModelGenerator& gen, const murphi::Model& m);
 
 
 

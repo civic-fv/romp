@@ -24,44 +24,41 @@
 namespace romp {
   using namespace murphi;
 
-void generate_state_stream(romp::ModelGenerator& gen, murphi::Model& m) {
+void generate_state_stream(romp::ModelGenerator& gen, const murphi::Model& m) {
   std::stringstream json;
   std::stringstream json_simp;
   std::string j_sep, p_sep;
-  if (const auto _m = dynamic_cast<const Model*>(&n)) {
-    gen << gen.indentation() << "friend inline " ROMP_OUT_STREAM_TYPE "& operator << (" ROMP_OUT_STREAM_TYPE "& out, const " ROMP_STATE_TYPE "& s) {\n";
-    gen.indent();
-    gen << gen.indentation() << " return (out << '{' << out.indent() << out.nl()";
-    gen.indent(); gen.indent();
-    for (const auto& c : _m->children) {
-      if (const auto _vd = dynamic_cast<const VarDecl*>(c.get())) {
-        json_simp << j_sep << " << s." << _vd->name;
-        json << j_sep << " << \"{\\\"$type\\\":\\\"kv-pair\\\",\\\"key\\\":\\\"" << _vd->name <<  "\\\",\\\"value\\\":\" << \"s." << _vd->name >> "'}'";
-        gen << p_sep << '\n' << gen.indentation() " << \"" << _vd->name << "\" "
-                                                  "<< ((" ROMP_SHOW_TYPE_OPTION_EXPR ") ? \": \" + " << _vd->type << "::__p_type() + \" = \" : \" := \") "
-                                                  "<< s." << _vd->name << " << ';'";
-        j_sep = " << ','";
-        p_sep = " << out.nl()";
-      }
+  gen << gen.indentation() << "friend inline " ROMP_OUT_STREAM_TYPE "& operator << (" ROMP_OUT_STREAM_TYPE "& out, const " ROMP_STATE_TYPE "& s) {\n";
+  gen.indent();
+  gen << gen.indentation() << " return (out << '{' << out.indent() << out.nl()";
+  gen.indent(); gen.indent();
+  for (const auto& c : m.children) {
+    if (const auto _vd = dynamic_cast<const VarDecl*>(c.get())) {
+      json_simp << j_sep << " << s." << _vd->name;
+      json << j_sep << " << \"{\\\"$type\\\":\\\"kv-pair\\\",\\\"key\\\":\\\"" << _vd->name <<  "\\\",\\\"value\\\":\" << \"s." << _vd->name << "'}'";
+      gen << p_sep << '\n' << gen.indentation() << " << \"" << _vd->name << "\" "
+                                                "<< ((" ROMP_SHOW_TYPE_OPTION_EXPR ") ? \": \" + " << _vd->type << "::__p_type() + \" = \" : \" := \") "
+                                                "<< s." << _vd->name << " << ';'";
+      j_sep = " << ','";
+      p_sep = " << out.nl()";
     }
-    gen << '\n' << gen.indentation() << "<< out.dedent() << out.dedent() << out.nl() << '}';)";
-    gen.dedent(); gen.dedent(); gen.dedent();
-    gen << gen.indentation() << "}\n"
-        << gen.indentation() << "inline ::std::ostream& operator << (::std::ostream& out_, const " ROMP_STATE_TYPE "& s) { "
-                                  ROMP_OUT_STREAM_TYPE " out(out_,Options(),2); "
-                                  "out << s; "
-                                  "return out_; }\n";
-    gen << "\n" << "#ifdef " ROMP_SIMPLE_TRACE_PREPROCESSOR_VAR "\n"
-                << indentation() 
-                << "template<class O> friend inline " ROMP_JSON_STREAM_TYPE "& operator << (" ROMP_JSON_STREAM_TYPE "& json, const " ROMP_STATE_TYPE "& s) { "
-                      "json << '[' << " << json_simp_str() << " << ']'; return json; }\n"
-                << "#else\n"
-                << indentation() 
-                << "template<class O> friend inline " ROMP_JSON_STREAM_TYPE "& operator << (" ROMP_JSON_STREAM_TYPE "& json, const " ROMP_STATE_TYPE "& s) { "
-                      "return (json << \"{\\\"$type\\\":\\\"model-state\\\",\\\"value\\\":[\" << " << json.str() << " << \"]}\"); }\n"
-                << "#endif\n"
-  } else 
-    assert(!"unreachable, node was not a Model");
+  }
+  gen << '\n' << gen.indentation() << "<< out.dedent() << out.dedent() << out.nl() << '}';)";
+  gen.dedent(); gen.dedent(); gen.dedent();
+  gen << gen.indentation() << "}\n"
+      << gen.indentation() << "inline ::std::ostream& operator << (::std::ostream& out_, const " ROMP_STATE_TYPE "& s) { "
+                                ROMP_OUT_STREAM_TYPE " out(out_,Options(),2); "
+                                "out << s; "
+                                "return out_; }\n";
+  gen << "\n" << "#ifdef " ROMP_SIMPLE_TRACE_PREPROCESSOR_VAR "\n"
+              << gen.indentation() 
+              << "template<class O> friend inline " ROMP_JSON_STREAM_TYPE "& operator << (" ROMP_JSON_STREAM_TYPE "& json, const " ROMP_STATE_TYPE "& s) { "
+                    "json << '[' << " << json_simp.str() << " << ']'; return json; }\n"
+              << "#else\n"
+              << gen.indentation() 
+              << "template<class O> friend inline " ROMP_JSON_STREAM_TYPE "& operator << (" ROMP_JSON_STREAM_TYPE "& json, const " ROMP_STATE_TYPE "& s) { "
+                    "return (json << \"{\\\"$type\\\":\\\"model-state\\\",\\\"value\\\":[\" << " << json.str() << " << \"]}\"); }\n"
+              << "#endif\n";
 }
 
 

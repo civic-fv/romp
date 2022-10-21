@@ -97,6 +97,18 @@ public:
   void visit_while(const While& n) { unsupported_traversal(n,"murphi::While"); }
   void visit_xor(const Xor& n) { unsupported_traversal(n,"murphi::Xor"); }
 
+  void visit_chooserule(const ChooseRule& n) { unsupported_traversal(n,"murphi::ChooseRule"); }
+  void visit_ismember(const IsMember& n) { unsupported_traversal(n,"murphi::IsMember"); }
+  // void visit_multiset(const Multiset& n) { unsupported_traversal(n,"murphi::Multiset"); }
+  void visit_multisetadd(const MultisetAdd& n) { unsupported_traversal(n,"murphi::MultisetAdd"); }
+  void visit_multisetcount(const MultisetCount& n) { unsupported_traversal(n,"murphi::MultisetCount"); }
+  void visit_multisetelement(const MultisetElement& n) { unsupported_traversal(n,"murphi::MultisetElement"); }
+  void visit_multisetremove(const MultisetRemove& n) { unsupported_traversal(n,"murphi::MultisetRemove"); }
+  void visit_multisetremovepred(const MultisetRemovePred& n) { unsupported_traversal(n,"murphi::MultisetRemovePred"); }
+  void visit_multisetquantifier(const MultisetQuantifier& n) { unsupported_traversal(n,"murphi::MultisetQuantifier"); } 
+  // void visit_scalarsetunion(const ScalarsetUnion& n) { unsupported_traversal(n,"murphi::ScalarsetUnion"); }
+  void visit_sucast(const SUCast& n) { unsupported_traversal(n,"murphi::SUCast"); }
+
   void dispatch(const Node& n) { n.visit(*this); }
 };
 }

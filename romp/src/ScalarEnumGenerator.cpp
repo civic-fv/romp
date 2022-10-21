@@ -33,7 +33,7 @@ void ScalarEnumGenerator::visit_model(const murphi::Model& m) {
                          << ROMP_SCALAR_ENUM_UNDEFINED_VALUE << ",\n"; 
 
   for (auto& n : m.children)
-    dispatch(n);
+    dispatch(*n);
 
   *this << "\n";
   dedent()
@@ -42,12 +42,11 @@ void ScalarEnumGenerator::visit_model(const murphi::Model& m) {
 
 bool ScalarEnumGenerator::add_enum_id(const std::string& name) {
   if (enum_ids.find(name) != enum_ids.end()) {
-      enum_ids[name] = enum_ids.size();
-      _enum_ids.push_back(name);
-      *this << sep << '\n' << indentation() << name;
-      sep = ",";
-      return true;
-    }
+    enum_ids[name] = enum_ids.size();
+    _enum_ids.push_back(name);
+    *this << sep << '\n' << indentation() << name;
+    sep = ",";
+    return true;
   }
   return false;
 }
@@ -56,14 +55,14 @@ bool ScalarEnumGenerator::add_enum_id(const std::string& name) {
 void ScalarEnumGenerator::visit_enum(const murphi::Enum& n) {
   // n.unique_id_limit = 0;
   id_t added = 0u;
-  auto last_bad = n.member[0];
+  auto last_bad = n.members[0];
   *this << "\n" << indentation() << "/* " << n.to_string() << " */\n";
   sep = "";
   for (auto& m : n.members)
-    if (not add_enum_id(m.first)) {
+    if (add_enum_id(m.first))
       ++added;
+    else
       last_bad = m;
-    }
   
   if (added != n.count() && added != 0)
       throw Error("there exists name conflicts with this enum value (`" + last_bad.first + "`) "
@@ -97,7 +96,7 @@ void ScalarEnumGenerator::visit_scalarset(const murphi::Scalarset& n) {
 
 
 void ScalarEnumGenerator::visit_ismember(const murphi::IsMember& n) {
-  dispatch(*n.rhs);
+  dispatch(*n.designator);
   // DO NOT DISPATCH ON THE INTERNAL TYPE SPECIFIER OF THIS NODE !!
 }
 

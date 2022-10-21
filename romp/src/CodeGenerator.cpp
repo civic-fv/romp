@@ -10,19 +10,19 @@ namespace romp {
 
 void set_out(CodeGenerator& gen, std::shared_ptr<std::ostream>& out) { gen.out = out; }
 
-std::filesystem::path CodeGenerator::input_file_path = "stdin";
-std::filesystem::path CodeGenerator::output_file_path = "./romp.cpp";
+// std::filesystem::path CodeGenerator::input_file_path = "stdin";
+// std::filesystem::path CodeGenerator::output_file_path = "./romp.cpp";
 
-const std::unordered_set<std::string> CodeGenerator::RESERVED_NAMES{ROMP_RESERVED_NAMES, ROMP_RESERVED_NAMES};
+// const std::unordered_set<std::string> CodeGenerator::RESERVED_NAMES{ROMP_RESERVED_NAMES, ROMP_RESERVED_NAMES};
 
-std::string CodeGenerator::M_FUNCTION__FUNC_ATTRS = "";
+// std::string CodeGenerator::M_FUNCTION__FUNC_ATTRS = "";
 
-std::string CodeGenerator::M_RULE_GUARD__FUNC_ATTRS = "";
-std::string CodeGenerator::M_RULE_ACTION__FUNC_ATTRS = "";
+// std::string CodeGenerator::M_RULE_GUARD__FUNC_ATTRS = "";
+// std::string CodeGenerator::M_RULE_ACTION__FUNC_ATTRS = "";
 
-std::string CodeGenerator::M_STARTSTATE__FUNC_ATTRS = "";
+// std::string CodeGenerator::M_STARTSTATE__FUNC_ATTRS = "";
 
-std::string CodeGenerator::M_PROPERTY__FUNC_ATTRS = "";
+// std::string CodeGenerator::M_PROPERTY__FUNC_ATTRS = "";
 
 
 std::string CodeGenerator::indentation() const {
@@ -36,7 +36,7 @@ void CodeGenerator::dedent() {
   indent_level--;
 }
 
-std::vector<std::string> CodeGenerator::ENABLED_PREPROCESSOR_OPTIONS{};
+// std::vector<std::string> CodeGenerator::ENABLED_PREPROCESSOR_OPTIONS{};
 
 void CodeGenerator::enable_preprocessor_option(std::string option) {
   ENABLED_PREPROCESSOR_OPTIONS.push_back(option);
@@ -46,22 +46,22 @@ void CodeGenerator::print_preprocessor_options(std::ostream& out) {
     out << "\n#define " << var << "\n";
 }
 
-bool CodeGenerator::is_assume_enabled = false;
+// bool CodeGenerator::is_assume_enabled = false;
 void CodeGenerator::enable_assume_property() {
   is_assume_enabled = true;
   ENABLED_PREPROCESSOR_OPTIONS.push_back(ROMP_ASSUME_PREPROCESSOR_VAR);
 }
-bool CodeGenerator::is_cover_enabled = false;
+// bool CodeGenerator::is_cover_enabled = false;
 void CodeGenerator::enable_cover_property() {
   is_cover_enabled = true;
   ENABLED_PREPROCESSOR_OPTIONS.push_back(ROMP_COVER_PREPROCESSOR_VAR);
 }
-bool CodeGenerator::is_liveness_enabled = false;
+// bool CodeGenerator::is_liveness_enabled = false;
 void CodeGenerator::enable_liveness_property() {
   is_liveness_enabled = true;
   ENABLED_PREPROCESSOR_OPTIONS.push_back(ROMP_LIVENESS_PREPROCESSOR_VAR);
 }
-bool CodeGenerator::is_measure_enabled = false;
+// bool CodeGenerator::is_measure_enabled = false;
 void CodeGenerator::enable_measurements() {
   is_measure_enabled = true;
   ENABLED_PREPROCESSOR_OPTIONS.push_back(ROMP_MEASURE_PREPROCESSOR_VAR);
@@ -83,27 +83,70 @@ bool CodeGenerator::is_prop_enabled(murphi::Property::Category prop) {
   }
 }
 
-bool CodeGenerator::do_ignore_rumur_props = false;
+// bool CodeGenerator::do_ignore_rumur_props = false;
 void CodeGenerator::disable_romp_prop_errors() {
   CodeGenerator::do_ignore_rumur_props = true;
 }
 
-CodeGenerator::~CodeGenerator() {}
+// CodeGenerator::~CodeGenerator() {}
 
-CodeGenerator& CodeGenerator::operator << (const Node &n) {
-  dispatch(n);
-  return *this;
-}
+// CodeGenerator& CodeGenerator::operator << (const Node &n) {
+//   dispatch(n);
+//   return *this;
+// }
 
-CodeGenerator& CodeGenerator::operator << (bool val) {
+inline CodeGenerator& CodeGenerator::operator << (bool val) {
   *out << ((val) ? "true" : "false");
   return *this;
 }
+// inline CodeGenerator& CodeGenerator::operator << (char val) {
+//   *out << val;
+//   return *this;
+// }
+// inline CodeGenerator& CodeGenerator::operator << (int val) {
+//   *out << val;
+//   return *this;
+// }
+// inline CodeGenerator& CodeGenerator::operator << (long val) {
+//   *out << val;
+//   return *this;
+// }
+// inline CodeGenerator& CodeGenerator::operator << (size_t val) {
+//   *out << val;
+//   return *this;
+// }
+// inline CodeGenerator& CodeGenerator::operator << (id_t val) {
+//   *out << val;
+//   return *this;
+// }
+// inline CodeGenerator& CodeGenerator::operator << (typeof(std::flush) flush) {
+//   *out << std::flush;
+//   return *this;
+// }
+// inline CodeGenerator& CodeGenerator::operator << (typeof(std::endl) endl) {
+//   *out << std::endl;
+//   return *this;
+// }
+// inline CodeGenerator& CodeGenerator::operator << (const std::string& val) {
+//   *out << val;
+//   return *this;
+// }
 
 template<typename T>
-CodeGenerator& CodeGenerator::operator << (const T& val) {
-  *out << val;
-  return *this;
+inline typename std::enable_if<!std::is_base_of<murphi::Node,T>::value,CodeGenerator&>::type operator << (CodeGenerator& gen, const T& val) {
+  (*(gen.out)) << val;
+  return gen;
+}
+// template<typename T>
+// inline typename std::enable_if<!std::is_base_of<murphi::Node,T>::value,CodeGenerator&>::type  CodeGenerator::operator << (const T& val) {
+//   (*(out)) << val;
+//   return *this;
+// }
+
+template<>
+inline CodeGenerator& operator << <bool>(CodeGenerator& gen, const bool& val) {
+  (*gen.out) << ((val) ? "true" : "false");
+  return gen;
 }
 
 

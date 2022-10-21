@@ -976,3 +976,9 @@ namespace romp {
 
 
 } // namespace romp
+
+namespace __model__ {
+  typedef BooleanType Boolean;
+  typedef BooleanType boolean;
+  typedef BooleanType BOOLEAN;
+} // namespace __model__

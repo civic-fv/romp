@@ -17,6 +17,8 @@
 #include "generate_metadata.hpp"
 #include "romp_def.hpp"
 #include "nested_escape.hpp"
+#include <murphi/murphi.h>
+#include <sstream> 
 
 namespace romp {
 
@@ -28,6 +30,8 @@ namespace romp {
 // << ========================================================================================== >> 
 
 namespace  {
+
+  using namespace murphi;
 
   inline bool
   equal(const position& pos1, const position& pos2)  // added because newer bison versions don't emit this operator
@@ -43,20 +47,20 @@ namespace  {
 std::string to_json(const Rule& rule, const std::string rule_type) {
   std::stringstream buf;
   buf << "{\"$type\":\"" << rule_type << "\",";
-  if (auto _prop = dynamic_cast<const rumur::PropertyRule*>(&rule)) {
+  if (auto _prop = dynamic_cast<const murphi::PropertyRule*>(&rule)) {
     buf << "\"type\":\"";
     switch (_prop->property.category) {
-      case rumur::Property::ASSERTION:
+      case murphi::Property::ASSERTION:
         buf << "invariant"; break;
-      case rumur::Property::ASSUMPTION:
+      case murphi::Property::ASSUMPTION:
         buf << "assume"; break;
-      case rumur::Property::COVER:
+      case murphi::Property::COVER:
         buf << "cover"; break;
-      case rumur::Property::LIVENESS:
+      case murphi::Property::LIVENESS:
         buf << "liveness"; break;
     }
     buf << "\",\"expr\":\"" << nEscape(_prop->property.expr->to_string()) << "\",";
-  } else if (auto _r = dynamic_cast<const rumur::SimpleRule*>(&rule)) {
+  } else if (auto _r = dynamic_cast<const murphi::SimpleRule*>(&rule)) {
     buf << "\"expr\":\"";
     if (_r->guard != nullptr)
       buf << nEscape(_r->guard->to_string());
@@ -71,16 +75,16 @@ std::string to_json(const Rule& rule, const std::string rule_type) {
   return buf.str();
 }
 
-std::string to_json(const Function& rule) {
+std::string to_json(const Function& funct) {
   std::stringstream buf;
-  buf << "{\"$type\":\"" << ((rule.return_type == nullptr) 
+  buf << "{\"$type\":\"" << ((funct.return_type == nullptr) 
                               ? "procedure" 
                               : "function\","
-                                "\"return-type\":\"" + nEscape(rule.return_type->to_string())) << "\","
-      << "\"label\":\"" << nEscape(rule.name) << "\","
+                                "\"return-type\":\"" + nEscape(funct.return_type->to_string())) << "\","
+      << "\"label\":\"" << nEscape(funct.name) << "\","
          "\"params\":[";
   std::string sep = "";
-  for (auto& p : rule.parameters) {
+  for (auto& p : funct.parameters) {
     buf << sep << "{\"$type\":\"param\","
                    "\"id\":\"" << nEscape(p->name) << "\","
                    "\"type\":\"" << nEscape(p->type->to_string()) << "\"}";
@@ -89,8 +93,8 @@ std::string to_json(const Function& rule) {
   buf << "],\"loc\":{\"$type\":\"location\","
                     // "\"file\":\"" << nEscape(CodeGenerator::input_file_path.string()) << "\","
                     // "\"inside\":\"global\","
-                    "\"start\":["<< rule.loc.begin.line << "," << rule.loc.begin.column << "],"  
-                    "\"end\":["<< rule.loc.end.line << "," << rule.loc.end.column << "]}}";
+                    "\"start\":["<< funct.loc.begin.line << "," << funct.loc.begin.column << "],"  
+                    "\"end\":["<< funct.loc.end.line << "," << funct.loc.end.column << "]}}";
   return buf.str();
 }
 
@@ -162,7 +166,7 @@ void generate_type_ids_metadata(CodeGenerator& gen, const Node& n) {
     CodeGenerator& out;
     std::string sep;
     GenerateTypeIds(CodeGenerator& gen_) : out(gen_) {}
-    visit_typedecl(const TypeDecl& n) {
+    void visit_typedecl(const TypeDecl& n) {
       if (next_type_id != n.type_id)
         throw Error("DEV ERROR : typeID/typedecl does not line up with it's id",n.loc);
       out << sep << '"' << n.name << '"';
@@ -183,7 +187,7 @@ void generate_record_members_metadata(CodeGenerator& gen, const Node& n) {
     CodeGenerator& out;
     std::string sep;
     GenerateMemberLabels(CodeGenerator& gen_) : out(gen_) {}
-    visit_record(const Record& n) {
+    void visit_record(const Record& n) {
       if (next_field_id != n.first_field_id)
         throw Error("DEV ERROR : record does not line up with its field id's",n.loc);
       for (const auto& m : n.fields)
@@ -209,7 +213,7 @@ void generate_ruleset_metadata(CodeGenerator& gen, const Node& n) {
     CodeGenerator& out;
     // std::string sep;
     GenerateRulesetMetadata(CodeGenerator& gen_) : out(gen_) {}
-    visit_simplerule(const SimpleRule& n) {
+    void visit_simplerule(const SimpleRule& n) {
       out << ROMP_MAKE_RULE_INFO_STRUCT(n,to_json(n,"rule")) ",";
     }
   };
@@ -229,8 +233,8 @@ std::pair<id_t,id_t> generate_property_metadata(CodeGenerator& gen, const Node& 
     id_t next_liveness_id = 0u;
     CodeGenerator& out;
     // std::string sep;
-    GenerateRulesetMetadata(CodeGenerator& gen_) : out(gen_) {}
-    visit_propertyrule(const PropertyRule& n) {
+    GeneratePropertyMetadata(CodeGenerator& gen_) : out(gen_) {}
+    void visit_propertyrule(const PropertyRule& n) {
       std::string pt;
       id_t id = ~0u;
       switch (n.property.category) {
@@ -243,7 +247,7 @@ std::pair<id_t,id_t> generate_property_metadata(CodeGenerator& gen, const Node& 
       ++next_property_id;
       // murphi::ConstTraversal::visit_propertyrule(n);
     }
-    visit_propertystmt(const PropertyStmt& n) {
+    void visit_propertystmt(const PropertyStmt& n) {
       id_t id = ~0u;
       switch (n.property.category) {
       case Property::ASSERTION:
@@ -264,7 +268,7 @@ std::pair<id_t,id_t> generate_property_metadata(CodeGenerator& gen, const Node& 
       ++next_property_id;
     }
   };
-  GenerateRulesetMetadata generator(gen);
+  GeneratePropertyMetadata generator(gen);
   gen << '{';
   generator.dispatch(n);
   gen << '}';
@@ -279,7 +283,7 @@ void generate_startstate_metadata(CodeGenerator& gen, const Node& n) {
     CodeGenerator& out;
     // std::string sep;
     GenerateStartstateMetadata(CodeGenerator& gen_) : out(gen_) {}
-    visit_startstate(const Startstate& n) {
+    void visit_startstate(const Startstate& n) {
       out << ROMP_MAKE_STARTSTATE_INFO_STRUCT(n,to_json(n,"startstate")) ",";
     }
   };
@@ -297,7 +301,7 @@ void generate_error_metadata(CodeGenerator& gen, const Node& n) {
     CodeGenerator& out;
     // std::string sep;
     GenerateMErrorMetadata(CodeGenerator& gen_) : out(gen_) {}
-    visit_errorstmt(const ErrorStmt& n) {
+    void visit_errorstmt(const ErrorStmt& n) {
       out << ROMP_MAKE_ERROR_INFO_STRUCT(n,to_json(n)) ",";
     }
   };
@@ -315,7 +319,7 @@ void generate_function_metadata(CodeGenerator& gen, const Node& n) {
     CodeGenerator& out;
     // std::string sep;
     GenerateFunctMetadata(CodeGenerator& gen_) : out(gen_) {}
-    visit_function(const Function& n) {
+    void visit_function(const Function& n) {
       out << ROMP_MAKE_FUNCT_INFO_STRUCT(n, to_json(n), to_string(n)) ",";
     }
   };

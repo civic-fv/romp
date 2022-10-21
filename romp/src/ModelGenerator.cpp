@@ -1,5 +1,5 @@
 #include "ModelGenerator.hpp"
-#include "SubRangeSet.hpp"
+// #include "SubRangeSet.hpp"
 #include "generate_state_stream.hpp"
 #include "../../common/escape.h"
 #include "../../common/isa.h"
@@ -19,13 +19,13 @@ using namespace romp;
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_add(const Add &n) {
+void ModelGenerator::visit_add(const Add &n) {
   *this << "(" << *n.lhs << " + " << *n.rhs << ")";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_aliasdecl(const AliasDecl &n) {
+void ModelGenerator::visit_aliasdecl(const AliasDecl &n) {
   *this << "#define " << n.name << "() " << *n.value;
   emit_trailing_comments(n);
   *this << "\n";
@@ -33,16 +33,16 @@ void visit_aliasdecl(const AliasDecl &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_aliasrule(const AliasRule &) {
+void ModelGenerator::visit_aliasrule(const AliasRule &) {
   // this is unreachable because generate_c is only ever called with a Model
-  // and visit_model flattens all rules
+  // and ModelGenerator::visit_model flattens all rules
   assert(!"unreachable");
   __builtin_unreachable();
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_aliasstmt(const AliasStmt &n) {
+void ModelGenerator::visit_aliasstmt(const AliasStmt &n) {
   for (const Ptr<AliasDecl> &a : n.aliases) {
     emit_leading_comments(*a);
     *this << *a;
@@ -60,21 +60,21 @@ void visit_aliasstmt(const AliasStmt &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_and(const And &n) {
+void ModelGenerator::visit_and(const And &n) {
   *this << "(" << *n.lhs << " && " << *n.rhs << ")";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_array(const Array &n) {
-  //[X] TODO: update visit_array to new standards
+void ModelGenerator::visit_array(const Array &n) {
+  //[X] TODO: update ModelGenerator::visit_array to new standards
   *this << ROMP_TYPE_ARRAY "<" << *n.index_type << ',' 
                                << *n.element_type << '>'; 
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_assignment(const Assignment &n) {
+void ModelGenerator::visit_assignment(const Assignment &n) {
   //[X]TODO: add assignment error handling
   // open anonymous scope 
   *this << indentation() << "{\n";
@@ -92,35 +92,35 @@ void visit_assignment(const Assignment &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_band(const Band &n) {
+void ModelGenerator::visit_band(const Band &n) {
   *this << "(" << *n.lhs << " & " << *n.rhs << ")";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_bnot(const Bnot &n) {
+void ModelGenerator::visit_bnot(const Bnot &n) {
   *this << "(~" << *n.rhs << ")";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_bor(const Bor &n) {
+void ModelGenerator::visit_bor(const Bor &n) {
   *this << "(" << *n.lhs << " | " << *n.rhs << ")";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_chooserule(const ChooseRule &n) {
+void ModelGenerator::visit_chooserule(const ChooseRule &n) {
   // this is unreachable because generate_c is only ever called with a Model
-  // and all rules are flattened during visit_model
+  // and all rules are flattened during ModelGenerator::visit_model
   assert(!"unreachable");
   __builtin_unreachable();
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_clear(const Clear &n) {
-  //[X]TODO: update visit_clear to new standards
+void ModelGenerator::visit_clear(const Clear &n) {
+  //[X]TODO: update ModelGenerator::visit_clear to new standards
   *this << indentation() << '(' << *n.rhs << ").Clear();";
   emit_trailing_comments(n);
   *this << "\n";
@@ -128,8 +128,8 @@ void visit_clear(const Clear &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_constdecl(const ConstDecl &n) {
-  //[X]TODO: update visit_constdecl to new standards
+void ModelGenerator::visit_constdecl(const ConstDecl &n) {
+  //[X]TODO: update ModelGenerator::visit_constdecl to new standards
   *this << indentation() << "const ";
 
   // if this constant has an explicit type, use that
@@ -147,14 +147,14 @@ void visit_constdecl(const ConstDecl &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_div(const Div &n) {
+void ModelGenerator::visit_div(const Div &n) {
   *this << "(" << *n.lhs << " / " << *n.rhs << ")";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_element(const Element &n) {
-  //[X]TODO: update visit_element to new standards
+void ModelGenerator::visit_element(const Element &n) {
+  //[X]TODO: update ModelGenerator::visit_element to new standards
   // use anon lambda to nest a try catch (latter design with std::result should avoid this as a need)
   if (const auto _a = dynamic_cast<const Array*>(n.array->type().get())) {
     *this << "(([&]() -> " << *_a->element_type << "& { "
@@ -169,25 +169,25 @@ void visit_element(const Element &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_enum(const Enum &n) {
-  //[X]TODO: update visit_enum to new standards
+void ModelGenerator::visit_enum(const Enum &n) {
+  //[X]TODO: update ModelGenerator::visit_enum to new standards
   if (n.members.size() <= 0)
     throw Error("empty enum types are not allowed", n.loc);
-  *this << ROMP_TYPE_ENUM << "<(/*"<< n.members[0].first << "*/" enum_ids[n.members[0].first] << "),"
+  *this << ROMP_TYPE_ENUM << "<(/*"<< n.members[0].first << "*/" << enum_ids[n.members[0].first] << "),"
                                   "(" << n.members.size() << ")>";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_eq(const Eq &n) {
-  //[X]TODO: update visit_eq to new standards
+void ModelGenerator::visit_eq(const Eq &n) {
+  //[X]TODO: update ModelGenerator::visit_eq to new standards
   *this << "(" << *n.lhs << " == " << *n.rhs << ")";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_errorstmt(const ErrorStmt &n) {
-  //[X]TODO: update visit_errorstmt to new standards
+void ModelGenerator::visit_errorstmt(const ErrorStmt &n) {
+  //[X]TODO: update ModelGenerator::visit_errorstmt to new standards
   id_t id = next_error_id++;
   *this << indentation() << "if (" ROMP_ERROR_HANDLER(id) ")\n";
   indent();
@@ -202,14 +202,14 @@ void visit_errorstmt(const ErrorStmt &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_exists(const Exists &n) {
+void ModelGenerator::visit_exists(const Exists &n) {
   *this << "({ bool res_ = false; " << n.quantifier << " { res_ |= " << *n.expr
         << "; } res_; })";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_exprid(const ExprID &n) {
+void ModelGenerator::visit_exprid(const ExprID &n) {
   *this << "(";
   // if (is_pointer.count(n.value->unique_id) > 0) {
   //   *this << "*";
@@ -224,12 +224,12 @@ void visit_exprid(const ExprID &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_field(const Field &n) {
-  //[X]TODO: update visit_field to new standards
-  if (const auto _r = dynamic_cast<const Record*>(n.record->type())) {
+void ModelGenerator::visit_field(const Field &n) {
+  //[X]TODO: update ModelGenerator::visit_field to new standards
+  if (const auto _r = dynamic_cast<const Record*>(n.record->type().get())) {
     size_t i=0;
-    for (; i<_r->members.size(); ++i)
-      if (_r->members[i].first == n.field)
+    for (; i<_r->fields.size(); ++i)
+      if (_r->fields[i].first == n.field)
         break;
     *this << "(" << *n.record << ".get<(/*"<<n.field<<"*/("<<i<<"))>())";
     return;
@@ -239,8 +239,8 @@ void visit_field(const Field &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_for(const For &n) {
-  //[X]TODO: update visit_for to new standards
+void ModelGenerator::visit_for(const For &n) {
+  //[X]TODO: update ModelGenerator::visit_for to new standards
 
   *this << indentation() << n.quantifier << " {\n";
   indent();
@@ -256,8 +256,8 @@ void visit_for(const For &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_forall(const Forall &n) {
-  //[X]TODO: update visit_forall to new standards
+void ModelGenerator::visit_forall(const Forall &n) {
+  //[X]TODO: update ModelGenerator::visit_forall to new standards
   // open a GNU statement expression
   *this << "({bool res_ = true; " << n.quantifier << " { res_ &= " << *n.expr
         << "; } res_; })";
@@ -265,8 +265,8 @@ void visit_forall(const Forall &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_function(const Function &n) {
-  //[X]TODO: update visit_function to new standards
+void ModelGenerator::visit_function(const Function &n) {
+  //[X]TODO: update ModelGenerator::visit_function to new standards
   id_t id = next_funct_id++;
   *this << indentation() << CodeGenerator::M_FUNCTION__FUNC_ATTRS << "\n"
         << indentation();
@@ -327,7 +327,7 @@ void visit_function(const Function &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_functioncall(const FunctionCall &n) {
+void ModelGenerator::visit_functioncall(const FunctionCall &n) {
   *this << n.name << "(";
   assert(n.function != nullptr && "unresolved function call in AST");
   auto it = n.function->parameters.begin();
@@ -348,19 +348,19 @@ void visit_functioncall(const FunctionCall &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_geq(const Geq &n) {
+void ModelGenerator::visit_geq(const Geq &n) {
   *this << "(" << *n.lhs << " >= " << *n.rhs << ")";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_gt(const Gt &n) {
+void ModelGenerator::visit_gt(const Gt &n) {
   *this << "(" << *n.lhs << " > " << *n.rhs << ")";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_if(const If &n) {
+void ModelGenerator::visit_if(const If &n) {
   bool first = true;
   for (const IfClause &c : n.clauses) {
     if (first) {
@@ -377,7 +377,7 @@ void visit_if(const If &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_ifclause(const IfClause &n) {
+void ModelGenerator::visit_ifclause(const IfClause &n) {
   if (n.condition != nullptr) {
 
     // we do not need to emit surrounding brackets for binary expressions
@@ -404,55 +404,55 @@ void visit_ifclause(const IfClause &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_implication(const Implication &n) {
+void ModelGenerator::visit_implication(const Implication &n) {
   *this << "(!" << *n.lhs << " || " << *n.rhs << ")";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_ismember(const IsMember& n) {
-  //[X]TODO: update visit_ismember to new standards
+void ModelGenerator::visit_ismember(const IsMember& n) {
+  //[X]TODO: update ModelGenerator::visit_ismember to new standards
   *this << "(" ROMP_UTIL_NAMESPACE "::IsMember<" << *n.type_value << ">(" << *n.designator << "))";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_isundefined(const IsUndefined &n) {
-  //[X]TODO: update visit_isundefined to new standards
-  *this << '(' << n.lhs << ".IsUndefined())";
+void ModelGenerator::visit_isundefined(const IsUndefined &n) {
+  //[X]TODO: update ModelGenerator::visit_isundefined to new standards
+  *this << '(' << n.rhs << ".IsUndefined())";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_leq(const Leq &n) {
+void ModelGenerator::visit_leq(const Leq &n) {
   *this << "(" << *n.lhs << " <= " << *n.rhs << ")";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_lsh(const Lsh &n) {
+void ModelGenerator::visit_lsh(const Lsh &n) {
   *this << "(" << *n.lhs << " << " << *n.rhs << ")";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_lt(const Lt &n) {
+void ModelGenerator::visit_lt(const Lt &n) {
   *this << "(" << *n.lhs << " < " << *n.rhs << ")";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_mod(const Mod &n) {
+void ModelGenerator::visit_mod(const Mod &n) {
   *this << "(" << *n.lhs << " % " << *n.rhs << ")";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_model(const Model &n) {
+void ModelGenerator::visit_model(const Model &n) {
 
   emit_leading_comments(n);
 
-  this* << indentation() << "struct " ROMP_STATE_CLASS_NAME " {\n\n";
+  *this << indentation() << "struct " ROMP_STATE_CLASS_NAME " {\n\n";
   indent();
 
   for (const Ptr<Node> &c : n.children) {
@@ -471,31 +471,31 @@ void visit_model(const Model &n) {
     }
   }
 
-  *this << "\n"
-  generate_state_stream(*this,n);
-  *this << "\n"
+  *this << "\n";
+  romp::generate_state_stream(*this,n);
+  *this << "\n";
   dedent();
   *this << indentation() << "};\n\n" << std::flush;
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_mul(const Mul &n) {
+void ModelGenerator::visit_mul(const Mul &n) {
   *this << "(" << *n.lhs << " * " << *n.rhs << ")";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_multiset(const Multiset &n) {
-  //[X]TODO: update visit_multiset to new standards
-  *this << ROMP_TYPE_MULTISET << "<(/*" << n.size->to_string() << "*/(" << n.size->constant_fold().to_str() << ")),"
+void ModelGenerator::visit_multiset(const Multiset &n) {
+  //[X]TODO: update ModelGenerator::visit_multiset to new standards
+  *this << ROMP_TYPE_MULTISET << "<(/*" << n.size->to_string() << "*/(" << n.size->constant_fold().get_str() << ")),"
                               <<  *n.element_type << '>';
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_multisetadd(const MultisetAdd &n) {
-  //[X]TODO: update visit_multisetadd to new standards
+void ModelGenerator::visit_multisetadd(const MultisetAdd &n) {
+  //[X]TODO: update ModelGenerator::visit_multisetadd to new standards
   *this << indentation() << "(" << *n.multiset << ").MultisetAdd((" << n.value <<"));";
   emit_trailing_comments(n);
   *this << '\n';
@@ -503,24 +503,24 @@ void visit_multisetadd(const MultisetAdd &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_multisetcount(const MultisetCount &n) {
-  //[X]TODO: update visit_multisetcount to new standards
-  *this << "((" << *n.multiset << ").MultisetCount([&](size_t " << n.ms_quantifier.name << ") -> bool { " 
-                                                  "return ("<< n.cond <<"); }))";
+void ModelGenerator::visit_multisetcount(const MultisetCount &n) {
+  //[X]TODO: update ModelGenerator::visit_multisetcount to new standards
+  *this << "((" << *n.ms_quantifier.multiset << ").MultisetCount([&](size_t " << n.ms_quantifier.name << ") -> bool { " 
+                                                  "return ("<< n.condition <<"); }))";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_multisetelement(const MultisetElement &n) {
-  //[X]TODO: update visit_multisetelement to new standards
+void ModelGenerator::visit_multisetelement(const MultisetElement &n) {
+  //[X]TODO: update ModelGenerator::visit_multisetelement to new standards
   //[X]TODO: implement error traces for bad accesses -- nvm validate and structure should prevent issues
   *this << "(" ROMP_UTIL_NAMESPACE "::MultisetElement((" << *n.multiset << "),(" <<  *n.index << ")))";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_multisetremove(const MultisetRemove &n) {
-  //[X]TODO: update visit_multisetremove to new standards
+void ModelGenerator::visit_multisetremove(const MultisetRemove &n) {
+  //[X]TODO: update ModelGenerator::visit_multisetremove to new standards
   // this is unreachable because we dont' support choose rule's and this is useless without them
   assert(!"unreachable");
   __builtin_unreachable();
@@ -531,9 +531,9 @@ void visit_multisetremove(const MultisetRemove &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_multisetremovepred(const MultisetRemovePred &n) {
-  //[X]TODO: update visit_multisetremovepred to new standards
-  *this << "(" << *n.multiset << ").MultisetRemovePred([&](size_t " << *n.multiset.name << ") -> bool { "
+void ModelGenerator::visit_multisetremovepred(const MultisetRemovePred &n) {
+  //[X]TODO: update ModelGenerator::visit_multisetremovepred to new standards
+  *this << "(" << *n.ms_quantifier.multiset << ").MultisetRemovePred([&](size_t " << n.ms_quantifier.name << ") -> bool { "
                                           "return (" << *n.pred << "); }));";
   emit_trailing_comments(n);
   *this << '\n';
@@ -541,8 +541,8 @@ void visit_multisetremovepred(const MultisetRemovePred &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_multisetquantifier(const MultisetQuantifier &n) {
-  //[X]TODO: update visit_multisetquantifier to new standards
+void ModelGenerator::visit_multisetquantifier(const MultisetQuantifier &n) {
+  //[X]TODO: update ModelGenerator::visit_multisetquantifier to new standards
   // this is unreachable because we let the Multiset type handle this for everything but choose rules
   //   which we don't support at all
   assert(!"unreachable");
@@ -551,36 +551,36 @@ void visit_multisetquantifier(const MultisetQuantifier &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_negative(const Negative &n) {
+void ModelGenerator::visit_negative(const Negative &n) {
   *this << "(-" << *n.rhs << ")";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_neq(const Neq &n) {
-  //[X]TODO: update visit_neq to new standards
+void ModelGenerator::visit_neq(const Neq &n) {
+  //[X]TODO: update ModelGenerator::visit_neq to new standards
   *this << "(" << *n.lhs << " != " << *n.rhs << ")";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_not(const Not &n) { *this << "(!" << *n.rhs << ")"; }
+void ModelGenerator::visit_not(const Not &n) { *this << "(!" << *n.rhs << ")"; }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_number(const Number &n) {
+void ModelGenerator::visit_number(const Number &n) {
   *this << "((" << value_type << ")(" << n.value.get_str() << "))";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_or(const Or &n) {
+void ModelGenerator::visit_or(const Or &n) {
   *this << "(" << *n.lhs << " || " << *n.rhs << ")";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_procedurecall(const ProcedureCall &n) {
+void ModelGenerator::visit_procedurecall(const ProcedureCall &n) {
   *this << indentation() << n.call << ";";
   emit_trailing_comments(n);
   *this << "\n";
@@ -588,7 +588,7 @@ void visit_procedurecall(const ProcedureCall &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_property(const Property &) {
+void ModelGenerator::visit_property(const Property &) {
   // this is unreachable because generate_c is only ever called with a Model
   // and nothing that contains a Property descends into it
   assert(!"unreachable");
@@ -597,8 +597,8 @@ void visit_property(const Property &) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_propertyrule(const PropertyRule &n) {
-  //[X]TODO: update visit_propertyrule to new standards
+void ModelGenerator::visit_propertyrule(const PropertyRule &n) {
+  //[X]TODO: update ModelGenerator::visit_propertyrule to new standards
   id_t prop_id = next_property_id++;
   // property_rules.push_back(Ptr<const PropertyRule>::make(n));
   // function prototype
@@ -698,8 +698,8 @@ void visit_propertyrule(const PropertyRule &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_propertystmt(const PropertyStmt &n) {
-  //[X]TODO: update visit_propertystmt to new romp standards
+void ModelGenerator::visit_propertystmt(const PropertyStmt &n) {
+  //[X]TODO: update ModelGenerator::visit_propertystmt to new romp standards
   id_t id = next_property_id++;
   id_t _id = 0u;
 
@@ -739,8 +739,7 @@ void visit_propertystmt(const PropertyStmt &n) {
     break;
 
   case Property::LIVENESS:
-    if (not processing_global_prop)
-      throw Error("liveness properties are NOT supported as embedded statements only global rules!", n.loc);
+    throw Error("liveness properties are NOT supported as embedded property statements only global rules!", n.loc);
     // _id = next_liveness_id++;
     // *this << indentation() << "if (" << ROMP_LIVENESS_HANDLER(n,id,_id) << ")\n"
     //       << indentation() << "throw " ROMP_MAKE_MODEL_ERROR_PROPERTY(n,id) ";\n";
@@ -759,8 +758,8 @@ void visit_propertystmt(const PropertyStmt &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_put(const Put &n) {
-  //[X]TODO: update visit_put to new standards (aka actually supported)
+void ModelGenerator::visit_put(const Put &n) {
+  //[X]TODO: update ModelGenerator::visit_put to new standards (aka actually supported)
 
   // this lambda needs a by value/copy closure instead of the normal reference closure
   *this << _ROMP_PUT_HANDLER << "([=](" ROMP_OUT_STREAM_TYPE "& _romp_out) -> void { _romp_out";
@@ -772,7 +771,7 @@ void visit_put(const Put &n) {
     while ((pos = s.find("\n")) != std::string::npos) {
       token = s.substr(0, pos);
       *this <<  " << \"" << escape(token) << "\" << _romp_out.nl()";
-      s.erase(0, pos + delimiter.length());
+      s.erase(0, pos + 1);
     }
     *this <<  " << \"" << escape(s) << '"';
 
@@ -787,13 +786,18 @@ void visit_put(const Put &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_quantifier(const Quantifier &n) {
-  //[X]TODO: update visit_quantifier to new standards
+void ModelGenerator::visit_quantifier(const Quantifier &n) {
+  //[X]TODO: update ModelGenerator::visit_quantifier to new standards
   if (n.type == nullptr) {
-    *this << "for (range_t " << n.name << "=" *n.from << "; "
-             "((" << ((n.step!=nullptr) ? *n.step : Number(1_mpz,location())) << ">0) "
-                "? ("<<n.name<<"<="<<*n.to<<") "
-                ": ("<<n.name<<">="<<*n.to<<")); "
+    *this << "for (romp::range_t " << n.name << "=" << *n.from << "; "
+              "((";
+    if (n.step!=nullptr)
+      *this << *n.step;
+    else
+      *this << "(1)";
+    *this << ">0) "
+      "? ("<<n.name<<"<="<<*n.to<<") "
+      ": ("<<n.name<<">="<<*n.to<<")); "
           << n.name << " += ";
     if (n.step == nullptr) {
       *this << "1";
@@ -815,16 +819,16 @@ void visit_quantifier(const Quantifier &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_range(const Range &n) {
-  //[X]TODO: update visit_range to new standards
+void ModelGenerator::visit_range(const Range &n) {
+  //[X]TODO: update ModelGenerator::visit_range to new standards
   *this << ROMP_TYPE_RANGE "<(/*(" << n.min->to_string() << ")*/(" << n.min->constant_fold().get_str() << ")),"
                             "(/*(" << n.max->to_string() << ")*/(" << n.max->constant_fold().get_str() << "))>";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_record(const Record &n) {
-  //[X]TODO: update visit_record to new standards
+void ModelGenerator::visit_record(const Record &n) {
+  //[X]TODO: update ModelGenerator::visit_record to new standards
   *this << ROMP_TYPE_RECORD "<";
   std::string sep;
   for (const Ptr<VarDecl> &f : n.fields) {
@@ -836,7 +840,7 @@ void visit_record(const Record &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_return(const Return &n) {
+void ModelGenerator::visit_return(const Return &n) {
   *this << indentation() << "return";
   if (n.expr != nullptr) {
     *this << " (" << *n.expr << ')';
@@ -848,23 +852,23 @@ void visit_return(const Return &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_rsh(const Rsh &n) {
+void ModelGenerator::visit_rsh(const Rsh &n) {
   *this << "(" << *n.lhs << " >> " << *n.rhs << ")";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_ruleset(const Ruleset &) {
+void ModelGenerator::visit_ruleset(const Ruleset &) {
   // this is unreachable because generate_c is only ever called with a Model
-  // and all rule are flattened during visit_model
+  // and all rule are flattened during ModelGenerator::visit_model
   assert(!"unreachable");
   __builtin_unreachable();
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_scalarset(const Scalarset &n) {
-  //[X]TODO: update visit_scalarset to new standards
+void ModelGenerator::visit_scalarset(const Scalarset &n) {
+  //[X]TODO: update ModelGenerator::visit_scalarset to new standards
   std::string name1 = (((n.name == "") ? "_romp_"+name : "__romp__scalarset")
                           + '_' + ->get_str() + "_1");
   *this << ROMP_TYPE_SCALARSET "<" << enum_ids[name1] << ","
@@ -873,8 +877,8 @@ void visit_scalarset(const Scalarset &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_scalarsetunion(const ScalarsetUnion &n) { 
-  //[X]TODO: update visit_scalarsetunion to new standards
+void ModelGenerator::visit_scalarsetunion(const ScalarsetUnion &n) { 
+  //[X]TODO: update ModelGenerator::visit_scalarsetunion to new standards
   *this << ROMP_TYPE_SCALAR_UNION "<";
   std::string sep;
   for (const auto& m : n.members) {
@@ -887,8 +891,8 @@ void visit_scalarsetunion(const ScalarsetUnion &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_simplerule(const SimpleRule &n) {
-  //[X]TODO: update visit_simplerule to new standards
+void ModelGenerator::visit_simplerule(const SimpleRule &n) {
+  //[X]TODO: update ModelGenerator::visit_simplerule to new standards
   id_t id = next_rule_id++;
 
   *this << indentation() << CodeGenerator::M_RULE_GUARD__FUNC_ATTRS << "\n"
@@ -1033,8 +1037,8 @@ void visit_simplerule(const SimpleRule &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_startstate(const StartState &n) {
-  //[X]TODO: update visit_startstate to new standards
+void ModelGenerator::visit_startstate(const StartState &n) {
+  //[X]TODO: update ModelGenerator::visit_startstate to new standards
   id_t id = next_startstate_id++;
   
   *this << indentation() << CodeGenerator::M_STARTSTATE__FUNC_ATTRS 
@@ -1107,20 +1111,20 @@ void visit_startstate(const StartState &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_sucast(const SUCast &n) { 
-  //[X]TODO: update visit_sucast to new standards
-  *this << "((" << *n.target << ')' << *n.lhs << ')';
+void ModelGenerator::visit_sucast(const SUCast &n) { 
+  //[X]TODO: update ModelGenerator::visit_sucast to new standards
+  *this << "((" << *n.target << ')' << *n.rhs << ')';
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_sub(const Sub &n) {
+void ModelGenerator::visit_sub(const Sub &n) {
   *this << "(" << *n.lhs << " - " << *n.rhs << ")";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_switch(const Switch &n) {
+void ModelGenerator::visit_switch(const Switch &n) {
 
   // Murphi permits switch statements with non-constant case expressions, while
   // C’s switch statements do not support this. To deal with this discrepancy,
@@ -1173,7 +1177,7 @@ void visit_switch(const Switch &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_switchcase(const SwitchCase &n) {
+void ModelGenerator::visit_switchcase(const SwitchCase &n) {
   if (n.matches.empty()) {
     *this << indentation() << "default:\n";
   } else {
@@ -1192,14 +1196,14 @@ void visit_switchcase(const SwitchCase &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_ternary(const Ternary &n) {
+void ModelGenerator::visit_ternary(const Ternary &n) {
   *this << "(" << *n.cond << " ? " << *n.lhs << " : " << *n.rhs << ")";
 }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_typedecl(const TypeDecl &n) {
-  //[X]TODO: update visit_typedecl to new standards
+void ModelGenerator::visit_typedecl(const TypeDecl &n) {
+  //[X]TODO: update ModelGenerator::visit_typedecl to new standards
   *this << indentation() << "typedef " ROMP_TYPE_TYPEID "<" << n.type_id << ',' 
                                                             << *n.value << "> " 
                                       << n.name << ";";
@@ -1209,11 +1213,11 @@ void visit_typedecl(const TypeDecl &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_typeexprid(const TypeExprID &n) { *this << n.name; }
+void ModelGenerator::visit_typeexprid(const TypeExprID &n) { *this << n.name; }
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_undefine(const Undefine &n) {
+void ModelGenerator::visit_undefine(const Undefine &n) {
   *this << indentation() << '(' << *n.rhs << ").Undefine();";
   emit_trailing_comments(n);
   *this << '\n';
@@ -1221,7 +1225,7 @@ void visit_undefine(const Undefine &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_while(const While &n) {
+void ModelGenerator::visit_while(const While &n) {
   *this << indentation() << "while " << *n.condition << " {\n";
   indent();
   for (const Ptr<Stmt> &s : n.body) {
@@ -1236,9 +1240,16 @@ void visit_while(const While &n) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-void visit_xor(const Xor &n) {
+void ModelGenerator::visit_xor(const Xor &n) {
   *this << "(" << *n.lhs << " ^ " << *n.rhs << ")";
 }
+
+
+
+
+// << ========================================================================================== >> 
+// <<                                     UTILITY FUNCTIONS                                      >> 
+// << ========================================================================================== >>
 
 // write out a single line comment, accounting for the fact that '\' is an
 // escape leader in C that we should suppress if it is escaping the trailing new
@@ -1267,11 +1278,6 @@ static void write_content(const Comment &c, std::ostream &out) {
   out << c.content.substr(0, i);
 }
 
-
-
-// << ========================================================================================== >> 
-// <<                                     UTILITY FUNCTIONS                                      >> 
-// << ========================================================================================== >>
 
 size_t ModelGenerator::emit_leading_comments(const Node &n) {
   size_t count = 0;
@@ -1338,7 +1344,7 @@ size_t ModelGenerator::emit_trailing_comments(const Node &n) {
   for (const Comment &c : comments) {
     if (!emitted[i] && !c.multiline && c.loc.begin.line == n.loc.end.line) {
       *this << " //";
-      write_content(c, out);
+      write_content(c, *out);
       emitted[i] = true;
       ++count;
     }
@@ -1346,5 +1352,36 @@ size_t ModelGenerator::emit_trailing_comments(const Node &n) {
   }
   return count;
 }
+
+
+template<typename T>
+inline typename std::enable_if<std::is_base_of<murphi::Node,T>::value,ModelGenerator&>::type operator << (ModelGenerator& gen, const T& n) {
+  gen.dispatch(n);
+  return gen;
+}
+template<typename T>
+inline typename std::enable_if<!std::is_base_of<murphi::Node,T>::value,ModelGenerator&>::type operator << (ModelGenerator& gen, const T& val) {
+  (*((CodeGenerator*)&gen)) << val;
+  return gen;
+}
+// template<>
+// friend ModelGenerator&> operator << <bool>(ModelGenerator& gen, const bool& val) {
+//   (*gen.out) << ((val) ? "true" : "false");
+//   return gen;
+// }
+// inline ModelGenerator& ModelGenerator::operator << (const Node &n) {
+//   dispatch(n);
+//   return *this;
+// }
+// template<>
+// inline ModelGenerator& ModelGenerator::operator << <Node>(const Node &n) {
+//   dispatch(n);
+//   return *this;
+// }
+// template<>
+// inline ModelGenerator& operator << <Node>(ModelGenerator& gen, const Node &n) {
+//   gen.dispatch(n);
+//   return gen;
+// }
 
 ModelGenerator::~ModelGenerator() {}

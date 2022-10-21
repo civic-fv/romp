@@ -16,13 +16,14 @@
 
 #pragma once
 
-#include <murphi/murphi.h>
+#include <murphi/Property.h>
 #include <cstddef>
 #include <string>
 #include <unordered_set>
 #include <ostream>
 #include <memory>
 #include <filesystem> // C++ 17 or greater
+#include <type_traits>
 // #include <stack>
 
 #include "romp_def.hpp"
@@ -40,33 +41,34 @@ namespace romp {
     friend void set_out(CodeGenerator& gen, std::shared_ptr<std::ostream>& out);
 
     // the filepath of the input murphi model
-    std::filesystem::path input_file_path;
+    std::filesystem::path input_file_path  = "stdin";
     // the filepath of the output romp model checker
-    std::filesystem::path output_file_path;
+    std::filesystem::path output_file_path = "./romp.cpp";
     // the number of rule applications to keep track of for trace reports
     size_t hist_len = 4u;
     // the number of rule applications to keep track of for trace reports
     size_t default_walk_multiplier = 16u;
     // function attributes to prepend before the definition of any murphi function's C/C++ function.
-    std::string M_FUNCTION__FUNC_ATTRS;
+    std::string M_FUNCTION__FUNC_ATTRS = "";
     // function attributes to prepend before the definition of any murphi simple rule's guard C/C++ function.
-    std::string M_RULE_GUARD__FUNC_ATTRS;
+    std::string M_RULE_GUARD__FUNC_ATTRS = "";
     // function attributes to prepend before the definition of any murphi simple rule's action C/C++ function.
-    std::string M_RULE_ACTION__FUNC_ATTRS;
+    std::string M_RULE_ACTION__FUNC_ATTRS = "";
     // function attributes to prepend before the definition of any murphi start_state's C/C++ function.
-    std::string M_STARTSTATE__FUNC_ATTRS;
+    std::string M_STARTSTATE__FUNC_ATTRS = "";
     // function attributes to prepend before the definition of any murphi invariant's (property-rule) C/C++ function.
-    std::string M_PROPERTY__FUNC_ATTRS;
+    std::string M_PROPERTY__FUNC_ATTRS = "";
+    // set of reserved names to not allow to be defined
+    const std::unordered_set<std::string> RESERVED_NAMES{"romp","bool","_undefined_","__model__","__caller__","__info__","size_t"};
 
   private:
     size_t indent_level = 0; // current indentation level
     std::vector<std::string> ENABLED_PREPROCESSOR_OPTIONS;
-    const std::unordered_set<std::string> RESERVED_NAMES;
-    bool do_ignore_rumur_props;
-    bool is_assume_enabled;
-    bool is_cover_enabled;
-    bool is_liveness_enabled;
-    bool is_measure_enabled;
+    bool do_ignore_rumur_props = false;
+    bool is_assume_enabled = false;
+    bool is_cover_enabled = false;
+    bool is_liveness_enabled = false;
+    bool is_measure_enabled = false;
     
 
   protected:
@@ -85,6 +87,7 @@ namespace romp {
     // id_t next_record_member_id = 0u;
     
 
+  public:
     // get a white space string for the current indentation level
     std::string indentation() const;
 
@@ -105,10 +108,23 @@ namespace romp {
     void print_preprocessor_options(std::ostream& out);
 
 
-    CodeGenerator& operator << (bool val);
-    CodeGenerator& operator << (const murphi::Node &n);
+    inline CodeGenerator& operator << (bool val);
+    // inline CodeGenerator& operator << (char val);
+    // inline CodeGenerator& operator << (int val);
+    // inline CodeGenerator& operator << (long val);
+    // inline CodeGenerator& operator << (size_t val);
+    // inline CodeGenerator& operator << (id_t val);
+    // inline CodeGenerator& operator << (typeof(std::flush) flush);
+    // inline CodeGenerator& operator << (typeof(std::endl) endl);
+    // inline CodeGenerator& operator << (const std::string& val);
+    // CodeGenerator& operator << (const murphi::Node &n);
+
+    // template<typename T>
+    // friend inline CodeGenerator& operator << (CodeGenerator& gen, const T &val);
     template<typename T>
-    CodeGenerator& operator << (const T &val);
+    friend inline typename std::enable_if<!std::is_base_of<murphi::Node,T>::value,CodeGenerator&>::type operator << (CodeGenerator& gen, const T &val);
+    // template<typename T>
+    // inline typename std::enable_if<!std::is_base_of<murphi::Node,T>::value,CodeGenerator&>::type operator << (const T &val);
 
   };
 

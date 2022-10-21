@@ -21,6 +21,7 @@
 #include <utility>
 #include <vector>
 #include <regex>
+#include <algorithm>
 
 // a pair of input streams
 using dup_t =
@@ -216,7 +217,7 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
   }
   if (not no_sym_provided)
     gen.enable_preprocessor_option(ROMP_SYMMETRY_PREPROCESSOR_VAR);
-  romp::set_out(gen,(out == nullptr) ? std::make_shared_ptr(&std::cout) : out));
+  romp::set_out(gen,out);
 }
 
 static dup_t make_stdin_dup() {
@@ -246,6 +247,13 @@ std::string trim(const std::string &s)
     return std::string(start, end + 1);
 }
 
+std::string& _to_lower(std::string& data) {
+  std::string result;
+  std::transform(data.begin(), data.end(), result.begin(),
+    [](unsigned char c){ return std::tolower(c); });
+  return result;
+}
+
 int main(int argc, char **argv) {
 
   romp::CodeGenerator gen 
@@ -263,10 +271,15 @@ int main(int argc, char **argv) {
   try {
     m = murphi::parse(*in.first, [&](auto name, auto type, auto loc) {
                         if (std::regex_search(name, bad_name_regex))
-                          throw murphi::Error("name/id starts with protected romp key phrase "
+                          throw murphi::Error("name/id (`"+name+"`) starts with the protected romp key phrase "
                                               "(regex:/_+[Rr][Oo][Mm][Pp]_+.*/)",loc);
                         if (name == "romp")
-                          throw murphi::Error("name/id is a reserved word",loc);
+                          throw murphi::Error("name/id (`romp`) is a reserved word",loc);
+                        // if (name == "")
+                        //   throw murphi::Error("name/id (`romp`) is a reserved word",loc);
+                        auto res = gen.RESERVED_NAMES.find(_to_lower(name));
+                        if (res != gen.RESERVED_NAMES.end())
+                          throw murphi::Error("name/id `"+name+"` is a reserved word",loc);
                         return {name};
                       });
   } catch (murphi::Error &e) {
@@ -287,7 +300,7 @@ int main(int argc, char **argv) {
 
   // check the model is valid
   try {
-    resolve_symbols(*m);
+    murphi::updateAST(*m);
     validate(*m);
     check(*m);
   } catch (const murphi::Error& e) {

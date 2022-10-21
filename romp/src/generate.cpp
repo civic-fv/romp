@@ -1,4 +1,4 @@
-#include "generate_c.hpp"
+#include "generate.hpp"
 #include "nested_escape.hpp"
 // #include "../../common/escape.h"
 #include "ScalarEnumGenerator.hpp"
@@ -59,14 +59,14 @@ void generate(const Model &m, const std::vector<Comment> &comments,
 
   out << "\n#define __romp__GENERATED_CODE\n\n";
   out << "\n#define _ROMP_STATE_TYPE " ROMP_STATE_TYPE "\n\n";
-  out << "\n#define _ROMP_STATE_HISTORY_LEN (" << gen.hist_len << "ul)\n\n";
-  out << "\n#define _ROMP_THREAD_TO_RW_RATIO (" << gen.default_walk_multiplier "ul)\n\n";
-  std::string file_path = romp::CodeGenerator::input_file_path.string();
+  out << "\n#define _ROMP_STATE_HISTORY_LEN (" << out.hist_len << "ul)\n\n";
+  out << "\n#define _ROMP_THREAD_TO_RW_RATIO (" << out.default_walk_multiplier << "ul)\n\n";
+  std::string file_path = out.input_file_path.string();
   out << "\n#define __model__filepath \"" << nEscape(file_path) << "\"\n\n";
   int _count = std::count(file_path.begin(), file_path.end(), ' ');
   out << "\n#define __model__filepath_contains_space (" 
       << ((_count > 0) ? "true" : "false") << ")\n\n";
-  std::string file_name = romp::CodeGenerator::input_file_path.filename().string();
+  std::string file_name = out.input_file_path.filename().string();
   out << "\n#define __model__filename \"" << nEscape(file_name) << "\"\n";
   _count = std::count(file_name.begin(), file_name.end(), ' ');
   out << "\n#define __model__filename_contains_space (" 

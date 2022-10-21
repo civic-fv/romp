@@ -40,7 +40,7 @@ protected:
   // std::unordered_map<size_t, std::string> enum_typedefs;
 
   // mapping of an enum/scalar name to it's id in the model scalar/enum space
-  std::unordered_set<std::string,size_t> enum_ids
+  std::unordered_map<std::string,size_t> enum_ids;
 
   // [X]TODO get rid of the need for is_pointer
   // // collection of unique_ids that were emitted as pointers instead of standard
@@ -69,7 +69,7 @@ protected:
 
 public:
   ModelGenerator(const romp::CodeGenerator& gen_,
-                 const std::unordered_set<std::string,size_t>& enum_ids_,
+                 const std::unordered_map<std::string,size_t>& enum_ids_,
                  const std::vector<murphi::Comment> &comments_)
       : romp::CodeGenerator(gen_), enum_ids(enum_ids_),
         comments(comments_), emitted(comments_.size(), false) {}
@@ -151,7 +151,15 @@ public:
   void visit_xor(const murphi::Xor &n) final;
 
   // helpers to make output more natural
-  ModelGenerator &operator<<(const std::string &s);
+  // ModelGenerator &operator<<(const std::string &s);
+  // template<>
+  // inline ModelGenerator& operator << <murphi::Node>(const murphi::Node &n);
+  // template<typename T>
+  // friend inline ModelGenerator& operator << (ModelGenerator& gen, const T& n);
+  template<typename T>
+  friend inline typename std::enable_if<std::is_base_of<murphi::Node,T>::value,ModelGenerator&>::type operator << (ModelGenerator& gen, const T& n);
+  template<typename T>
+  friend inline typename std::enable_if<!std::is_base_of<murphi::Node,T>::value,ModelGenerator&>::type operator << (ModelGenerator& gen, const T& val);
   
 
   // make this class abstract
