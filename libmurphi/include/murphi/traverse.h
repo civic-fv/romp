@@ -105,7 +105,7 @@ public:
 
 
   /* Visitation dispatch. This simply determines the type of the Node argument
-   * and calls the appropriate specialised 'visit' method. This is not virtual
+   * and calls the appropriate specialized 'visit' method. This is not virtual
    * because we do not anticipate use cases where this behaviour needs to
    * change.
    */
@@ -442,7 +442,6 @@ public:
   void visit_chooserule(const ChooseRule& n) override;
   void visit_multiset(const Multiset& n) override;
   void visit_multisetadd(const MultisetAdd& n) override;
-  void visit_multisetelement(const MultisetElement& n) override;
   void visit_multisetremove(const MultisetRemove& n) override; 
   void visit_multisetremovepred(const MultisetRemovePred& n) override; 
   void visit_multisetquantifier(const MultisetQuantifier& n) override; 

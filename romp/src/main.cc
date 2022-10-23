@@ -4,7 +4,7 @@
 #include "NestedError.hpp"
 #include "CodeGenerator.hpp"
 // #include "generate_h.h"
-#include "options.h"
+// #include "options.h"
 #include "resources.h"
 #include <cassert>
 #include <cstddef>
@@ -22,6 +22,7 @@
 #include <vector>
 #include <regex>
 #include <algorithm>
+#include <optional>
 
 // a pair of input streams
 using dup_t =
@@ -29,7 +30,7 @@ using dup_t =
 
 static std::string in_filename = "<stdin>";
 static dup_t in;
-static std::shared_ptr<std::ostream> out;
+static std::shared_ptr<std::ofstream> out;
 
 // output C source? (as opposed to C header)
 // static bool source = true;
@@ -43,6 +44,7 @@ std::filesystem::path make_path(std::string p) {
 
 void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
   bool no_sym_provided = false;
+  bool out_file_provided = false;
   unsigned int hist_len = ROMP_HISTORY_SIZE_PREPROCESSOR_VAR_DEFAULT_VALUE;
   for (;;) {
     static struct option options[] = {
@@ -89,8 +91,10 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
         std::cerr << "failed to open " << optarg << "\n";
         exit(EXIT_FAILURE);
       }
-      out = o;
+      gen.set_out(o);
+      // out = o;
       gen.output_file_path = make_path(optarg);
+      out_file_provided = true;
       break;
     }
 
@@ -154,13 +158,13 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
     //   source = false;
     //   break;
 
-    // case 129: // --scalar-type
-    //   scalar_type = optarg;
-    //   break;
+    case 129: // --scalar-type
+      gen.scalar_type = optarg;
+      break;
 
     case 130: // --range-type
       // note that we just assume the type the user gave us exists
-      value_type = optarg;
+      gen.value_type = optarg;
       break;
 
     case 131: // --version
@@ -207,6 +211,7 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
     }
     out = o;
     gen.output_file_path = make_path(in_filename + ".romp.cpp");
+    gen.set_out(o);
   }
   // gen.enable_preprocessor_option(
   //     ROMP_HISTORY_SIZE_PREPROCESSOR_VAR " (" + std::to_string(gen.hist_len) + "ul)"
@@ -214,10 +219,11 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
   if (gen.default_walk_multiplier == 0) {
     gen.default_walk_multiplier = 1u;
     std::cerr << "WARNING : `0` is an invalid value for default walk multiplier, `1` will used instead !! (for -w/--default-wal-multiplier flag)\n" 
+              << std::flush;
   }
   if (not no_sym_provided)
     gen.enable_preprocessor_option(ROMP_SYMMETRY_PREPROCESSOR_VAR);
-  romp::set_out(gen,out);
+  
 }
 
 static dup_t make_stdin_dup() {
@@ -247,7 +253,7 @@ std::string trim(const std::string &s)
     return std::string(start, end + 1);
 }
 
-std::string& _to_lower(std::string& data) {
+std::string _to_lower(const std::string& data) {
   std::string result;
   std::transform(data.begin(), data.end(), result.begin(),
     [](unsigned char c){ return std::tolower(c); });
@@ -256,7 +262,7 @@ std::string& _to_lower(std::string& data) {
 
 int main(int argc, char **argv) {
 
-  romp::CodeGenerator gen 
+  romp::CodeGenerator gen;
   // parse command line options
   parse_args(gen, argc, argv);
 
@@ -269,7 +275,7 @@ int main(int argc, char **argv) {
   murphi::Ptr<murphi::Model> m;
   std::regex bad_name_regex("_+[Rr][Oo][Mm][Pp]_+.*");
   try {
-    m = murphi::parse(*in.first, [&](auto name, auto type, auto loc) {
+    m = murphi::parse(*in.first, [&](const std::string& name, auto type, auto loc) -> std::optional<std::string> {
                         if (std::regex_search(name, bad_name_regex))
                           throw murphi::Error("name/id (`"+name+"`) starts with the protected romp key phrase "
                                               "(regex:/_+[Rr][Oo][Mm][Pp]_+.*/)",loc);

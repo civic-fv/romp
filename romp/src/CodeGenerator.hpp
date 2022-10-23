@@ -16,11 +16,12 @@
 
 #pragma once
 
+#include "StreamVoid.hpp"
 #include <murphi/Property.h>
 #include <cstddef>
 #include <string>
 #include <unordered_set>
-#include <ostream>
+#include <fstream>
 #include <memory>
 #include <filesystem> // C++ 17 or greater
 #include <type_traits>
@@ -33,12 +34,18 @@ namespace romp {
   // some common supporting code used by code generation functions
   class CodeGenerator {
   protected:
-    std::shared_ptr<std::ostream> out;
+    std::shared_ptr<std::ofstream> out = nullptr;
 
   public:
     CodeGenerator() = default;
     ~CodeGenerator() = default;
-    friend void set_out(CodeGenerator& gen, std::shared_ptr<std::ostream>& out);
+    void set_out(std::shared_ptr<std::ofstream>& out_);
+
+
+    // the backend type for ranges
+    std::string value_type = "int";
+    // the backend type for scalars and enum values (not currently supported)
+    std::string scalar_type = "";
 
     // the filepath of the input murphi model
     std::filesystem::path input_file_path  = "stdin";
@@ -92,10 +99,13 @@ namespace romp {
     std::string indentation() const;
 
     // increase the current indentation level
-    void indent();
+    StreamVoid& indent();
 
     // decrease the current indentation level
-    void dedent();
+    StreamVoid& dedent();
+
+    // flush the output stream
+    StreamVoid& flush();
 
   public:
     void enable_preprocessor_option(std::string dir);
@@ -105,27 +115,42 @@ namespace romp {
     void enable_liveness_property();
     void enable_measurements();
     bool is_prop_enabled(murphi::Property::Category prop);
-    void print_preprocessor_options(std::ostream& out);
+    void print_preprocessor_options();
 
 
-    inline CodeGenerator& operator << (bool val);
-    // inline CodeGenerator& operator << (char val);
-    // inline CodeGenerator& operator << (int val);
-    // inline CodeGenerator& operator << (long val);
-    // inline CodeGenerator& operator << (size_t val);
-    // inline CodeGenerator& operator << (id_t val);
-    // inline CodeGenerator& operator << (typeof(std::flush) flush);
-    // inline CodeGenerator& operator << (typeof(std::endl) endl);
-    // inline CodeGenerator& operator << (const std::string& val);
-    // CodeGenerator& operator << (const murphi::Node &n);
+    void output_embedded_code_file(const unsigned char* ecf, const size_t ecf_l);
+
+    // CodeGenerator& operator << (bool val);
+    CodeGenerator& operator << (char val);
+    CodeGenerator& operator << (int val);
+    CodeGenerator& operator << (unsigned int val);
+    CodeGenerator& operator << (long val);
+    CodeGenerator& operator << (unsigned long val);
+    CodeGenerator& operator << (long long val);
+    CodeGenerator& operator << (unsigned long long val);
+    // CodeGenerator& operator << (typeof(std::flush) flush);
+    // CodeGenerator& operator << (typeof(std::endl) endl);
+    CodeGenerator& operator << (const std::string& str);
+    CodeGenerator& operator << (const mpz_class& val);
+    CodeGenerator& operator << (const _StreamVoid&);
+    // CodeGenerator& operator << (const murphi::position::counter_type val);
+    // CodeGenerator& operator << (const std::function<std::ostream&(std::ostream&)>& manipulator);
+    // CodeGenerator& operator << (const std::function<CodeGenerator&(CodeGenerator&)>& manipulator);
+    // inline CodeGenerator& operator << (const murphi::Node &n);
+    
+    // friend inline CodeGenerator& _flush(CodeGenerator& gen);
+    
 
     // template<typename T>
     // friend inline CodeGenerator& operator << (CodeGenerator& gen, const T &val);
-    template<typename T>
-    friend inline typename std::enable_if<!std::is_base_of<murphi::Node,T>::value,CodeGenerator&>::type operator << (CodeGenerator& gen, const T &val);
+    // template<typename T>
+    // friend inline CodeGenerator& operator << (CodeGenerator& gen, const T &val);
+    // template<>
+    // friend inline typename CodeGenerator& operator << <std::function<std::ostream&(std::ostream&)>>(CodeGenerator& gen, const std::function<std::ostream&(std::ostream&)>& manipulator);
     // template<typename T>
     // inline typename std::enable_if<!std::is_base_of<murphi::Node,T>::value,CodeGenerator&>::type operator << (const T &val);
 
   };
+
 
 }

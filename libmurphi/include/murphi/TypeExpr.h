@@ -258,6 +258,8 @@ struct MURPHI_API_WITH_RTTI ScalarsetUnion : public TypeExpr {
   void update() final;
   void validate() const final;
   bool is_useful() const final;
+  bool is_simple() const final;
+  bool constant() const final;
   std::string to_string() const final;
 
   // return true if this union contains the specified type

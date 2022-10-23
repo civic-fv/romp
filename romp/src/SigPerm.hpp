@@ -22,6 +22,7 @@
 
 #include <murphi/murphi.h>
 // #include "NestedError.hpp"
+#include "CodeGenerator.hpp"
 // #include "type_traverse.hpp"
 #include "romp_def.hpp"
 #include <cstddef>
@@ -64,9 +65,10 @@ struct Sig {
   ~Sig(); // = default;
   friend bool operator == (const Sig& l, const Sig& r) ;
   friend bool operator != (const Sig& l, const Sig& r) ;
+  friend std::ostream& operator << (std::ostream& out, const Sig& sig);
+  friend CodeGenerator& operator << (CodeGenerator& out, const SigParam& param);
 private:
   const SigPerm& perm;
-  friend std::ostream& operator << (std::ostream& out, const Sig& sig);
   // friend CGenerator& CGenerator::operator << (const Sig& sig);
   // friend SigPerm::Iterator;
 };
@@ -85,12 +87,12 @@ struct SigParam {
   const QuantExpansion& qe;
   const std::string& to_string() const;
   const std::string& to_json() const;
+  friend std::ostream& operator << (std::ostream& out, const SigParam& param);
+  friend CGenerator& operator << (CGenerator& out, const SigParam& param);
 private:
   friend struct QuantExpansion;
   inline static const std::string to_string(const std::string& value_str, const QuantExpansion& qe);
   inline static const std::string to_json(const std::string& value_str, const QuantExpansion& qe, const std::string json_val_type);
-  friend std::ostream& operator << (std::ostream& out, const SigParam& param);
-  friend CGenerator& operator << (CGenerator& out, const SigParam& param);
 };
 #pragma endregion class_SigParam
 

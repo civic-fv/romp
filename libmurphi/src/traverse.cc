@@ -13,6 +13,11 @@
 
 namespace murphi {
 
+void BaseTraversal::dispatch(Node& n) {
+  n.visit(*this);
+  n.update(); // you almost always want to update nodes after modifying it
+}
+
 void BaseTraversal::visit_ambiguousamp(AmbiguousAmp &n) {
   dispatch(*n.lhs);
   dispatch(*n.rhs);

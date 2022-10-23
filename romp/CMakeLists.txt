@@ -89,8 +89,9 @@ add_executable(romp
   ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_main.cpp
   ../common/escape.cc
   ../common/help.cc
-  src/check.cc
+  src/nested_escape.cpp
   src/CodeGenerator.cpp
+  src/check.cc
   src/ModelGenerator.cpp
   src/generate_state_stream.cpp
   src/generate_metadata.cpp
@@ -98,16 +99,15 @@ add_executable(romp
   src/ScalarEnumGenerator.cpp
   # src/compares_complex_values.cc
   # src/SigPerm.cpp
-  src/generate.cpp
   src/main.cc
   # src/options.cc
   src/romp_def.cpp
   # src/ModelSplitter.cpp
   # src/CTypeGenerator.cpp
-  src/NestedError.cpp
   src/SigPerm.cpp
-  src/nested_escape.cpp
+  src/NestedError.cpp
   src/StateSpaceCalc.cpp
+  src/generate.cpp
   )
 
 target_include_directories(romp

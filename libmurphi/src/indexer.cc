@@ -14,6 +14,8 @@
 
 namespace murphi {
 
+void Indexer::dispatch(Node& n) { n.visit(*this); }
+
 void Indexer::visit_add(Add &n) { visit_bexpr(n); }
 
 void Indexer::visit_aliasdecl(AliasDecl &n) {
@@ -313,6 +315,7 @@ void Indexer::visit_ternary(Ternary &n) {
 
 void Indexer::visit_typedecl(TypeDecl &n) {
   n.unique_id = next++;
+  n.type_id = next_type_id++;
   dispatch(*n.value);
 }
 
@@ -343,6 +346,12 @@ void Indexer::visit_while(While &n) {
 void Indexer::visit_xor(Xor &n) { visit_bexpr(n); }
 
 // << ------------------------------------------------------------------------------------------ >> 
+
+void Indexer::visit_chooserule(ChooseRule& n) {
+  n.unique_id = next++;
+  for (auto& r : n.rules)
+    dispatch(*r);
+}
 
 void Indexer::visit_ismember(IsMember& n) {
   n.unique_id = next++;

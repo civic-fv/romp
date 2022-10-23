@@ -14,7 +14,7 @@
  * @version 0.2
  */
 
-#include "ModelGenerator.hpp"
+#include "CodeGenerator.hpp"
 #include <murphi/murphi.h>
 
 
@@ -25,7 +25,7 @@ namespace romp {
    * @brief Generate the stream operators for the state data object 
    *        used to output the state to json traces and the console output
    */
-  void generate_state_stream(romp::ModelGenerator& gen, const murphi::Model& m);
+  void generate_state_stream(romp::CodeGenerator& gen, const murphi::Model& m);
 
 
 

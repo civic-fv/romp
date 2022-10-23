@@ -36,7 +36,7 @@ mpz_class statespace_count(const murphi::Model& m) {
     }
     void visit_multiset(const murphi::Multiset& n) {
       state_perm elm; elm.dispatch(*n.element_type);
-      perm *= n.count() * elm.perm;
+      perm *= n.size->constant_fold() * elm.perm;
     }
     void visit_record(const murphi::Record& n) { 
       state_perm field;

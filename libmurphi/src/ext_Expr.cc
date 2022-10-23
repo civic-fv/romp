@@ -144,9 +144,9 @@ void MultisetElement::update() {
   //  since we should never allow any in-appropriate index types in the first place. 
 }
 
-// std::string MultisetElement::to_string() const {
-//   return array->to_string() + "[" + index->to_string() + "]";
-// }
+std::string MultisetElement::to_string() const {
+  return multiset->to_string() + "[" + index->to_string() + "]";
+}
 
 
 // << ------------------------------------------------------------------------------------------ >> 

@@ -190,6 +190,9 @@ void ConstTraversal::visit_multisetquantifier(const MultisetQuantifier& n) {
 void ConstExprTraversal::visit_multisetquantifier(const MultisetQuantifier& n) {
   dispatch(*n.multiset);
 }
+void ConstStmtTraversal::visit_multisetquantifier(const MultisetQuantifier& n) {
+  dispatch(*n.multiset);
+}
 void ConstTypeTraversal::visit_multisetquantifier(const MultisetQuantifier& n) { 
   dispatch(*n.multiset);
 }

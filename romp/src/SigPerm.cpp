@@ -125,6 +125,9 @@ namespace romp {
     return "{\"$type\":\"value\",\"display-type\":\""+nEscape(json_val_type)+"\",\"value\":" + value_str +"}"; 
   }
 
+  CodeGenerator& operator << (CodeGenerator& out, const SigParam& param) { return (out << param.to_string()); }
+  std::ostream& operator << (std::ostream& out, const SigParam& param) { return (out << param.to_string()); }
+
   // << ========================================================================================== >> 
   // <<                                      QuantExpansion                                        >> 
   // << ========================================================================================== >> 

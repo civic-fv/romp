@@ -87,6 +87,12 @@ bool ScalarsetUnion::is_useful() const {
 void ScalarsetUnion::update() {
   // do nothing in current design
 }
+bool ScalarsetUnion::is_simple() const { return true; }
+bool ScalarsetUnion::constant() const {
+  for (const auto& m : members)
+    if (not m->constant()) return false;
+  return true;
+}
 
 std::string ScalarsetUnion::to_string() const {
   std::stringstream buf;
@@ -166,6 +172,11 @@ void Multiset::visit(ConstBaseTraversal& visitor) const { visitor.visit_multiset
 void Multiset::update() {
   // nothing to do here (moved to make legacy)
 }
+
+mpz_class Multiset::width() const { return element_type->width() * size->constant_fold(); }
+mpz_class Multiset::count() const { throw Error("complex types (multiset) can't be used as the index of arrays",loc); }
+bool Multiset::is_useful() const { return false; }
+
 void Multiset::validate() const {
   if (size->is_boolean())
     throw Error("Multiset size constraint must be a number not a boolean!", size->loc);

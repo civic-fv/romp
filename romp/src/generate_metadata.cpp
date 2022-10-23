@@ -283,7 +283,7 @@ void generate_startstate_metadata(CodeGenerator& gen, const Node& n) {
     CodeGenerator& out;
     // std::string sep;
     GenerateStartstateMetadata(CodeGenerator& gen_) : out(gen_) {}
-    void visit_startstate(const Startstate& n) {
+    void visit_startstate(const StartState& n) {
       out << ROMP_MAKE_STARTSTATE_INFO_STRUCT(n,to_json(n,"startstate")) ",";
     }
   };

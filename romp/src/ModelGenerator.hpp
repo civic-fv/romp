@@ -147,23 +147,31 @@ public:
   void visit_typedecl(const murphi::TypeDecl &n) final;
   void visit_typeexprid(const murphi::TypeExprID &n) final;
   void visit_undefine(const murphi::Undefine &n) final;
+  void visit_vardecl(const murphi::VarDecl &n) final;
   void visit_while(const murphi::While &n) final;
   void visit_xor(const murphi::Xor &n) final;
 
   // helpers to make output more natural
-  // ModelGenerator &operator<<(const std::string &s);
+  // ModelGenerator &operator<<(const murphi::Node& n);
   // template<>
   // inline ModelGenerator& operator << <murphi::Node>(const murphi::Node &n);
   // template<typename T>
-  // friend inline ModelGenerator& operator << (ModelGenerator& gen, const T& n);
+  // friend inline ModelGenerator& operator << (ModelGenerator& gen, const T& val);
+  // template<typename T>
+  // friend inline typename std::enable_if<std::is_base_of<murphi::Node,T>::value,ModelGenerator&>::type operator << (ModelGenerator& gen, const T& n);
+  // template<typename T>
+  // friend inline typename std::enable_if<!std::is_base_of<murphi::Node,T>::value,ModelGenerator&>::type operator << (ModelGenerator& gen, const T& val);
+  // template<typename T>
+  // inline ModelGenerator& operator << (const T& val);
+  // template<>
+  // inline ModelGenerator& operator << <murphi::Node>(const murphi::Node& val);
   template<typename T>
-  friend inline typename std::enable_if<std::is_base_of<murphi::Node,T>::value,ModelGenerator&>::type operator << (ModelGenerator& gen, const T& n);
+  /* inline  */typename std::enable_if<std::is_base_of<murphi::Node,T>::value,ModelGenerator&>::type operator << (const T& n);
   template<typename T>
-  friend inline typename std::enable_if<!std::is_base_of<murphi::Node,T>::value,ModelGenerator&>::type operator << (ModelGenerator& gen, const T& val);
+  /* inline  */typename std::enable_if<!std::is_base_of<murphi::Node,T>::value,ModelGenerator&>::type operator << (const T& val);
   
 
-  // make this class abstract
-  virtual ~ModelGenerator() = 0;
+  ~ModelGenerator() = default;
 
 private:
   // generate a print statement of the given expression and (possibly

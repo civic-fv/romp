@@ -285,6 +285,7 @@ mpz_class Scalarset::count() const {
   return b;
 }
 
+bool Scalarset::constant() const { return bound->constant(); }
 bool Scalarset::is_simple() const { return true; }
 
 void Scalarset::validate() const {

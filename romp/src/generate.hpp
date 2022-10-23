@@ -7,13 +7,10 @@
 #include <vector>
 #include <string>
 
-/// output C code equivalent of the given node
-///
-/// \param m \c murphi::Model to translate
-/// \param comments List of source code comments
-/// \param pack Whether all structs are packed
-/// \param out Stream to write translation to
-void generate_c(const murphi::Model &m,
+
+
+/// output C++ code equivalent of the given model
+void generate(const murphi::Model &m,
                 const std::vector<murphi::Comment> &comments,
-                romp::CodeGenerator &out,
+                romp::CodeGenerator &gen,
                 const std::string& build_cmds);

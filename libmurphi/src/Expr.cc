@@ -1040,14 +1040,14 @@ std::string Element::to_string() const {
 bool Element::is_pure() const { return true; }
 
 void Element::update() {
-  if (auto _a = dynamic_cast<Array*>(array->type().get())) {
-    auto it = _a->index_type->resolve();
-    if (not index->type()->equal_to(*it)) {
-      if (isa<Scalarset>(it) || isa<Enum>(it)) // scalarset+union or enum
-        index = Ptr<SUCast>::make(it, index, index->loc);
-        // SUCast will also throw an error if the cast can't be done
-    }
-  }
+  // if (const auto _a = dynamic_cast<const Array*>(array->type()->resolve().get())) {
+  //   const Ptr<TypeExpr> it = _a->index_type->resolve();
+  //   if (not index->type()->equal_to(*it)) {
+  //     if (isa<Scalarset>(it) || isa<Enum>(it) || isa<ScalarsetUnion>(it)) // scalarset+union or enum
+  //       index = Ptr<SUCast>::make(it, index, index->loc);
+  //       // SUCast will also throw an error if the cast can't be done
+  //   }
+  // }
 }
 
 // << ------------------------------------------------------------------------------------------ >> 

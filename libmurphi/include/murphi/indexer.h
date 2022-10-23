@@ -20,6 +20,7 @@ class MURPHI_API_WITH_RTTI Indexer : public BaseTraversal {
 private:
   size_t next = 0u;
   id_t next_record_field_id = 0u;
+  id_t next_type_id = 0u;
 
 public:
   void visit_add(Add &n) final;
@@ -102,6 +103,8 @@ public:
   void visit_multisetquantifier(MultisetQuantifier& n) final; 
   void visit_scalarsetunion(ScalarsetUnion& n) final;
   void visit_sucast(SUCast& n) final;
+
+  void dispatch(Node& n);
 
   virtual ~Indexer() = default;
 

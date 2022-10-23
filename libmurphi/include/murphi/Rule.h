@@ -148,8 +148,8 @@ struct MURPHI_API_WITH_RTTI ChooseRule : public Rule {
   ChooseRule *clone() const;
 
 
-  void visit(BaseTraversal &visitor);
-  void visit(ConstBaseTraversal &visitor) const;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
   void validate() const final;
   std::vector<Ptr<Rule>> flatten() const final;

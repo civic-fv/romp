@@ -16,6 +16,7 @@
 
 #include "generate_state_stream.hpp"
 #include "romp_def.hpp"
+#include "nested_escape.hpp"
 #include <murphi/murphi.h>
 #include <sstream>
 #include <cassert>
@@ -24,7 +25,7 @@
 namespace romp {
   using namespace murphi;
 
-void generate_state_stream(romp::ModelGenerator& gen, const murphi::Model& m) {
+void generate_state_stream(romp::CodeGenerator& gen, const murphi::Model& m) {
   std::stringstream json;
   std::stringstream json_simp;
   std::string j_sep, p_sep;
@@ -37,7 +38,7 @@ void generate_state_stream(romp::ModelGenerator& gen, const murphi::Model& m) {
       json_simp << j_sep << " << s." << _vd->name;
       json << j_sep << " << \"{\\\"$type\\\":\\\"kv-pair\\\",\\\"key\\\":\\\"" << _vd->name <<  "\\\",\\\"value\\\":\" << \"s." << _vd->name << "'}'";
       gen << p_sep << '\n' << gen.indentation() << " << \"" << _vd->name << "\" "
-                                                "<< ((" ROMP_SHOW_TYPE_OPTION_EXPR ") ? \": \" + " << _vd->type << "::__p_type() + \" = \" : \" := \") "
+                                                "<< ((" ROMP_SHOW_TYPE_OPTION_EXPR ") ? \": \" + s." << _vd->name << ".__p_type() + \" = \" : \" := \") "
                                                 "<< s." << _vd->name << " << ';'";
       j_sep = " << ','";
       p_sep = " << out.nl()";

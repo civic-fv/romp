@@ -14,7 +14,7 @@
 
 namespace murphi {
 
-std::string& _to_lower(std::string& data) {
+std::string _to_lower(const std::string& data) {
   std::string result;
   std::transform(data.begin(), data.end(), result.begin(),
     [](unsigned char c){ return std::tolower(c); });
