@@ -101,10 +101,9 @@ void MultisetElement::visit(ConstBaseTraversal& visitor) const { visitor.visit_m
 bool MultisetElement::constant() const { return false; }
 
 Ptr<TypeExpr> MultisetElement::type() const {
-  const Ptr<TypeExpr> t = multiset->type()->resolve();
   // if we are called during symbol resolution on a malformed expression, our
   // left hand side may not be an array
-  if (const auto m = dynamic_cast<const Multiset *>(t.get()))
+  if (const auto m = dynamic_cast<const Multiset *>(multiset->type()->resolve().get()))
     return m->element_type;
 
   throw Error("multiset element based on something that is not an multiset", loc);
@@ -145,7 +144,7 @@ void MultisetElement::update() {
 }
 
 std::string MultisetElement::to_string() const {
-  return multiset->to_string() + "[" + index->to_string() + "]";
+  return multiset->to_string() + "/*ms*/[" + index->to_string() + "]";
 }
 
 
@@ -153,7 +152,7 @@ std::string MultisetElement::to_string() const {
 
 MultisetQuantifier::MultisetQuantifier(const std::string& name_, const Ptr<Expr> multiset_, const location& loc_)
   : Quantifier(name_,nullptr,loc_), multiset(multiset_) {}
-MultisetQuantifier *MultisetQuantifier::clone() const { new MultisetQuantifier(*this); }
+MultisetQuantifier *MultisetQuantifier::clone() const { return new MultisetQuantifier(*this); }
 
 void MultisetQuantifier::visit(BaseTraversal& visitor) { visitor.visit_multisetquantifier(*this); }
 void MultisetQuantifier::visit(ConstBaseTraversal& visitor) const { visitor.visit_multisetquantifier(*this); }
@@ -179,7 +178,7 @@ std::string MultisetQuantifier::to_string() const {
 MultisetCount::MultisetCount(const MultisetQuantifier& ms_quantifier_, const Ptr<Expr>& condition_, const location& loc_)
   : Expr(loc_), ms_quantifier(ms_quantifier_), condition(condition_) 
   {}
-MultisetCount *MultisetCount::clone() const { new MultisetCount(*this); }
+MultisetCount *MultisetCount::clone() const { return new MultisetCount(*this); }
 
 void MultisetCount::visit(BaseTraversal& visitor) { visitor.visit_multisetcount(*this); }
 void MultisetCount::visit(ConstBaseTraversal& visitor) const { visitor.visit_multisetcount(*this); }

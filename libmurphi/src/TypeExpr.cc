@@ -134,10 +134,10 @@ static bool equal(const TypeExpr &t1, const TypeExpr &t2) {
 
 // << ------------------------------------------------------------------------------------------ >> 
 
-id_t TypeExpr::next_type_id = 0u;
+// id_t TypeExpr::next_type_id = 0u;
 
-TypeExpr::TypeExpr(const location &loc_) : Node(loc_), type_id(next_type_id++) {}
-TypeExpr::TypeExpr(id_t type_id_, const location &loc_) : Node(loc_), type_id(type_id_) {}
+TypeExpr::TypeExpr(const location &loc_) : Node(loc_)/* , type_id(next_type_id++) */ {}
+// TypeExpr::TypeExpr(id_t type_id_, const location &loc_) : Node(loc_), type_id(type_id_) {}
 
 bool TypeExpr::is_simple() const { return false; }
 
@@ -479,7 +479,7 @@ bool Array::is_useful() const {
 
 TypeExprID::TypeExprID(const std::string &name_, const Ptr<TypeDecl> &referent_,
                        const location &loc_)
-    : TypeExpr(~(0u), loc_), name(name_), referent(referent_) {}
+    : TypeExpr(/* ~(0u), */ loc_), name(name_), referent(referent_) {}
 
 TypeExprID *TypeExprID::clone() const { return new TypeExprID(*this); }
 
@@ -518,8 +518,8 @@ Ptr<TypeExpr> TypeExprID::resolve() const {
 void TypeExprID::validate() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
-  if (type_id == ~(0u))
-    throw Error("DEV ERROR : internal type_id was not found and updated after symbol resolution", loc);
+  // if (type_id == ~(0u))
+  //   throw Error("DEV ERROR : internal type_id was not found and updated after symbol resolution", loc);
 }
 
 bool TypeExprID::is_useful() const {

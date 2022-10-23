@@ -203,7 +203,7 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
     in = dup_t(i, j);
     gen.input_file_path = make_path(in_filename);
   }
-  if (out == nullptr) {
+  if (not out_file_provided) {
     auto o = std::make_shared<std::ofstream>(in_filename + ".romp.cpp");
     if (!o->is_open()) {
       std::cerr << "failed to open " << in_filename << ".romp.cpp\n";

@@ -458,7 +458,7 @@ public:
         throw Error("unknown type symbol \"" + n.name + "\"", n.loc);
 
       n.referent = t;
-      n.type_id = t->value->type_id;
+      // n.type_id = t->value->type_id;
     }
   }
 

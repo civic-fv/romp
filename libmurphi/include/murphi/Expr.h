@@ -647,6 +647,11 @@ struct MURPHI_API_WITH_RTTI Field : public Expr {
   Ptr<Expr> record;
   std::string field;
 
+  // set during update and holds the index value of the field in the record type (max size_t otherwise)
+  size_t record_field_index = ~0ul;
+  // set during update and holds the memory offset from the record to this field (impossible value otherwise)
+  mpz_class record_field_offset = -1;
+
   Field(const Ptr<Expr> &record_, const std::string &field_,
         const location &loc_);
   virtual ~Field() = default;
@@ -663,6 +668,8 @@ struct MURPHI_API_WITH_RTTI Field : public Expr {
   bool is_readonly() const final;
   std::string to_string() const;
   bool is_pure() const final;
+
+  void update() final;
 };
 
 // << ------------------------------------------------------------------------------------------ >> 

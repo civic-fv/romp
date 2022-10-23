@@ -952,6 +952,9 @@ mpz_class Field::constant_fold() const {
 
 void Field::validate() const {
 
+  if (record_field_index == ~(0ul) || record_field_offset < 0_mpz)
+    throw Error("no field named \"" + field + "\" in record", loc);
+
   const Ptr<TypeExpr> root = record->type()->resolve();
 
   if (!isa<Record>(root))
@@ -977,6 +980,24 @@ std::string Field::to_string() const {
 
 bool Field::is_pure() const { return true; }
 
+void Field::update() {
+  const auto t_dbg = record->type();
+  const auto r_dbg = t_dbg->resolve();
+  if (const Record* _r = dynamic_cast<const Record*>(r_dbg.get())) {
+    mpz_class offset = 0_mpz;
+    for (size_t i=0; i<_r->fields.size(); ++i)
+      if (_r->fields[i]->name == field) {
+        record_field_index = i;
+        record_field_offset = offset; 
+        break;
+      } else {
+        offset += _r->fields[i]->type->width();
+      }
+      
+  } else
+    throw Error("trying to access the field of a non record type", loc);
+}
+
 // << ------------------------------------------------------------------------------------------ >> 
 
 
@@ -997,12 +1018,11 @@ void Element::visit(ConstBaseTraversal &visitor) const {
 bool Element::constant() const { return false; }
 
 Ptr<TypeExpr> Element::type() const {
-  const Ptr<TypeExpr> t = array->type()->resolve();
-
   // if we are called during symbol resolution on a malformed expression, our
   // left hand side may not be an array
-  if (const auto a = dynamic_cast<const Array *>(t.get()))
+  if (const auto a = dynamic_cast<const Array *>(array->type()->resolve().get())) {
     return a->element_type;
+  }
   // // if called before disambiguated during symbol resolution look at it like a multiset
   // else if (const auto m = dynamic_cast<const Multiset *>(t.get()))
   //   return m->element_type;

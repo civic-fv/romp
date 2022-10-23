@@ -26,9 +26,10 @@ struct VarDecl;
 
 struct MURPHI_API_WITH_RTTI TypeExpr : public Node {
 
-  id_t type_id;
+  // id_t type_id;
 
   TypeExpr(const location &loc_);
+  // TypeExpr(id_t type_id_, const location &loc_);
   virtual ~TypeExpr() = default;
 
   // Whether this type is a primitive integer-like type.
@@ -74,8 +75,8 @@ protected:
   TypeExpr &operator=(const TypeExpr &) = default;
 
   // static std::unordered_map<std::string,Ptr<TypeExpr>> type_mash;
-  static id_t next_type_id;
-  friend TypeDecl;
+  // static id_t next_type_id;
+  // friend TypeDecl;
 };
 
 // << ------------------------------------------------------------------------------------------ >> 

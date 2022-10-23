@@ -288,15 +288,16 @@ void ModelGenerator::visit_exprid(const ExprID &n) {
 
 void ModelGenerator::visit_field(const Field &n) {
   //[X]TODO: update ModelGenerator::visit_field to new standards
-  if (const auto _r = dynamic_cast<const Record*>(n.record->type()->resolve().get())) {
-    for (size_t i=0; i<_r->fields.size(); ++i)
-      if (_r->fields[i]->name == n.field) {
-        *this << '(' << *n.record << ".get</*"<<n.field<<"*/"<<i<<">())";
-        return;
-      }
-    throw Error("field (`"+n.field+"`) does not exist in record", n.loc);
-  }
-  throw Error("expected a record type", n.record->loc);
+  *this << '(' << *n.record << ".get</*"<<n.field<<"*/"<<n.record_field_index<<">())";
+  // if (const Record* _r = dynamic_cast<const Record*>(n.record->type()->resolve().get())) {
+  //   for (size_t i=0; i<_r->fields.size(); ++i)
+  //     if (_r->fields[i]->name == n.field) {
+  //       *this << '(' << *n.record << ".get</*"<<n.field<<"*/"<<i<<">())";
+  //       return;
+  //     }
+  //   throw Error("field (`"+n.field+"`) does not exist in record", n.loc);
+  // }
+  // throw Error("expected a record type", n.record->loc);
 }
 
 // << ------------------------------------------------------------------------------------------ >> 

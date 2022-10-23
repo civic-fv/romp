@@ -41,7 +41,7 @@ void ScalarEnumGenerator::visit_model(const murphi::Model& m) {
 }
 
 bool ScalarEnumGenerator::add_enum_id(const std::string& name) {
-  if (enum_ids.find(name) != enum_ids.end()) {
+  if (enum_ids.find(name) == enum_ids.end()) {
     enum_ids[name] = enum_ids.size();
     _enum_ids.push_back(name);
     gen << '\n' << gen.indentation() << name << ',';
@@ -56,7 +56,7 @@ void ScalarEnumGenerator::visit_enum(const murphi::Enum& n) {
   // n.unique_id_limit = 0;
   id_t added = 0u;
   auto last_bad = n.members[0];
-  gen << "\n" << gen.indentation() << "/* " << n.to_string() << " */\n";
+  gen << "\n" << gen.indentation() << "\n/* " << n.to_string() << " */";
   gen.indent();
   sep = "";
   for (auto& m : n.members)
@@ -80,9 +80,9 @@ void ScalarEnumGenerator::visit_scalarset(const murphi::Scalarset& n) {
   // these complex names are to both avoid collisions and because I scrub names that contain `_romp_` at parse time none should exist
   std::string prefix = (((n.name != "") ? "_romp_"+n.name : "__romp__scalarset")
                           + '_' + n.bound->constant_fold().get_str() + '_');
-  gen << "\n" << gen.indentation() << "/* " 
+  gen << "\n" << gen.indentation() << "\n/* " 
         << n.name << ((n.name != "") ? ": " : "")
-        << n.to_string() << " */\n";
+        << n.to_string() << " */";
   gen.indent();
   sep = "";
   for (size_t i=1; i<=n.count(); ++i)

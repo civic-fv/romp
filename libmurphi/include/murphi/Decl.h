@@ -120,6 +120,7 @@ struct MURPHI_API_WITH_RTTI VarDecl : public ExprDecl {
 
   Ptr<TypeExpr> type;
 
+  //TODO: remove legacy rumur code
   /* Offset within the model state. This is only relevant if this is a state
    * variable. We initially set it to an invalid value and rely on
    * Model::reindex setting this correctly later.
