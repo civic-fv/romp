@@ -447,7 +447,18 @@ public:
     disambiguate(n.rhs);
   }
 
-  // void visit_typedecl(TypeDecl& n) final {} // add this if scalarset names are not updated appropriately
+# ifdef DEBUG
+  void visit_typedecl(TypeDecl& n) final {
+    dispatch(*n.value);
+    assert((n.value->resolve()) != nullptr && "symlinks completed");
+  }
+  void visit_array(Array& n) final {
+    dispatch(*n.index_type);
+    dispatch(*n.element_type);
+    assert((n.index_type->resolve()) != nullptr && "symlinks completed");
+    assert((n.element_type->resolve()) != nullptr && "symlinks completed");
+  }
+# endif
 
   void visit_typeexprid(TypeExprID &n) final {
     if (n.referent == nullptr) {

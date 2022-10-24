@@ -147,10 +147,10 @@ void generate(const Model &m, const std::vector<Comment> &comments,
       << gen.indentation() << ROMP_INFO_TYPE_IDS_DECL " = ";
   romp::generate_type_ids_metadata(gen,m);
   gen << ";\n"
-      << ROMP_INFO_RF_IDS_DECL " = ";
+      << gen.indentation() << ROMP_INFO_RF_IDS_DECL " = ";
   romp::generate_record_members_metadata(gen,m);
   gen << ";\n";
-  gen << ROMP_INFO_RULESETS_DECL " = ";
+  gen << gen.indentation() << ROMP_INFO_RULESETS_DECL " = ";
   romp::generate_ruleset_metadata(gen,m);
   gen << ";\n"
       << gen.indentation() << ROMP_INFO_PROPERTIES_DECL " = ";

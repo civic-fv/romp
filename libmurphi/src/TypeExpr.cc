@@ -141,7 +141,7 @@ TypeExpr::TypeExpr(const location &loc_) : Node(loc_)/* , type_id(next_type_id++
 
 bool TypeExpr::is_simple() const { return false; }
 
-Ptr<TypeExpr> TypeExpr::resolve() const { return Ptr<TypeExpr>(clone()); }
+Ptr<TypeExpr> TypeExpr::resolve() const { return Ptr<TypeExpr>(this->clone()); }
 
 std::string TypeExpr::lower_bound() const {
   throw Error("complex types do not have valid lower bounds", loc);
@@ -518,6 +518,7 @@ Ptr<TypeExpr> TypeExprID::resolve() const {
 void TypeExprID::validate() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
+  referent->validate();
   // if (type_id == ~(0u))
   //   throw Error("DEV ERROR : internal type_id was not found and updated after symbol resolution", loc);
 }

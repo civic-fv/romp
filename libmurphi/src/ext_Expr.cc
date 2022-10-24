@@ -101,9 +101,10 @@ void MultisetElement::visit(ConstBaseTraversal& visitor) const { visitor.visit_m
 bool MultisetElement::constant() const { return false; }
 
 Ptr<TypeExpr> MultisetElement::type() const {
+  const auto t = multiset->type()->resolve();
   // if we are called during symbol resolution on a malformed expression, our
   // left hand side may not be an array
-  if (const auto m = dynamic_cast<const Multiset *>(multiset->type()->resolve().get()))
+  if (const auto m = dynamic_cast<const Multiset *>(t.get()))
     return m->element_type;
 
   throw Error("multiset element based on something that is not an multiset", loc);

@@ -26,7 +26,7 @@
 #include <iomanip>
 // #include <stdlib.h>
 #include <string>
-#include <string.h>  // required for memset
+#include <cstring>  // required for memset
 #include <fstream>
 #include <sstream>
 #include <tuple>

@@ -36,7 +36,7 @@ void generate_state_stream(romp::CodeGenerator& gen, const murphi::Model& m) {
   for (const auto& c : m.children) {
     if (const auto _vd = dynamic_cast<const VarDecl*>(c.get())) {
       json_simp << j_sep << " << s." << _vd->name;
-      json << j_sep << " << \"{\\\"$type\\\":\\\"kv-pair\\\",\\\"key\\\":\\\"" << _vd->name <<  "\\\",\\\"value\\\":\" << \"s." << _vd->name << "'}'";
+      json << j_sep << " << \"{\\\"$type\\\":\\\"kv-pair\\\",\\\"key\\\":\\\"" << _vd->name <<  "\\\",\\\"value\\\":\" << s." << _vd->name << " << '}'";
       gen << p_sep << '\n' << gen.indentation() << " << \"" << _vd->name << "\" "
                                                 "<< ((" ROMP_SHOW_TYPE_OPTION_EXPR ") ? \": \" + s." << _vd->name << ".__p_type() + \" = \" : \" := \") "
                                                 "<< s." << _vd->name << " << ';'";
@@ -58,7 +58,7 @@ void generate_state_stream(romp::CodeGenerator& gen, const murphi::Model& m) {
               << "#else\n"
               << gen.indentation() 
               << "template<class O> friend inline " ROMP_JSON_STREAM_TYPE "& operator << (" ROMP_JSON_STREAM_TYPE "& json, const " ROMP_STATE_TYPE "& s) { "
-                    "return (json << \"{\\\"$type\\\":\\\"model-state\\\",\\\"value\\\":[\" << " << json.str() << " << \"]}\"); }\n"
+                    "return (json << \"{\\\"$type\\\":\\\"model-state\\\",\\\"value\\\":[\"" << json.str() << " << \"]}\"); }\n"
               << "#endif\n";
 }
 

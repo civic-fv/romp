@@ -30,7 +30,7 @@ void ScalarEnumGenerator::visit_model(const murphi::Model& m) {
   gen << "\n" << gen.indentation() << ROMP_SCALAR_ENUM_DECL_h << "\n";
   gen.indent();
   gen << gen.indentation() << ROMP_SCALAR_ENUM_UNDEFINED_NAME << " = " 
-                             << ROMP_SCALAR_ENUM_UNDEFINED_VALUE << "\n"; 
+                             << ROMP_SCALAR_ENUM_UNDEFINED_VALUE << ",\n"; 
 
   for (auto& n : m.children)
     dispatch(*n);
@@ -40,10 +40,10 @@ void ScalarEnumGenerator::visit_model(const murphi::Model& m) {
   gen << gen.indentation() << "};\n" << /*std::*/gen.flush();
 }
 
-bool ScalarEnumGenerator::add_enum_id(const std::string& name) {
+bool ScalarEnumGenerator::add_enum_id(const std::string& enum_name, const std::string& display_name) {
   if (enum_ids.find(name) == enum_ids.end()) {
     enum_ids[name] = enum_ids.size();
-    _enum_ids.push_back(name);
+    _enum_ids.push_back(display_name);
     gen << '\n' << gen.indentation() << name << ',';
     // sep = ",";
     return true;
@@ -60,7 +60,7 @@ void ScalarEnumGenerator::visit_enum(const murphi::Enum& n) {
   gen.indent();
   sep = "";
   for (auto& m : n.members)
-    if (add_enum_id(m.first))
+    if (add_enum_id(m.first,m.first)) 
       ++added;
     else
       last_bad = m;
@@ -86,7 +86,9 @@ void ScalarEnumGenerator::visit_scalarset(const murphi::Scalarset& n) {
   gen.indent();
   sep = "";
   for (size_t i=1; i<=n.count(); ++i)
-    if (add_enum_id(prefix + std::to_string(i)))
+    if (add_enum_id(prefix + std::to_string(i), 
+                    (((n.name!="") ? n.name+'_' : prefix)
+                      +std::to_string(i))))
       ++added;
     
   if (added != n.count() && added != 0)

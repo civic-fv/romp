@@ -99,8 +99,8 @@ void generate_ruleset_callers(romp::CodeGenerator& gen, const murphi::Model& m) 
   };
   Generator generator(gen);
   generator.dispatch(m);
-  gen << "\n#define " ROMP_RULES_LEN "(" << generator.rule_count << "ul)\n"
-      << "\n#define " ROMP_RULESETS_LEN "(" << generator.info_id << "ul)\n"
+  gen << "\n#define " ROMP_RULES_LEN " (" << generator.rule_count << "ul)\n"
+      << "\n#define " ROMP_RULESETS_LEN " (" << generator.info_id << "ul)\n"
       << gen.indentation() << ROMP_CALLER_RULESETS_DECL " = {" << generator.ruleset_array.str() << "};\n"
       << /*std::*/gen.flush();
 }

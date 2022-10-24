@@ -145,7 +145,7 @@ struct MURPHI_API_WITH_RTTI ChooseRule : public Rule {
   ChooseRule(const std::vector<MultisetQuantifier> &ms_quantifiers_,
              const std::vector<Ptr<Rule>>& rules_, const location& loc_);
   virtual ~ChooseRule() = default;
-  ChooseRule *clone() const;
+  ChooseRule *clone() const override;
 
 
   void visit(BaseTraversal &visitor) override;

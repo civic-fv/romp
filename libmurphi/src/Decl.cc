@@ -19,6 +19,8 @@ Decl::Decl(const std::string &name_, const location &loc_)
 
 Decl::~Decl() {}
 
+// << ------------------------------------------------------------------------------------------ >> 
+
 ExprDecl::ExprDecl(const std::string &name_, const location &loc_)
     : Decl(name_, loc_) {}
 
@@ -41,6 +43,8 @@ bool AliasDecl::is_lvalue() const { return value->is_lvalue(); }
 bool AliasDecl::is_readonly() const { return value->is_readonly(); }
 
 Ptr<TypeExpr> AliasDecl::get_type() const { return value->type(); }
+
+// << ------------------------------------------------------------------------------------------ >> 
 
 ConstDecl::ConstDecl(const std::string &name_, const Ptr<Expr> &value_,
                      const location &loc_)
@@ -82,6 +86,8 @@ void ConstDecl::validate() const {
     throw Error("const definition is not a constant", value->loc);
 }
 
+// << ------------------------------------------------------------------------------------------ >> 
+
 id_t TypeDecl::next_type_id = 0;
 
 TypeDecl::TypeDecl(const std::string &name_, const Ptr<TypeExpr> &value_,
@@ -103,20 +109,14 @@ void TypeDecl::visit(ConstBaseTraversal &visitor) const {
 
 void TypeDecl::update() {
   // mark scalarset as a named scalarset by giving it the decl name
-  if (auto _s = dynamic_cast<Scalarset*>(value->resolve().get())) {
-    auto t = ((isa<TypeExprID>(value))
-              ? (Ptr<Scalarset>::make(_s->bound,value->loc)) // make a "inplace" nivea copy
-              : (Ptr<Scalarset>::make(*_s)));
-    t->name = name;
-    value = t;
-  } else if (auto _u = dynamic_cast<ScalarsetUnion*>(value->resolve().get())) {
-    auto t = ((isa<TypeExprID>(value))
-              ? (Ptr<ScalarsetUnion>::make(_u->members,value->loc)) // make a "inplace" nivea copy
-              : (Ptr<ScalarsetUnion>::make(*_u)));
-    t->name = name;
-    value = t;
+  if (auto _s = dynamic_cast<Scalarset*>(value.get())) {
+    _s->name = name;
+  } else if (auto _u = dynamic_cast<ScalarsetUnion*>(value.get())) {
+    _u->name = name;
   }
 }
+
+// << ------------------------------------------------------------------------------------------ >> 
 
 VarDecl::VarDecl(const std::string &name_, const Ptr<TypeExpr> &type_,
                  const location &loc_)

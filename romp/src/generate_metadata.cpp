@@ -175,7 +175,9 @@ void generate_type_ids_metadata(CodeGenerator& gen, const Node& n) {
     }
   };
   GenerateTypeIds generator(gen);
+  gen << '{';
   generator.dispatch(n);
+  gen << '}';
 }
 
 // << ------------------------------------------------------------------------------------------ >> 

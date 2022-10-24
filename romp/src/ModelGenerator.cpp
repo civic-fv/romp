@@ -99,11 +99,11 @@ void ModelGenerator::visit_assignment(const Assignment &n) {
   // open anonymous scope 
   *this << indentation() << "{\n";
   indent();
-  *this << indentation() << "auto _romp_asg_rhs = " << *n.rhs << ";\n"
-        << indentation() << "auto& _romp_asg_lhs = " << *n.lhs << ";\n"
+  *this << indentation() << *n.rhs->type() << " _romp_asg_rhs = " << *n.rhs << ";\n"
+        << indentation() << *n.lhs->type() << "& _romp_asg_lhs = " << *n.lhs << ";\n"
         << indentation() << "try { _romp_asg_lhs = _romp_asg_rhs;";
   emit_trailing_comments(n);
-  *this << indentation() << "} catch (...) { throw " 
+  *this << '\n' << indentation() << "} catch (...) { throw " 
                                             ROMP_MAKE_MODEL_ERROR_TYPE(n,"error durring assignment") 
                                             "; }\n";
   dedent();
@@ -199,16 +199,11 @@ void ModelGenerator::visit_div(const Div &n) {
 
 void ModelGenerator::visit_element(const Element &n) {
   //[X]TODO: update ModelGenerator::visit_element to new standards
-  // use anon lambda to nest a try catch (latter design with std::result should avoid this as a need)
-  if (const auto _a = dynamic_cast<const Array*>(n.array->type().get())) {
-    *this << "(([&]() -> " << *_a->element_type << "& { "
-                "try { return " << *n.array << "[((" << *_a->index_type << ')' << *n.index << ")]; "
-                "} catch (...) { throw " ROMP_MAKE_MODEL_ERROR_TYPE(n,"array index access error") "; } }"
-              ")())"; 
-    return;
-  }
-  assert(!"unreachable");
-  __builtin_unreachable();
+  *this << "(([&]() -> " << *n.type() << "& { "
+              "try { return " << *n.array << "[((" /* << *_a->index_type << ')' */ << *n.index << ")]; "
+              "} catch (...) { throw " ROMP_MAKE_MODEL_ERROR_TYPE(n,"array index access error") "; } }"
+            ")())"; 
+
 # ifdef DEBUG
     *this << flush();
 # endif

@@ -306,16 +306,3 @@ namespace romp {
 
 
 } // namespace romp
-
-namespace __type__ {
-  typedef bool boolean; // builtin type mask for Murphi's boolean
-  template<class O> const ::romp::stream_void boolean_to_json(::romp::ojstream<O>& json, const ::__type__::boolean val) { 
-#ifdef __ROMP__SIMPLE_TRACE
-    json << ((bool)val);
-#else
-    json << "{\"$type\":\"boolean-value\",\"value\":" << ((bool)val) << "}"; 
-#endif
-    return ::romp::S_VOID; 
-  }
-  const ::romp::stream_void boolean_to_str(::romp::ostream_p& out, const ::__type__::boolean val) { out << (((bool)val) ? "true" : "false" ); return ::romp::S_VOID; }
-} // namespace __type__

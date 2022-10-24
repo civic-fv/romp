@@ -140,10 +140,7 @@ namespace romp {
   inline ostream_p& ostream_p::operator << <stream_void>(const stream_void val) { return *this; }
   template <>
   inline ostream_p& ostream_p::operator << <bool>(const bool val) { return (*this << ((val) ? "YES" : "NO")); }
-  inline std::ostream& operator << (std::ostream& out, const Options& opts) {
-    ostream_p _out(out,0); opts.write_config(_out); return out;
-  }
-  ostream_p& operator << (ostream_p& out, const Options& opts) noexcept { opts.write_config(out); return out; }
+  
 
 
 // << ========================================================================================== >> 

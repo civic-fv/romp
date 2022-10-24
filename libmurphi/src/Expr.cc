@@ -1018,15 +1018,16 @@ void Element::visit(ConstBaseTraversal &visitor) const {
 bool Element::constant() const { return false; }
 
 Ptr<TypeExpr> Element::type() const {
+  const auto t = array->type()->resolve();
   // if we are called during symbol resolution on a malformed expression, our
   // left hand side may not be an array
-  if (const auto a = dynamic_cast<const Array *>(array->type()->resolve().get())) {
+  if (const auto a = dynamic_cast<const Array *>(t.get())) {
     return a->element_type;
   }
   // // if called before disambiguated during symbol resolution look at it like a multiset
   // else if (const auto m = dynamic_cast<const Multiset *>(t.get()))
   //   return m->element_type;
-  throw Error("array reference based on something that is not an array", loc);
+  throw Error("array element access operating on non array type", loc);
 }
 
 mpz_class Element::constant_fold() const {
