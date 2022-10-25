@@ -108,7 +108,7 @@
             "command": "${workspaceFolder}/build/romp/romp",
             "args": [
                 "--do-measure",
-                "--simple-trace",
+                // "--simple-trace",
                 "--output",
                 "${workspaceFolder}/romp/tests/german.m.test.cpp",
                 "${workspaceFolder}/romp/tests/german.m"

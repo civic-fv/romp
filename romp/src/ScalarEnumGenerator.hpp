@@ -27,12 +27,12 @@ class ScalarEnumGenerator : public murphi::ConstTraversal {
 protected:
   CodeGenerator& gen;
   std::string sep;
-  bool add_enum_id(const std::string& name);
+  bool add_enum_id(const std::string& name, const std::string& display_name);
 
 public:
 
   std::unordered_map<std::string,size_t> enum_ids = {{ROMP_SCALAR_ENUM_UNDEFINED_NAME,0}};
-  std::list<std::string> _enum_ids = {ROMP_SCALAR_ENUM_UNDEFINED_NAME};
+  std::list<std::string> _enum_ids = {ROMP_SCALAR_ENUM_UNDEFINED_DISPLAY_NAME};
   
   
   ScalarEnumGenerator(CodeGenerator& gen_);

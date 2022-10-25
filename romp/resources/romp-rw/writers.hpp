@@ -113,12 +113,14 @@ namespace romp {
 // << ================================= Pretty Format Writer =================================== >> 
 
   class ostream_p {
+  public:
+    std::ostream& out;
     const Options& OPTIONS;
+  protected:
     unsigned int _width;
     std::string _indentation;
   public:
-    std::ostream& out;
-    ostream_p(std::ostream& out_, const Options& OPTIONS_, unsigned int level_=0);
+    ostream_p(std::ostream& out_, const Options& OPTIONS_, unsigned int level_);
       //   : out(out_), _width(level_*OPTIONS.tab_size), OPTIONS(OPTIONS_)
       // { _indentation = std::string(_width,OPTIONS.tab_char); }
     inline int width() { return _width; }
@@ -130,12 +132,29 @@ namespace romp {
     inline const stream_void new_line() { out << '\n' << indentation(); return S_VOID; }
     inline const stream_void nl() { return new_line(); }
     template <typename T>
-    inline ostream_p& operator << (const T val);  
+    inline ostream_p& operator << (const T val);
+    // ostream_p& operator << (const std::string& str) { out << str; return *this; }
+    // ostream_p& operator << (const char* str) { out << str; return *this; }
+    // ostream_p& operator << (const unsigned char val) { out << val; return *this; }
+    // ostream_p& operator << (const char val) { out << val; return *this; }
+    // ostream_p& operator << (const unsigned long long val) { out << val; return *this; }
+    // ostream_p& operator << (const long long val) { out << val; return *this; }
+    // ostream_p& operator << (const unsigned long val) { out << val; return *this; }
+    // ostream_p& operator << (const long val) { out << val; return *this; }
+    // ostream_p& operator << (const unsigned int val) { out << val; return *this; }
+    // ostream_p& operator << (const int val) { out << val; return *this; }
+    // ostream_p& operator << (const unsigned short val) { out << val; return *this; }
+    // ostream_p& operator << (const short val) { out << val; return *this; }
+    // ostream_p& operator << (const long double val) { out << val; return *this; }
+    // ostream_p& operator << (const bool val) { out << ((val) ? "true" : "false"); return *this; }
+    // ostream_p& operator << (const stream_void& me) noexcept { return *this; };
   };
+  // template <typename T>
+  // inline ostream_p& operator << (ostream_p& out, const T val) { out.out << val; return *this; }  
   template <typename T>
   inline ostream_p& ostream_p::operator << (const T val) { out << val; return *this; }  
-  // template <>
-  // inline ostream_p& ostream_p::operator << <std::_Setw>(const std::_Setw val) { _width = val._M_n; return *this; } 
+  template <>
+  inline ostream_p& ostream_p::operator << <std::_Setw>(const std::_Setw val) { _width = val._M_n; return *this; } 
   template <>
   inline ostream_p& ostream_p::operator << <stream_void>(const stream_void val) { return *this; }
   template <>

@@ -25,13 +25,13 @@ extern const size_t resources_romp_rw_decl_hpp_len;
 extern const unsigned char resources_romp_rw_writers_hpp[];
 extern const size_t resources_romp_rw_writers_hpp_len;
 
-// ../resources/romp-rw/types.hpp
-extern const unsigned char resources_romp_rw_types_hpp[];
-extern const size_t resources_romp_rw_types_hpp_len;
-
 // ../resources/romp-rw/error.hpp
 extern const unsigned char resources_romp_rw_error_hpp[];
 extern const size_t resources_romp_rw_error_hpp_len;
+
+// ../resources/romp-rw/types.hpp
+extern const unsigned char resources_romp_rw_types_hpp[];
+extern const size_t resources_romp_rw_types_hpp_len;
 
 // ../resources/romp-rw/options.hpp
 extern const unsigned char resources_romp_rw_options_hpp[];

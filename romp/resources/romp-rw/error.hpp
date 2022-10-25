@@ -260,14 +260,21 @@ struct ModelPropertyError : public IModelError {
     void what(std::ostream& out) const noexcept { 
       out << loc << " :: " << msg;
     }
-    void to_json(json_file_t& json) const noexcept {  }
-    void to_json(json_str_t& json) const noexcept {}
-    size_t hash() const noexcept { return reinterpret_cast<size_t>(&(*this)); }
-    const std::string& label() const noexcept {  }
+    void to_json(json_file_t& json) const noexcept { _to_json(json); }
+    void to_json(json_str_t& json) const noexcept { _to_json(json); }
+    size_t hash() const noexcept { std::hash<location> _h; return _h(loc); }
+    const std::string& label() const noexcept { return msg; }
     virtual const std::string& quants() const noexcept { return EMPTY_STR; }
     virtual bool is_generic() const noexcept { return true; }
     virtual std::string get_type() const noexcept { return "type"; }
-  }
+  private:
+    template<class O>
+    void _to_json(ojstream<O>& json) const noexcept { 
+      json << "{\"$type\":\"model-type-error\","
+               "\"location\":" << loc << ","
+               "\"what\":\"" << escape_str(msg) << "\"}";
+    }
+  };
 
 
 // << ========================================================================================== >> 
@@ -359,27 +366,27 @@ struct ModelPropertyError : public IModelError {
 
 namespace std {
   template<>
-  class hash<romp::IModelError> {
-    public: size_t operator () (const romp::IModelError& me) const { return me.hash(); }
+  struct hash<romp::IModelError> {
+    size_t operator () (const romp::IModelError& me) const { return me.hash(); }
   };
   template<>
-  class equal_to<romp::IModelError> {
-    public: size_t operator () (const romp::IModelError& l, const romp::IModelError& r) const { return l.hash() == r.hash(); }
+  struct equal_to<romp::IModelError> {
+    bool operator () (const romp::IModelError& l, const romp::IModelError& r) const { return l.hash() == r.hash(); }
   };
-  // template<>
-  // class hash<romp::ModelPropertyError> {
-  //   public: size_t operator () (const romp::ModelPropertyError& me) const { return me.hash(); }
-  // };
-  // template<>
-  // class equal_to<romp::ModelPropertyError> {
-  //   public: size_t operator () (const romp::ModelPropertyError& l, const romp::ModelPropertyError& r) const { return l.hash() == r.hash(); }
-  // };
-  // template<>
-  // class hash<romp::ModelMErrorError> {
-  //   public: size_t operator () (const romp::ModelMErrorError& me) const { return me.hash(); }
-  // };
-  // template<>
-  // class equal_to<romp::ModelMErrorError> {
-  //   public: size_t operator () (const romp::ModelMErrorError& l, const romp::ModelMErrorError& r) const { return l.hash() == r.hash(); }
-  // };
+  template<>
+  class hash<romp::ModelPropertyError> {
+    public: size_t operator () (const romp::ModelPropertyError& me) const { return me.hash(); }
+  };
+  template<>
+  class equal_to<romp::ModelPropertyError> {
+    public: size_t operator () (const romp::ModelPropertyError& l, const romp::ModelPropertyError& r) const { return l.hash() == r.hash(); }
+  };
+  template<>
+  class hash<romp::ModelMErrorError> {
+    public: size_t operator () (const romp::ModelMErrorError& me) const { return me.hash(); }
+  };
+  template<>
+  class equal_to<romp::ModelMErrorError> {
+    public: size_t operator () (const romp::ModelMErrorError& l, const romp::ModelMErrorError& r) const { return l.hash() == r.hash(); }
+  };
 } // namespace std

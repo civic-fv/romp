@@ -45,7 +45,7 @@ std::filesystem::path make_path(std::string p) {
 void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
   bool no_sym_provided = false;
   bool out_file_provided = false;
-  unsigned int hist_len = ROMP_HISTORY_SIZE_PREPROCESSOR_VAR_DEFAULT_VALUE;
+  // unsigned int hist_len = ROMP_HISTORY_SIZE_PREPROCESSOR_VAR_DEFAULT_VALUE;
   for (;;) {
     static struct option options[] = {
         // clang-format off

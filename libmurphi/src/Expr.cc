@@ -866,7 +866,9 @@ bool ExprID::constant() const {
 Ptr<TypeExpr> ExprID::type() const {
   if (value == nullptr)
     throw Error("symbol \"" + id + "\" in expression is unresolved", loc);
-
+  if (is_literal_true() || is_literal_false())
+    return Boolean;
+    // return Ptr<TypeExpr>(Boolean->clone());
   return value->get_type();
 }
 

@@ -88,7 +88,7 @@ namespace romp {
     std::string sep;
     for (size_t i=0; i<size(); ++i) 
       if (params[i] != nullptr) {
-        out << sep << *params[i];
+        out << sep << params[i]->value_str;
         sep = ", ";
       }
     out << ")";
@@ -307,7 +307,7 @@ namespace romp {
       std::throw_with_nested(murphi::Error("Could not resolve the bounds of the Type based Quantifier !!", q_.loc));
     }
     try {
-      _size = q_.type->count().get_ui() - 1;
+      _size = q_.type->count().get_ui();
     } catch (...) {
       std::throw_with_nested(murphi::Error("Could not extrapolate the size of the Quantifier !!",q_.loc));
     }
@@ -347,6 +347,7 @@ namespace romp {
 
   void SigPerm::add_quant(const murphi::Quantifier& q) {
     quant_vals.push_back(std::shared_ptr<QuantExpansion>(new QuantExpansion(q)));
+    _size *= quant_vals[quant_vals.size()-1]->size();
   }
   // void SigPerm::add_quant(const murphi::Quantifier& q) {
   //   if (auto _tid = dynamic_cast<const murphi::TypeExprID*>(q.decl->type.get())) {

@@ -52,7 +52,7 @@ namespace romp {
     // the filepath of the output romp model checker
     std::filesystem::path output_file_path = "./romp.cpp";
     // the number of rule applications to keep track of for trace reports
-    size_t hist_len = 4u;
+    size_t hist_len = ROMP_HISTORY_SIZE_PREPROCESSOR_VAR_DEFAULT_VALUE;
     // the number of rule applications to keep track of for trace reports
     size_t default_walk_multiplier = 16u;
     // function attributes to prepend before the definition of any murphi function's C/C++ function.

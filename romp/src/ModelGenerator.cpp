@@ -96,18 +96,15 @@ void ModelGenerator::visit_array(const Array &n) {
 
 void ModelGenerator::visit_assignment(const Assignment &n) {
   //[X]TODO: add assignment error handling
-  // open anonymous scope 
-  *this << indentation() << "{\n";
-  indent();
-  *this << indentation() << *n.rhs->type() << " _romp_asg_rhs = " << *n.rhs << ";\n"
-        << indentation() << *n.lhs->type() << "& _romp_asg_lhs = " << *n.lhs << ";\n"
-        << indentation() << "try { _romp_asg_lhs = _romp_asg_rhs;";
+  *this << indentation() << "// " << n.lhs->to_string() << " := " << n.rhs->to_string() << ';';
   emit_trailing_comments(n);
-  *this << '\n' << indentation() << "} catch (...) { throw " 
-                                            ROMP_MAKE_MODEL_ERROR_TYPE(n,"error durring assignment") 
-                                            "; }\n";
-  dedent();
-  *this << indentation() << "}\n"; // close anonymous scope
+  *this << '\n' 
+        << indentation() << ROMP_UTIL_NAMESPACE "::Assignment<" << *n.lhs->type() << // ','
+                                                                // << *n.rhs->type() <<
+                                                              ">(" << *n.lhs << ", " 
+                                                                << *n.rhs << ", " 
+                                                                  ROMP_MAKE_LOCATION_STRUCT(n.loc)
+                                                              << ");\n";
 # ifdef DEBUG
     *this << flush();
 # endif
@@ -156,9 +153,9 @@ void ModelGenerator::visit_chooserule(const ChooseRule &n) {
 
 void ModelGenerator::visit_clear(const Clear &n) {
   //[X]TODO: update ModelGenerator::visit_clear to new standards
-  *this << indentation() << '(' << *n.rhs << ").Clear();";
+  *this << indentation() << "// Clear " << n.rhs->to_string() << ';';
   emit_trailing_comments(n);
-  *this << "\n";
+  *this << '\n' << indentation() << '(' << *n.rhs << ").Clear();\n";
 # ifdef DEBUG
     *this << flush();
 # endif
@@ -168,6 +165,7 @@ void ModelGenerator::visit_clear(const Clear &n) {
 
 void ModelGenerator::visit_constdecl(const ConstDecl &n) {
   //[X]TODO: update ModelGenerator::visit_constdecl to new standards
+  // *this << indentation() << "static constexpr const ";
   *this << indentation() << "const ";
 
   // if this constant has an explicit type, use that
@@ -175,11 +173,12 @@ void ModelGenerator::visit_constdecl(const ConstDecl &n) {
     *this << *n.type;
 
   } else {
-    *this << "__typeof__(" << *n.value << ")";
+    *this << ROMP_UTIL_NAMESPACE "::range_t";
   }
-  *this << " " << n.name << " = " << *n.value << ";";
+  // *this << ' ' << n.name << "() { return " << *n.value << "; }";
+  *this << ' ' << n.name << " = " << *n.value << ';';
   emit_trailing_comments(n);
-  *this << "\n";
+  *this << '\n';
 # ifdef DEBUG
     *this << flush();
 # endif
@@ -199,11 +198,14 @@ void ModelGenerator::visit_div(const Div &n) {
 
 void ModelGenerator::visit_element(const Element &n) {
   //[X]TODO: update ModelGenerator::visit_element to new standards
-  *this << "(([&]() -> " << *n.type() << "& { "
-              "try { return " << *n.array << "[((" /* << *_a->index_type << ')' */ << *n.index << ")]; "
-              "} catch (...) { throw " ROMP_MAKE_MODEL_ERROR_TYPE(n,"array index access error") "; } }"
-            ")())"; 
-
+  const auto _a = n.array->type()->resolve();
+  if (const auto a = dynamic_cast<const Array*>(_a.get())) {
+  *this << "(" ROMP_UTIL_NAMESPACE "::Element<"<< *a->index_type << ','
+                                               << *a->element_type
+                                            << ">(" << *n.array << ", " 
+                                                    << *n.index << ", " 
+                                                    ROMP_MAKE_LOCATION_STRUCT(n.loc) "))"; 
+  } else assert(!"unreachable");
 # ifdef DEBUG
     *this << flush();
 # endif
@@ -270,7 +272,8 @@ void ModelGenerator::visit_exprid(const ExprID &n) {
   // }
   *this << n.id;
   // if this refers to an alias, it will have been emitted as a macro
-  if (isa<AliasDecl>(n.value)) {
+  // or if this refers to a constant it will be emitted as a static constexpr
+  if (isa<AliasDecl>(n.value) /* || isa<ConstDecl>(n.value) */) {
     *this << "()";
   }
   *this << ")";
@@ -558,6 +561,8 @@ void ModelGenerator::visit_model(const Model &n) {
   *this << indentation() << "struct " ROMP_STATE_CLASS_NAME " {\n\n";
   indent();
 
+  *this << indentation() << ROMP_RAND_WALKER_DECL "\n\n";
+
   for (const Ptr<Node> &c : n.children) {
 
     emit_leading_comments(*c);
@@ -705,7 +710,7 @@ void ModelGenerator::visit_not(const Not &n) { *this << "(!" << *n.rhs << ")"; }
 // << ------------------------------------------------------------------------------------------ >> 
 
 void ModelGenerator::visit_number(const Number &n) {
-  *this << "((" << value_type << ")(" << n.value/*.get_str()*/ << "))";
+  *this << "((" ROMP_UTIL_NAMESPACE "::range_t)(" << n.value/*.get_str()*/ << "))";
 # ifdef DEBUG
     *this << flush();
 # endif
@@ -776,7 +781,7 @@ void ModelGenerator::visit_propertyrule(const PropertyRule &n) {
 
   *this << ") const "  /* " throw (" ROMP_MODEL_EXCEPTION_TYPE ")" */  "{\n";
   indent();
-  *this << indentation() << "using namespace ::" ROMP_TYPE_NAMESPACE ";\n";
+  // *this << indentation() << "using namespace ::" ROMP_TYPE_NAMESPACE ";\n";
   
   *this << indentation() << "try {\n";
   indent(); 
@@ -992,13 +997,11 @@ void ModelGenerator::visit_range(const Range &n) {
 
 void ModelGenerator::visit_record(const Record &n) {
   //[X]TODO: update ModelGenerator::visit_record to new standards
-  *this << ROMP_TYPE_RECORD "<";
+  *this << ROMP_TYPE_RECORD "<" << n.first_field_id;
   std::string sep;
-  for (const Ptr<VarDecl> &f : n.fields) {
-    *this << sep << "/*" << f->name << "*/" << *f->type;
-    sep = ",";
-  }
-  *this << ',' << n.first_field_id << '>';
+  for (const Ptr<VarDecl> &f : n.fields)
+    *this << ',' << "/*" << f->name << "*/" << *f->type;
+  *this << '>';
 # ifdef DEBUG
     *this << flush();
 # endif
@@ -1047,7 +1050,8 @@ void ModelGenerator::visit_scalarset(const Scalarset &n) {
   std::string name1 = (((n.name != "") ? "_romp_"+n.name : "__romp__scalarset")
                           + '_' + n.count().get_str() + "_1");
   *this << ROMP_TYPE_SCALARSET "<" << enum_ids[name1] << ","
-                                   "(/*("<< *n.bound <<")*/(" << n.count()/*.get_str()*/ << "))>";
+                                  "(/*" << n.bound->to_string() << "*/(" << n.count() << "))>";
+                                  //  << *n.bound << '>';
 # ifdef DEBUG
     *this << flush();
 # endif
@@ -1101,7 +1105,7 @@ void ModelGenerator::visit_simplerule(const SimpleRule &n) {
 
   *this << ") const "  /* " throw (" ROMP_MODEL_EXCEPTION_TYPE ")" */  "{\n";
   indent();
-  *this << indentation() << "using namespace ::" ROMP_TYPE_NAMESPACE ";\n";
+  // *this << indentation() << "using namespace ::" ROMP_TYPE_NAMESPACE ";\n";
   
   *this << indentation() << "try {\n";
   indent(); 
@@ -1170,7 +1174,7 @@ void ModelGenerator::visit_simplerule(const SimpleRule &n) {
 
   *this << ") " /* " throw (" ROMP_MODEL_EXCEPTION_TYPE ")" */ "{\n";
   indent();
-  *this << indentation() << "using namespace ::" ROMP_TYPE_NAMESPACE ";\n";
+  // *this << indentation() << "using namespace ::" ROMP_TYPE_NAMESPACE ";\n";
   
   *this << indentation() << "try {\n";
   indent(); 
@@ -1250,7 +1254,7 @@ void ModelGenerator::visit_startstate(const StartState &n) {
 
   *this << ")"  /* " throw (" ROMP_MODEL_EXCEPTION_TYPE ")" */  "{\n";
   indent();
-  *this << indentation() << "using namespace ::" ROMP_TYPE_NAMESPACE ";\n"; 
+  // *this << indentation() << "using namespace ::" ROMP_TYPE_NAMESPACE ";\n";
 
   *this << indentation() << "try {\n";
   indent(); 
@@ -1423,9 +1427,9 @@ void ModelGenerator::visit_typeexprid(const TypeExprID &n) { *this << n.name; }
 // << ------------------------------------------------------------------------------------------ >> 
 
 void ModelGenerator::visit_undefine(const Undefine &n) {
-  *this << indentation() << '(' << *n.rhs << ").Undefine();";
+  *this << indentation() << "// Undefine " << n.rhs->to_string() << ';';
   emit_trailing_comments(n);
-  *this << '\n';
+  *this << '\n' << indentation() << '(' << *n.rhs << ").Undefine();\n";
 # ifdef DEBUG
     *this << flush();
 # endif

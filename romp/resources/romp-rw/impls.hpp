@@ -84,9 +84,9 @@ namespace romp {
 
   // << ------------------------------------------------------------------------------------------ >> 
 
-  ostream_p::ostream_p(std::ostream& out_, const Options& OPTIONS_, unsigned int level_=0) 
-    : out(out_), _width(level_*OPTIONS.tab_size), OPTIONS(OPTIONS_)
-    { _indentation = std::string(_width,OPTIONS.tab_char); }
+  ostream_p::ostream_p(std::ostream& out_, const Options& OPTIONS_, unsigned int level_) 
+    : out(out_), _width(level_*OPTIONS_.tab_size), OPTIONS(OPTIONS_)
+    { _indentation = std::string(_width,OPTIONS_.tab_char); }
   inline const stream_void ostream_p::dedent() { _indentation = std::string((_width-=OPTIONS.tab_size),OPTIONS.tab_char); return S_VOID; }
   inline const stream_void ostream_p::indent() { _indentation = std::string((_width+=OPTIONS.tab_size),OPTIONS.tab_char); return S_VOID; }
 
@@ -165,7 +165,7 @@ namespace romp {
   }
 
   std::ostream& operator << (std::ostream& out, const ResultTree& results) {
-    ostream_p _out(out, results.OPTIONS);
+    ostream_p _out(out, results.OPTIONS, 0);
     _out << results;
     return out;
   }
@@ -174,7 +174,7 @@ namespace romp {
     int i = 1; // int j = 1;
     size_t issues = 0; size_t abs_issues = 0;
 #ifdef __romp__ENABLE_assume_property
-    if (OPTIONS.r_assume && r.n_assumptions_violated > 0) {
+    if (r.OPTIONS.r_assume && r.n_assumptions_violated > 0) {
       issues += r.assumptions_violated.size();
       abs_issues += r.n_assumptions_violated;
       out << out.indentation() << "\033[1;4mASSUMPTION(S) VIOLATED (n="<< r.assumptions_violated.size() 
@@ -210,7 +210,7 @@ namespace romp {
       out.out << out._dedent() << std::endl;
     }
 #endif
-    if ((OPTIONS.attempt_limit != _ROMP_ATTEMPT_LIMIT_DEFAULT && OPTIONS.deadlock) 
+    if ((r.OPTIONS.attempt_limit != _ROMP_ATTEMPT_LIMIT_DEFAULT && r.OPTIONS.deadlock) 
           && r.attempt_limits_reached.size() > 0) {
         out << out.indentation() << "\033[1;4mATTEMPT LIMIT(S) REACHED (n=" 
                 << r.attempt_limits_reached.size() << "):\033[0m\n";
@@ -237,7 +237,7 @@ namespace romp {
       out.out << out._dedent() << std::endl;
      }
 #ifdef __romp__ENABLE_cover_property
-     if (OPTIONS.r_cover && r.completed_covers.size() > 0) {
+     if (r.OPTIONS.r_cover && r.completed_covers.size() > 0) {
       out << out.indentation() << "\033[1;4mCOVER(S) COMPLETED (n=" 
                 << r.completed_covers.size() << "):\033[0m\n";
         out.indent();
@@ -258,7 +258,7 @@ namespace romp {
       out.out << out._dedent() << std::endl;
      }
 #endif
-    if (OPTIONS.report_all && r.max_depths_reached.size() > 0) {
+    if (r.OPTIONS.report_all && r.max_depths_reached.size() > 0) {
       out << out.indentation() << "\033[1;4mMAX DEPTH(S) REACHED (n=" 
                 << r.max_depths_reached.size() << "):\033[0m";
         out.indent();
@@ -314,7 +314,7 @@ namespace romp {
         out.indent();
         int j = 0;
         for (const auto& a : _a.second) {
-          if (j > 2 && not (OPTIONS.report_all || OPTIONS.report_error)) { 
+          if (j > 2 && not (r.OPTIONS.report_all || r.OPTIONS.report_error)) { 
             out << out.indentation() << "-[..] ... " << _a.second.size()-j << " more ...\n"; 
             break;
           }
@@ -343,7 +343,7 @@ namespace romp {
       }
       out.out << out._dedent() << std::endl;
     }
-    if (OPTIONS.report_all && r.unknown_causes.size() > 0) {
+    if (r.OPTIONS.report_all && r.unknown_causes.size() > 0) {
       issues += r.unknown_causes.size();
       abs_issues += r.unknown_causes.size();
       out << out.indentation() << "\033[41;37;1;4mUNKNOWN ERROR(S) (n=" 
@@ -527,8 +527,6 @@ void print_help() {
   // clang-format on
 }
 
-private:
-
 std::string validate_dir_path(const std::string val) {
   auto start = val.begin();
   auto end = --(val.end());
@@ -553,7 +551,7 @@ void list_starts() {
 }
 
 
-void Options::parse_args(int argc, char **argv); {
+void Options::parse_args(int argc, char **argv) {
   Options default_opts;
   bool threads_provided = false;
   bool walks_provided = false;
@@ -1084,7 +1082,7 @@ const stream_void Options::write_config(ostream_p& out) const noexcept {
 }
 
 template<class O>
-friend ojstream<O>& operator << (ojstream<O>& json, const Options& opts) noexcept {
+ojstream<O>& operator << (ojstream<O>& json, const Options& opts) noexcept {
   json << "{"
             "\"model\":\"" __model__filepath "\","
             "\"romp-id\":" << ROMP_ID << ","
@@ -1151,7 +1149,7 @@ friend ojstream<O>& operator << (ojstream<O>& json, const Options& opts) noexcep
 }
 
 inline std::ostream& operator << (std::ostream& out, const Options& opts) {
-  ostream_p _out(out,0); opts.write_config(_out); return out;
+  ostream_p _out(out,opts,0); opts.write_config(_out); return out;
 }
 ostream_p& operator << (ostream_p& out, const Options& opts) noexcept { opts.write_config(out); return out; }
 

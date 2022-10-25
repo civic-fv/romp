@@ -23,6 +23,9 @@
 namespace __model__ { // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
   enum SCALAR {_UNDEFINED_=0}; // useful pre-decl // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
 } // namespace __model__  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
+namespace __info__ { // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
+  const std::string SCALAR_IDS[1] {"<UNDEFINED>"}; // useful pre-decl // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
+} // namespace __model__  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
 namespace romp { // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
   typedef ::__model__::SCALAR SCALAR_ENUM_t;  // typemask for the enum type holding all scalar and enum values // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
 } // namespace __model__  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
@@ -30,7 +33,34 @@ namespace romp { // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
 
 namespace romp {
 
+  // << ================================== Scalar Enum Helpers =================================== >> 
+  template<typename T>
+  inline SCALAR_ENUM_t make_SCALAR_ENUM_t(T val) { return static_cast<SCALAR_ENUM_t>(val); }
+  inline std::string to_str(const SCALAR_ENUM_t& scalar) { return ::__info__::SCALAR_IDS[static_cast<size_t>(scalar)]; }
+  inline std::ostream& operator << (std::ostream& out, const SCALAR_ENUM_t& val) { return (out << to_str(val)); }
+  inline ostream_p& operator << (ostream_p& out, const SCALAR_ENUM_t& val) { return (out << to_str(val)); }
+  template<class O>
+  inline ojstream<O>& operator << (ojstream<O>& json, const SCALAR_ENUM_t& val) { return (json << '"' <<to_str(val))<< '"'; }
+
+
   // << ====================================== Base Types ======================================== >> 
+
+  // template<typename T>
+  // inline void Assignment(T& container, const T& value, const location& loc) {
+  //   try {
+  //     container = value;
+  //   } catch (...) {
+  //     throw ModelTypeError("error durring assignment", loc);
+  //   }
+  // }
+  template<typename T>
+  inline void Assignment(T& container, const T value, const location& loc) {
+    try {
+      container = value;
+    } catch (...) {
+      throw ModelTypeError("error durring assignment", loc);
+    }
+  }
 
   /**
    * @brief A 0 width type to ensure all types have access to the metadata generated for them
@@ -64,15 +94,20 @@ namespace romp {
     inline T unsafe_get() { return value; }
   public:
     BaseUndefinableType() { Undefine(); }
-    BaseUndefinableType(T value_) : is_defined(true), value(value_) {}
+    // BaseUndefinableType(T value_) : is_defined(true), value(value_) {}
+    BaseUndefinableType(const T& value_) : is_defined(true), value(value_) {}
     inline void Undefine() { is_defined = false; std::memset(&value, 0u, sizeof(T)); }
     inline bool IsUndefined() const { return not is_defined; }
 
+    static constexpr bool __IS_SIMPLE() { return true; }
+    static constexpr bool __IS_RECORD() { return false; }
+    static constexpr bool __DO_P_SEP() { return false; }
+
     explicit inline operator T () { return value; }
 
-    friend ostream_p& operator << (ostream_p& out, BaseUndefinableType& val) { 
+    friend ostream_p& operator << (ostream_p& out, const BaseUndefinableType& val) { 
       if (val.IsUndefined())
-        return (out << "<UNDEFINED>");
+        return (out << SCALAR_ENUM_t::_UNDEFINED_);
       return (out << val.get()); 
     }
     static inline const std::string __json_type() { return "null"; }
@@ -111,10 +146,13 @@ namespace romp {
   class BooleanType : public BaseUndefinableType<bool>/* , public BaseType<0ul> */ {
   public:
     BooleanType() : BaseUndefinableType<bool>() {}
+    BooleanType(bool val) : BaseUndefinableType<bool>(val) {}
 
     void Clear() { set(false); }
-    inline operator bool () { return get(); }
-    inline BooleanType operator = (const bool val) { return ((BooleanType&)set(val)); }
+    inline operator bool () const { return get(); }
+    // inline operator int () const { return static_cast<int>(get()); }
+    inline operator range_t () const { return static_cast<range_t>(get()); }
+    inline BooleanType operator = (bool val) { return ((BooleanType&)set(val)); }
 
     // static inline constexpr const TypeInfo& __INFO() { return ::__info__::TYPE_INFOS[0]; }
     // static inline constexpr BooleanType __LB() { return false; } 
@@ -126,7 +164,7 @@ namespace romp {
 
     friend inline ostream_p& operator << (ostream_p& out, const BooleanType& val) {
       if (val.IsUndefined())
-        return (out << "<UNDEFINED>");
+        return (out << SCALAR_ENUM_t::_UNDEFINED_);
       return (out << ((val.get()) ? "true" : "false"));
     }
     static inline const std::string __json_type() { return "{\"$type\":\"boolean-type\"}"; }
@@ -257,14 +295,6 @@ namespace romp {
   template<size_t ENUM_ID, size_t BOUND> class ScalarsetType;
   template<class... UNION_MEMBERS> class ScalarsetUnionType;
 
-  template<typename T>
-  inline SCALAR_ENUM_t make_SCALAR_ENUM_t(T val) { return static_cast<SCALAR_ENUM_t>(val); }
-  inline std::string to_str(const SCALAR_ENUM_t& scalar) { return ::__info__::SCALAR_IDS[static_cast<size_t>(scalar)]; }
-  inline std::ostream& operator << (std::ostream& out, const SCALAR_ENUM_t& val) { return (out << to_str(val)); }
-  inline ostream_p& operator << (ostream_p& out, const SCALAR_ENUM_t& val) { return (out << to_str(val)); }
-  template<class O>
-  inline ojstream<O>& operator << (ojstream<O>& json, const SCALAR_ENUM_t& val) { return (json << '"' <<to_str(val))<< '"'; }
-
   template<size_t ENUM_ID, size_t BOUND>
   class EnumType {
   protected:
@@ -283,7 +313,7 @@ namespace romp {
     static inline bool IsMember(const SCALAR_ENUM_t& v) { 
       return ((v == SCALAR_ENUM_t::_UNDEFINED_) 
               || ((make_SCALAR_ENUM_t(ENUM_ID) <= v) 
-                    && (v <= make_SCALAR_ENUM_t(ENUM_ID+BOUND)));
+                    && (v <= make_SCALAR_ENUM_t(ENUM_ID+BOUND))));
     }
     
     static constexpr size_t __ENUM_ID() { return ENUM_ID; }
@@ -292,6 +322,9 @@ namespace romp {
     static constexpr EnumType __UB() { return make_SCALAR_ENUM_t(ENUM_ID+BOUND); }
     EnumType& __step() { value = make_SCALAR_ENUM_t(static_cast<size_t>(value)+1); return *this; }
     static constexpr size_t __COUNT() { return BOUND; }
+    static constexpr bool __IS_SIMPLE() { return true; }
+    static constexpr bool __IS_RECORD() { return false; }
+    static constexpr bool __DO_P_SEP() { return false; }
 
     // cast to index operator
     inline size_t __get_index_val() const {
@@ -324,25 +357,36 @@ namespace romp {
     }
     template<size_t R_EID, size_t R_B>
     friend inline bool operator != (const EnumType& l, const EnumType<R_EID,R_B> r) {
-      return l.value == r.value;
+      return l.value != r.value;
+    }
+    friend inline bool operator == (const EnumType& l, const SCALAR_ENUM_t& r) { 
+      return l.value == r;
+    }
+    friend inline bool operator != (const EnumType& l, const SCALAR_ENUM_t& r) {
+      return l.value != r;
+    }
+    friend inline bool operator == (const SCALAR_ENUM_t& l, const EnumType& r) {
+      return l == r.value;
+    }
+    friend inline bool operator != (const SCALAR_ENUM_t& l, const EnumType& r) {
+      return l != r.value;
     }
 
     /* this IsMember is the one associated with the IsMember() Murphi language operator */
     template<typename T, class... U_M>
     friend inline bool IsMember(const ScalarsetUnionType<U_M...> u);
     
-    static inline const std::string __p_type() { 
+    static constexpr const std::string __p_type() { 
       std::string res = "enum {";
       std::string sep;
       for (auto i=__LB(); i!=__UB(); i.__step()) {
-        res += sep + to_str(make_SCALAR_ENUM_t(i.__get_value()));
+        res += sep + to_str(make_SCALAR_ENUM_t(i.__get_scalar_value()));
         sep = ",";
       }
       return res + "}";
     }
     friend ostream_p& operator << (ostream_p& out, const EnumType& val) { return (out << val.value); }
-    template<class O>
-    static inline const std::string __json_type() { 
+    static inline constexpr const std::string __json_type() { 
       return "{\"$type\":\"enum-type\",\"first-member\":"+to_str(make_SCALAR_ENUM_t(ENUM_ID))+",""\"member-count\":"+std::to_string(BOUND)+'}';
     }
     template<class O>
@@ -350,7 +394,7 @@ namespace romp {
 #     ifdef __ROMP__SIMPLE_TRACE
         return (out << val.IsUndefined() << "," << val.value);
 #     else
-        out << "{\"$type\":\"undefinable-value\",\"type-id\":" << __json_type() << ",\"value\":";
+        out << "{\"$type\":\"undefinable-value\",\"type-id\":" << EnumType::__json_type() << ",\"value\":";
         if (val.IsUndefined())
           return (out << "null}");
         return (out << "\"" << val.value << "\"}");
@@ -369,6 +413,11 @@ namespace romp {
     }
     // static inline const std::string __id() { return ::__info__::TYPE_INFOS[TID].label; }
 
+    
+    static constexpr ScalarsetType __LB() { return make_SCALAR_ENUM_t(ENUM_ID); }
+    static constexpr ScalarsetType __UB() { return make_SCALAR_ENUM_t(ENUM_ID+BOUND); }
+    ScalarsetType& __step() { EnumType<ENUM_ID,BOUND>::__step(); return *this; }
+
     template<class... U_M>
     explicit inline operator ScalarsetUnionType<U_M...> () { return __convert(*this); }
     template<class... U_M>
@@ -385,15 +434,15 @@ namespace romp {
       return *this;
     }
 
-    static inline const std::string __p_type() { return "scalarset("+std::to_string(BOUND)+')'; }
+    static constexpr const std::string __p_type() { return "scalarset("+std::to_string(BOUND)+')'; }
     friend ostream_p& operator << (ostream_p& out, const ScalarsetType& val) { return (out << val.value); }
-    static inline const std::string __json_type() { return "{\"$type\":\"scalarset-type\",\"bound\":"+std::to_string(BOUND)+'}'; }
+    static constexpr const std::string __json_type() { return "{\"$type\":\"scalarset-type\",\"bound\":"+std::to_string(BOUND)+'}'; }
     template<class O>
     friend ojstream<O>& operator << (ojstream<O>& out, const ScalarsetType& val) {
 #     ifdef __ROMP__SIMPLE_TRACE
         return (out << val.IsUndefined() << "," << val.value);
 #     else
-        out << "{\"$type\":\"undefinable-value\",\"type-id\":" << __json_type() << ",\"value\":";
+        out << "{\"$type\":\"undefinable-value\",\"type-id\":" << ScalarsetType::__json_type() << ",\"value\":";
         if (val.IsUndefined())
           return (out << "null}");
         return (out << "\"" << val.value << "\"}");
@@ -548,7 +597,7 @@ namespace romp {
           return *this;
         } 
         if (++j > u.BOUNDS[i]) {
-          ++u.value;
+          u.value = make_SCALAR_ENUM_t(static_cast<size_t>(u.value)+1);
           return *this;
         }
         ++i; j=0;
@@ -584,6 +633,9 @@ namespace romp {
         return res;
 #     endif
     }
+    static constexpr bool __IS_SIMPLE() { return true; }
+    static constexpr bool __IS_RECORD() { return false; }
+    static constexpr bool __DO_P_SEP() { return false; }
     
     static constexpr const std::string __p_type() {
 #     if __cplusplus >= 201703L
@@ -600,7 +652,7 @@ namespace romp {
 #     endif
     }
     friend ostream_p& operator << (ostream_p& out, const ScalarsetUnionType& val) { return (out << val.value); }
-    static inline const std::string __json_type() { 
+    static constexpr const std::string __json_type() { 
       return "{\"$type\":\"scalarset-union-type\","
                 "\"member-count\":"+std::to_string(sizeof...(UNION_MEMBERS))+","
                 "\"\"bound\":"+ std::to_string(__COUNT()) +'}';
@@ -608,9 +660,9 @@ namespace romp {
     template<class O>
     friend ojstream<O>& operator << (ojstream<O>& out, const ScalarsetUnionType& val) {
 #     ifdef __ROMP__SIMPLE_TRACE
-        return (out << val.IsUndefined() << "," << val.value)
+        return (out << val.IsUndefined() << "," << val.value);
 #     else
-        out << "{\"$type\":\"undefinable-value\",\"type-id\":" << __json_type() << ",\"value\":";
+        out << "{\"$type\":\"undefinable-value\",\"type-id\":" << ScalarsetUnionType::__json_type() << ",\"value\":";
         if (val.IsUndefined())
           return (out << "null}");
         return (out << "\"" << val.value << "\"}");
@@ -633,6 +685,15 @@ namespace romp {
 
 
   // << ===================================== Complex Types ====================================== >> 
+  template<typename INDEX_t, typename ELEMENT_t>
+  class ArrayType;
+
+  template<typename INDEX_t, typename ELEMENT_t>
+  inline ELEMENT_t& Element(ArrayType<INDEX_t,ELEMENT_t>& array, const INDEX_t& index, const location& loc);
+  template<typename INDEX_t, typename ELEMENT_t>
+  inline const ELEMENT_t& Element(const ArrayType<INDEX_t,ELEMENT_t>& array, const INDEX_t& index, const location& loc);
+  // template<template<typename INDEX_t, typename ELEMENT_t>class ARRAY_t>
+  // inline ELEMENT_t& Element(ARRAY_t& array, const INDEX_t& index, const location& loc);
 
   template<typename INDEX_t, typename ELEMENT_t>
   class ArrayType {
@@ -640,11 +701,19 @@ namespace romp {
   public:
     ArrayType() { Undefine(); }
     ELEMENT_t& operator [] (const INDEX_t& i) { return data[i.__get_index_val()]; }
+    const ELEMENT_t& operator [] (const INDEX_t& i) const { return data[i.__get_index_val()]; }
     // typename std::enable_if<(not std::is_convertible<INDEX_t,size_t>::value), ELEMENT_t>::type
     // ELEMENT_t operator [] (const size_t i) {
     //   if ((0 > i) || (i >= INDEX_t::__COUNT()))
     //     throw std::out_of_range("`"+std::to_string(i)+"` is out of bounds of the array");
     //   return data[i]; 
+    // }
+    // friend inline ELEMENT_t& Element(ArrayType& array, const INDEX_t& index, const location& loc) {
+    //   try {
+    //     return (array[index]);
+    //   } catch (...) {
+    //     throw ModelTypeError("error durring array element access", loc);
+    //   }
     // }
 
     bool IsUndefined() const {
@@ -657,6 +726,12 @@ namespace romp {
     void Clear() {
       for (size_t i=0; i<INDEX_t::__COUNT(); ++i)
         data[i].Clear();
+    }
+
+    static constexpr bool __IS_SIMPLE() { return false; }
+    static constexpr bool __IS_RECORD() { return false; }
+    static constexpr bool __DO_P_SEP() { 
+      return (ELEMENT_t::__DO_P_SEP() || (sizeof(ELEMENT_t)*INDEX_t::__COUNT()>sizeof(RangeType<0,1>)*4));
     }
  
     template<typename RI, typename RE> 
@@ -677,17 +752,17 @@ namespace romp {
     }
 
   protected:
-    // write split line if there is a lot of info in the data structure 
-    inline typename std::enable_if<(sizeof(ELEMENT_t)*INDEX_t::__COUNT()>sizeof(RangeType<0,1>)*6),void>::type _pWrite(ostream_p& out) {
+    // write split line if there is a lot of info in the data structure
+    inline void _pWrite_comp(ostream_p& out) const {
       std::string sep;
-      out.indent(); out.indent();
+      out.indent();
       for (auto i = INDEX_t::__LB(); i!=INDEX_t::__UB(); i.__step()) {
         out << sep << out.nl() << i << ": " << (*this)[i]; sep = ",";
       }
-      out.dedent(); out.dedent();
+      out.dedent();
     }
     // write single line if there is NOT a lot of info in the data structure
-    inline typename std::enable_if<(sizeof(ELEMENT_t)*INDEX_t::__COUNT()<=sizeof(RangeType<0,1>)*6),void>::type _pWrite(ostream_p& out) {
+    inline void _pWrite_simp(ostream_p& out) const {
       std::string sep;
       for (size_t i=0; i<INDEX_t::__COUNT(); ++i) {
         out << sep << data[i]; sep = ", ";
@@ -700,20 +775,23 @@ namespace romp {
     // template<typename It, typename Et>
     // friend inline ostream_p& operator << (ostream_p& out, const ArrayType<It,Et>& val) {
     friend inline ostream_p& operator << (ostream_p& out, const ArrayType& val) {
-      if (val.IsUndefined()) return (out << "<UNDEFINED>");
-      out << '(' << val.occupancy << "/" << MAX << "){";
-      val._pWrite(out);
-      return (out << '}');
+      if (val.IsUndefined()) return (out << SCALAR_ENUM_t::_UNDEFINED_);
+      out << '[';
+      if (ArrayType::__DO_P_SEP())
+        val._pWrite_comp(out);
+      else
+        val._pWrite_simp(out);
+      return (out << ']');
     }
-    // static constexpr std::string __json_type() { 
-    //   return "{\"$type\":\"array-type\",\"length\":"+ std::to_string(INDEX_t::__COUNT())+'}';
-    // }
+    static constexpr const std::string __json_type() { 
+      return "{\"$type\":\"array-type\",\"size\":"+ std::to_string(INDEX_t::__COUNT())+'}';
+    }
     template<class O>
     friend inline ojstream<O>& operator << (ojstream<O>& json, const ArrayType& val) {
 #     ifdef __ROMP__SIMPLE_TRACE
         json << '['; std::string sep;
         for (size_t i=0; i<INDEX_t::__COUNT(); ++i) {
-          out << sep << val.data[i]; sep = ", ";
+          json << sep << val.data[i]; sep = ", ";
         }
         return (json << ']');
 #     else
@@ -729,7 +807,30 @@ namespace romp {
 #     endif
     }
   };
+
+  template<typename INDEX_t, typename ELEMENT_t>
+  inline ELEMENT_t& Element(ArrayType<INDEX_t,ELEMENT_t>& array, const INDEX_t& index, const location& loc) {
+    try {
+      return (array[index]);
+    } catch (...) {
+      throw ModelTypeError("error durring array element access", loc);
+    }
+  }
+  template<typename INDEX_t, typename ELEMENT_t>
+  inline const ELEMENT_t& Element(const ArrayType<INDEX_t,ELEMENT_t>& array, const INDEX_t& index, const location& loc) {
+    try {
+      return (array[index]);
+    } catch (...) {
+      throw ModelTypeError("error durring array element access", loc);
+    }
+  }
  
+
+  // template<size_t MAX, typename ELEMENT_t>
+  // class MultisetType;
+
+  // template<size_t MAX, typename ELEMENT_t>
+  // inline const ELEMENT_t& MultisetElement(const MultisetType<MAX,ELEMENT_t>& multiset, size_t index, const location& loc);
 
   template<size_t MAX, typename ELEMENT_t>
   class MultisetType {
@@ -745,6 +846,12 @@ namespace romp {
     void Undefine() { std::memset(&data, 0u, sizeof(data)); occupancy = 0; is_defined = false; } // for now design still allows for setting all to 0 to undefine 
     // Do nothing, should never be called, just here for record & array templates
     void Clear() { Undefine(); is_defined = true; }
+
+    static constexpr bool __IS_SIMPLE() { return false; }
+    static constexpr bool __IS_RECORD() { return false; }
+    static constexpr bool __DO_P_SEP() { 
+      return ELEMENT_t::__DO_P_SEP() || (sizeof(ELEMENT_t)*MAX>sizeof(RangeType<0,1>)*3); 
+    }
 
     size_t MultisetCount(const std::function<bool(const size_t)>& cond) const {
       size_t count = 0;
@@ -777,8 +884,12 @@ namespace romp {
     //   return __rw__->choose_handler(occupancy);
     // }
 
-    friend const ELEMENT_t& MultisetElement(const MultisetType& ms, const size_t i) {
-      return ms.data[i];
+    friend const ELEMENT_t& MultisetElement(const MultisetType& ms, const size_t i, const location& loc) {
+      try {
+        return ms.data[i];
+      } catch (...) {
+        throw ModelTypeError("error during multiset element access", loc);
+      }
     }
     template<size_t RM, typename RE>  
     friend bool operator == (const MultisetType& l, const MultisetType<RM,RE>& r) {
@@ -801,18 +912,18 @@ namespace romp {
 
   protected:
     // write split line if there is a lot of info in data structure 
-    inline typename std::enable_if<(sizeof(ELEMENT_t)*MAX>sizeof(RangeType<0,1>)*8),void>::type _pWrite(ostream_p& out) {
+    inline void _pWrite_comp(ostream_p& out) const {
       std::string sep;
-      out.indent(); out.indent();
-      for (size_t i=0; i<val.occupancy; ++i) {
-        out << sep << out.nl() << val.data[i]; sep = ",";
+      out.indent();
+      for (size_t i=0; i<occupancy; ++i) {
+        out << sep << out.nl() << data[i]; sep = ",";
       }
-      out.dedent(); out.dedent();
+      out.dedent();
     }
     // write single line if there is NOT a lot of info in data structure
-    inline typename std::enable_if<(sizeof(ELEMENT_t)*MAX<=sizeof(RangeType<0,1>)*8),void>::type _pWrite(ostream_p& out) {
+    inline void _pWrite_simp(ostream_p& out) const {
       std::string sep;
-      for (size_t i=0; i<val.occupancy; ++i) {
+      for (size_t i=0; i<occupancy; ++i) {
         out << sep << data[i]; sep = ", ";
       }
     }
@@ -821,9 +932,12 @@ namespace romp {
       return "Multiset["+std::to_string(MAX)+"] of " + ELEMENT_t::__p_type();
     }
     friend inline ostream_p& operator << (ostream_p& out, const MultisetType& val) {
-      if (val.IsUndefined()) return (out << "<UNDEFINED>");
-      out << '(' << val.occupancy << "/" << MAX << "){";
-      val._pWrite(out);
+      if (val.IsUndefined()) return (out << SCALAR_ENUM_t::_UNDEFINED_);
+      out << '(' << val.occupancy;
+      if (ELEMENT_t::__DO_P_SEP() || sizeof(ELEMENT_t)*val.occupancy > sizeof(RangeType<0,1>)*4)
+        val._pWrite_comp(out << "/" << MAX << "){");
+      else
+        val._pWrite_simp(out << "){");
       return (out << '}');
     }
     static constexpr const std::string __json_type() { 
@@ -852,12 +966,19 @@ namespace romp {
   };
 
 
-  template<typename... FIELDS, size_t FID_START>
+  // template<size_t FID_START, typename... FIELDS>
+  // class RecordType;
+
+  // template<size_t FID_START, typename... FIELDS>
+
+
+
+  template<size_t FID_START, typename... FIELDS>
   class RecordType {
     std::tuple<FIELDS...> data;
   protected:
     template<size_t I>
-    static constexpr std::string& _GET_FIELD_NAME() { return ::__info__::RECORD_FIELD_LABELS[TID_START+I]; }
+    static inline constexpr const std::string& _GET_FIELD_NAME() { return ::__info__::RECORD_FIELD_LABELS[FID_START+I]; }
     template<size_t I>
     inline typename std::enable_if<(I>=sizeof...(FIELDS)),bool>::type _IsUndefined() const { return true; }
     template<size_t I>
@@ -892,36 +1013,57 @@ namespace romp {
     bool IsUndefined() const { return _IsUndefined<0>(); }
     void Undefine() { std::memset(&data, 0u, sizeof(data)); } // for now design still allows for setting all to 0 to undefine
     void Clear() { _Clear<0>(); }
-    // template<size_t I>
-    // typename std::enable_if<(I>=sizeof...(FIELDS)),typename std::tuple_element<I,std::tuple<FIELDS...>>::type>::type& get() { 
-    //   throw std::out_of_range("field does not exist in record"); 
-    // }
-    // template<size_t I>
-    // typename std::enable_if<(I<sizeof...(FIELDS)),typename std::tuple_element<I,std::tuple<FIELDS...>>::type>::type& get() { 
-    //   return std::get<I>(data); 
-    // }
+
+    static constexpr bool __IS_SIMPLE() { return false; }
+    static constexpr bool __IS_RECORD() { return true; }
+    static constexpr bool __DO_P_SEP() { return (sizeof...(FIELDS)>3); }
+
+    template<size_t I>
+    typename std::enable_if<(I>=sizeof...(FIELDS)),void>::type& get() { 
+      throw std::out_of_range("field does not exist in record"); 
+    }
+    template<size_t I>
+    typename std::enable_if<(I<sizeof...(FIELDS)),typename std::tuple_element<I,std::tuple<FIELDS...>>::type>::type& get() { 
+      return std::get<I>(data); 
+    }
+    template<size_t I>
+    const typename std::enable_if<(I>=sizeof...(FIELDS)),void>::type& get() const { 
+      throw std::out_of_range("field does not exist in record"); 
+    }
+    template<size_t I>
+    const typename std::enable_if<(I<sizeof...(FIELDS)),typename std::tuple_element<I,std::tuple<FIELDS...>>::type>::type& get() const { 
+      return std::get<I>(data); 
+    }
 
     // template<size_t O_FID>
     // friend bool operator == (const RecordType& l, const RecordType<O_FID,FIELDS...>& r) { return RecordType::_Equal<0>(l,r); }
     // template<size_t O_FID>
     // friend bool operator != (const RecordType& l, const RecordType<O_FID,FIELDS...>& r) { return RecordType::_NEqual<0>(l,r); }
     template<size_t O_FID>
-    friend bool operator == (const RecordType& l, const RecordType<FIELDS...,O_FID>& r) { return l.data == r.data; }
+    friend bool operator == (const RecordType& l, const RecordType<O_FID,FIELDS...>& r) { return l.data == r.data; }
     template<size_t O_FID>
-    friend bool operator != (const RecordType& l, const RecordType<FIELDS...,O_FID>& r) { return l.data != r.data; }
+    friend bool operator != (const RecordType& l, const RecordType<O_FID,FIELDS...>& r) { return l.data != r.data; }
 
   protected:
     template<size_t I>
-    typename std::enable_if<(I>=sizeof...(FIELDS)),void>::type _pWrite(ostream_p& out, const std::string& sep) const { return; }
+    typename std::enable_if<(I>=sizeof...(FIELDS)),void>::type _pWrite_comp(ostream_p& out) const { return; }
     template<size_t I>
-    typename std::enable_if<(I<sizeof...(FIELDS)),void>::type _pWrite(ostream_p& out, const std::string& sep) const {
+    typename std::enable_if<(I<sizeof...(FIELDS)),void>::type _pWrite_comp(ostream_p& out) const {
       // if (I > 0) out << sep;
-      if ((sizeof(std::tuple<FIELDS...>)>sizeof(RangeType<0,1>)*8) || (sizeof...(FIELDS)>3)) out.nl();
-      if (out.OPTIONS.report_show_type)
-        out << _GET_FIELD_NAME<I>() << ": " << std::get<I>(data).__p_type() << " = " << std::get<I>(data) << sep;
+      if (__DO_P_SEP() || out.OPTIONS.report_show_type) out.nl();
+      if ((not (std::get<I>(data).__IS_RECORD()))
+          && out.OPTIONS.report_show_type)
+        out << _GET_FIELD_NAME<I>() << ": " << std::get<I>(data).__p_type() << " = " << std::get<I>(data) << ';';
       else
-        out << _GET_FIELD_NAME<I>() << ":= " << std::get<I>(data) << sep;
-      _pWrite<I+1>(out,sep);
+        out << _GET_FIELD_NAME<I>() << ":= " << std::get<I>(data) << ';';
+      _pWrite_comp<I+1>(out);
+    }
+    template<size_t I>
+    typename std::enable_if<(I>=sizeof...(FIELDS)),void>::type _pWrite_simp(ostream_p& out) const { return; }
+    template<size_t I>
+    typename std::enable_if<(I<sizeof...(FIELDS)),void>::type _pWrite_simp(ostream_p& out) const {
+      out << _GET_FIELD_NAME<I>() << ": " << std::get<I>(data) << "; ";
+      _pWrite_simp<I+1>(out);
     }
     template<class O, size_t I>
     typename std::enable_if<(I>=sizeof...(FIELDS)),void>::type _jWrite(ojstream<O>& json) const { return; }
@@ -933,7 +1075,7 @@ namespace romp {
         _jWrite<I+1>(json);
 #     else
         if (I > 0) json << ',';
-        json << "{\"$type\":\"kv-pair\",\"key\":" << _GET_FIELD_NAME(I) << ","
+        json << "{\"$type\":\"kv-pair\",\"key\":" << _GET_FIELD_NAME<I>() << ","
                   "\"value\":" << std::get<I>(data) << '}';
         _jWrite<I+1>(json);
 #     endif
@@ -941,15 +1083,17 @@ namespace romp {
   public:
     static constexpr const std::string __p_type() { return "Record"; }
     friend ostream_p& operator << (ostream_p& out, const RecordType& val) {
-      if (val.IsUndefined()) return (out << "<UNDEFINED>");
-      out << "{";
-      if ((sizeof(std::tuple<FIELDS...>)>sizeof(RangeType<0,1>)*8) || (sizeof...(FIELDS)>3)) {
-        out.indent(); out.indent();
-        val._pWrite<0>(out, ";");
-        out << out._dedent() << '}'; out.dedent(); 
+      if (val.IsUndefined()) return (out << SCALAR_ENUM_t::_UNDEFINED_);
+      if (RecordType::__DO_P_SEP()) {
+        out << "Record";
+        out.indent();
+        val._pWrite_comp<0>(out);
+        out << out.dedent() << out.nl() << "EndRecord";
+        return out;
       } else {
-        val._pWrite<0>(out, "; ");
-        return (out << '}');
+        out << "Rec ";
+        val._pWrite_simp<0>(out);
+        return (out << "End");
       }
     }
     static constexpr std::string __json_type() {
@@ -977,7 +1121,7 @@ namespace romp {
 } // namespace romp
 
 namespace __model__ {
-  typedef BooleanType Boolean;
-  typedef BooleanType boolean;
-  typedef BooleanType BOOLEAN;
+  // typedef ::romp::BooleanType Boolean;
+  typedef ::romp::BooleanType boolean;
+  // typedef ::romp::BooleanType BOOLEAN;
 } // namespace __model__

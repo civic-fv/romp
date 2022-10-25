@@ -13,19 +13,32 @@
 
 using namespace murphi;
 
-const Ptr<Enum> murphi::Boolean =
+const Ptr<Enum> murphi::BooleanEnum =
     Ptr<Enum>::make(std::vector<std::pair<std::string, location>>(
                         {{"false", location()}, {"true", location()}}),
                     location());
 
+const Ptr<TypeDecl> murphi::BooleanDecl =
+    Ptr<TypeDecl>::make("boolean", murphi::BooleanEnum, location());
+
+const Ptr<TypeExprID> murphi::Boolean =
+    Ptr<TypeExprID>::make("boolean", murphi::BooleanDecl, location());
+
+
+const Ptr<ConstDecl> murphi::FalseDecl = Ptr<ConstDecl>::make("false", 
+                                                              Ptr<Number>::make(0, location()), Boolean,
+                                                              location());
+
+const Ptr<ConstDecl> murphi::TrueDecl = Ptr<ConstDecl>::make("true", 
+                                                              Ptr<Number>::make(1, location()), Boolean,
+                                                              location());
+
 const Ptr<Expr> murphi::False = Ptr<ExprID>::make(
     "false",
-    Ptr<ConstDecl>::make("boolean", Ptr<Number>::make(0, location()), Boolean,
-                         location()),
+    murphi::FalseDecl,
     location());
 
 const Ptr<Expr> murphi::True = Ptr<ExprID>::make(
     "true",
-    Ptr<ConstDecl>::make("boolean", Ptr<Number>::make(1, location()), Boolean,
-                         location()),
+    murphi::TrueDecl,
     location());

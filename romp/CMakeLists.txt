@@ -23,16 +23,16 @@ add_custom_command(# the writers used to write to console in the genrated model 
   MAIN_DEPENDENCY resources/romp-rw/writers.hpp
   DEPENDS ../misc/xxd.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-add_custom_command(# the type templates for the genrated model checker
-  OUTPUT resources_romp-rw_types.cpp
-  COMMAND ../misc/xxd.py resources/romp-rw/types.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_types.cpp
-  MAIN_DEPENDENCY resources/romp-rw/types.hpp
-  DEPENDS ../misc/xxd.py
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(# the error handling classes and functions
   OUTPUT resources_romp-rw_error.cpp
   COMMAND ../misc/xxd.py resources/romp-rw/error.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_error.cpp
   MAIN_DEPENDENCY resources/romp-rw/error.hpp
+  DEPENDS ../misc/xxd.py
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_custom_command(# the type templates for the genrated model checker
+  OUTPUT resources_romp-rw_types.cpp
+  COMMAND ../misc/xxd.py resources/romp-rw/types.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_types.cpp
+  MAIN_DEPENDENCY resources/romp-rw/types.hpp
   DEPENDS ../misc/xxd.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(# file with CLI config options
@@ -81,8 +81,8 @@ add_executable(romp
   ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_include.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_decl.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_writers.cpp
-  ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_types.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_error.cpp
+  ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_types.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_options.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_impls.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_walker.cpp

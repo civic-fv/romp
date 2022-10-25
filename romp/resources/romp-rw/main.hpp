@@ -22,7 +22,7 @@
 
 // #include <unistd.h>
 namespace romp { 
-  void init_trace_dir() {
+  void init_trace_dir(const Options& OPTIONS) {
     std::string args = "mkdir -p \"" + OPTIONS.get_trace_dir() + "\"";
     int err = system(args.c_str());
     if (err) {
@@ -32,8 +32,8 @@ namespace romp {
     }
   }
   
-  void launch_prompt() {
-    ostream_p out(std::cout,0);
+  void launch_prompt(const Options& OPTIONS) {
+    ostream_p out(std::cout,OPTIONS,0);
     std::cout << '\n';
     OPTIONS.write_config(out);
     std::cout.flush();
@@ -58,20 +58,20 @@ namespace romp {
 }
 
 int main(int argc, char **argv) {
+  ::romp::Options OPTIONS;
+  OPTIONS.parse_args(argc, argv);
 
-  ::romp::OPTIONS.parse_args(argc, argv);
+  if (not (OPTIONS.skip_launch_prompt))
+    ::romp::launch_prompt(OPTIONS);
 
-  if (not (::romp::OPTIONS.skip_launch_prompt))
-    ::romp::launch_prompt();
+  if (OPTIONS.do_trace)
+    ::romp::init_trace_dir(OPTIONS);
 
-  if (::romp::OPTIONS.do_trace)
-    ::romp::init_trace_dir();
-
-  if (::romp::OPTIONS.do_single)
-    ::romp::launch_single(::romp::OPTIONS.rand_seed);
+  if (OPTIONS.do_single)
+    ::romp::launch_single(OPTIONS,OPTIONS.rand_seed);
 
   else
-    ::romp::launch_threads(::romp::OPTIONS.rand_seed);
+    ::romp::launch_threads(OPTIONS,OPTIONS.rand_seed);
     // ::romp::launch_OpenMP(::romp::OPTIONS.rand_seed);
 
 

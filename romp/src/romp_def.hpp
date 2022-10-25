@@ -43,7 +43,7 @@
 
 #define ROMP_INFO_NAMESPACE_NAME "__info__"
 
-#define ROMP_STATE_CLASS_NAME "__Model__"
+#define ROMP_STATE_CLASS_NAME "__romp__Model__"
 
 #define ROMP_STATE_TYPE "::" ROMP_MODEL_NAMESPACE_NAME "::" ROMP_STATE_CLASS_NAME
 
@@ -72,6 +72,7 @@
 #define ROMP_SCALAR_ENUM_TYPE "::" ROMP_MODEL_NAMESPACE_NAME "::" ROMP_SCALAR_ENUM_NAME
 #define ROMP_SCALAR_ENUM_DECL_h "enum " ROMP_SCALAR_ENUM_NAME " { "
 #define ROMP_SCALAR_ENUM_UNDEFINED_NAME "_UNDEFINED_"
+#define ROMP_SCALAR_ENUM_UNDEFINED_DISPLAY_NAME "<UNDEFINED>"
 #define ROMP_SCALAR_ENUM_UNDEFINED_VALUE "0"
 
 #define ROMP_HISTORY_SIZE_PREPROCESSOR_VAR "_ROMP_HIST_LEN"
@@ -152,16 +153,16 @@
 #define ROMP_JSON_STREAM_TYPE "::" ROMP_UTIL_NAMESPACE_NAME "::" "ojstream<O>"
 // #define ROMP_OUT_STREAM_TYPE "::std::ostream"
 #define ROMP_OUT_STREAM_TYPE "::" ROMP_UTIL_NAMESPACE_NAME "::" "ostream_p"
-#define ROMP_MAKE_JSON_CONVERTER_SIG(_type) "template<class O> const ::romp::stream_void& " << (_type) << "_to_json(" ROMP_JSON_STREAM_TYPE "& json, const " << (_type) << "& val) noexcept"
-#define ROMP_MAKE_STREAM_CONVERTER_SIG(_type) "const ::romp::stream_void& " << (_type) << "_to_str(" ROMP_OUT_STREAM_TYPE "& out, const " << (_type) << "& val) noexcept"
+// #define ROMP_MAKE_JSON_CONVERTER_SIG(_type) "template<class O> const ::romp::stream_void& " << (_type) << "_to_json(" ROMP_JSON_STREAM_TYPE "& json, const " << (_type) << "& val) noexcept"
+// #define ROMP_MAKE_STREAM_CONVERTER_SIG(_type) "const ::romp::stream_void& " << (_type) << "_to_str(" ROMP_OUT_STREAM_TYPE "& out, const " << (_type) << "& val) noexcept"
 // #define ROMP_MAKE_JSON_CONVERTER_SIG(_type) "template<class O> " ROMP_JSON_STREAM_TYPE "& " << (type_) << "_to_json(" ROMP_JSON_STREAM_TYPE "& json, const " << (_type) << "& val) noexcept"
 // #define ROMP_MAKE_STREAM_CONVERTER_SIG(_type) ROMP_OUT_STREAM_TYPE "& " << (_type) << "_to_str(" ROMP_OUT_STREAM_TYPE "& out, const " << (_type) << "& val) noexcept"
-#define ROMP_MAKE_JSON_CONVERTER_CALL(_type,_val) "" << (_type) << "_to_json(json," << (_val) << ")"
-#define ROMP_MAKE_STREAM_CONVERTER_CALL(_type,_val) "" << (_type) << "_to_str(out," << (_val) << ")"
-#define ROMP_MAKE_TYPE_INIT_SIG(_type) "void _init_" << (_name) << "(" << (_name) << "& val)"
-#define ROMP_MAKE_TYPE_INIT_CALL(_type,_val) "_init_" << (_type) << "(" << (_val) << ")" 
+// #define ROMP_MAKE_JSON_CONVERTER_CALL(_type,_val) "" << (_type) << "_to_json(json," << (_val) << ")"
+// #define ROMP_MAKE_STREAM_CONVERTER_CALL(_type,_val) "" << (_type) << "_to_str(out," << (_val) << ")"
+// #define ROMP_MAKE_TYPE_INIT_SIG(_type) "void _init_" << (_name) << "(" << (_name) << "& val)"
+// #define ROMP_MAKE_TYPE_INIT_CALL(_type,_val) "_init_" << (_type) << "(" << (_val) << ")" 
 
-#define ROMP_SHOW_TYPE_OPTION_EXPR "out.OPTIONS.report_show_type"
+#define ROMP_SHOW_TYPE_OPTION_EXPR "(out.OPTIONS.report_show_type)"
 // #define ROMP_MAKE_SHOW_TYPE_TURN_COND(_type) "((::romp::OPTIONS.result_show_type) ? \\": " + (_type) + " =\\" : \\":=\\")"
 
 #define ROMP_GENERATED_FILE_PREFACE(p) \
@@ -169,10 +170,10 @@
 
 #define ROMP_PREDEFINED_TYPES "boolean"
 
-#define ROMP_STARTSTATE_PREFIX "__StartState__"
-#define ROMP_RULE_GUARD_PREFIX "__Rule_guard__"
-#define ROMP_RULE_ACTION_PREFIX "__Rule_action__"
-#define ROMP_PROPERTYRULE_PREFIX "__Property__"
+#define ROMP_STARTSTATE_PREFIX "__romp__StartState__"
+#define ROMP_RULE_GUARD_PREFIX "__romp__Rule_guard__"
+#define ROMP_RULE_ACTION_PREFIX "__romp__Rule_action__"
+#define ROMP_PROPERTYRULE_PREFIX "__romp__Property__"
 
 #define ROMP_PROPERTY_TYPE_BASE ROMP_UTIL_NAMESPACE "::PropertyType"
 #define ROMP_PROPERTY_TYPE_INVAR ROMP_PROPERTY_TYPE_BASE "::INVARIANT"

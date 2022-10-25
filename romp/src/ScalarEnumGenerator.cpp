@@ -30,7 +30,7 @@ void ScalarEnumGenerator::visit_model(const murphi::Model& m) {
   gen << "\n" << gen.indentation() << ROMP_SCALAR_ENUM_DECL_h << "\n";
   gen.indent();
   gen << gen.indentation() << ROMP_SCALAR_ENUM_UNDEFINED_NAME << " = " 
-                             << ROMP_SCALAR_ENUM_UNDEFINED_VALUE << ",\n"; 
+                             << ROMP_SCALAR_ENUM_UNDEFINED_VALUE << ','; 
 
   for (auto& n : m.children)
     dispatch(*n);
@@ -40,7 +40,7 @@ void ScalarEnumGenerator::visit_model(const murphi::Model& m) {
   gen << gen.indentation() << "};\n" << /*std::*/gen.flush();
 }
 
-bool ScalarEnumGenerator::add_enum_id(const std::string& enum_name, const std::string& display_name) {
+bool ScalarEnumGenerator::add_enum_id(const std::string& name, const std::string& display_name) {
   if (enum_ids.find(name) == enum_ids.end()) {
     enum_ids[name] = enum_ids.size();
     _enum_ids.push_back(display_name);
@@ -56,7 +56,7 @@ void ScalarEnumGenerator::visit_enum(const murphi::Enum& n) {
   // n.unique_id_limit = 0;
   id_t added = 0u;
   auto last_bad = n.members[0];
-  gen << "\n" << gen.indentation() << "\n/* " << n.to_string() << " */";
+  gen << "\n" << gen.indentation() << "/* " << n.to_string() << " */";
   gen.indent();
   sep = "";
   for (auto& m : n.members)
@@ -65,7 +65,7 @@ void ScalarEnumGenerator::visit_enum(const murphi::Enum& n) {
     else
       last_bad = m;
   
-  if (added != n.count() && added != 0)
+  if (added != n.members.size() && added != 0)
       throw Error("there exists name conflicts with this enum value (`" + last_bad.first + "`) "
                 "and some other enum, scalarset, variable, alias, or parameter "
                 "(romp does not support scope masking enums & all enums are considered global, "
@@ -80,15 +80,15 @@ void ScalarEnumGenerator::visit_scalarset(const murphi::Scalarset& n) {
   // these complex names are to both avoid collisions and because I scrub names that contain `_romp_` at parse time none should exist
   std::string prefix = (((n.name != "") ? "_romp_"+n.name : "__romp__scalarset")
                           + '_' + n.bound->constant_fold().get_str() + '_');
-  gen << "\n" << gen.indentation() << "\n/* " 
+  gen << "\n" << gen.indentation() << "/* " 
         << n.name << ((n.name != "") ? ": " : "")
         << n.to_string() << " */";
   gen.indent();
   sep = "";
   for (size_t i=1; i<=n.count(); ++i)
-    if (add_enum_id(prefix + std::to_string(i), 
+    if (add_enum_id((prefix + std::to_string(i)), 
                     (((n.name!="") ? n.name+'_' : prefix)
-                      +std::to_string(i))))
+                      + std::to_string(i))))
       ++added;
     
   if (added != n.count() && added != 0)

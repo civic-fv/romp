@@ -106,12 +106,24 @@ namespace romp {
   struct file_position {
     size_t row;
     size_t col;
+    friend inline bool operator < (const file_position& l, const file_position& r) { return (l.row < r.row) || (l.col < r.col); }
+    friend inline bool operator <= (const file_position& l, const file_position& r) { return (l.row <= r.row) || (l.col <= r.col); }
+    friend inline bool operator == (const file_position& l, const file_position& r) { return (l.row == r.row) && (l.col == r.col); }
+    friend inline bool operator != (const file_position& l, const file_position& r) { return (l.row != r.row) || (l.col != r.col); }
+    friend inline bool operator > (const file_position& l, const file_position& r) { return (l.row > r.row) || (l.col > r.col); }
+    friend inline bool operator >= (const file_position& l, const file_position& r) { return (l.row >= r.row) || (l.col >= r.col); }
   };
 
   struct location {
     // std::string model_obj;
     file_position start;
     file_position end;
+    // friend bool operator < (const location& l, const location& r) { return (l.end < r.end) && (l.start <= r.start); }
+    // friend bool operator <= (const location& l, const location& r) { return (l.end <= r.end) && (l.start <= r.start); }
+    friend bool operator == (const location& l, const location& r) { return (l.start == r.start) && (l.end == r.end); }
+    friend bool operator != (const location& l, const location& r) { return (l.start != r.start) || (l.end != r.end); }
+    // friend bool operator > (const location& l, const location& r) { return (l.start > r.start) && (l.end >= r.end); }
+    // friend bool operator >= (const location& l, const location& r) { return (l.start >= r.start) && (l.end >= r.end); }
   };
 
   // enum TypeType { BOOLEAN, RANGE, ENUM, SCALARSET, SCALARSET_UNION, ARRAY, MULTISET, RECORD, RECORD_MEMBER, TYPE_EXPR_ID };
@@ -303,6 +315,29 @@ namespace romp {
     ~Result() { if (tripped != nullptr) delete tripped; if (inside != nullptr) delete inside; }
   };
 
-
-
 } // namespace romp
+
+namespace std {
+  template<>
+  struct hash<romp::location> {
+    size_t operator () (const romp::location& loc) const { 
+      return (loc.start.row + loc.start.col + loc.end.row + loc.end.col) % UINT64_MAX;
+    }
+  };
+  // template<>
+  // class hash<romp::ModelPropertyError> {
+  //   public: size_t operator () (const romp::ModelPropertyError& me) const { return me.hash(); }
+  // };
+  // template<>
+  // class equal_to<romp::ModelPropertyError> {
+  //   public: size_t operator () (const romp::ModelPropertyError& l, const romp::ModelPropertyError& r) const { return l.hash() == r.hash(); }
+  // };
+  // template<>
+  // class hash<romp::ModelMErrorError> {
+  //   public: size_t operator () (const romp::ModelMErrorError& me) const { return me.hash(); }
+  // };
+  // template<>
+  // class equal_to<romp::ModelMErrorError> {
+  //   public: size_t operator () (const romp::ModelMErrorError& l, const romp::ModelMErrorError& r) const { return l.hash() == r.hash(); }
+  // };
+} // namespace std

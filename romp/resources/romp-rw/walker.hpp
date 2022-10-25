@@ -169,7 +169,7 @@ public:
 #     ifdef __romp__ENABLE_liveness_property
         enable_liveness(OPTIONS_.liveness), init_lcount(OPTIONS.lcount),
 #     endif
-      fuel(OPTIONS_.depth), attempt_limit(OPTIONS_.attempt_limit), init_attempt_limit(OPTIONS_.attempt_limit),
+      _fuel(OPTIONS_.depth), _attempt_limit(OPTIONS_.attempt_limit), init_attempt_limit(OPTIONS_.attempt_limit)
   { 
     if (OPTIONS.start_id != ~0u) {
       rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN); // burn one rand operation for consistency
@@ -185,7 +185,7 @@ public:
     } /* else {
       json = nullptr;
     } */
-    for (int i=0; i<history_size(); ++i) history[i] = History{nullptr};
+    for (int i=0; i<history_size(); ++i) this->history[i] = History{nullptr};
 #ifdef __romp__ENABLE_symmetry
     for (int i=0; i<_ROMP_RULESETS_LEN; ++i) next_rule[i] = 0;
 #endif
@@ -200,8 +200,7 @@ public:
   ~RandWalker() { 
     if (json != nullptr) delete json; 
     if (tripped != nullptr) delete tripped;
-    if (tripped_inside != nullptr) delete tripped_inside; 
-    if (_put_stream_out != nullptr) delete _put_stream_out;
+    if (tripped_inside != nullptr) delete tripped_inside;
     // if (history != nullptr) delete[] history; 
   }
 
@@ -454,14 +453,14 @@ public:
         << "BASIC INFO: "                                           << out.indent() << out.nl()
         << "         w#: " << rw.id                                                 << out.nl()
         << "       Seed: " << rw.init_rand_seed                                     << out.nl()
-        << "      Depth: " << OPTIONS.depth - rw._fuel                              << out.nl()
+        << "      Depth: " << rw.OPTIONS.depth - rw._fuel                              << out.nl()
         << "   Start ID: " << rw.start_id                                           << out.nl()
         << " StartState: " << ::__caller__::STARTSTATES[rw.start_id]                << out.nl()
         << "     Result: " << res_color << std::to_string(rw.status) << "\033[0m"   << out.nl()
         << out.dedent()                                                             << out.nl()
         << "TRACE LITE:"                                            << out.indent() << out.nl()
-        << "NOTE - " << ((OPTIONS.do_trace) 
-                          ? "see \"" + OPTIONS.trace_dir + std::to_string(rw.init_rand_seed) + ".json\" for full trace." 
+        << "NOTE - " << ((rw.OPTIONS.do_trace) 
+                          ? "see \"" + rw.OPTIONS.trace_dir + std::to_string(rw.init_rand_seed) + ".json\" for full trace." 
                           : "use the --trace/-t option to generate a full & detailed trace." ) << out.nl()
         << "History: ["                                             << out.indent() << out.nl()
         << "-(0) " << ::__caller__::STARTSTATES[rw.start_id] << '\n';
@@ -470,7 +469,7 @@ public:
       for (size_t i=rw.history_start; i<rw.history_level; ++i)
         out << out.indentation() << "-(" << i+1 <<") " << *(rw.history[i%rw.history_size()].rule) << "\n";
     out << out.dedent() << "]"                                                      << out.nl();
-    if (OPTIONS.report_emit_state)
+    if (rw.OPTIONS.report_emit_state)
       out << "  State: " <<  out.indent() << rw.state << out.dedent()               ;// << out.nl();
     if (rw.tripped != nullptr || rw.tripped_inside != nullptr) {
       out << out.dedent()                                                           << out.nl()
@@ -482,13 +481,13 @@ public:
             << *rw.tripped_inside                                   << out.dedent() << out.nl();
             // << '}'                                                                  << out.nl(); 
     }
-    if (put_msgs.size() > 0) {
+    if (rw.put_msgs.size() > 0) {
       out << "Put Statements: \"\"\""               << out.indent() << out.indent() << out.nl();
-      for (auto msg : put_msgs) {
+      for (auto msg : rw.put_msgs) {
         try {
           msg.first(out);
         } catch (std::exception& ex) {
-          out << out.indent() << out.nl() << out.second << " :: error occurred while evaluating put statement" 
+          out << out.indent() << out.nl() << msg.second << " :: error occurred while evaluating put statement" 
               << out.nl() << ex << out.dedent() << out.nl();
         }
       }
@@ -510,7 +509,7 @@ public:
   // called when trying to print the results of the random walker when it finishes (will finish up trace file if necessary too)
   //  the calling context should ensure that the RandWalker is not being used else where & safe output to the ostream 
   friend std::ostream& operator << (std::ostream& out, const RandWalker& rw) 
-  { ostream_p _out(out,0); _out << rw; return out; }
+  { ostream_p _out(out,rw.OPTIONS,0); _out << rw; return out; }
 
   // NOTE: currently not supporting choose rules
   // size_t choose_handler(size_t occupance, const location& loc) {}
@@ -667,16 +666,15 @@ unsigned int gen_random_seed(unsigned int &root_seed) {
 }
 
 /**
- * @brief generate all startstates of the model. 
- * To do - how to get the size of startstate
+ * @brief generate all the random seeds for the various rand walkers
  * 
  */
-std::vector<RandWalker*> gen_random_walkers(unsigned int root_seed)   {
-  std::vector<RandWalker*> rws;
+std::vector<unsigned int> gen_random_seeds(const Options& OPTIONS, unsigned int root_seed)   {
+  std::vector<id_t> seeds;
   for(int i=0; i<OPTIONS.walks; i++) {
-    rws.push_back(new RandWalker(gen_random_seed(root_seed)));
+    seeds.push_back(gen_random_seed(root_seed));
   }
-  return rws;
+  return seeds;
 }
 
 // example of how to get a copy of an object in C++:
@@ -724,9 +722,9 @@ void launch_OpenMP(unsigned int root_seed) {
  * @param fuel the max number of rules any \c RandWalker will try to apply.
  * @param thread_count the max number of threads to use to accomplish all said random walks.
  */
-void launch_threads(unsigned int rand_seed) {
-  auto rws = gen_random_walkers(rand_seed);
-  std::queue<RandWalker*> in_rws(std::deque<RandWalker*>(rws.begin(),rws.end()));
+void launch_threads(const Options& OPTIONS, unsigned int rand_seed) {
+  auto rws = gen_random_seeds(OPTIONS,rand_seed);
+  std::queue<unsigned int> in_seeds(std::deque<unsigned int>(rws.begin(),rws.end()));
   // std::queue<RandWalkers*> parallel_rws; // probs threads
   std::queue<RandWalker*> out_rws;
   size_t walks_done = 0;
@@ -746,8 +744,8 @@ void launch_threads(unsigned int rand_seed) {
     // std::lock_guard<std::mutex> out_queue(_out_queue_mutex);
     in_queue.lock();
     do {
-      RandWalker *rw = in_rws.front();
-      in_rws.pop(); 
+      RandWalker *rw = new RandWalker(in_seeds.front(),OPTIONS);
+      in_seeds.pop(); 
       in_queue.unlock();
 
       if (rw == nullptr) {
@@ -767,13 +765,13 @@ void launch_threads(unsigned int rand_seed) {
       out_queue.unlock();
 
       in_queue.lock();
-    } while (in_rws.size() > 0);
+    } while (in_seeds.size() > 0);
     in_queue.unlock();
   };
 
-  ostream_p out(std::cout,0);
+  ostream_p out(std::cout,OPTIONS,0);
   std::vector<std::thread> threads;
-  ResultTree summary;
+  ResultTree summary(OPTIONS);
   // std::vector<std::thread> threads(OPTIONS.threads);
   for (size_t i=0; i<OPTIONS.threads; ++i) {
     threads.push_back(std::thread(lambda));
@@ -863,10 +861,10 @@ void launch_OpenMPI(unsigned int root_seed);
  * @param rand_seed the random seed
  * @param fuel the max number of rules to try to apply
  */
-void launch_single(unsigned int rand_seed) {
-  RandWalker* rw = new RandWalker(rand_seed);
+void launch_single(const Options& OPTIONS, unsigned int rand_seed) {
+  RandWalker* rw = new RandWalker(rand_seed, OPTIONS);
   rw->init();
-  ResultTree summary;
+  ResultTree summary(OPTIONS);
   while( not rw->is_done() )
     rw->sim1Step();
   rw->finalize();

@@ -41,16 +41,9 @@ public:
     symtab.open_scope();
 
     // Teach the symbol table the built ins
-    auto td = Ptr<TypeDecl>::make("boolean", Boolean, location());
-    symtab.declare("boolean", td);
-    mpz_class index = 0;
-    for (const std::pair<std::string, location> &m : Boolean->members) {
-      symtab.declare(m.first,
-                     Ptr<ConstDecl>::make("boolean",
-                                          Ptr<Number>::make(index, location()),
-                                          Boolean, location()));
-      index++;
-    }
+    symtab.declare("boolean", BooleanDecl);
+    symtab.declare("true", TrueDecl);
+    symtab.declare("false", FalseDecl);
   }
 
   void visit_add(Add &n) final { visit_bexpr(n); }
@@ -153,11 +146,17 @@ public:
     if (n.value == nullptr) {
       // This reference is unresolved
 
-      Ptr<ExprDecl> d = symtab.lookup<ExprDecl>(n.id, n.loc);
-      if (d == nullptr)
-        throw Error("unknown symbol \"" + n.id + "\"", n.loc);
+      // if (n.is_literal_true())
+      //   n.value = True;
+      // else if (n.is_literal_false())
+      //   n.value = False;
+      // else {
+        Ptr<ExprDecl> d = symtab.lookup<ExprDecl>(n.id, n.loc);
+        if (d == nullptr)
+          throw Error("unknown symbol \"" + n.id + "\"", n.loc);
 
-      n.value = d;
+        n.value = d;
+      // }
     }
   }
 

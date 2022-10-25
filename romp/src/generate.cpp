@@ -60,7 +60,7 @@ void generate(const Model &m, const std::vector<Comment> &comments,
 
   gen << "\n#define __romp__GENERATED_CODE\n\n";
   gen << "\n#define _ROMP_STATE_TYPE " ROMP_STATE_TYPE "\n\n";
-  gen << "\n#define _ROMP_STATE_HISTORY_LEN (" << gen.hist_len << "ul)\n\n";
+  gen << "\n#define _ROMP_HIST_LEN (" << gen.hist_len << "ul)\n\n";
   gen << "\n#define _ROMP_THREAD_TO_RW_RATIO (" << gen.default_walk_multiplier << "ul)\n\n";
   std::string file_path = gen.input_file_path.string();
   gen << "\n#define __model__filepath \"" << nEscape(file_path) << "\"\n\n";
@@ -110,7 +110,7 @@ void generate(const Model &m, const std::vector<Comment> &comments,
   gen.dedent();
   gen << "\n" << gen.indentation() << "} // namespace " ROMP_MODEL_NAMESPACE_NAME "\n"
       << gen.indentation() << "namespace " ROMP_UTIL_NAMESPACE_NAME " { typedef " ROMP_SCALAR_ENUM_TYPE " SCALAR_ENUM_t; }\n"
-      << gen.indentation() << "namespace " ROMP_INFO_NAMESPACE_NAME " { std::string SCALAR_IDS[] = { ";
+      << gen.indentation() << "namespace " ROMP_INFO_NAMESPACE_NAME " { std::string SCALAR_IDS[" << se_gen._enum_ids.size() << "] = { ";
   { std::string sep;
     for (auto name : se_gen._enum_ids) {
       gen << sep << '"' << name << '"';
@@ -123,12 +123,12 @@ void generate(const Model &m, const std::vector<Comment> &comments,
   gen << "\n#pragma region romp_infix\n\n";
 # ifdef _ROMP_DEV_DEBUG_INCLUDE_DIR
     gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/options.hpp\"\n";
-    gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/types.hpp\"\n";
     gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/error.hpp\"\n";
+    gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/types.hpp\"\n";
 # else
     gen.output_embedded_code_file(resources_romp_rw_types_hpp, resources_romp_rw_options_hpp_len);
-    gen.output_embedded_code_file(resources_romp_rw_types_hpp, resources_romp_rw_types_hpp_len);
     gen.output_embedded_code_file(resources_romp_rw_error_hpp, resources_romp_rw_error_hpp_len);
+    gen.output_embedded_code_file(resources_romp_rw_types_hpp, resources_romp_rw_types_hpp_len);
 # endif
   gen << "\n#pragma endregion romp_infix\n\n" << /*std::*/gen.flush();
 
@@ -189,11 +189,11 @@ void generate(const Model &m, const std::vector<Comment> &comments,
   // write the static postfixes to the end of the source file
   gen << "\n#pragma region romp_postfix\n\n";
 # ifdef _ROMP_DEV_DEBUG_INCLUDE_DIR
-    gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/impls.hpp\"\n";
     gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/walker.hpp\"\n";
+    gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/impls.hpp\"\n";
 # else
-    gen.output_embedded_code_file(resources_romp_rw_impls_hpp, resources_romp_rw_impls_hpp_len);
     gen.output_embedded_code_file(resources_romp_rw_walker_hpp, resources_romp_rw_walker_hpp_len);
+    gen.output_embedded_code_file(resources_romp_rw_impls_hpp, resources_romp_rw_impls_hpp_len);
 # endif
   gen << "\n#pragma endregion romp_postfix\n\n" << /*std::*/gen.flush();
 
