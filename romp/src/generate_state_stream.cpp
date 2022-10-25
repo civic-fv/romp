@@ -29,7 +29,7 @@ void generate_state_stream(romp::CodeGenerator& gen, const murphi::Model& m) {
   std::stringstream json;
   std::stringstream json_simp;
   std::string j_sep, p_sep;
-  gen << gen.indentation() << "friend inline " ROMP_OUT_STREAM_TYPE "& operator << (" ROMP_OUT_STREAM_TYPE "& out, const " ROMP_STATE_TYPE "& s) {\n";
+  gen << gen.indentation() << "friend " ROMP_OUT_STREAM_TYPE "& operator << (" ROMP_OUT_STREAM_TYPE "& out, const " ROMP_STATE_TYPE "& s) {\n";
   gen.indent();
   gen << gen.indentation() << " return (out << \"State\" << out._indent() << out.nl()";
   gen.indent(); gen.indent();
@@ -48,17 +48,17 @@ void generate_state_stream(romp::CodeGenerator& gen, const murphi::Model& m) {
   gen << '\n' << gen.indentation() << "<< out.dedent() << out.nl() << \"EndState\");";
   gen.dedent(); gen.dedent(); gen.dedent();
   gen << gen.indentation() << "}\n"
-      << gen.indentation() << "friend inline ::std::ostream& operator << (::std::ostream& out_, const " ROMP_STATE_TYPE "& s) { "
+      << gen.indentation() << "friend ::std::ostream& operator << (::std::ostream& out_, const " ROMP_STATE_TYPE "& s) { "
                                 ROMP_OUT_STREAM_TYPE " out(out_," ROMP_UTIL_NAMESPACE "::Options(),2); "
                                 "out << s; "
                                 "return out_; }\n";
   gen << "\n" << "#ifdef " ROMP_SIMPLE_TRACE_PREPROCESSOR_VAR "\n"
               << gen.indentation() 
-              << "template<class O> friend inline " ROMP_JSON_STREAM_TYPE "& operator << (" ROMP_JSON_STREAM_TYPE "& json, const " ROMP_STATE_TYPE "& s) { "
+              << "template<class O> friend " ROMP_JSON_STREAM_TYPE "& operator << (" ROMP_JSON_STREAM_TYPE "& json, const " ROMP_STATE_TYPE "& s) { "
                     "json << '[' << " << json_simp.str() << " << ']'; return json; }\n"
               << "#else\n"
               << gen.indentation() 
-              << "template<class O> friend inline " ROMP_JSON_STREAM_TYPE "& operator << (" ROMP_JSON_STREAM_TYPE "& json, const " ROMP_STATE_TYPE "& s) { "
+              << "template<class O> friend " ROMP_JSON_STREAM_TYPE "& operator << (" ROMP_JSON_STREAM_TYPE "& json, const " ROMP_STATE_TYPE "& s) { "
                     "return (json << \"{\\\"$type\\\":\\\"model-state\\\",\\\"value\\\":[\"" << json.str() << " << \"]}\"); }\n"
               << "#endif\n";
 }

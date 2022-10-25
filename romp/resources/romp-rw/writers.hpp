@@ -131,8 +131,8 @@ namespace romp {
     inline const std::string indentation() { return _indentation; }
     inline const stream_void new_line() { out << '\n' << indentation(); return S_VOID; }
     inline const stream_void nl() { return new_line(); }
-    template <typename T>
-    inline ostream_p& operator << (const T val);
+    // template <typename T>
+    // inline ostream_p& operator << (const T val);
     // ostream_p& operator << (const std::string& str) { out << str; return *this; }
     // ostream_p& operator << (const char* str) { out << str; return *this; }
     // ostream_p& operator << (const unsigned char val) { out << val; return *this; }
@@ -149,16 +149,22 @@ namespace romp {
     // ostream_p& operator << (const bool val) { out << ((val) ? "true" : "false"); return *this; }
     // ostream_p& operator << (const stream_void& me) noexcept { return *this; };
   };
-  // template <typename T>
-  // inline ostream_p& operator << (ostream_p& out, const T val) { out.out << val; return *this; }  
   template <typename T>
-  inline ostream_p& ostream_p::operator << (const T val) { out << val; return *this; }  
+  ostream_p& operator << (ostream_p& out, const T& val) { out.out << val; return out; }  
+  // template <>
+  // inline ostream_p& operator << <std::_Setw>(ostream_p& out, const std::_Setw val) { _width = val._M_n; return *this; } 
   template <>
-  inline ostream_p& ostream_p::operator << <std::_Setw>(const std::_Setw val) { _width = val._M_n; return *this; } 
+  ostream_p& operator << <stream_void>(ostream_p& out, const stream_void& val) { return out; }
   template <>
-  inline ostream_p& ostream_p::operator << <stream_void>(const stream_void val) { return *this; }
-  template <>
-  inline ostream_p& ostream_p::operator << <bool>(const bool val) { return (*this << ((val) ? "YES" : "NO")); }
+  ostream_p& operator << <bool>(ostream_p& out, const bool& val) { (out.out << ((val) ? "YES" : "NO")); return out; }
+  // template <typename T>
+  // inline ostream_p& ostream_p::operator << (const T val) { out << val; return *this; }  
+  // // template <>
+  // // inline ostream_p& ostream_p::operator << <std::_Setw>(const std::_Setw val) { out._width = val._M_n; return out; } 
+  // template <>
+  // inline ostream_p& ostream_p::operator << <stream_void>(const stream_void val) { return *this; }
+  // template <>
+  // inline ostream_p& ostream_p::operator << <bool>(const bool val) { return (*this << ((val) ? "YES" : "NO")); }
   
 
 

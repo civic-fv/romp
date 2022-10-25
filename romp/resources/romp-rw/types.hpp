@@ -38,7 +38,7 @@ namespace romp {
   inline SCALAR_ENUM_t make_SCALAR_ENUM_t(T val) { return static_cast<SCALAR_ENUM_t>(val); }
   inline std::string to_str(const SCALAR_ENUM_t& scalar) { return ::__info__::SCALAR_IDS[static_cast<size_t>(scalar)]; }
   inline std::ostream& operator << (std::ostream& out, const SCALAR_ENUM_t& val) { return (out << to_str(val)); }
-  inline ostream_p& operator << (ostream_p& out, const SCALAR_ENUM_t& val) { return (out << to_str(val)); }
+  // inline ostream_p& operator << (ostream_p& out, const SCALAR_ENUM_t& val) { return (out << to_str(val)); }
   template<class O>
   inline ojstream<O>& operator << (ojstream<O>& json, const SCALAR_ENUM_t& val) { return (json << '"' <<to_str(val))<< '"'; }
 
@@ -105,7 +105,8 @@ namespace romp {
 
     explicit inline operator T () { return value; }
 
-    friend ostream_p& operator << (ostream_p& out, const BaseUndefinableType& val) { 
+    // friend ostream_p& operator << (ostream_p& out, const BaseUndefinableType& val) { 
+    friend std::ostream& operator << (std::ostream& out, const BaseUndefinableType& val) { 
       if (val.IsUndefined())
         return (out << SCALAR_ENUM_t::_UNDEFINED_);
       return (out << val.get()); 
@@ -127,16 +128,25 @@ namespace romp {
 
   // << ===================================== Type ID Mask ======================================= >> 
 
-  template<size_t TID, typename T>
+  template<size_t TID, class T>
   class TypeIdType : public T {
   public:
     template<typename... Args>
     TypeIdType(Args &&... args) : T(std::forward<Args>(args)...) {}
+    operator T& () { return *((T*)this); }
+    // operator T& () const { return T(*this); }
     // static inline constexpr const TypeInfo& __INFO() { return ::__info__::TYPE_INFOS[0]; }
     static inline const std::string& __id() { return ::__info__::TYPE_IDS[TID]; }
     static inline constexpr const std::string __json_type() {
       return std::to_string(TID);
       return "{\"$type\":\"type-id\",\"tid\":"+std::to_string(TID)+",\"id\":\"" + __id() + "\",\"referent\":" + T::__json_type() + '}';
+    }
+    template<template<size_t,class>class TId_t>
+    friend 
+    typename std::enable_if<std::is_base_of<TypeIdType<TID,T>,
+                                            TId_t<TID,T>>::value,
+                            ostream_p>::type& operator << (ostream_p& out, TId_t<TID,T> val) { 
+      return (out << *((T*)&val)); 
     }
   };
 
@@ -162,7 +172,8 @@ namespace romp {
 
     static inline const std::string __p_type() { return "Boolean"; }
 
-    friend inline ostream_p& operator << (ostream_p& out, const BooleanType& val) {
+    // friend inline ostream_p& operator << (ostream_p& out, const BooleanType& val) {
+    friend inline std::ostream& operator << (std::ostream& out, const BooleanType& val) {
       if (val.IsUndefined())
         return (out << SCALAR_ENUM_t::_UNDEFINED_);
       return (out << ((val.get()) ? "true" : "false"));
@@ -385,7 +396,8 @@ namespace romp {
       }
       return res + "}";
     }
-    friend ostream_p& operator << (ostream_p& out, const EnumType& val) { return (out << val.value); }
+    // friend ostream_p& operator << (ostream_p& out, const EnumType& val) { return (out << val.value); }
+    friend std::ostream& operator << (std::ostream& out, const EnumType& val) { return (out << val.value); }
     static inline constexpr const std::string __json_type() { 
       return "{\"$type\":\"enum-type\",\"first-member\":"+to_str(make_SCALAR_ENUM_t(ENUM_ID))+",""\"member-count\":"+std::to_string(BOUND)+'}';
     }
@@ -435,7 +447,8 @@ namespace romp {
     }
 
     static constexpr const std::string __p_type() { return "scalarset("+std::to_string(BOUND)+')'; }
-    friend ostream_p& operator << (ostream_p& out, const ScalarsetType& val) { return (out << val.value); }
+    // friend ostream_p& operator << (ostream_p& out, const ScalarsetType& val) { return (out << val.value); }
+    friend std::ostream& operator << (std::ostream& out, const ScalarsetType& val) { return (out << val.value); }
     static constexpr const std::string __json_type() { return "{\"$type\":\"scalarset-type\",\"bound\":"+std::to_string(BOUND)+'}'; }
     template<class O>
     friend ojstream<O>& operator << (ojstream<O>& out, const ScalarsetType& val) {
@@ -651,7 +664,8 @@ namespace romp {
         return res + "}";
 #     endif
     }
-    friend ostream_p& operator << (ostream_p& out, const ScalarsetUnionType& val) { return (out << val.value); }
+    // friend ostream_p& operator << (ostream_p& out, const ScalarsetUnionType& val) { return (out << val.value); }
+    friend std::ostream& operator << (std::ostream& out, const ScalarsetUnionType& val) { return (out << val.value); }
     static constexpr const std::string __json_type() { 
       return "{\"$type\":\"scalarset-union-type\","
                 "\"member-count\":"+std::to_string(sizeof...(UNION_MEMBERS))+","
@@ -773,8 +787,12 @@ namespace romp {
       return "Array["+INDEX_t::__p_type()+"] of " + ELEMENT_t::__p_type(); 
     }
     // template<typename It, typename Et>
-    // friend inline ostream_p& operator << (ostream_p& out, const ArrayType<It,Et>& val) {
-    friend inline ostream_p& operator << (ostream_p& out, const ArrayType& val) {
+    // friend inline ostream_p& operator << (ostream_p& out, const ArrayType& val) {
+    template<template<typename,typename>class Arr_t>
+    friend 
+    typename std::enable_if<std::is_base_of<ArrayType<INDEX_t,ELEMENT_t>,
+                                            Arr_t<INDEX_t,ELEMENT_t>>::value,
+                            ostream_p>::type& operator << (ostream_p& out, const Arr_t<INDEX_t,ELEMENT_t>& val) {
       if (val.IsUndefined()) return (out << SCALAR_ENUM_t::_UNDEFINED_);
       out << '[';
       if (ArrayType::__DO_P_SEP())
@@ -931,7 +949,12 @@ namespace romp {
     static constexpr const std::string __p_type() { 
       return "Multiset["+std::to_string(MAX)+"] of " + ELEMENT_t::__p_type();
     }
-    friend inline ostream_p& operator << (ostream_p& out, const MultisetType& val) {
+    // friend inline ostream_p& operator << (ostream_p& out, const MultisetType& val) {
+    template<template<size_t,typename>class MS_t>
+    friend 
+    typename std::enable_if<std::is_base_of<MultisetType<MAX,ELEMENT_t>,
+                                            MS_t<MAX,ELEMENT_t>>::value,
+                            ostream_p>::type& operator << (ostream_p& out, const MS_t<MAX,ELEMENT_t>& val) {
       if (val.IsUndefined()) return (out << SCALAR_ENUM_t::_UNDEFINED_);
       out << '(' << val.occupancy;
       if (ELEMENT_t::__DO_P_SEP() || sizeof(ELEMENT_t)*val.occupancy > sizeof(RangeType<0,1>)*4)
@@ -940,6 +963,8 @@ namespace romp {
         val._pWrite_simp(out << "){");
       return (out << '}');
     }
+    // template<>
+    // friend inline ostream_p& operator << <MultisetType>(ostream_p& out, const MultisetType& val); // {
     static constexpr const std::string __json_type() { 
       return "{\"$type\":\"multiset-type\",\"max\":"+std::to_string(MAX)+'}';
     }
@@ -964,12 +989,6 @@ namespace romp {
 #     endif
     }
   };
-
-
-  // template<size_t FID_START, typename... FIELDS>
-  // class RecordType;
-
-  // template<size_t FID_START, typename... FIELDS>
 
 
 
@@ -1047,7 +1066,7 @@ namespace romp {
   protected:
     template<size_t I>
     typename std::enable_if<(I>=sizeof...(FIELDS)),void>::type _pWrite_comp(ostream_p& out) const { return; }
-    template<size_t I>
+    template<size_t I=0>
     typename std::enable_if<(I<sizeof...(FIELDS)),void>::type _pWrite_comp(ostream_p& out) const {
       // if (I > 0) out << sep;
       if (__DO_P_SEP() || out.OPTIONS.report_show_type) out.nl();
@@ -1060,7 +1079,7 @@ namespace romp {
     }
     template<size_t I>
     typename std::enable_if<(I>=sizeof...(FIELDS)),void>::type _pWrite_simp(ostream_p& out) const { return; }
-    template<size_t I>
+    template<size_t I=0>
     typename std::enable_if<(I<sizeof...(FIELDS)),void>::type _pWrite_simp(ostream_p& out) const {
       out << _GET_FIELD_NAME<I>() << ": " << std::get<I>(data) << "; ";
       _pWrite_simp<I+1>(out);
@@ -1072,27 +1091,34 @@ namespace romp {
 #     ifdef __ROMP__SIMPLE_TRACE
         if (I > 0) json << ',';
         json << std::get<I>(data);
-        _jWrite<I+1>(json);
+        _jWrite<O,I+1>(json);
 #     else
         if (I > 0) json << ',';
         json << "{\"$type\":\"kv-pair\",\"key\":" << _GET_FIELD_NAME<I>() << ","
                   "\"value\":" << std::get<I>(data) << '}';
-        _jWrite<I+1>(json);
+        _jWrite<O,I+1>(json);
 #     endif
     }
   public:
     static constexpr const std::string __p_type() { return "Record"; }
-    friend ostream_p& operator << (ostream_p& out, const RecordType& val) {
+    // friend ostream_p& operator << (ostream_p& out, const RecordType& val) {
+    template<template<size_t,typename...>class Rec_t>
+    friend 
+    typename std::enable_if<std::is_base_of<RecordType<FID_START,FIELDS...>,
+                                            Rec_t<FID_START,FIELDS...>>::value,
+                            ostream_p>::type& operator << (ostream_p& out, const Rec_t<FID_START,FIELDS...>& val) {
       if (val.IsUndefined()) return (out << SCALAR_ENUM_t::_UNDEFINED_);
       if (RecordType::__DO_P_SEP()) {
         out << "Record";
         out.indent();
-        val._pWrite_comp<0>(out);
+        val._pWrite_comp(out);
+        // val._pWrite_comp<0>(out);
         out << out.dedent() << out.nl() << "EndRecord";
         return out;
       } else {
         out << "Rec ";
-        val._pWrite_simp<0>(out);
+        val._pWrite_simp(out);
+        // val._pWrite_simp<0>(out);
         return (out << "End");
       }
     }
@@ -1103,7 +1129,7 @@ namespace romp {
     friend inline ojstream<O>& operator << (ojstream<O>& json, const RecordType& val) {
 #     ifdef __ROMP__SIMPLE_TRACE
         json << '['; 
-        val._jWrite(json);
+        val._jWrite<O,0>(json);
         return (json << ']');
 #     else
         json << "{\"$type\":\"complex-value\",\"type-id\":" << RecordType::__json_type() << ","
@@ -1111,11 +1137,14 @@ namespace romp {
         if (val.IsUndefined())
           return (json << "null}");
         json << "[";
-        val._jWrite(json);
+        val._jWrite<O,0>(json);
         return (json << "]}");
 #     endif
     }
   };
+
+
+
 
 
 } // namespace romp
