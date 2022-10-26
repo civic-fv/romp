@@ -462,15 +462,15 @@ public:
         << "NOTE - " << ((rw.OPTIONS.do_trace) 
                           ? "see \"" + rw.OPTIONS.trace_dir + std::to_string(rw.init_rand_seed) + ".json\" for full trace." 
                           : "use the --trace/-t option to generate a full & detailed trace." ) << out.nl()
-        << "History: ["                                             << out.indent() << out.nl()
+        << "History: ["                             << out.indent() << out.indent() << out.nl()
         << "-(0) " << ::__caller__::STARTSTATES[rw.start_id] << '\n';
       if (rw.history_start > 0)
         out << out.indentation() << "-(..) ... forgotten past ...\n";
       for (size_t i=rw.history_start; i<rw.history_level; ++i)
         out << out.indentation() << "-(" << i+1 <<") " << *(rw.history[i%rw.history_size()].rule) << "\n";
-    out << out.dedent() << "]"                                                      << out.nl();
+    out << out.dedent() << out.indentation() << ']' << out.dedent() << out.dedent() << out.nl();
     if (rw.OPTIONS.report_emit_state)
-      out << "  State: " <<  out.indent() << rw.state << out.dedent()               ;// << out.nl();
+      out << "  State: " <<  out.indent() << out.indent() << rw.state << out.dedent();
     if (rw.tripped != nullptr || rw.tripped_inside != nullptr) {
       out << out.dedent()                                                           << out.nl()
           << "ISSUE REPORT:"                                        << out.indent() << out.nl();

@@ -40,7 +40,10 @@ namespace romp {
   inline std::ostream& operator << (std::ostream& out, const SCALAR_ENUM_t& val) { return (out << to_str(val)); }
   // inline ostream_p& operator << (ostream_p& out, const SCALAR_ENUM_t& val) { return (out << to_str(val)); }
   template<class O>
-  inline ojstream<O>& operator << (ojstream<O>& json, const SCALAR_ENUM_t& val) { return (json << '"' <<to_str(val))<< '"'; }
+  inline ojstream<O>& operator << (ojstream<O>& json, const SCALAR_ENUM_t& val) { 
+    if (val == SCALAR_ENUM_t::_UNDEFINED_) return (json << "null");
+    return (json << '"' <<to_str(val)<< '"'); 
+  }
 
 
   // << ====================================== Base Types ======================================== >> 
@@ -113,14 +116,15 @@ namespace romp {
     }
     static inline const std::string __json_type() { return "null"; }
     template<class O>
-    friend ojstream<O>& operator << (ojstream<O>& out, const BaseUndefinableType& val) {
+    friend ojstream<O>& operator << (ojstream<O>& json, const BaseUndefinableType& val) {
 #     ifdef __ROMP__SIMPLE_TRACE
-        return (out << val.IsUndefined() << "," << val.get());
+        if (val.IsUndefined()) return (json << "null"); 
+        return (json << val.get());
 #     else
-        out << "{\"$type\":\"undefinable-value\",\"type-id\":null,\"value\":";
+        json << "{\"$type\":\"undefinable-value\",\"type-id\":null,\"value\":";
         if (val.IsUndefined())
-          return (out << "null}");
-        return (out << val.get() << '}');
+          return (json << "null}");
+        return (json << val.get() << '}');
 #     endif 
     }
   };
@@ -138,9 +142,10 @@ namespace romp {
     // static inline constexpr const TypeInfo& __INFO() { return ::__info__::TYPE_INFOS[0]; }
     static inline const std::string& __id() { return ::__info__::TYPE_IDS[TID]; }
     static inline constexpr const std::string __json_type() {
-      return std::to_string(TID);
+      // return std::to_string(TID);
       return "{\"$type\":\"type-id\",\"tid\":"+std::to_string(TID)+",\"id\":\"" + __id() + "\",\"referent\":" + T::__json_type() + '}';
     }
+    static inline constexpr const std::string __p_type() { return __id(); }
     template<template<size_t,class>class TId_t>
     friend 
     typename std::enable_if<std::is_base_of<TypeIdType<TID,T>,
@@ -399,17 +404,17 @@ namespace romp {
     // friend ostream_p& operator << (ostream_p& out, const EnumType& val) { return (out << val.value); }
     friend std::ostream& operator << (std::ostream& out, const EnumType& val) { return (out << val.value); }
     static inline constexpr const std::string __json_type() { 
-      return "{\"$type\":\"enum-type\",\"first-member\":"+to_str(make_SCALAR_ENUM_t(ENUM_ID))+",""\"member-count\":"+std::to_string(BOUND)+'}';
+      return "{\"$type\":\"enum-type\",\"first-member\":\""+to_str(make_SCALAR_ENUM_t(ENUM_ID))+"\",""\"member-count\":"+std::to_string(BOUND)+'}';
     }
     template<class O>
     friend ojstream<O>& operator << (ojstream<O>& out, const EnumType& val) {
 #     ifdef __ROMP__SIMPLE_TRACE
-        return (out << val.IsUndefined() << "," << val.value);
+        return (out << val.value);
 #     else
         out << "{\"$type\":\"undefinable-value\",\"type-id\":" << EnumType::__json_type() << ",\"value\":";
         if (val.IsUndefined())
           return (out << "null}");
-        return (out << "\"" << val.value << "\"}");
+        return (out << val.value << '}');
 #     endif 
     }
   };
@@ -453,12 +458,12 @@ namespace romp {
     template<class O>
     friend ojstream<O>& operator << (ojstream<O>& out, const ScalarsetType& val) {
 #     ifdef __ROMP__SIMPLE_TRACE
-        return (out << val.IsUndefined() << "," << val.value);
+        return (out << val.value);
 #     else
         out << "{\"$type\":\"undefinable-value\",\"type-id\":" << ScalarsetType::__json_type() << ",\"value\":";
         if (val.IsUndefined())
           return (out << "null}");
-        return (out << "\"" << val.value << "\"}");
+        return (out << val.value << '}');
 #     endif 
     }
   };
@@ -674,12 +679,12 @@ namespace romp {
     template<class O>
     friend ojstream<O>& operator << (ojstream<O>& out, const ScalarsetUnionType& val) {
 #     ifdef __ROMP__SIMPLE_TRACE
-        return (out << val.IsUndefined() << "," << val.value);
+        return (out << "," << val.value);
 #     else
         out << "{\"$type\":\"undefinable-value\",\"type-id\":" << ScalarsetUnionType::__json_type() << ",\"value\":";
         if (val.IsUndefined())
           return (out << "null}");
-        return (out << "\"" << val.value << "\"}");
+        return (out << val.value << '}');
 #     endif 
     }
   };
@@ -745,7 +750,7 @@ namespace romp {
     static constexpr bool __IS_SIMPLE() { return false; }
     static constexpr bool __IS_RECORD() { return false; }
     static constexpr bool __DO_P_SEP() { 
-      return (ELEMENT_t::__DO_P_SEP() || (sizeof(ELEMENT_t)*INDEX_t::__COUNT()>sizeof(RangeType<0,1>)*4));
+      return (ELEMENT_t::__DO_P_SEP() || (INDEX_t::__COUNT()>4));
     }
  
     template<typename RI, typename RE> 
@@ -807,11 +812,12 @@ namespace romp {
     template<class O>
     friend inline ojstream<O>& operator << (ojstream<O>& json, const ArrayType& val) {
 #     ifdef __ROMP__SIMPLE_TRACE
-        json << '['; std::string sep;
+        // json << '[';
+        std::string sep;
         for (size_t i=0; i<INDEX_t::__COUNT(); ++i) {
-          json << sep << val.data[i]; sep = ", ";
+          json << sep << val.data[i]; sep = ",";
         }
-        return (json << ']');
+        return (json /*<< ']'*/);
 #     else
         json << "{\"$type\":\"complex-value\",\"type\":" << ArrayType::__json_type() << ","
                   "\"value\":";
@@ -868,7 +874,7 @@ namespace romp {
     static constexpr bool __IS_SIMPLE() { return false; }
     static constexpr bool __IS_RECORD() { return false; }
     static constexpr bool __DO_P_SEP() { 
-      return ELEMENT_t::__DO_P_SEP() || (sizeof(ELEMENT_t)*MAX>sizeof(RangeType<0,1>)*3); 
+      return ELEMENT_t::__DO_P_SEP() || (MAX>3);
     }
 
     size_t MultisetCount(const std::function<bool(const size_t)>& cond) const {
@@ -971,11 +977,11 @@ namespace romp {
     template<class O>
     friend inline ojstream<O>& operator << (ojstream<O>& json, const MultisetType& val) {
 #     ifdef __ROMP__SIMPLE_TRACE
-        json << '['; std::string sep;
-        for (size_t i=0; i<val.occupancy; ++i) {
-          json << sep << val.data[i]; sep = ", ";
+        json << "{\"multiset\":["; std::string sep;
+        for (size_t i=0; i<MAX; ++i) {
+          json << sep << '[' << val.data[i] << ']'; sep = ", ";
         }
-        return (json << ']');
+        return (json << "]}");
 #     else
         json << "{\"$type\":\"complex-value\",\"type\":" << MultisetType::__json_type() << ","
               "\"value\":";
@@ -1035,7 +1041,17 @@ namespace romp {
 
     static constexpr bool __IS_SIMPLE() { return false; }
     static constexpr bool __IS_RECORD() { return true; }
-    static constexpr bool __DO_P_SEP() { return (sizeof...(FIELDS)>3); }
+    static constexpr bool __DO_P_SEP() {
+#     if __cplusplus >= 201703L
+        return ((sizeof...(FIELDS)>3) || (FIELDS::__DO_P_SEP() || ...)); // [[requires C++17]]
+#     else
+        bool f_p_seps[] = {FIELDS::__DO_P_SEP()...}; 
+        bool res = false;
+        for (size_t i=1; i<(sizeof...(FIELDS)); ++i)
+          res |= f_p_seps[i];
+        return res || (sizeof...(FIELDS)>3);
+#     endif
+    }
 
     template<size_t I>
     typename std::enable_if<(I>=sizeof...(FIELDS)),void>::type& get() { 
@@ -1081,7 +1097,8 @@ namespace romp {
     typename std::enable_if<(I>=sizeof...(FIELDS)),void>::type _pWrite_simp(ostream_p& out) const { return; }
     template<size_t I=0>
     typename std::enable_if<(I<sizeof...(FIELDS)),void>::type _pWrite_simp(ostream_p& out) const {
-      out << _GET_FIELD_NAME<I>() << ": " << std::get<I>(data) << "; ";
+      out << _GET_FIELD_NAME<I>() << ": " << std::get<I>(data);
+      if (I+1<sizeof...(FIELDS)) out << "; ";
       _pWrite_simp<I+1>(out);
     }
     template<class O, size_t I>
@@ -1094,7 +1111,7 @@ namespace romp {
         _jWrite<O,I+1>(json);
 #     else
         if (I > 0) json << ',';
-        json << "{\"$type\":\"kv-pair\",\"key\":" << _GET_FIELD_NAME<I>() << ","
+        json << "{\"$type\":\"kv-pair\",\"key\":\"" << _GET_FIELD_NAME<I>() << "\","
                   "\"value\":" << std::get<I>(data) << '}';
         _jWrite<O,I+1>(json);
 #     endif
@@ -1116,10 +1133,10 @@ namespace romp {
         out << out.dedent() << out.nl() << "EndRecord";
         return out;
       } else {
-        out << "Rec ";
+        out << "{";
         val._pWrite_simp(out);
         // val._pWrite_simp<0>(out);
-        return (out << "End");
+        return (out << "}");
       }
     }
     static constexpr std::string __json_type() {
@@ -1128,9 +1145,9 @@ namespace romp {
     template<class O>
     friend inline ojstream<O>& operator << (ojstream<O>& json, const RecordType& val) {
 #     ifdef __ROMP__SIMPLE_TRACE
-        json << '['; 
+        // json << '['; 
         val._jWrite<O,0>(json);
-        return (json << ']');
+        return (json /* << ']' */);
 #     else
         json << "{\"$type\":\"complex-value\",\"type-id\":" << RecordType::__json_type() << ","
                   "\"value\":";

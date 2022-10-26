@@ -52,13 +52,13 @@ SR_SS_FACTORY: Callable[[Any],Un[Tuple,NamedTuple]] = (
 
 class Version(tuple):
     "Simple multi part version handler"
-    def __init__(self, val:Un[str,Sequence]) -> None:
+    def __new__(self, val:Un[str,Sequence]) -> None:
         if isinstance(val,str):
-            tuple.__init__(self,Version.__parse_v_str(val))
+            return tuple.__new__(self,Version.__parse_v_str(val))
         elif isinstance(val, Sequence):
-            tuple.__init__(self,val)
+            return tuple.__new__(self,val)
         elif isinstance(val,Num):
-            tuple.__init__(self,[val])
+            return tuple.__new__(self,[val])
         else:
             raise Exception(f"`{type(val)!s}` is not a valid initializer for a Version")
     @staticmethod
@@ -92,7 +92,7 @@ class RompID:
         return self.rule_count * self.possible_state_count
     @property
     def time_unit(self) -> str:
-        if romp_vers < (0,0,3):
+        if self.romp_vers < (0,0,3):
             return "sec"
         return "ms"
 #? END @dataclass RompID
@@ -290,14 +290,11 @@ def get_state_simple(json:JSON_t) -> STATE_t:
     if DEBUG:
         if not isinstance(json,list):
             raise Exception("state was not a simple state ``list'' !!")
-        for val in json:
-            if isinstance(val,dict) or isinstance(val,list):
-                raise Exception("simple state contained a mutable object (dict/obj or list/array)")
-    recurse = lambda i: get_state_simple(i) if isinstance(i,list) else i
-    return tuple([recurse(i) for i in json])
+    recurse = lambda i: (get_state_simple(i) if isinstance(i,list) else i)
+    return tuple([frozenset(recurse(j) for j in i["multiset"]) if isinstance(i,dict) else recurse(i) for i in json])
 #? END def get_state_simple: NormState
 
-@dataclass()
+@dataclass(frozen=True)
 class ModelTransition:
     "simple dataclass representing a transition in the model"
     state: STATE_t
@@ -357,9 +354,9 @@ class TraceData:
         self.__process_trace_file(_trace_dir,_file_name)
     #? END def __init__()
     def __process_trace_file(self,_trace_dir:str,_file_name:str) -> None:
-        with open(_trace_dir+'/'+_file_name,'r') as tf:
-            json = j_load(tf)
         try :
+            with open(_trace_dir+'/'+_file_name,'r') as tf:
+                json = j_load(tf)
             if json['$type'] not in ["romp-trace", "romp-simple-trace"]:
                 raise Exception("Not a romp trace file")
             metadata = json['metadata']
@@ -630,26 +627,28 @@ class ModelResult:
     state_miss_rate: StatRange
     abs_state_hit_rate: StatRange
     abs_state_miss_rate: StatRange
-    active_time: StatRange
-    total_time: StatRange
+    active_time: Un[StatRange,None]
+    total_time: Un[StatRange,None]
     unique_state_count: StatRange
     unique_states: Set[STATE_t]
     unique_rule_count: StatRange
     unique_rules: Set[RULE_t]
     unique_applied_rule_count: StatRange
     unique_applied_rules: Set[str]
-    avg_never_tried_but_never_applied_rule_count: StatRange
+    avg_tried_but_never_applied_rule_count: StatRange
     unique_transition_count: StatRange
+    avg_tried_transition_coverage: StatRange
+    avg_never_tried_transition_count: StatRange
     unique_transitions: Set[ModelTransition]
     unique_applied_transition_count: StatRange
-    avg_never_tried_but_never_applied_transition_count: StatRange
     unique_applied_transitions: Set[str]
-    avg_never_tried_rule_count: StatRange
-    avg_never_tried_but_never_applied_rule_coverage: StatRange
-    avg_never_tried_rule_coverage: StatRange
-    avg_tried_rule_coverage: StatRange
-    avg_applied_rule_coverage: StatRange
+    avg_tried_but_never_applied_transition_count: StatRange
     unique_startstates: Set[int]
+    avg_never_tried_rule_count: StatRange
+    avg_tried_rule_coverage: StatRange
+    avg_tried_but_never_applied_rule_coverage: StatRange
+    avg_applied_rule_coverage: StatRange
+    avg_never_tried_rule_coverage: StatRange
     avg_state_coverage: StatRange
     properties_violated: Set[Un[None,str]]
     errors_found: int
@@ -682,6 +681,8 @@ class ModelResult:
         self.unique_applied_rules: Set[str] = set()
         self.avg_tried_but_never_applied_rule_count: StatRange = StatRange()
         self.unique_transition_count: StatRange = StatRange()
+        # self.avg_tried_transition_coverage: StatRange = StatRange(**SR_PERCENT_FMT)
+        self.avg_never_tried_transition_count: StatRange = StatRange(**SR_PERCENT_FMT)
         self.unique_transitions: Set[ModelTransition] = set()
         self.unique_applied_transition_count: StatRange = StatRange()
         self.unique_applied_transitions: Set[str] = set()
@@ -736,8 +737,8 @@ class ModelResult:
         self.avg_tried_but_never_applied_rule_count.add_data(trace.unique_tried_but_not_applied_rule_count)
         self.avg_never_tried_rule_count.add_data(trace.never_tried_rule_count)
         self.avg_tried_but_never_applied_transition_count.add_data(trace.unique_tried_but_not_applied_transition_count)
-        self.avg_tried_transition_coverage.add_data(trace.tried_transition_coverage)
-        self.avg_never_tried_transition_count.add_data(trace.never_tried_transition_count)
+        # self.avg_tried_transition_coverage.add_data(trace.tried_transition_coverage) # does not exist in class yet
+        self.avg_never_tried_transition_count.add_data(trace.never_tried_transition_count) # does not exist in class yet
         self.avg_never_tried_rule_coverage.add_data(trace.never_tried_rule_coverage)
         self.avg_tried_rule_coverage.add_data(trace.tried_rule_coverage)
         self.avg_tried_but_never_applied_rule_coverage.add_data(trace.tried_but_never_applied_rule_coverage)
@@ -840,7 +841,7 @@ class ModelResult:
             time_label = StatRange.DEFAULT_SUMMARY_LABEL_STR
             t_time = f"{'n/a':>12s} {'n/a':^12s} {'n/a':>12s} {'n/a':>12s} {'n/a':>12s}"
             a_time = t_time
-        timeU = "({self.id.time_unit})"
+        timeU = f"({self.id.time_unit})"
         return (f"{'='*80}\n"
                 f"  {self.id!s:^76s}  \n"
                 f"  {'-'*76}  \n"

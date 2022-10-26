@@ -56,7 +56,7 @@ namespace romp {
     std::string sep = "";
       for (int i=0; i<perm.param_count; ++i) 
         if (params[i] != nullptr) {
-          buf << sep << perm.quantifiers[i].name << ":=" << nEscape(params[i]->value_str);
+          buf << sep << perm.quantifiers[i].name << ":=" << nEscape(params[i]->str_rep);
           // buf << sep << perm.quantifiers[i].name << ":=" << nEscape(params[i].value_str);
           sep = "; ";
         }
@@ -208,7 +208,7 @@ namespace romp {
       }
     public:
       type_trav(const murphi::Quantifier& q__, QuantExpansion& parent_, const std::string& display_type_) 
-        : q(q__), qe(parent_), _json_prefix("\"$type\":\"quantifier\",\"id\":\""+q__.name+'"'),
+        : q(q__), qe(parent_), _json_prefix("{\"$type\":\"quantifier\",\"id\":\""+q__.name+'"'),
           display_type(display_type_),
           ConstBaseTypeTraversal("Not a supported TypeExpr for bounding a quantifier (it may be undefined or too complex) !!") 
       {}

@@ -57,6 +57,8 @@ def run_tests(model_path:str, test_args:str="-s '{}' -d 2000 -w 128",
         See exception message for more details on what and where error occurred.
     """
     root_seed = f"{int(time()):x}"
+    if test_args is None:
+        test_args = "-s '{}' -d 2000 -w 128"
     if "{}" in test_args:
         test_args = test_args.format(root_seed)
     elif "%s" in test_args:
@@ -65,31 +67,31 @@ def run_tests(model_path:str, test_args:str="-s '{}' -d 2000 -w 128",
     # generate model checker
     ret = run_cmd(f"{romp_path} --simple-trace --do-measure "
                   f"-s -o{model_path}.sym.test.cpp {model_path}" +
-                   " >/dev/null 2>&1" if not DEBUG else "")
+                   (" >/dev/null 2>&1" if not DEBUG else ""))
     if ret != 0:
         raise Exception("romp failed to generate model-checker!")
     # build no sym model
     ret = run_cmd(f"{cc} {cc_args} -pthread "
                   f"-o{model_path}.nosym.test {model_path}.sym.test.cpp" +
-                   " >/dev/null 2>&1" if not DEBUG else "")
+                   (" >/dev/null 2>&1" if not DEBUG else ""))
     if ret != 0:
-        raise Exception("`{cc}` failed to build the model-checker")
+        raise Exception(f"`{cc}` failed to build the model-checker")
     # build sym model
     ret = run_cmd(f"{cc} {cc_args} -pthread -D__romp__ENABLE_symmetry "
                   f"-o{model_path}.sym.test {model_path}.sym.test.cpp" +
-                   " >/dev/null 2>&1" if not DEBUG else "")
+                   (" >/dev/null 2>&1" if not DEBUG else ""))
     if ret != 0:
-        raise Exception("`{cc}` failed to build the model-checker (w/ symmetry flag)")
+        raise Exception(f"`{cc}` failed to build the model-checker (w/ symmetry flag)")
     sym_t_dir = path.join(trace_dir,path.basename(model_path)+'_sym')
     no_sym_t_dir = path.join(trace_dir,path.basename(model_path)+'_nsym')
     # run sym model checker
     ret = run_cmd(f"{model_path}.sym.test {test_args} -t '{sym_t_dir}' -y" +
-                   " >/dev/null 2>&1"  if not DEBUG else "")
+                   (" >/dev/null 2>&1" if not DEBUG else ""))
     if ret != 0:
         raise Exception("error while running symmetric model-checker")
     # run no sym model checker
     ret = run_cmd(f"{model_path}.nosym.test {test_args} -t '{no_sym_t_dir}' -y" +
-                   " >/dev/null 2>&1"  if not DEBUG else "")
+                   (" >/dev/null 2>&1" if not DEBUG else ""))
     if ret != 0:
         raise Exception("error while running non-symmetric model-checker")
 

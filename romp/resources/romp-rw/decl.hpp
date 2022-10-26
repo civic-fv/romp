@@ -26,7 +26,7 @@
 #endif  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
 
 
-#define _ROMP_TRACE_JSON_VERSION "0.0.3"
+#define _ROMP_TRACE_JSON_VERSION "0.0.4"
 #ifdef DEBUG
 #define _ROMP_FLUSH_FREQ (32ul)
 #else

@@ -130,7 +130,7 @@ namespace romp {
     inline const std::string _dedent() { dedent(); return indentation(); }
     inline const std::string indentation() { return _indentation; }
     inline const stream_void new_line() { out << '\n' << indentation(); return S_VOID; }
-    inline const stream_void nl() { return new_line(); }
+    inline const stream_void nl() { out << '\n' << indentation(); return S_VOID; }
     // template <typename T>
     // inline ostream_p& operator << (const T val);
     // ostream_p& operator << (const std::string& str) { out << str; return *this; }
