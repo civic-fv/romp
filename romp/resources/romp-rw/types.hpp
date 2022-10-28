@@ -306,7 +306,7 @@ namespace romp {
     // }
     static constexpr const std::string __json_type() { 
       return "{\"$type\":\"range-type\","
-                "\"bounds\":["+std::to_string(LB)+","+std::string(UB)+"]}";
+                "\"bounds\":["+std::to_string(LB)+","+std::to_string(UB)+"]}";
     }
 #   ifndef __ROMP__SIMPLE_TRACE
     template<class O>

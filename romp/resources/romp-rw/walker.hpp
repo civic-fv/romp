@@ -745,16 +745,11 @@ void launch_threads(const Options& OPTIONS, unsigned int rand_seed) {
     // std::lock_guard<std::mutex> in_queue(_in_queue_mutex);
     // std::lock_guard<std::mutex> out_queue(_out_queue_mutex);
     in_queue.lock();
-    do {
-      RandWalker *rw = new RandWalker(in_seeds.front(),OPTIONS);
+    while (in_seeds.size() > 0) { 
+
+      in_seeds.front(); RandWalker *rw = new RandWalker(in_seeds.front(),OPTIONS);
       in_seeds.pop(); 
       in_queue.unlock();
-
-      if (rw == nullptr) {
-        break;  //DEBUG catch bad data in queue
-        // in_queue.lock();  
-        // continue;
-      };  // just in case might not need (if so remove)
 
       rw->init();
       while (not rw->is_done())
@@ -767,7 +762,7 @@ void launch_threads(const Options& OPTIONS, unsigned int rand_seed) {
       out_queue.unlock();
 
       in_queue.lock();
-    } while (in_seeds.size() > 0);
+    }
     in_queue.unlock();
   };
 

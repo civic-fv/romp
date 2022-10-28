@@ -135,8 +135,8 @@ namespace romp {
   // size_t QuantExpansion::size() const { return _size.get_ui() ; }
   size_t QuantExpansion::size() const { return _size; }
 
-  std::vector<const SigParam*>::iterator QuantExpansion::begin() const { values.begin(); }
-  std::vector<const SigParam*>::iterator QuantExpansion::end() const { values.end(); }
+  std::vector<const SigParam*>::iterator QuantExpansion::begin() const { return values.begin(); }
+  std::vector<const SigParam*>::iterator QuantExpansion::end() const { return values.end(); }
   // std::vector<const SigParam>::iterator QuantExpansion::begin() const { values.begin(); }
   // std::vector<const SigParam>::iterator QuantExpansion::end() const { values.end(); }
 
@@ -417,7 +417,7 @@ namespace romp {
   /* friend */ bool operator != (const SigPerm::Iterator& l, const SigPerm::Iterator& r) { return  (l.perm.rule.name) !=  (r.perm.rule.name) || l.index != r.index; }
   
   // std::string SigPerm::Iterator::to_string() const { sig_ptr->to_string(); }
-  std::string SigPerm::Iterator::to_string() const { sig.to_string(); }
+  std::string SigPerm::Iterator::to_string() const { return sig.to_string(); }
 
   void SigPerm::Iterator::increment_item() {
     if (perm.param_count == 0) { sig.index = index = perm.size(); return; } // edge case of no quantifiers
