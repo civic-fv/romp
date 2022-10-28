@@ -468,18 +468,20 @@ public:
         out << out.indentation() << "-(..) ... forgotten past ...\n";
       for (size_t i=rw.history_start; i<rw.history_level; ++i)
         out << out.indentation() << "-(" << i+1 <<") " << *(rw.history[i%rw.history_size()].rule) << "\n";
-    out << out.dedent() << out.indentation() << ']' << out.dedent() << out.dedent() << out.nl();
+    out << out.dedent() << out.indentation() << ']' << out.dedent() << out.dedent();
     if (rw.OPTIONS.report_emit_state)
-      out << "  State: " <<  out.indent() << out.indent() << rw.state << out.dedent();
+      out                                                                           << out.nl()
+          << "  State: " <<  out.indent() << out.indent() << rw.state << out.dedent() << out.dedent();
     if (rw.tripped != nullptr || rw.tripped_inside != nullptr) {
-      out << out.dedent()                                                           << out.nl()
+      out                                                                           << out.nl()
           << "ISSUE REPORT:"                                        << out.indent() << out.nl();
-      if (rw.tripped != nullptr)
+      if (rw.tripped != nullptr) {
         out << "Tripped: \033[31m" << *rw.tripped << "\033[0m"                      << out.nl();
-      if (rw.tripped_inside != nullptr)
-        out << "  Trace: "                                          << out.indent() << out.nl()
-            << *rw.tripped_inside                                   << out.dedent() << out.nl();
-            // << '}'                                                                  << out.nl(); 
+        if (rw.tripped_inside != nullptr)
+          out << "  Trace: "                                        << out.indent() << out.nl()
+              << *rw.tripped_inside                                 << out.dedent() << out.nl();
+              // << '}'                                                               << out.nl();
+      }
     }
     if (rw.put_msgs.size() > 0) {
       out << "Put Statements: \"\"\""               << out.indent() << out.indent() << out.nl();

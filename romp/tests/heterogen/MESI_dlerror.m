@@ -40,7 +40,7 @@
   const
     ENABLE_QS: false;
     VAL_COUNT: 2;
-    ADR_COUNT: 0;
+    ADR_COUNT: 1; -- 0; -- WARNING: zero wide arrays cause issues with romp !!
   
   ---- System network constants
     O_NET_MAX: 12;

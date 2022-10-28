@@ -38,8 +38,8 @@ void generate_state_stream(romp::CodeGenerator& gen, const murphi::Model& m) {
       json_simp << j_sep << " << s." << _vd->name;
       json << j_sep << " << \"{\\\"$type\\\":\\\"kv-pair\\\",\\\"key\\\":\\\"" << _vd->name <<  "\\\",\\\"value\\\":\" << s." << _vd->name << " << '}'";
       gen << p_sep << '\n' << gen.indentation() << " << \"" << _vd->name << "\" "
-                                                "<< (((not s." << _vd->name <<".__IS_RECORD())||" ROMP_SHOW_TYPE_OPTION_EXPR ") "
-                                                    "? \": \" + s." << _vd->name << ".__p_type() + \" = \" : \":= \") "
+                                                "<< ((((not s." << _vd->name <<".__IS_RECORD())||(s."<< _vd->name <<".__IS_TYPEID()))&&" ROMP_SHOW_TYPE_OPTION_EXPR ") "
+                                                    "? \": \" + s." << _vd->name << ".__p_type() + \" = \" : \" := \") "
                                                 "<< s." << _vd->name << " << ';'";
       j_sep = " << ','";
       p_sep = " << out.nl()";

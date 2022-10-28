@@ -576,8 +576,8 @@ public:
     // declarations (primarily enum members) as these will be duplicated in
     // when we descend into decl below
     symtab.open_scope();
-    for (Ptr<TypeExpr> t : n.members)
-      dispatch(*t);
+    for (Ptr<TypeExpr>& m : n.members)
+      dispatch(*m);
     symtab.close_scope();
     //bound is nullptr until update is called
   }
@@ -678,12 +678,13 @@ private:
       // but it is an Element
       if (auto _e = dynamic_cast<const Element*>(e.get())) {
         // the Element is trying to access a Multiset not an Array
-        if (auto _ms = dynamic_cast<const Multiset*>(_e->array->type().get())) {
+        const auto _t = _e->array->type()->resolve();
+        if (const auto _ms = dynamic_cast<const Multiset*>(_t.get())) {
           // Element index must be unmodified var/ExprID referring to a multiset quantifier
-          if (auto _eid = dynamic_cast<const ExprID*>(_e->index.get())) {
+          if (const auto _eid = dynamic_cast<const ExprID*>(_e->index.get())) {
             // lookup the id in both the current scope and the multiset scope (this means the Id is the same)
-            auto st_vd = symtab.lookup<VarDecl>(_eid->id, _eid->loc);
-            auto msq = ms_quantifiers.lookup<MultisetQuantifier>(_eid->id, _eid->loc);
+            const auto st_vd = symtab.lookup<VarDecl>(_eid->id, _eid->loc);
+            const auto msq = ms_quantifiers.lookup<MultisetQuantifier>(_eid->id, _eid->loc);
                 // both lookups succeeded (this condition also assures the index var Id matches the ms_quantifier's)
             if ((st_vd != nullptr && msq != nullptr)
                 // the type of multiset being accessed is the same type as referred to in the MultisetQuantifier
@@ -694,7 +695,9 @@ private:
                 && (msq->decl->is_readonly() && _eid->is_readonly())) {
                 // biggest flaw left is ensuring that the multiset being refereed to is the same as the ms_quantifier's
                 // if (_e->array->to_string() == msq->multiset->to_string()) // approximate rough check for the above
+              auto tmp_uid = e->unique_id;
               e = Ptr<MultisetElement>::make(_e->array, Ptr<ExprID>::make(*_eid), e->loc);
+              e->unique_id = tmp_uid;
             }
           }
         }

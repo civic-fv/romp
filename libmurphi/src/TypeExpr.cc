@@ -114,13 +114,17 @@ static bool equal(const TypeExpr &t1, const TypeExpr &t2) {
 
     void visit_scalarsetunion(const ScalarsetUnion& n) {
       if (auto u = dynamic_cast<const ScalarsetUnion *>(t.get())) {
-        result = true;
-        for (const auto& n_m : n.members)  // order does not matter
-          for (const auto& u_m : u->members)
-            result &= (n.contains(*u_m) && u->contains(*n_m));
-      } else {
-        result = false;
-      }
+        if (n.members.size() == u->members.size()) {
+          result = true;
+          for (const auto& m : n.members)
+            result &= u->contains(*m);
+          // for (const auto& n_m : n.members)  // order does not matter
+          //   for (const auto& u_m : u->members)
+          //     result &= (n.contains(*u_m) && u->contains(*n_m));
+        return;
+        }
+      } 
+      result = false;
     }
 
     void visit_typeexprid(const TypeExprID &n) final { dispatch(*n.referent); }

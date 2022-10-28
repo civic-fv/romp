@@ -312,7 +312,7 @@ namespace romp {
     //     cause(old.cause), depth(old.depth), 
     //     tripped(old.tripped), inside(old.inside)
     // { old.tripped = nullptr; old.inside = nullptr; }
-    ~Result() { if (tripped != nullptr) delete tripped; if (inside != nullptr) delete inside; }
+    ~Result(); // { if (tripped != nullptr) delete tripped; if (inside != nullptr) delete inside; }
   };
 
 } // namespace romp

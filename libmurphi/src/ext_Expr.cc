@@ -41,7 +41,8 @@ bool IsMember::constant() const { return false; }
 bool IsMember::is_pure() const { return true; }
 
 void IsMember::validate_types() const {
-  if (const auto _u = dynamic_cast<const ScalarsetUnion*>(designator->type().get())) {
+  const auto t = designator->type()->resolve();
+  if (const auto _u = dynamic_cast<const ScalarsetUnion*>(t.get())) {
     if (not _u->contains(*type_value))
       throw Error("IsMember will ALWAYS evaluate to false",loc);
   } else 
@@ -107,7 +108,7 @@ Ptr<TypeExpr> MultisetElement::type() const {
   if (const auto m = dynamic_cast<const Multiset *>(t.get()))
     return m->element_type;
 
-  throw Error("multiset element based on something that is not an multiset", loc);
+  throw Error("multiset element trying to access something that is not an multiset", loc);
 }
 
 mpz_class MultisetElement::constant_fold() const {
@@ -130,14 +131,15 @@ bool MultisetElement::is_pure() const { return true; }
 
 void MultisetElement::validate() const {
   const Ptr<TypeExpr> t = multiset->type()->resolve();
-
-  if (not isa<Multiset>(t))
-    throw murphi::Error("multiset index on an expression that is not a multiset", loc);
-
-  auto a = dynamic_cast<const Array &>(*t);
-
-  if (!index->type()->coerces_to(*a.index_type))
-    throw murphi::Error("multiset indexed using an expression of incorrect type", loc);
+  if (const auto ms = dynamic_cast<const Multiset*>(t.get())) {
+    if (const auto eid = dynamic_cast<const ExprID*>(index.get())) {
+      // if (!index->type()->coerces_to(*ms->index_type))
+      //   throw murphi::Error("multiset indexed using an expression of incorrect type", loc);
+    } else
+      throw murphi::Error("a multiset's can only be accessed by unmodified direct references to a multiset utility "
+                          "(i.e. Choose rules, MultisetCount, or MultisetRemovePred)", loc);
+  } else
+    throw murphi::Error("DEV ERROR : multiset element is operating on a type that is not a multiset", loc);
 }
 void MultisetElement::update() { 
   // do nothing but override the SUCast inserting behavior from element,
@@ -159,11 +161,13 @@ void MultisetQuantifier::visit(BaseTraversal& visitor) { visitor.visit_multisetq
 void MultisetQuantifier::visit(ConstBaseTraversal& visitor) const { visitor.visit_multisetquantifier(*this); }
 
 void MultisetQuantifier::validate() const {
-  if (not isa<Multiset>(multiset->type()))
+  const auto t = multiset->type()->resolve();
+  if (not isa<Multiset>(t.get()))
     throw Error("expected a multiset", multiset->loc);
 }
 void MultisetQuantifier::update() {
-  if (const auto ms = dynamic_cast<const Multiset*>(multiset->type().get())) {
+  const auto t = multiset->type()->resolve();
+  if (const auto ms = dynamic_cast<const Multiset*>(t.get())) {
     decl->type = type = Ptr<Range>::make(Ptr<Number>::make(1_mpz,location()), ms->size, loc);
     decl->readonly = true;
   }
@@ -194,7 +198,8 @@ void MultisetCount::update() {
   // condition = MultisetElement::convert_elements(ms_quantifier,condition);  // moved to symbol-resolver disambiguate
 }
 Ptr<TypeExpr> MultisetCount::type() const {
-  if (const auto ms = dynamic_cast<const Multiset*>(ms_quantifier.multiset->type().get()))
+  const auto t = ms_quantifier.multiset->type()->resolve();
+  if (const auto ms = dynamic_cast<const Multiset*>(t.get()))
     return Ptr<Range>::make(Ptr<Number>::make(0_mpz,location()),
                             ms->size, loc);
   // else

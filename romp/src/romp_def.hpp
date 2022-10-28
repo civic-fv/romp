@@ -182,7 +182,7 @@
 #define ROMP_PROPERTY_TYPE_COVER ROMP_PROPERTY_TYPE_BASE "::COVER"
 #define ROMP_PROPERTY_TYPE_LIVENESS ROMP_PROPERTY_TYPE_BASE "::LIVENESS"
 
-#define ROMP_MAKE_LOCATION_STRUCT(_loc) "{{" << (_loc).begin.line << "," << (_loc).begin.column << "},"\
+#define ROMP_MAKE_LOCATION_STRUCT(_loc) ROMP_UTIL_NAMESPACE "::location{{" << (_loc).begin.line << "," << (_loc).begin.column << "},"\
                                          "{" << (_loc).end.line << "," << (_loc).end.column << "}}"
 
 #define ROMP_MAKE_RULE_INFO_STRUCT(_n, _json) "{\"" << nEscape((_n).name) << "\"," ROMP_MAKE_LOCATION_STRUCT((_n).loc) ",\"" << nEscape(_json) << "\"}"

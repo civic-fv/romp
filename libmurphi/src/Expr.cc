@@ -1063,7 +1063,8 @@ std::string Element::to_string() const {
 bool Element::is_pure() const { return true; }
 
 void Element::update() {
-  // if (const auto _a = dynamic_cast<const Array*>(array->type()->resolve().get())) {
+  // const auto t = array->type()->resolve();
+  // if (const auto _a = dynamic_cast<const Array*>(t.get())) {
   //   const Ptr<TypeExpr> it = _a->index_type->resolve();
   //   if (not index->type()->equal_to(*it)) {
   //     if (isa<Scalarset>(it) || isa<Enum>(it) || isa<ScalarsetUnion>(it)) // scalarset+union or enum

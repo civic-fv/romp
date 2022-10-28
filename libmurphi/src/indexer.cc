@@ -333,7 +333,8 @@ void Indexer::visit_undefine(Undefine &n) {
 
 void Indexer::visit_vardecl(VarDecl &n) {
   n.unique_id = next++;
-  dispatch(*n.type);
+  if (n.type != nullptr) // check to accommodate MultisetQuantifiers, that don't have this until after symbol resolution
+    dispatch(*n.type);
 }
 
 void Indexer::visit_while(While &n) {

@@ -94,7 +94,7 @@ namespace romp {
       is_defined = true;
       return *this;
     }
-    inline T unsafe_get() { return value; }
+    inline T unsafe_get() const { return value; }
   public:
     BaseUndefinableType() { Undefine(); }
     // BaseUndefinableType(T value_) : is_defined(true), value(value_) {}
@@ -104,6 +104,7 @@ namespace romp {
 
     static constexpr bool __IS_SIMPLE() { return true; }
     static constexpr bool __IS_RECORD() { return false; }
+    static constexpr bool __IS_TYPEID() { return false; }
     static constexpr bool __DO_P_SEP() { return false; }
 
     explicit inline operator T () { return value; }
@@ -137,9 +138,12 @@ namespace romp {
   public:
     template<typename... Args>
     TypeIdType(Args &&... args) : T(std::forward<Args>(args)...) {}
+    // template<typename... Args>
+    // TypeIdType(const Args &&... args) : T(std::forward<Args>(args)...) {}
     operator T& () { return *((T*)this); }
     // operator T& () const { return T(*this); }
     // static inline constexpr const TypeInfo& __INFO() { return ::__info__::TYPE_INFOS[0]; }
+    static inline constexpr bool __IS_TYPEID() { return true; }
     static inline const std::string& __id() { return ::__info__::TYPE_IDS[TID]; }
     static inline constexpr const std::string __json_type() {
       // return std::to_string(TID);
@@ -201,7 +205,7 @@ namespace romp {
     static_assert(not ((LB<UB) xor (STEP>0)), "step must go in the same direction as bounds");
     static_assert((not (STEP==0) || (LB==UB)), "if STEP is 0, then LB must equal UB");
   protected:
-    void _check(range_t value_) {
+    static void _check(range_t value_) {
       if (LB<=UB) { // compiler should optimize this top level if-else out
         if (LB <= value_ && value_ <= UB) return;
       } else {
@@ -218,6 +222,12 @@ namespace romp {
   public:
     RangeType() : BaseUndefinableType<range_t>() {}
     RangeType(range_t value_) : BaseUndefinableType<range_t>(value_) { _check(value_); }
+    template<range_t O_LB, range_t O_UB, range_t O_STEP>
+    RangeType(const RangeType<O_LB,O_UB,O_STEP>& range_) {
+      if (range_.IsUndefined()) Undefine();
+      else { RangeType::_check(range_.__unsafe_get()); this->set(range_.__unsafe_get()); }
+    }
+    inline range_t __unsafe_get() const { return unsafe_get(); }
     void Clear() { set(LB); }
     inline operator range_t () { return get(); }
     inline RangeType& operator = (range_t other) { 
@@ -226,15 +236,15 @@ namespace romp {
     }
     template<range_t N_LB, range_t N_UB, range_t N_STEP>
     inline RangeType& operator = (const RangeType<N_LB,N_UB,N_STEP>& other) { 
-      if (other.IsUndefined) {
+      if (other.IsUndefined()) {
         Undefine();
         return *this;
       }
-      return (*this = other.value);
+      return (*this = other);
     }
     size_t __get_index_val() const { return static_cast<size_t>(get() - LB); }
     static constexpr RangeType __LB() { return RangeType(LB); }
-    static constexpr RangeType __UB() { RangeType tmp(UB); tmp.set(UB+STEP); } 
+    static constexpr RangeType __UB() { RangeType tmp(UB); tmp.set(UB+STEP); return tmp; } 
     static constexpr size_t __COUNT() { return static_cast<size_t>((UB-LB+1)/STEP); }
     RangeType& __step() {
       // step needs to account for uneven ranges or modifying values in model between steps
@@ -276,6 +286,14 @@ namespace romp {
     friend inline bool operator >= (const RangeType& l, const RangeType<RLB,RUB>& r) { return l.get() >= r.get(); }
     template<range_t RLB, range_t RUB>
     friend inline bool operator > (const RangeType& l, const RangeType<RLB,RUB>& r) { return l.get() > r.get(); }
+    
+    
+    friend inline bool operator < (const RangeType& l, const range_t& r) { return l.get() < r; }
+    friend inline bool operator <= (const RangeType& l, const range_t& r) { return l.get() <= r; }
+    friend inline bool operator == (const RangeType& l, const range_t& r) { return l.get() == r; }
+    friend inline bool operator != (const RangeType& l, const range_t& r) { return l.get() != r; }
+    friend inline bool operator >= (const RangeType& l, const range_t& r) { return l.get() >= r; }
+    friend inline bool operator > (const RangeType& l, const range_t& r) { return l.get() > r; }
 
 
     static constexpr const std::string __p_type() { 
@@ -321,13 +339,15 @@ namespace romp {
       if (not IsMember(value_))
         throw std::logic_error("`"+ to_str(value_) +"` is not a member of this enum type");
     }
+    template<class... UM>
+    EnumType(const ScalarsetUnionType<UM...>& union_) : EnumType(union_.__get_scalar_value()) {}
 
     inline bool IsUndefined() const { return value == SCALAR_ENUM_t::_UNDEFINED_; }
     inline void Undefine() { value = SCALAR_ENUM_t::_UNDEFINED_; }
     inline void Clear() { value = make_SCALAR_ENUM_t(ENUM_ID); }
     
     static inline bool IsMember(const SCALAR_ENUM_t& v) { 
-      return ((v == SCALAR_ENUM_t::_UNDEFINED_) 
+      return ((v == SCALAR_ENUM_t::_UNDEFINED_) //NOTE: might need to not include _UNDEFINED_ in values
               || ((make_SCALAR_ENUM_t(ENUM_ID) <= v) 
                     && (v <= make_SCALAR_ENUM_t(ENUM_ID+BOUND))));
     }
@@ -340,6 +360,7 @@ namespace romp {
     static constexpr size_t __COUNT() { return BOUND; }
     static constexpr bool __IS_SIMPLE() { return true; }
     static constexpr bool __IS_RECORD() { return false; }
+    static constexpr bool __IS_TYPEID() { return false; }
     static constexpr bool __DO_P_SEP() { return false; }
 
     // cast to index operator
@@ -428,6 +449,8 @@ namespace romp {
         throw std::logic_error("`"+ to_str(value_) +"` is not a member of this scalarset type");
       this->value = value_;
     }
+    template<class... UM>
+    ScalarsetType(const ScalarsetUnionType<UM...>& union_) : ScalarsetType(union_.__get_scalar_value()) {}
     // static inline const std::string __id() { return ::__info__::TYPE_INFOS[TID].label; }
 
     
@@ -473,7 +496,7 @@ namespace romp {
   class ScalarsetUnionType {
     SCALAR_ENUM_t value;
   protected:
-    static const size_t MEMBER_COUNT;
+    // static const size_t MEMBER_COUNT;
     static const size_t ENUM_IDS[sizeof...(UNION_MEMBERS)+1];
     static const size_t BOUNDS[sizeof...(UNION_MEMBERS)+1];
     
@@ -512,6 +535,8 @@ namespace romp {
         throw std::out_of_range("`"+ to_str(value) +"` is not a member of the union (scalarset union)");
       value = value_.__get_scalar_value();
     }
+    template<class... UM>
+    ScalarsetUnionType(const ScalarsetUnionType<UM...>& u_) : ScalarsetUnionType(u_.value) {}
 
     static inline bool IsMember(const SCALAR_ENUM_t& val) { return MembersContain(val); }
     inline bool IsUndefined() const { return (value == SCALAR_ENUM_t::_UNDEFINED_); }
@@ -526,7 +551,7 @@ namespace romp {
       size_t i;
       for (i=0ul; i<(sizeof...(UNION_MEMBERS)+1); ++i) {
         if (ENUM_IDS[i] <= value && value <= (ENUM_IDS[i]+BOUNDS[i]-1)) 
-          return offset + static_cast<size_t>(value) - ENUM_IDS[i];
+          return offset + static_cast<size_t>(value) - ENUM_IDS[i] -1; // modified for dbg
         offset += BOUNDS[i];
       }
       throw std::runtime_error("DEV ERROR : could not convert union to index value");
@@ -599,27 +624,26 @@ namespace romp {
       size_t j;
     public:
       iterator(size_t i_, size_t j_) 
-        : i(i_), j(j_), 
-          u(make_SCALAR_ENUM_t(ScalarsetUnionType::ENUM_IDS[i_]+j_)) 
+        : i(i_), j(j_)
         {
           if (i>sizeof...(UNION_MEMBERS)) {
             j = 0; u.value = SCALAR_ENUM_t::_UNDEFINED_;
-          }
+          } else u.value = make_SCALAR_ENUM_t(ScalarsetUnionType::ENUM_IDS[i_]+j_);
         }
       ScalarsetUnionType& operator*() const { return u; }
       ScalarsetUnionType* operator->() { return &u; }
-      iterator& operator += (int _) { return (__step()); }
+      iterator& operator += (int) { return (__step()); }
       iterator& __step() {
-        if (i>sizeof...(UNION_MEMBERS)) {
-          j = 0; u.value = SCALAR_ENUM_t::_UNDEFINED_;
-          return *this;
-        } 
-        if (++j > u.BOUNDS[i]) {
+        // if (i>=sizeof...(UNION_MEMBERS)+1) {
+        //   j = 0; u.value = SCALAR_ENUM_t::_UNDEFINED_;
+        //   return *this;
+        // } 
+        if (++j < ScalarsetUnionType::BOUNDS[i]) {
           u.value = make_SCALAR_ENUM_t(static_cast<size_t>(u.value)+1);
           return *this;
         }
         ++i; j=0;
-        if (i>sizeof...(UNION_MEMBERS)) {
+        if (i>=sizeof...(UNION_MEMBERS)+1) {
           u.value = SCALAR_ENUM_t::_UNDEFINED_;
           return *this;
         }
@@ -630,12 +654,26 @@ namespace romp {
         return (l.i<=r.i && l.j <= r.j);
       }
       operator ScalarsetUnionType () { return ScalarsetUnionType(u); }
+      operator SCALAR_ENUM_t () { return u.value; }
       iterator& operator = (const ScalarsetUnionType& other) {
         throw std::logic_error("you cannot assign to a quantifier or for-loop iterator");
       }
+      inline SCALAR_ENUM_t __get_scalar_value() const { return u.value; }
       friend inline bool operator == (const iterator& l, const iterator& r) { return (l.i==r.i && l.j==r.j); }
       friend inline bool operator != (const iterator& l, const iterator& r) { return (l.i!=r.i || l.j!=r.j); }
+      friend inline bool operator == (const ScalarsetUnionType& l, const iterator& r) { return l == r.u; }
+      friend inline bool operator != (const ScalarsetUnionType& l, const iterator& r) { return l != r.u; }
+      friend inline bool operator == (const iterator& l, const ScalarsetUnionType& r) { return l.u == r; }
+      friend inline bool operator != (const iterator& l, const ScalarsetUnionType& r) { return l.u != r; }
+      friend std::ostream& operator << (std::ostream& out, const iterator& val) { return (out << val.u); }
     };
+
+    ScalarsetUnionType(const iterator& it_) 
+      : ScalarsetUnionType(it_.__get_scalar_value()) {}
+    template<class... UM>
+    ScalarsetUnionType(const typename ScalarsetUnionType<UM...>::iterator& it_) 
+      : ScalarsetUnionType(it_.__get_scalar_value()) {}
+
     static constexpr iterator __LB() { return iterator(1, 0); }
     static constexpr iterator __UB() { return iterator(sizeof...(UNION_MEMBERS)+1, 0); }
     // static constexpr int __STEP() { return 1; }
@@ -653,6 +691,7 @@ namespace romp {
     }
     static constexpr bool __IS_SIMPLE() { return true; }
     static constexpr bool __IS_RECORD() { return false; }
+    static constexpr bool __IS_TYPEID() { return false; }
     static constexpr bool __DO_P_SEP() { return false; }
     
     static constexpr const std::string __p_type() {
@@ -699,7 +738,7 @@ namespace romp {
   /* this IsMember is the one associated with the IsMember() Murphi language operator */
   template<class ET, typename VT>
   inline bool IsMember(const VT& u) {
-    return ET::IsMember(u.__get_value());
+    return ET::IsMember(u.__get_scalar_value());
   }
 
 
@@ -749,8 +788,10 @@ namespace romp {
 
     static constexpr bool __IS_SIMPLE() { return false; }
     static constexpr bool __IS_RECORD() { return false; }
+    static constexpr bool __IS_TYPEID() { return false; }
     static constexpr bool __DO_P_SEP() { 
-      return (ELEMENT_t::__DO_P_SEP() || (INDEX_t::__COUNT()>4));
+      return ((ELEMENT_t::__DO_P_SEP()) || ((INDEX_t::__COUNT()>4)) 
+              || (sizeof(ELEMENT_t)>(sizeof(BooleanType)*((ELEMENT_t::__IS_RECORD()) ? 2 : 3))));
     }
  
     template<typename RI, typename RE> 
@@ -775,8 +816,8 @@ namespace romp {
     inline void _pWrite_comp(ostream_p& out) const {
       std::string sep;
       out.indent();
-      for (auto i = INDEX_t::__LB(); i!=INDEX_t::__UB(); i.__step()) {
-        out << sep << out.nl() << i << ": " << (*this)[i]; sep = ",";
+      for (auto i=INDEX_t::__LB(); i!=INDEX_t::__UB(); i.__step()) {
+        out << sep << out.nl() << '[' << i << "]: " << (*this)[i]; sep = ",";
       }
       out.dedent();
     }
@@ -800,9 +841,10 @@ namespace romp {
                             ostream_p>::type& operator << (ostream_p& out, const Arr_t<INDEX_t,ELEMENT_t>& val) {
       if (val.IsUndefined()) return (out << SCALAR_ENUM_t::_UNDEFINED_);
       out << '[';
-      if (ArrayType::__DO_P_SEP())
+      if (ArrayType::__DO_P_SEP()) {
         val._pWrite_comp(out);
-      else
+        out.nl();
+      } else
         val._pWrite_simp(out);
       return (out << ']');
     }
@@ -850,11 +892,13 @@ namespace romp {
   }
  
 
-  // template<size_t MAX, typename ELEMENT_t>
-  // class MultisetType;
 
-  // template<size_t MAX, typename ELEMENT_t>
-  // inline const ELEMENT_t& MultisetElement(const MultisetType<MAX,ELEMENT_t>& multiset, size_t index, const location& loc);
+  template<size_t MAX, typename ELEMENT_t> class MultisetType;
+
+  template<size_t MAX, typename ELEMENT_t>
+  inline const ELEMENT_t& MultisetElement(const MultisetType<MAX,ELEMENT_t>& ms, const size_t i, const location& loc);
+
+
 
   template<size_t MAX, typename ELEMENT_t>
   class MultisetType {
@@ -873,8 +917,10 @@ namespace romp {
 
     static constexpr bool __IS_SIMPLE() { return false; }
     static constexpr bool __IS_RECORD() { return false; }
+    static constexpr bool __IS_TYPEID() { return false; }
     static constexpr bool __DO_P_SEP() { 
-      return ELEMENT_t::__DO_P_SEP() || (MAX>3);
+      return ((ELEMENT_t::__DO_P_SEP()) || (MAX>3) 
+             || (sizeof(ELEMENT_t)>(sizeof(BooleanType)*((ELEMENT_t::__IS_RECORD()) ? 2 : 3))));
     }
 
     size_t MultisetCount(const std::function<bool(const size_t)>& cond) const {
@@ -908,13 +954,9 @@ namespace romp {
     //   return __rw__->choose_handler(occupancy);
     // }
 
-    friend const ELEMENT_t& MultisetElement(const MultisetType& ms, const size_t i, const location& loc) {
-      try {
-        return ms.data[i];
-      } catch (...) {
-        throw ModelTypeError("error during multiset element access", loc);
-      }
-    }
+    // friend inline const ELEMENT_t& MultisetElement(const MultisetType& ms, const size_t i, const location& loc);
+    const ELEMENT_t& operator [] (size_t index) const { return data[index]; }
+
     template<size_t RM, typename RE>  
     friend bool operator == (const MultisetType& l, const MultisetType<RM,RE>& r) {
       // if (MAX != RM) return false; // evaluate-able at compile time
@@ -963,9 +1005,10 @@ namespace romp {
                             ostream_p>::type& operator << (ostream_p& out, const MS_t<MAX,ELEMENT_t>& val) {
       if (val.IsUndefined()) return (out << SCALAR_ENUM_t::_UNDEFINED_);
       out << '(' << val.occupancy;
-      if (ELEMENT_t::__DO_P_SEP() || sizeof(ELEMENT_t)*val.occupancy > sizeof(RangeType<0,1>)*4)
+      if (ELEMENT_t::__DO_P_SEP() || sizeof(ELEMENT_t)*val.occupancy > sizeof(RangeType<0,1>)*4) {
         val._pWrite_comp(out << "/" << MAX << "){");
-      else
+        out.nl();
+      } else
         val._pWrite_simp(out << "){");
       return (out << '}');
     }
@@ -995,6 +1038,15 @@ namespace romp {
 #     endif
     }
   };
+
+  template<size_t MAX, typename ELEMENT_t>
+  inline const ELEMENT_t& MultisetElement(const MultisetType<MAX,ELEMENT_t>& ms, const size_t i, const location& loc) {
+    try {
+      return ms[i];
+    } catch (...) {
+      throw ModelTypeError("error during multiset element access", loc);
+    }
+  }
 
 
 
@@ -1041,13 +1093,14 @@ namespace romp {
 
     static constexpr bool __IS_SIMPLE() { return false; }
     static constexpr bool __IS_RECORD() { return true; }
+    static constexpr bool __IS_TYPEID() { return false; }
     static constexpr bool __DO_P_SEP() {
 #     if __cplusplus >= 201703L
         return ((sizeof...(FIELDS)>3) || (FIELDS::__DO_P_SEP() || ...)); // [[requires C++17]]
 #     else
         bool f_p_seps[] = {FIELDS::__DO_P_SEP()...}; 
         bool res = false;
-        for (size_t i=1; i<(sizeof...(FIELDS)); ++i)
+        for (size_t i=0; i<(sizeof...(FIELDS)); ++i)
           res |= f_p_seps[i];
         return res || (sizeof...(FIELDS)>3);
 #     endif
@@ -1086,11 +1139,11 @@ namespace romp {
     typename std::enable_if<(I<sizeof...(FIELDS)),void>::type _pWrite_comp(ostream_p& out) const {
       // if (I > 0) out << sep;
       if (__DO_P_SEP() || out.OPTIONS.report_show_type) out.nl();
-      if ((not (std::get<I>(data).__IS_RECORD()))
+      if ((not (std::get<I>(data).__IS_RECORD()) || std::get<I>(data).__IS_TYPEID())
           && out.OPTIONS.report_show_type)
         out << _GET_FIELD_NAME<I>() << ": " << std::get<I>(data).__p_type() << " = " << std::get<I>(data) << ';';
       else
-        out << _GET_FIELD_NAME<I>() << ":= " << std::get<I>(data) << ';';
+        out << _GET_FIELD_NAME<I>() << " := " << std::get<I>(data) << ';';
       _pWrite_comp<I+1>(out);
     }
     template<size_t I>
@@ -1126,12 +1179,11 @@ namespace romp {
                             ostream_p>::type& operator << (ostream_p& out, const Rec_t<FID_START,FIELDS...>& val) {
       if (val.IsUndefined()) return (out << SCALAR_ENUM_t::_UNDEFINED_);
       if (RecordType::__DO_P_SEP()) {
-        out << "Record";
-        out.indent();
+        out << '{'; // "Record";
+        out.indent(); out.indent();
         val._pWrite_comp(out);
         // val._pWrite_comp<0>(out);
-        out << out.dedent() << out.nl() << "EndRecord";
-        return out;
+        return (out << out.dedent() << out.nl() << '}' /* "EndRecord" */ << out.dedent());
       } else {
         out << "{";
         val._pWrite_simp(out);

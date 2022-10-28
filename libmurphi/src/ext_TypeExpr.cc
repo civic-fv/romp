@@ -61,17 +61,21 @@ void ScalarsetUnion::validate() const {
   for (size_t i=0; i<members.size(); ++i) {
     const auto i_r = members[i]->resolve();
     if (const auto i_s = dynamic_cast<const Scalarset*>(i_r.get())) {
-      for (size_t j=i+1; j<members.size(); ++j)
-        if (const auto j_s = dynamic_cast<const Scalarset*>(members[j]->resolve().get())) {
-          if (i_s->name != j_s->name || i_s->count() != j_s->count())
+      for (size_t j=i+1; j<members.size(); ++j) {
+        const auto tmp = members[j]->resolve();
+        if (const auto j_s = dynamic_cast<const Scalarset*>(tmp.get())) {
+          if (i_s->name == j_s->name && i_s->count() == j_s->count())
             throw Error("duplicate (scalarset) type in union", j_s->loc);
         }
+      }
     } else if (const auto i_e = dynamic_cast<const Enum*>(i_r.get())) {
-      for (size_t j=i+1; j<members.size(); ++j)
-        if (const auto j_e = dynamic_cast<const Enum*>(members[j]->resolve().get())) {
+      for (size_t j=i+1; j<members.size(); ++j) {
+        const auto tmp = members[j]->resolve();
+        if (const auto j_e = dynamic_cast<const Enum*>(tmp.get())) {
           if (i_e->equal_to(*j_e))
             throw Error("duplicate (enum) type in union", j_e->loc);
         }
+      }
     }
   }
 }
@@ -111,30 +115,33 @@ bool ScalarsetUnion::contains(const TypeExpr& n) const {
     bool result = false;
     const ScalarsetUnion& u;
     Contain(const ScalarsetUnion& u_) : u(u_) {} 
-    void visit_array(const Array &n) final { result = false; }
+    void visit_array(const Array&) final { result = false; }
 
     void visit_enum(const Enum &n) final {
       auto r = std::find_if(u.members.begin(),u.members.end(), [&](Ptr<TypeExpr> i) -> bool {
-        if (const auto _e = dynamic_cast<const Enum*>(i->resolve().get()))
+        const auto t = i->resolve();
+        if (const auto _e = dynamic_cast<const Enum*>(t.get()))
           return (n.equal_to(*_e));
         return false;
       });
-      result = (r == u.members.end());
+      result = (r != u.members.end()); // negated this during debug
     }
 
-    void visit_multiset(const Multiset& n) { result = false; }
-    void visit_range(const Range &n) final { result = false; }
-    void visit_record(const Record &n) final { result = false; }
+    void visit_multiset(const Multiset&) { result = false; }
+    void visit_range(const Range&) final { result = false; }
+    void visit_record(const Record&) final { result = false; }
 
     void visit_scalarset(const Scalarset &n) final {
       auto r = std::find_if(u.members.begin(),u.members.end(), [&](Ptr<TypeExpr> i) -> bool {
-        if (const auto _tid = dynamic_cast<const TypeExprID*>(i.get()))
-          if (const auto _s = dynamic_cast<const Scalarset*>(i->resolve().get()))
+        if (const auto _tid = dynamic_cast<const TypeExprID*>(i.get())) {
+          const auto t = _tid->resolve();
+          if (const auto _s = dynamic_cast<const Scalarset*>(t.get()))
             return ((n.name==_tid->name) 
                     && (n.bound->constant_fold() == _s->bound->constant_fold()));
+        }
         return false;
       });
-      result = (r == u.members.end());
+      result = (r != u.members.end());  // negated this during debug
     }
 
     void visit_scalarsetunion(const ScalarsetUnion& n) {
@@ -149,7 +156,7 @@ bool ScalarsetUnion::contains(const TypeExpr& n) const {
           return ((n.name==_tid->name) && (n.equal_to(*i)));
         return false;
       });
-      result = (r == u.members.end());
+      result = (r != u.members.end()); // negated this during debug
     }
   };
   Contain c(*this);

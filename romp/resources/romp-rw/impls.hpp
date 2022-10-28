@@ -33,6 +33,8 @@ namespace romp {
   template<size_t EID, size_t B, class... U_M>
   inline void __assign(ScalarsetType<EID,B>& _this, const ScalarsetUnionType<U_M...>& other) { _this = other.__get_value(); }
 
+  Result::~Result() { if (tripped != nullptr) delete tripped; if (inside != nullptr) delete inside; }
+
   // template<size_t L_ID, size_t L_B, size_t R_ID, size_t R_B>
   // inline bool operator == (const EnumType<L_ID,L_B>& l, const EnumType<R_ID,R_B> r) { 
   //   return ((L_ID == R_ID) // this static expr should help the compiler optimize this per type definition. 
@@ -87,7 +89,12 @@ namespace romp {
   ostream_p::ostream_p(std::ostream& out_, const Options& OPTIONS_, unsigned int level_) 
     : out(out_), _width(level_*OPTIONS_.tab_size), OPTIONS(OPTIONS_)
     { _indentation = std::string(_width,OPTIONS_.tab_char); }
-  inline const stream_void ostream_p::dedent() { _indentation = std::string((_width-=OPTIONS.tab_size),OPTIONS.tab_char); return S_VOID; }
+  inline const stream_void ostream_p::dedent() { 
+    if (((signed)_width)-((signed)OPTIONS.tab_size) >= 0)
+      _width-=OPTIONS.tab_size;
+    _indentation = std::string(_width,OPTIONS.tab_char); 
+    return S_VOID;
+  }
   inline const stream_void ostream_p::indent() { _indentation = std::string((_width+=OPTIONS.tab_size),OPTIONS.tab_char); return S_VOID; }
 
   // << ------------------------------------------------------------------------------------------ >> 
@@ -853,6 +860,10 @@ void Options::parse_args(int argc, char **argv) {
     // modifying values to match complex default values
     if (tab_char == '\t') {
       tab_size = 1;
+    }
+    if (do_single) {
+      threads = 1;
+      walks = 1;
     }
     
     // check for inconsistent or contradictory options here

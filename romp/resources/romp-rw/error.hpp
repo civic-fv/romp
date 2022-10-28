@@ -45,6 +45,7 @@ const std::exception_ptr __get_root_except(const std::exception_ptr& ex) {
 struct IModelError : public std::nested_exception {
   IModelError() 
     : std::nested_exception() {}
+  virtual ~IModelError() = default;
   const char* what() const noexcept {
     std::stringstream out;
     this->what(out);
@@ -91,6 +92,7 @@ struct ModelPropertyError : public IModelError {
     ModelPropertyError(const Property& prop_) : isProp(true) { data.prop = &prop_; }
     ModelPropertyError(const PropertyInfo& info_) : isProp(false) { data.info = &info_; }
     ModelPropertyError(id_t id) : isProp(false) { data.info = &(::__info__::PROPERTY_INFOS[id]); }
+    ~ModelPropertyError() = default;
     void what(std::ostream& out) const noexcept { if (isProp) out << *data.prop; else out << *data.info; }
     void to_json(json_file_t& json) const noexcept { _to_json(json); }
     void to_json(json_str_t& json) const noexcept { _to_json(json); }
@@ -132,6 +134,7 @@ struct ModelPropertyError : public IModelError {
     ModelRuleError(const RuleSet& rule_set_) : isRule(false), where(UNKNOWN) { data.info = &(rule_set_.info); }
     ModelRuleError(id_t id) : isRule(false), where(UNKNOWN) { data.info = &(::__info__::RULE_SET_INFOS[id]); }
     ModelRuleError(id_t id, Where where_) : isRule(false), where(where_) { data.info = &(::__info__::RULE_SET_INFOS[id]); }
+    ~ModelRuleError() = default;
     void what(std::ostream& out) const noexcept { if (isRule) out << *data.rule; else out << *data.info; }
     void to_json(json_file_t& json) const noexcept { _to_json(json); }
     void to_json(json_str_t& json) const noexcept { _to_json(json); }
@@ -169,6 +172,7 @@ struct ModelPropertyError : public IModelError {
     ModelStartStateError(const StartState& rule_) : isStartState(true) { data.rule = &rule_; }
     ModelStartStateError(const StartStateInfo& info_) : isStartState(false) { data.info = &info_; }
     ModelStartStateError(id_t id) : isStartState(false) { data.info = &(::__info__::STARTSTATE_INFOS[id]); }
+    ~ModelStartStateError() = default;
     void what(std::ostream& out) const noexcept { if (isStartState) out << *data.rule; else out << *data.info; }
     void to_json(json_file_t& json) const noexcept { _to_json(json); }
     void to_json(json_str_t& json) const noexcept { _to_json(json); }
@@ -202,6 +206,7 @@ struct ModelPropertyError : public IModelError {
   struct ModelMErrorError : public IModelError {
     ModelMErrorError(const MErrorInfo& info_) : _info(info_) {}
     ModelMErrorError(id_t id) : _info(::__info__::ERROR_INFOS[id]) {}
+    ~ModelMErrorError() = default;
     void what(std::ostream& out) const noexcept { out << _info; }
     void to_json(json_file_t& json) const noexcept { _to_json(json); }
     void to_json(json_str_t& json) const noexcept { _to_json(json); }
@@ -229,6 +234,7 @@ struct ModelPropertyError : public IModelError {
   struct ModelFunctError : public IModelError {
     ModelFunctError(const FunctInfo& info_) : _info(info_) {}
     ModelFunctError(id_t id) : _info(::__info__::FUNCT_INFOS[id]) {}
+    ~ModelFunctError() = default;
     void what(std::ostream& out) const noexcept { out << _info; }
     void to_json(json_file_t& json) const noexcept { _to_json(json); }
     void to_json(json_str_t& json) const noexcept { _to_json(json); }
@@ -257,6 +263,7 @@ struct ModelPropertyError : public IModelError {
     std::string msg; 
     location loc;
     ModelTypeError(const std::string& msg_, const location& loc_) : msg(msg_), loc(loc_) {}
+    ~ModelTypeError() = default;
     void what(std::ostream& out) const noexcept { 
       out << loc << " :: " << msg;
     }

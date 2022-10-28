@@ -287,7 +287,8 @@ void ModelGenerator::visit_exprid(const ExprID &n) {
 void ModelGenerator::visit_field(const Field &n) {
   //[X]TODO: update ModelGenerator::visit_field to new standards
   *this << '(' << *n.record << ".get</*"<<n.field<<"*/"<<n.record_field_index<<">())";
-  // if (const Record* _r = dynamic_cast<const Record*>(n.record->type()->resolve().get())) {
+  // const auto t = n.record->type()->resolve();S
+  // if (const Record* _r = dynamic_cast<const Record*>(t.get())) {
   //   for (size_t i=0; i<_r->fields.size(); ++i)
   //     if (_r->fields[i]->name == n.field) {
   //       *this << '(' << *n.record << ".get</*"<<n.field<<"*/"<<i<<">())";
@@ -406,9 +407,9 @@ void ModelGenerator::visit_functioncall(const FunctionCall &n) {
     if (!first) {
       *this << ", ";
     }
-    if (!(*it)->readonly) {
-      *this << "&";
-    }
+    // if (!(*it)->readonly) {
+    //   *this << "&";
+    // }
     *this << *a;
     first = false;
     it++;
@@ -637,7 +638,9 @@ void ModelGenerator::visit_multisetcount(const MultisetCount &n) {
 void ModelGenerator::visit_multisetelement(const MultisetElement &n) {
   //[X]TODO: update ModelGenerator::visit_multisetelement to new standards
   //[X]TODO: implement error traces for bad accesses -- nvm validate and structure should prevent issues
-  *this << "(" ROMP_UTIL_NAMESPACE "::MultisetElement((" << *n.multiset << "),(" <<  *n.index << ")))";
+  *this << "(" ROMP_UTIL_NAMESPACE "::MultisetElement((" << *n.multiset << "),"
+                                                      "(" <<  *n.index << "),"
+                                                      ROMP_MAKE_LOCATION_STRUCT(n.loc) "))";
 # ifdef DEBUG
     *this << flush();
 # endif
@@ -662,8 +665,9 @@ void ModelGenerator::visit_multisetremove(const MultisetRemove &n) {
 
 void ModelGenerator::visit_multisetremovepred(const MultisetRemovePred &n) {
   //[X]TODO: update ModelGenerator::visit_multisetremovepred to new standards
-  *this << "(" << *n.ms_quantifier.multiset << ").MultisetRemovePred([&](size_t " << n.ms_quantifier.name << ") -> bool { "
-                                          "return (" << *n.pred << "); }));";
+  *this << indentation() << "(" 
+          << *n.ms_quantifier.multiset << ").MultisetRemovePred([&](size_t " << n.ms_quantifier.name << ") -> bool { "
+                                                                  "return (" << *n.pred << "); });";
   emit_trailing_comments(n);
   *this << '\n';
 # ifdef DEBUG

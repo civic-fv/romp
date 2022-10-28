@@ -159,6 +159,19 @@ bool Function::is_pure() const {
 
       dispatch(*n.rhs);
     }
+
+    void visit_multisetadd(const MultisetAdd& n) final {
+      pure &= !is_global_ref(*n.multiset);
+      // no need to descend into children
+    }
+    void visit_multisetremove(const MultisetRemove& n) final {
+      pure &= !is_global_ref(*n.multiset);
+      // no need to descend into children
+    }
+    void visit_multisetremovepred(const MultisetRemovePred& n) final {
+      pure &= !is_global_ref(*n.ms_quantifier.multiset);
+      // no need to descend into children
+    }
   };
 
   // run the traversal on ourselves

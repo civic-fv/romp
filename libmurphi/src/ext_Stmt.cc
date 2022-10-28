@@ -15,7 +15,8 @@ void MultisetAdd::visit(BaseTraversal &visitor) { visitor.visit_multisetadd(*thi
 void MultisetAdd::visit(ConstBaseTraversal &visitor) const { visitor.visit_multisetadd(*this); }
 
 void MultisetAdd::validate() const {
-  if (const auto ms = dynamic_cast<const Multiset*>(multiset->type().get())) {
+  const auto t = multiset->type()->resolve();
+  if (const auto ms = dynamic_cast<const Multiset*>(t.get())) {
     if (not value->type()->coerces_to(*ms->element_type))
       throw Error("the type of expr=`" + value->to_string() +"` can't be coerced to type=`"
                   + ms->element_type->to_string() +"`", value->loc);
@@ -38,7 +39,8 @@ void MultisetRemove::visit(BaseTraversal &visitor) { visitor.visit_multisetremov
 void MultisetRemove::visit(ConstBaseTraversal &visitor) const { visitor.visit_multisetremove(*this); }
 
 void MultisetRemove::validate() const {
-  if (const auto ms = dynamic_cast<const Multiset*>(multiset->type().get())) {
+  const auto t = multiset->type()->resolve();
+  if (const auto ms = dynamic_cast<const Multiset*>(t.get())) {
     if (const auto eid = dynamic_cast<const ExprID*>(index.get())) {
       if (ms_quantifier == nullptr || not eid->is_readonly() || eid->id != ms_quantifier->name)
         throw Error("index value of the MultisetRemove operation could not be associated with a Choose rule", index->loc);

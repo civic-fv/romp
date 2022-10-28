@@ -227,7 +227,7 @@ namespace romp {
           qe.values.push_back(new SigParam{
                                 mpz_class(i),
                                 n.members[i].first,
-                                SigParam::to_string(n.members[i].first, qe),
+                                n.members[i].first,
                                 json_wrap(i,SigParam::to_json('"'+n.members[i].first+'"', qe, display_type)),
                                 qe
                               });
@@ -243,7 +243,7 @@ namespace romp {
           qe.values.push_back(new SigParam{
                                 i,
                                 i.get_str(),
-                                SigParam::to_string(i.get_str(), qe),
+                                i.get_str(),
                                 json_wrap(index++,SigParam::to_json(i.get_str(), qe, display_type)),
                                 qe
                               });
@@ -253,16 +253,15 @@ namespace romp {
         qe.start = 1_mpz;
         qe.stop = n.count();
         qe.step = 1_mpz;
-        std::string pre_prefix = ((n.name != "") ? "_romp_" : "__romp__");
-        std::string prefix = (((n.name != "") ? n.name : "scalarset")
-                               + '_' + n.count().get_str() + '_');
+        std::string prefix = (((n.name != "") ? "_romp_"+n.name : "__romp__scalarset")
+                          + '_' + n.count().get_str() + '_');
         // qe.values = std::vector<const SigParam*>(/* qe.size() */);
         size_t index = 0u;
         for (mpz_class i = qe.start; i<=qe.stop; i += qe.step)
           qe.values.push_back(new SigParam{
                                 i,
-                                pre_prefix+prefix+i.get_str(),
-                                SigParam::to_string(prefix+i.get_str(), qe),
+                                prefix+i.get_str(),
+                                n.name+'_'+i.get_str(),
                                 json_wrap(index++,SigParam::to_json('"'+prefix+i.get_str()+'"', qe, display_type)),
                                 qe
                               });
@@ -270,30 +269,32 @@ namespace romp {
       void visit_scalarsetunion(const murphi::ScalarsetUnion& n) {
         _json_prefix += ",\"type\":\"scalarset-union-quantifier\"";
         size_t index = 0u;
-        for (const auto& m : n.members)
-          if (const auto _s = dynamic_cast<const murphi::Scalarset*>(m->resolve().get())) {
-            mpz_class stop = _s->count();
-            std::string pre_prefix = ((_s->name != "") ? "_romp_" : "__romp__");
-            std::string prefix = (((_s->name != "") ? _s->name : "scalarset")
-                                    + '_' + _s->count().get_str() + '_');
+        mpz_class count = 0_mpz;
+        for (const auto& m : n.members) {
+          const auto _t = m->resolve();
+          if (const auto _s = dynamic_cast<const murphi::Scalarset*>(_t.get())) {
+            mpz_class stop = _s->count(); count += stop;
+            std::string prefix = (((_s->name != "") ? "_romp_"+_s->name : "__romp__scalarset")
+                                     + '_' + _s->count().get_str() + '_');
             for (mpz_class i=1_mpz; i<=stop; i+=1)
               qe.values.push_back(new SigParam{
                                     mpz_class(index),
-                                    pre_prefix+prefix+i.get_str(),
-                                    SigParam::to_string(prefix+i.get_str(), qe),
+                                    prefix+i.get_str(),
+                                    _s->name+'_'+i.get_str(),
                                     json_wrap(index++,SigParam::to_json('"'+prefix+i.get_str()+'"', qe, display_type)),
                                     qe
                                   });
-          } else if (const auto _e = dynamic_cast<const murphi::Enum*>(m->resolve().get())) {
+          } else if (const auto _e = dynamic_cast<const murphi::Enum*>(_t.get())) {
             for (const auto& m : _e->members)
               qe.values.push_back(new SigParam{
                                     mpz_class(index),
                                     m.first,
-                                    SigParam::to_string(m.first, qe),
+                                    m.first,
                                     json_wrap(index++,SigParam::to_json('"'+m.first+'"', qe, display_type)),
                                     qe
                                   });
           }
+        }
         qe.start = 1_mpz;
         qe.stop = n.count();
         qe.step = 1_mpz;
