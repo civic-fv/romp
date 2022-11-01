@@ -109,8 +109,8 @@ struct QuantExpansion {
   mpz_class stop;
   mpz_class step = 1_mpz;
   size_t size() const;
-  std::vector<const SigParam*>::iterator begin() const;
-  std::vector<const SigParam*>::iterator end() const;
+  // typename std::vector<const SigParam*>::iterator begin() const;
+  // typename std::vector<const SigParam*>::iterator end() const;
   QuantExpansion(const murphi::Quantifier& q);
   ~QuantExpansion();
 private:
