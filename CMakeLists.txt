@@ -46,7 +46,7 @@ if(${CMAKE_VERSION} VERSION_GREATER 3.11)
 endif()
 
 add_subdirectory(libmurphi)
-add_subdirectory(murphi2c)
+# add_subdirectory(murphi2c)
 add_subdirectory(romp)
 # add_subdirectory(romp-old)
 # add_subdirectory(tests/murphi-comment-ls)

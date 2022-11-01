@@ -132,7 +132,7 @@ namespace romp {
   // <<                                      QuantExpansion                                        >> 
   // << ========================================================================================== >> 
 
-  // size_t QuantExpansion::size() const { return _size.get_ui() ; }
+  // size_t QuantExpansion::size() const { return _size.get_ui() ; }  
   size_t QuantExpansion::size() const { return _size; }
 
   // typename std::vector<const SigParam*>::iterator QuantExpansion::begin() const { return values.begin(); }

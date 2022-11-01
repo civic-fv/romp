@@ -120,8 +120,19 @@ in the model, when the appropriate enable options are not provided.
 .PP
 \fB--value-type\fR \fI TYPE\fR
 .RS
-Change the C/C++ type used to represent scalar values in the emitted code. 
+Change the C/C++ type used to represent range values in the emitted code. 
 By default, \fI int\fR is used. 
+\fB romp\fR does not validate that the type you specify
+is a valid C/C++ type, 
+but simply trusts that you have given something that will be
+available when you compile the generated code.
+.RE
+.PP
+\fB--scalar-type\fR \fI TYPE\fR
+.RS
+\fI(!! Not currently implemented !!)\fR
+Change the C/C++ type used to represent scalar & enum values in the emitted code. 
+By default, \fI unsigned int\fR is used. 
 \fB romp\fR does not validate that the type you specify
 is a valid C/C++ type, 
 but simply trusts that you have given something that will be
@@ -162,29 +173,32 @@ that you have identified as notable in a normal parallel launch.
 .RE
 .RE
 .PP
+\fB--default-walk-multiplie\fR or \fB-w\fR
+.RS
+This will change the default multiplier used to determine how many walks are performed bassed upon 
+the number of threads available on the device running the model.
+You can manualy set the number of walks from the model checker for each run,
+but sometimes it's nice to set a default multiplier bassed upon your models needs,
+so you don't have to add another flag to a run of a generated model checker.
+.RE
+.PP
 .PP
 .SH FEATURE SUPPORT
 \fBMurphi Types\fR
 .RS
-\fB romp \fR like \fB rumur \fR does not support murphi's 
-\fI scalarsetunion \fR types.
+\fB romp \fR unlike  \fB rumur \fR does support \fB cmurphi's\fR 
+\fI scalarsetunion \fR and \fI multiset \fR types.
+However, the Choose "ruleset", and the plain MultisetRemove util for multisets 
+is not fully implemented at this time.
+(the latter is because it depends on the choose rule to work with any assured validity) 
+These features might be be added in the future though.
 .PP
-Murphi \fI record\fR types are translated into C/C++ structs that use native, platform-dependent
-member layout. An exception to this is if the input model performs aggregate
-comparisons of record or array expressions (using \fB==\fR or \fB!=\fR). If this
-is the case, the produced structs will be packed (using
-\fB__attribute__((packed))\fR) to ensure they can be compared with \fB memcmp\fR.
+\fB romp \fR huristically supports \fB rumur's\fR special properties, see section below for more details.
 .PP
-.RS
-.BR NOTE:
-The \fB romp\fR generated model checker does not by default perform checks 
-on the bounds of Murphi value types \fI range \fR or \fI scalarset \fR types.
-We recommend you decrease the value of size bounding \fI scalarset \fR types and
-test your model on a traditional murphi model checker before using \fB romp \fR.
-We plan to eventually add this functionality to be enabled when generating a 
-model checker using the \fB romp \fR tool, but to keep the model checker's
-performance as fast as possible it will likely not ever be enabled by default.
-.RE
+\fB romp \fR like \fB rumur \fR does not support \fB cmurphi's\fR
+\fI real\fR datatypes, or any of the probibalistic rule anotations.
+Further more we have no intenetion of adding support for these features 
+at any later date.
 .RE
 .PP
 \fB Approximate Symmetry Reduction\fR

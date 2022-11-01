@@ -32,7 +32,6 @@ CMakeFiles/**
 !tests/murphi-comment-ls/*.cc
 
 # debug files
-**/german-rw-test.cpp
 *.test.cpp
 *.test.hpp
 *.test.cc
