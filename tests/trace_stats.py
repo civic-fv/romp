@@ -638,7 +638,7 @@ class ModelResult:
     avg_tried_but_never_applied_rule_count: StatRange
     unique_transition_count: StatRange
     avg_tried_transition_coverage: StatRange
-    avg_never_tried_transition_count: StatRange
+    # avg_never_tried_transition_count: StatRange
     unique_transitions: Set[ModelTransition]
     unique_applied_transition_count: StatRange
     unique_applied_transitions: Set[str]
@@ -682,7 +682,7 @@ class ModelResult:
         self.avg_tried_but_never_applied_rule_count: StatRange = StatRange()
         self.unique_transition_count: StatRange = StatRange()
         # self.avg_tried_transition_coverage: StatRange = StatRange(**SR_PERCENT_FMT)
-        self.avg_never_tried_transition_count: StatRange = StatRange(**SR_PERCENT_FMT)
+        # self.avg_never_tried_transition_count: StatRange = StatRange(**SR_PERCENT_FMT)
         self.unique_transitions: Set[ModelTransition] = set()
         self.unique_applied_transition_count: StatRange = StatRange()
         self.unique_applied_transitions: Set[str] = set()
@@ -736,9 +736,10 @@ class ModelResult:
         self.unique_applied_transitions |= trace.unique_applied_transitions
         self.avg_tried_but_never_applied_rule_count.add_data(trace.unique_tried_but_not_applied_rule_count)
         self.avg_never_tried_rule_count.add_data(trace.never_tried_rule_count)
+        self.unique_transition_count.add_data(trace.unique_transition_count)
         self.avg_tried_but_never_applied_transition_count.add_data(trace.unique_tried_but_not_applied_transition_count)
         # self.avg_tried_transition_coverage.add_data(trace.tried_transition_coverage) # does not exist in class yet
-        self.avg_never_tried_transition_count.add_data(trace.never_tried_transition_count) # does not exist in class yet
+        # self.avg_never_tried_transition_count.add_data(trace.never_tried_transition_count) # does not exist in class yet
         self.avg_never_tried_rule_coverage.add_data(trace.never_tried_rule_coverage)
         self.avg_tried_rule_coverage.add_data(trace.tried_rule_coverage)
         self.avg_tried_but_never_applied_rule_coverage.add_data(trace.tried_but_never_applied_rule_coverage)
@@ -905,7 +906,7 @@ class ModelResult:
                 f"      tried: {self.unique_transition_count.summary_str:<67s}\n"
                 f"    applied: {self.unique_applied_transition_count.summary_str:<67s}\n"
                 f"    tr - ap: {self.avg_tried_but_never_applied_transition_count.summary_str:<67s}\n"
-                f"      never: {self.avg_never_tried_transition_count.summary_str:<67s}\n"
+                # f"      never: {self.avg_never_tried_transition_count.summary_str:<67s}\n"
                 # f"   possible: {self.id.transition_count:<67.9g}\n"
                 f"    |tried|: {self.abs_unique_transition_count:<67.3g}\n"
                 f"  |applied|: {self.abs_unique_applied_transition_count:<67.3g}\n"

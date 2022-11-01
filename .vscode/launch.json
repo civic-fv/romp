@@ -8,8 +8,8 @@
             "program": "${workspaceFolder}/build/romp/romp",
             "args": [
                 "--output",
-                "${workspaceFolder}/romp/tests/german.m.test.cpp",
-                "${workspaceFolder}/romp/tests/german.m"
+                "${workspaceFolder}/tests/german.m.test.cpp",
+                "${workspaceFolder}/tests/german.m"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -37,8 +37,8 @@
         //     "program": "${workspaceFolder}/build/romp/romp",
         //     "args": [
         //         "--output",
-        //         "${workspaceFolder}/romp/tests/german.m.test.cpp",
-        //         "${workspaceFolder}/romp/tests/german.m"
+        //         "${workspaceFolder}/tests/german.m.test.cpp",
+        //         "${workspaceFolder}/tests/german.m"
         //     ],
         //     "stopAtEntry": false,
         //     "cwd": "${workspaceFolder}",
@@ -65,8 +65,8 @@
             "program": "${workspaceFolder}/build/romp/romp",
             "args": [
                 "--output",
-                "${workspaceFolder}/romp/tests/pingpong.m.test.cpp",
-                "${workspaceFolder}/romp/tests/pingpong.m"
+                "${workspaceFolder}/tests/pingpong.m.test.cpp",
+                "${workspaceFolder}/tests/pingpong.m"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -94,8 +94,8 @@
         //     "program": "${workspaceFolder}/build/romp/romp",
         //     "args": [
         //         "--output",
-        //         "${workspaceFolder}/romp/tests/pingpong.m.test.cpp",
-        //         "${workspaceFolder}/romp/tests/pingpong.m"
+        //         "${workspaceFolder}/tests/pingpong.m.test.cpp",
+        //         "${workspaceFolder}/tests/pingpong.m"
         //     ],
         //     "stopAtEntry": false,
         //     "cwd": "${workspaceFolder}",
@@ -122,8 +122,8 @@
             "program": "${workspaceFolder}/build/romp/romp",
             "args": [
                 "--output",
-                "${workspaceFolder}/romp/tests/sort5.m.test.cpp",
-                "${workspaceFolder}/romp/tests/sort5.m"
+                "${workspaceFolder}/tests/sort5.m.test.cpp",
+                "${workspaceFolder}/tests/sort5.m"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -151,8 +151,8 @@
         //     "program": "${workspaceFolder}/build/romp/romp",
         //     "args": [
         //         "--output",
-        //         "${workspaceFolder}/romp/tests/sort5.m.test.cpp",
-        //         "${workspaceFolder}/romp/tests/sort5.m"
+        //         "${workspaceFolder}/tests/sort5.m.test.cpp",
+        //         "${workspaceFolder}/tests/sort5.m"
         //     ],
         //     "stopAtEntry": false,
         //     "cwd": "${workspaceFolder}",
@@ -179,8 +179,8 @@
             "program": "${workspaceFolder}/build/romp/romp",
             "args": [
                 "--output",
-                "${workspaceFolder}/romp/tests/mcslock2.m.test.cpp",
-                "${workspaceFolder}/romp/tests/mcslock2.m"
+                "${workspaceFolder}/tests/mcslock2.m.test.cpp",
+                "${workspaceFolder}/tests/mcslock2.m"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -208,8 +208,8 @@
             "program": "${workspaceFolder}/build/romp/romp",
             "args": [
                 "--output",
-                "${workspaceFolder}/romp/tests/arbiter.m.test.cpp",
-                "${workspaceFolder}/romp/tests/arbiter.m"
+                "${workspaceFolder}/tests/arbiter.m.test.cpp",
+                "${workspaceFolder}/tests/arbiter.m"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -237,8 +237,8 @@
             "program": "${workspaceFolder}/build/romp/romp",
             "args": [
                 "--output",
-                "${workspaceFolder}/romp/tests/cache3.m.test.cpp",
-                "${workspaceFolder}/romp/tests/cache3.m"
+                "${workspaceFolder}/tests/cache3.m.test.cpp",
+                "${workspaceFolder}/tests/cache3.m"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -266,8 +266,8 @@
             "program": "${workspaceFolder}/build/romp/romp",
             "args": [
                 "--output",
-                "${workspaceFolder}/romp/tests/dpnew.m.test.cpp",
-                "${workspaceFolder}/romp/tests/dpnew.m"
+                "${workspaceFolder}/tests/dpnew.m.test.cpp",
+                "${workspaceFolder}/tests/dpnew.m"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -292,7 +292,7 @@
             "name": "(gdb) german help/man test",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/romp/tests/german.m.test",
+            "program": "${workspaceFolder}/tests/german.m.test",
             "args": [
                 "-h"
             ],
@@ -319,7 +319,7 @@
             "name": "(gdb) german single no-trace test",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/romp/tests/german.m.test",
+            "program": "${workspaceFolder}/tests/german.m.test",
             "args": [
                 "-sw",
                 "-s",
@@ -354,7 +354,7 @@
             "name": "(gdb) german single TRACE test ",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/romp/tests/german.m.test",
+            "program": "${workspaceFolder}/tests/german.m.test",
             "args": [
                 "-sw",
                 "-s",
@@ -390,7 +390,7 @@
             "name": "(gdb) german parallel no-trace test",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/romp/tests/german.m.test",
+            "program": "${workspaceFolder}/tests/german.m.test",
             "args": [
                 "-w",
                 "16",
@@ -427,7 +427,7 @@
             "name": "(gdb) german parallel TRACE test",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/romp/tests/german.m.test",
+            "program": "${workspaceFolder}/tests/german.m.test",
             "args": [
                 "-w",
                 "16",
@@ -620,7 +620,7 @@
             "args": [
                 "-acl",
                 "--output",
-                "${workspaceFolder}/romp/tests/${fileBasename}.test.cpp",
+                "${workspaceFolder}/tests/${fileBasename}.test.cpp",
                 "${file}"
             ],
             "stopAtEntry": false,
@@ -647,7 +647,7 @@
             "name": "Python: Trace Stats",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/romp/tests/trace_stats.py",
+            "program": "${workspaceFolder}/tests/trace_stats.py",
             "args": ["${workspaceFolder}/traces"],
             "console": "integratedTerminal",
             "justMyCode": true
@@ -656,7 +656,7 @@
             "name": "Python: symmetry comparison active file",
             "type": "python",
             "request": "launch",
-            "program": "romp/tests/symmetry_test.py",
+            "program": "${workspaceFolder}/tests/symmetry_test.py",
             "cwd": "${workspaceFolder}",
             "args": [
                 "${relativeFile}"
