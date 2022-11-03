@@ -12,7 +12,7 @@ rule "Try" n[i] = I ==> begin
       n[i] := T;endrule; 
 
 rule "Crit"
-      n[i] = T& x = true ==>beginy
+      n[i] = T& x = true ==>begin
       n[i] := C; x := false; endrule;
 
 rule "Exit"
