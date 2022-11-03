@@ -1,31 +1,19 @@
-Rumur
-=====
-Rumur is a `model checker`_, a formal verification tool for proving safety and
-security properties of systems represented as state machines. It is based on a
-previous tool, CMurphi_, and intended to be close to a drop-in replacement.
-Rumur takes the same input format as CMurphi, the Murphi modelling language,
-with some extensions and generates a C program that implements a verifier.
+romp
+====
+romp is a verification tool that uses the murphi verification language along side a 
+parallelized random walk of the state-space to perform verification tasks.
 
-Quickstart
-----------
+It utilizes libmurphi which is a fork of rumur's librumur murphi parsing library.
 
-Installation on Ubuntu ≥ 20.04 or Debian
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code-block:: sh
+.. Rumur
+.. =====
+.. Rumur is a `model checker`_, a formal verification tool for proving safety and
+.. security properties of systems represented as state machines. It is based on a
+.. previous tool, CMurphi_, and intended to be close to a drop-in replacement.
+.. Rumur takes the same input format as CMurphi, the Murphi modelling language,
+.. with some extensions and generates a C program that implements a verifier.
 
-  apt install rumur
-
-Installation on FreeBSD
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: sh
-
-  pkg install rumur
-
-Thanks to `yuri@FreeBSD`_ for packaging.
-
-.. _`yuri@FreeBSD`: https://github.com/yurivict
 
 Building from Source
 ~~~~~~~~~~~~~~~~~~~~
@@ -42,8 +30,8 @@ Then:
 
 .. code-block:: sh
 
-  # Download Rumur
-  git clone https://github.com/Smattr/rumur
+  # Download romp
+  git clone https://github.com/civic-fv/romp
   cd rumur
 
   # Configure and compile
@@ -54,30 +42,25 @@ Then:
   make install
 
   # Generate a checker
-  rumur my-model.m --output my-model.c
+  romp my-model.m --output my-model.m.romp.cpp
 
   # Compile the checker (also pass -mcx16 if using GCC on x86-64)
-  cc -std=c11 -O3 my-model.c -lpthread
+  cc -std=c++11 -pthread -O3 my-model.m.romp.cpp
 
   # Run the checker
   ./a.out
 
-Compilation produces several artefacts including the `rumur` binary itself:
+Compilation produces several artifacts including the `romp` binary itself:
 
-* rumur: Tool for translating a Murphi model into a program that implements
-  a checker;
-* murphi2c: Tool for translating a Murphi model into C code for use in a
-  simulator;
-* murphi2murphi: A preprocessor for Murphi models;
-* murphi2xml: Tool for emitting an XML representation of a Murphi model’s
-  Abstract Syntax Tree;
-* librumur.a: A library for building your own Murphi model tools; and
-* include/rumur/: The API for the above library.
+* romp: Tool for translating a Murphi model into a program that implements
+  a checker;;
+* libmurphi.a: A library for building your own Murphi model tools; and
+* include/murphi/: The API for the above library.
 
-Comparison with CMurphi
------------------------
-If you are migrating from CMurphi, you can read a comparison between the two
-model checkers at `doc/vs-cmurphi.rst`_.
+.. Comparison with CMurphi
+.. -----------------------
+.. If you are migrating from CMurphi, you can read a comparison between the two
+.. model checkers at `doc/vs-cmurphi.rst`_.
 
 .. _doc/vs-cmurphi.rst: doc/vs-cmurphi.rst
 
@@ -86,6 +69,7 @@ Legal
 Everything in this repository is in the public domain, under the terms of
 `the Unlicense`_. For the full text, see LICENSE_.
 
+.. _rumur: https://github.com/smattr/rumur
 .. _Bison: https://www.gnu.org/software/bison/
 .. _CMake: https://cmake.org/
 .. _CMurphi: http://mclab.di.uniroma1.it/site/index.php/software/18-cmurphi

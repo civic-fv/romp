@@ -30,8 +30,11 @@ mpz_class statespace_count(const murphi::Model& m) {
   protected:
     void visit_array(const murphi::Array& n) { 
       mpz_class count = n.index_type->count();
+      mpz_class arr_perm = 1_mpz;
       state_perm elm; elm.dispatch(*n.element_type);
-      mpz_class arr_perm(std::pow(elm.perm.get_ui(),count.get_ui()));
+      for (mpz_class i=0_mpz; i<count; ++i)
+        arr_perm *= elm.perm;
+      // mpz_class arr_perm(std::pow(elm.perm.get_ui(),count.get_ui()));
       perm *= arr_perm;
     }
     void visit_multiset(const murphi::Multiset& n) {
@@ -71,6 +74,7 @@ mpz_class statespace_count(const murphi::Model& m) {
       _tmp.push_back(murphi::Ptr<murphi::VarDecl>::make(*_vd));
     }
   state_perm sp; sp.dispatch(murphi::Record(_tmp,murphi::location()));
+  assert(sp.perm > 0_mpz && "there are any permutations to the statespace");
   return sp.perm;
 }
 }

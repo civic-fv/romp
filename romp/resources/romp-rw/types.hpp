@@ -40,9 +40,13 @@ namespace romp {
   inline std::ostream& operator << (std::ostream& out, const SCALAR_ENUM_t& val) { return (out << to_str(val)); }
   // inline ostream_p& operator << (ostream_p& out, const SCALAR_ENUM_t& val) { return (out << to_str(val)); }
   template<class O>
-  inline ojstream<O>& operator << (ojstream<O>& json, const SCALAR_ENUM_t& val) { 
-    if (val == SCALAR_ENUM_t::_UNDEFINED_) return (json << "null");
-    return (json << '"' <<to_str(val)<< '"'); 
+  inline ojstream<O>& operator << (ojstream<O>& json, const SCALAR_ENUM_t& val) {
+      if (val == SCALAR_ENUM_t::_UNDEFINED_) return (json << "null");
+#   ifdef __ROMP__SIMPLE_TRACE
+      return (json << static_cast<size_t>(val));
+#   else
+      return (json << '"' <<to_str(val)<< '"');
+#   endif
   }
 
 
@@ -433,8 +437,8 @@ namespace romp {
         return (out << val.value);
 #     else
         out << "{\"$type\":\"undefinable-value\",\"type-id\":" << EnumType::__json_type() << ",\"value\":";
-        if (val.IsUndefined())
-          return (out << "null}");
+        // if (val.IsUndefined())
+        //   return (out << "null}");
         return (out << val.value << '}');
 #     endif 
     }
@@ -484,8 +488,8 @@ namespace romp {
         return (out << val.value);
 #     else
         out << "{\"$type\":\"undefinable-value\",\"type-id\":" << ScalarsetType::__json_type() << ",\"value\":";
-        if (val.IsUndefined())
-          return (out << "null}");
+        // if (val.IsUndefined())
+        //   return (out << "null}");
         return (out << val.value << '}');
 #     endif 
     }
@@ -718,11 +722,11 @@ namespace romp {
     template<class O>
     friend ojstream<O>& operator << (ojstream<O>& out, const ScalarsetUnionType& val) {
 #     ifdef __ROMP__SIMPLE_TRACE
-        return (out << "," << val.value);
+        return (out << val.value);
 #     else
         out << "{\"$type\":\"undefinable-value\",\"type-id\":" << ScalarsetUnionType::__json_type() << ",\"value\":";
-        if (val.IsUndefined())
-          return (out << "null}");
+        // if (val.IsUndefined())
+        //   return (out << "null}");
         return (out << val.value << '}');
 #     endif 
     }
@@ -1020,8 +1024,9 @@ namespace romp {
     template<class O>
     friend inline ojstream<O>& operator << (ojstream<O>& json, const MultisetType& val) {
 #     ifdef __ROMP__SIMPLE_TRACE
+        if (val.occupancy<=0) return (json << "null");
         json << "{\"multiset\":["; std::string sep;
-        for (size_t i=0; i<MAX; ++i) {
+        for (size_t i=0; i<val.occupancy; ++i) {
           json << sep << '[' << val.data[i] << ']'; sep = ", ";
         }
         return (json << "]}");

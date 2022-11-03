@@ -27,6 +27,7 @@ from io import StringIO
 import datetime
 import traceback
 import statistics as stats
+from multiset import FrozenMultiset
 
 DEBUG: bool = True
 
@@ -86,7 +87,8 @@ class RompID:
         return self.metadata['total-rule-count']
     @property
     def possible_state_count(self) -> int:
-        return self.metadata['possible-state-count']
+        tmp = self.metadata['possible-state-count']
+        return tmp if tmp > 0 else -inf
     @property
     def transition_count(self) -> int:
         return self.rule_count * self.possible_state_count
@@ -290,8 +292,10 @@ def get_state_simple(json:JSON_t) -> STATE_t:
     if DEBUG:
         if not isinstance(json,list):
             raise Exception("state was not a simple state ``list'' !!")
-    recurse = lambda i: (get_state_simple(i) if isinstance(i,list) else i)
-    return tuple([frozenset(recurse(j) for j in i["multiset"]) if isinstance(i,dict) else recurse(i) for i in json])
+    return tuple([(FrozenMultiset([get_state_simple(j) for j in i["multiset"]]) 
+                    if isinstance(i,dict)
+                    else i)
+                        for i in json])
 #? END def get_state_simple: NormState
 
 @dataclass(frozen=True)
@@ -734,6 +738,7 @@ class ModelResult:
         self.unique_applied_rules |= trace.unique_applied_rules
         self.unique_applied_transition_count.add_data(trace.unique_applied_transition_count)
         self.unique_applied_transitions |= trace.unique_applied_transitions
+        self.unique_transitions |= trace.unique_transitions
         self.avg_tried_but_never_applied_rule_count.add_data(trace.unique_tried_but_not_applied_rule_count)
         self.avg_never_tried_rule_count.add_data(trace.never_tried_rule_count)
         self.unique_transition_count.add_data(trace.unique_transition_count)
@@ -822,7 +827,7 @@ class ModelResult:
         return self.metadata['symmetry-reduction']
     @property
     def possible_state_count(self) -> bool:
-        return self.metadata['possible-state-count']
+        return self.id.possible_state_count
     #? END @property unique_state_count() -> int:
     # def __hash__(self) -> int:
     #     return hash(self.id)
@@ -843,75 +848,75 @@ class ModelResult:
             t_time = f"{'n/a':>12s} {'n/a':^12s} {'n/a':>12s} {'n/a':>12s} {'n/a':>12s}"
             a_time = t_time
         timeU = f"({self.id.time_unit})"
-        return (f"{'='*80}\n"
-                f"  {self.id!s:^76s}  \n"
-                f"  {'-'*76}  \n"
-                f"      walks: {len(self.traces):<67d}\n"
-                f"  max-depth: {self.metadata['max-depth']:<67d}\n"
-                f"  symmetry?: {self.do_symmetry!s:<67s}\n"
-                f"    {'TIME:':_^72}\n"
-                f"{timeU:>11}  {time_label:-<66s}\n"
-                f"     active: {a_time!s:<67s}\n"
-                f"      total: {t_time!s:<67s}\n"
-                f"    {'ERRORS:':_^72}\n"
-                f"     #-disc: {self.errors_found:<67g}\n"
-                f"       rate: {self.error_detection_rate:<67.2g}\n"
-                f"    {'RULES:':_^72}\n"
-                f"             {self.unique_rule_count.str_label:-<66s}\n"
-                f"      tried: {self.unique_rule_count.summary_str:<67s}\n"
-                f"    applied: {self.unique_applied_rule_count.summary_str:<67s}\n"
-                f"    tr - ap: {self.avg_tried_but_never_applied_rule_count.summary_str:<67s}\n"
-                f"      never: {self.avg_never_tried_rule_count.summary_str:<67s}\n"
-                f"   possible: {self.id.rule_count:<67,d}\n"
-                f"    |tried|: {self.abs_unique_rule_count:<67d}\n"
-                f"  |applied|: {self.abs_unique_applied_rule_count:<67d}\n"
-                f"  |tr - ap|: {self.unique_tried_but_not_applied_rule_count:<67d}\n"
-                f"    |never|: {self.abs_never_tried_rule_count:<67d}\n"
-                f"   COVERAGE  {self.avg_applied_rule_coverage.str_label:-<66s}\n"
-                f"      tried: {self.avg_tried_rule_coverage.summary_str:<67s}\n"
-                f"    applied: {self.avg_applied_rule_coverage.summary_str:<67s}\n"
-                f"    tr - ap: {self.avg_tried_but_never_applied_rule_coverage.summary_str:<67s}\n"
-                f"      never: {self.avg_never_tried_rule_coverage.summary_str:<67s}\n"
-                f" |coverage|: {self.abs_rule_coverage:<12.2%}\n"
-                f"             {self.depth.str_label:-<66s}\n"
-                f"       hits: {self.depth.summary_str:<67s}\n"
-                f"     misses: {self.missed_rules.summary_str:<67s}\n"
-                f"      tries: {self.tries.summary_str:<67s}\n"
-                f"             {self.rule_hit_rate.str_label:-<66s}\n"
-                f"   hit-rate: {self.rule_hit_rate.summary_str:<67s}\n"
-                f"  miss-rate: {self.rule_miss_rate.summary_str:<67s}\n"
-                f"    STREAKS  {self.state_hit_streak.str_label:-<66s}\n"
-                f"       hits: {self.rule_hit_streak.summary_str:<67s}\n"
-                f"     misses: {self.rule_miss_streak.summary_str:<67s}\n"
-                f"    {'STATES:':_^72}\n"
-                f"             {self.unique_state_count.str_label:-<66s}\n"
-                f"      found: {self.unique_state_count.summary_str:<67s}\n"
-                f"   possible: {self.possible_state_count:<67.9g}\n"
-                f"    |found|: {self.abs_unique_state_count:<67,d}\n"
-                f"             {self.avg_state_coverage.str_label:-<66s}\n"
-                f"   coverage: {self.avg_state_coverage.summary_str:<67s}\n"
-                f" |coverage|: {self.abs_state_coverage:<12.4g}\n"
-                f"             {self.state_hit_rate.str_label:-<66s}\n"
-                f"   hit-rate: {self.state_hit_rate.summary_str:<67s}\n"
-                f"  miss-rate: {self.state_miss_rate.summary_str:<67s}\n"
-                f"    |hit-r|: {self.abs_state_hit_rate.summary_str:<67s}\n"
-                f"   |miss-r|: {self.abs_state_miss_rate.summary_str:<67s}\n"
-                f"    STREAKS  {self.state_hit_streak.str_label:-<66s}\n"
-                f"       hits: {self.state_hit_streak.summary_str:<67s}\n"
-                f"     misses: {self.state_miss_streak.summary_str:<67s}\n"
-                f"     |hits|: {self.abs_state_hit_streak.summary_str:<67s}\n"
-                f"   |misses|: {self.abs_state_miss_streak.summary_str:<67s}\n"
-                f"    {'TRANSITIONS:':_^72}\n"
-                f"             {self.unique_transition_count.str_label:-<66s}\n"
-                f"      tried: {self.unique_transition_count.summary_str:<67s}\n"
-                f"    applied: {self.unique_applied_transition_count.summary_str:<67s}\n"
-                f"    tr - ap: {self.avg_tried_but_never_applied_transition_count.summary_str:<67s}\n"
-                # f"      never: {self.avg_never_tried_transition_count.summary_str:<67s}\n"
-                # f"   possible: {self.id.transition_count:<67.9g}\n"
-                f"    |tried|: {self.abs_unique_transition_count:<67.3g}\n"
-                f"  |applied|: {self.abs_unique_applied_transition_count:<67.3g}\n"
-                f"  |tr - ap|: {self.unique_tried_but_not_applied_transition_count:<67.3g}\n"
-                # f"    |never|: {self.abs_never_tried_transition_count:<67.4g}\n"
+        return (f"{'='*80}\n"+
+                f"  {self.id!s:^76s}  \n"+
+                f"  {'-'*76}  \n"+
+                f"      walks: {len(self.traces):<67d}\n"+
+                f"  max-depth: {self.metadata['max-depth']:<67d}\n"+
+                f"  symmetry?: {self.do_symmetry!s:<67s}\n"+
+                f"    {'TIME:':_^72}\n"+
+                f"{timeU:>11}  {time_label:-<66s}\n"+
+                f"     active: {a_time!s:<67s}\n"+
+                f"      total: {t_time!s:<67s}\n"+
+                f"    {'ERRORS:':_^72}\n"+
+                f"     #-disc: {self.errors_found:<67g}\n"+
+                f"       rate: {self.error_detection_rate:<67.2g}\n"+
+                f"    {'RULES:':_^72}\n"+
+                f"             {self.unique_rule_count.str_label:-<66s}\n"+
+                f"      tried: {self.unique_rule_count.summary_str:<67s}\n"+
+                f"    applied: {self.unique_applied_rule_count.summary_str:<67s}\n"+
+                f"    tr - ap: {self.avg_tried_but_never_applied_rule_count.summary_str:<67s}\n"+
+                f"      never: {self.avg_never_tried_rule_count.summary_str:<67s}\n"+
+                f"   possible: {self.id.rule_count:<67,d}\n"+
+                f"    |tried|: {self.abs_unique_rule_count:<67d}\n"+
+                f"  |applied|: {self.abs_unique_applied_rule_count:<67d}\n"+
+                f"  |tr - ap|: {self.unique_tried_but_not_applied_rule_count:<67d}\n"+
+                f"    |never|: {self.abs_never_tried_rule_count:<67d}\n"+
+                f"   COVERAGE  {self.avg_applied_rule_coverage.str_label:-<66s}\n"+
+                f"      tried: {self.avg_tried_rule_coverage.summary_str:<67s}\n"+
+                f"    applied: {self.avg_applied_rule_coverage.summary_str:<67s}\n"+
+                f"    tr - ap: {self.avg_tried_but_never_applied_rule_coverage.summary_str:<67s}\n"+
+                f"      never: {self.avg_never_tried_rule_coverage.summary_str:<67s}\n"+
+                f" |coverage|: {self.abs_rule_coverage:<12.2%}\n"+
+                f"             {self.depth.str_label:-<66s}\n"+
+                f"       hits: {self.depth.summary_str:<67s}\n"+
+                f"     misses: {self.missed_rules.summary_str:<67s}\n"+
+                f"      tries: {self.tries.summary_str:<67s}\n"+
+                f"             {self.rule_hit_rate.str_label:-<66s}\n"+
+                f"   hit-rate: {self.rule_hit_rate.summary_str:<67s}\n"+
+                f"  miss-rate: {self.rule_miss_rate.summary_str:<67s}\n"+
+                f"    STREAKS  {self.state_hit_streak.str_label:-<66s}\n"+
+                f"       hits: {self.rule_hit_streak.summary_str:<67s}\n"+
+                f"     misses: {self.rule_miss_streak.summary_str:<67s}\n"+
+                f"    {'STATES:':_^72}\n"+
+                f"             {self.unique_state_count.str_label:-<66s}\n"+
+                f"      found: {self.unique_state_count.summary_str:<67s}\n"+
+                f"   possible: {float(self.possible_state_count):<67.9g}\n"+
+                f"    |found|: {self.abs_unique_state_count:<67,d}\n"+
+                f"             {self.avg_state_coverage.str_label:-<66s}\n"+
+                f"   coverage: {self.avg_state_coverage.summary_str:<67s}\n"+
+                f" |coverage|: {self.abs_state_coverage:<12.4g}\n"+
+                f"             {self.state_hit_rate.str_label:-<66s}\n"+
+                f"   hit-rate: {self.state_hit_rate.summary_str:<67s}\n"+
+                f"  miss-rate: {self.state_miss_rate.summary_str:<67s}\n"+
+                f"    |hit-r|: {self.abs_state_hit_rate.summary_str:<67s}\n"+
+                f"   |miss-r|: {self.abs_state_miss_rate.summary_str:<67s}\n"+
+                f"    STREAKS  {self.state_hit_streak.str_label:-<66s}\n"+
+                f"       hits: {self.state_hit_streak.summary_str:<67s}\n"+
+                f"     misses: {self.state_miss_streak.summary_str:<67s}\n"+
+                f"     |hits|: {self.abs_state_hit_streak.summary_str:<67s}\n"+
+                f"   |misses|: {self.abs_state_miss_streak.summary_str:<67s}\n"+
+                f"    {'TRANSITIONS:':_^72}\n"+
+                f"             {self.unique_transition_count.str_label:-<66s}\n"+
+                f"      tried: {self.unique_transition_count.summary_str:<67s}\n"+
+                f"    applied: {self.unique_applied_transition_count.summary_str:<67s}\n"+
+                f"    tr - ap: {self.avg_tried_but_never_applied_transition_count.summary_str:<67s}\n"+
+                # f"      never: {self.avg_never_tried_transition_count.summary_str:<67s}\n"+
+                # f"   possible: {self.id.transition_count:<67.9g}\n"+
+                f"    |tried|: {self.abs_unique_transition_count:<67.3g}\n"+
+                f"  |applied|: {self.abs_unique_applied_transition_count:<67.3g}\n"+
+                f"  |tr - ap|: {self.unique_tried_but_not_applied_transition_count:<67.3g}\n"+
+                # f"    |never|: {self.abs_never_tried_transition_count:<67.4g}\n"+
                 f"    {'PROPS:':_^72}\n"
                 f" #-violated: {len(self.properties_violated):<67d}\n" 
             #     f"       list: " +
@@ -980,8 +985,8 @@ def process_data(trace_dir:str) -> ModelResults:
 def print_results(results:ModelResults) -> None:
     print()
     for key in results:
-        if DEBUG:
-            print(tuple(results[key].depth))
+        # if DEBUG:
+        #     print(tuple(results[key].depth))
             # states = list(results[key].unique_states)
             # for i in range(0,len(states)):
             #     for j in range(i+1,len(states)):
@@ -1011,6 +1016,6 @@ if __name__ == "__main__":
         if _t is None:
             print("StatRange() returns None")
         # print(repr(StatRange()))
-        print(StatSummary(0,0,0,0,0))
+        # print(StatSummary(0,0,0,0,0))
     main()
 
