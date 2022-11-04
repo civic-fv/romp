@@ -63,50 +63,63 @@ ALL_MODEL_EXE := $(ROMP_MODEL_EXE) $(CMURPHI_MODEL_EXE) $(RUMUR_MODEL_EXE)
 define __generate_romp_model_directive
 $(1).romp.cpp: $(1).m
 	@printf "Generating $(1) with romp ...\n"
-	$$(ROMP) $$(ROMP_FLAGS) -o $$@ $(1).m
-	@printf "Finished Generating $$@ ...\n"
+	@printf "  $(ROMP) $(ROMP_FLAGS) -o $@ $(1).m\n"
+	@$(ROMP) $(ROMP_FLAGS) -o $@ $(1).m
+	@printf "Finished Generating $@ ...\n"
 $(1).sym.romp: $(1).romp.cpp
-	@printf "Building $$@ ...\n"
-	$$(CXX) $$(CXXFLAGS) -D__romp__ENABLE_symmetry -o $$@ $(1).romp.cpp
-	@printf "Finished Building: $$@\n"
+	@printf "Building $@ ...\n"
+	@printf "  $(CXX) $(CXXFLAGS) -D__romp__ENABLE_symmetry -o $@ $(1).romp.cpp\n"
+	@$(CXX) $(CXXFLAGS) -D__romp__ENABLE_symmetry -o $@ $(1).romp.cpp
+	@printf "Finished Building: $@\n"
 $(1).nsym.romp: $(1).romp.cpp
-	@printf "Building $$@ ...\n"
-	$$(CXX) $$(CXXFLAGS) -o $$@ $(1).romp.cpp
-	@printf "Finished Building: $$@\n"
+	@printf "Building $@ ...\n"
+	@printf "  $(CXX) $(CXXFLAGS) -o $@ $(1).romp.cpp\n"
+	@$(CXX) $(CXXFLAGS) -o $@ $(1).romp.cpp
+	@printf "Finished Building: $@\n"
 $(1).romp: $(1).sym.romp
-	$$(CP) $(1).sym.romp $(1).romp
+	@printf "``Making'' $@ with `cp` ...\n"
+	@printf "  $(CP) $(1).sym.romp $(1).romp\n"
+	@$(CP) $(1).sym.romp $(1).romp
+	@printf "Finished ``Making'' $@ ...\n"
 endef
 $(foreach model,$(ROMP_MODELS),$(eval $(call __generate_romp_model_directive,$(model:%.m=%))))
 #generate cmurphi directives
 define __generate_cmurphi_model_directive
 $(1).cm.cpp: $(1).m
 	@printf "Generating $(1) with cmurphi ...\n"
-	$$(CMURPHI) $$(CMURPHI_FLAGS) $(1).m
-	@printf "Finished Generating $$@ ...\n"
+	@printf " $(CMURPHI) $(CMURPHI_FLAGS) $(1).m\n"
+	@$(CMURPHI) $(CMURPHI_FLAGS) $(1).m
+	@printf "Finished Generating $@ ...\n"
 $(1).cm: $(1).cm.cpp
-	@printf "Building $$@ ...\n"
-	$$(CXX) $$(CXXFLAGS) -I$$(CMURPHI_INCLUDE_DIR) -o $(1).cm $(1).cpp
-	@printf "Finished Building: $$@\n"
+	@printf "Building $@ ...\n"
+	@printf "  $(CXX) $(CXXFLAGS) -I$(CMURPHI_INCLUDE_DIR) -o $(1).cm $(1).cpp\n"
+	@$(CXX) $(CXXFLAGS) -I$(CMURPHI_INCLUDE_DIR) -o $(1).cm $(1).cpp
+	@printf "Finished Building: $@\n"
 endef
 $(foreach model,$(CMURPHI_MODELS),$(eval $(call __generate_cmurphi_model_directive,$(model:%.m=%))))
 #generate rumur directives
 define __generate_rumur_model_directive
 $(1).ru.c: $(1).m
 	@printf "Generating $(1) with rumur ...\n"
-	$$(RUMUR) $$(RUMUR_FLAGS) -o $(1).ru.c $(1).m
-	@printf "Finished Generating $$@ ...\n"
+	@printf "  $(RUMUR) $(RUMUR_FLAGS) -o $(1).ru.c $(1).m\n"
+	@$(RUMUR) $(RUMUR_FLAGS) -o $(1).ru.c $(1).m
+	@printf "Finished Generating $@ ...\n"
 $(1).ru: $(1).ru.c
-	@printf "Building $$@ ...\n"
-	$$(CC) $$(CFLAGS) -o $(1).ru $(1).ru.c
-	@printf "Finished Building: $$@\n"
+	@printf "Building $@ ...\n"
+	@printf "  $(CC) $(CFLAGS) -o $(1).ru $(1).ru.c\n"
+	@$(CC) $(CFLAGS) -o $(1).ru $(1).ru.c
+	@printf "Finished Building: $@\n"
 endef
 $(foreach model,$(CMURPHI_MODELS),$(eval $(call __generate_rumur_model_directive,$(model:%.m=%))))
 #generate per model directives
-define __genrate_per_model_directive
-$(1): $$(ifeq $$(filter $(1),$$(ROMP_MODELS)),$(1),$(1).sym.romp $(1).nsym.romp) $$(ifeq $$(filter $(1),$$(CMURPHI_MODELS)),$(1),$(1).cm) $$(ifeq $$(filter $(1),$$(RUMUR_MODELS)),$(1),$(1).ru)
-	@printf "Finished Building all `$$@` model checkers\n"
-endef
-$(foreach model,$(ALL_MODELS),$(eval $(call __generate_per_model_directive,$(model:%.m=%))))
+# define __genrate_per_model_directive
+# $(1): $(2)
+# 	@printf "\nFinished Building all `$@` model checkers!\n\n"
+# endef
+# $(foreach model,$(ALL_MODELS),$(eval $(call __generate_per_model_directive,$(model:%.m=%),$(if $(filter $(model:%.m=%).m,$(ROMP_MODELS)),$(model:%.m=%).sym.romp $(model:%.m=%).nsym.romp )$(if $(filter $(model:%.m=%).m,$(CMURPHI_MODELS)),$(model:%.m=%).cm )$(if $(filter $(model:%.m=%).m,$(RUMUR_MODELS)),$(model:%.m=%).ru))))
+# $(info $(foreach model,$(ALL_MODELS),$(model:%.m=%): $(ifeq $(filter $(1),$(ROMP_MODELS)),$(1),$(1).sym.romp $(1).nsym.romp) $(ifeq $(filter $(model:%.m=%),$(CMURPHI_MODELS)),$(model:%.m=%),$(model:%.m=%).cm) $(ifeq $(filter $(model:%.m=%),$(RUMUR_MODELS)),$(model:%.m=%),$(model:%.m=%).ru)))
+# $(foreach model,$(ALL_MODELS),$(info $(model:%.m=%): $(if $(filter $(model:%.m=%).m,$(ROMP_MODELS)),$(model:%.m=%).sym.romp $(model:%.m=%).nsym.romp )$(if $(filter $(model:%.m=%).m,$(CMURPHI_MODELS)),$(model:%.m=%).cm )$(if $(filter $(model:%.m=%).m,$(RUMUR_MODELS)),$(model:%.m=%).ru)))
+
 
 
 # ================= 
@@ -129,6 +142,10 @@ rumur_models: $(RUMUR_MODEL_EXE)
 # clean:
 #	$(RM) $(ROMP_MODEL_SOURCES) $(CMURPHI_MODEL_SOURCES) $(RUMUR_MODEL_SOURCES)
 #	$(RM) $(ROMP_MODEL_EXE) $(CMURPHI_MODEL_EXE) $(RUMUR_MODEL_EXE)
+clean-inter:
+	$(RM) ./*.cpp
+	$(RM) ./*.c
+
 clean:
 	$(RM) ./*.cpp
 	$(RM) ./*.c
