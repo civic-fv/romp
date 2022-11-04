@@ -21,8 +21,8 @@ CMakeFiles/**
 !**/tests/**/*.eml
 !**/tests/**/*.ipynb
 !**/tests/**/makefile
-!**/tests/makefile
-!**/tests/heterogen/makefile
+!tests/makefile
+!tests/**/makefile
 !scratch/*.test.cpp
 !scratch/*.test.hpp
 !scratch/*.test.py
