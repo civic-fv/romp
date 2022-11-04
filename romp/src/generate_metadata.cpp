@@ -190,10 +190,10 @@ void generate_record_members_metadata(CodeGenerator& gen, const Node& n) {
     std::string sep;
     GenerateMemberLabels(CodeGenerator& gen_) : out(gen_) {}
     void visit_record(const Record& n) {
-      if (next_field_id != n.first_field_id)
-        throw Error("DEV ERROR : record does not line up with its field id's",n.loc);
       for (const auto& m : n.fields)
         dispatch(*m);
+      if (next_field_id != n.first_field_id)
+        throw Error("DEV ERROR : record does not line up with its field id's",n.loc);
       for (const auto& m : n.fields) {
         out << sep << '"' << m->name << '"';
         sep = ",";

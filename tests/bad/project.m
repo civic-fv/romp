@@ -463,7 +463,7 @@ end;
 -- mobile station starts protocol by sending key request msg to base station
 ruleset msid: MSID do
   ruleset gid: GSAID do
-    rule 20 "ms starts protocol"
+    rule "ms starts protocol"
 
       ms[msid].state[gid] = M_Start &
       ms[msid].sessions[gid] < MaxSessionsPerMSPerGroup &
@@ -520,7 +520,7 @@ end;
 ruleset msid: MSID do
   ruleset gid: GSAID do
     choose i: net do
-      rule 21 "ms receives KeyRsp"
+      rule "ms receives KeyRsp"
         net[i].fromIntruder &
         net[i].mType = KeyRsp &
         net[i].cid = msid
@@ -711,7 +711,7 @@ end;
 
 -- base station receives KeyReq message and sends KeyRsp message
 choose i: net do
-  rule 30 "bs receives KeyReq and sends KeyRsp message"
+  rule "bs receives KeyReq and sends KeyRsp message"
     net[i].fromIntruder &
     net[i].mType = KeyReq
     

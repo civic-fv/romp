@@ -1064,9 +1064,9 @@ const stream_void Options::write_config(ostream_p& out) const noexcept {
                                               ? " \t(default)"
                                               : "")))                               << out.nl()
 #ifdef __ROMP__DO_MEASURE
-      << " report time: YES \t(config when generating with romp)"
+      << "report time: YES \t(config when generating with romp)"
 #else
-      << " report time: NO  \t(config when generating with romp)"
+      << "report time: NO  \t(config when generating with romp)"
 #endif
       << out.dedent()                                                               << out.nl()
       << "WALKS INCLUDED IN FINAL REPORT:" << ((report_all) ? " \t[ALL]" : "")

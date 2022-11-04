@@ -204,9 +204,9 @@ namespace romp {
 #   endif
   };
 
-  template<range_t LB, range_t UB, range_t STEP=(range_t)((LB<UB) ? 1 : -1)>
+  template<range_t LB, range_t UB, range_t STEP=(range_t)((LB<=UB) ? 1 : -1)>
   class RangeType : public BaseUndefinableType<range_t> {
-    static_assert(not ((LB<UB) xor (STEP>0)), "step must go in the same direction as bounds");
+    static_assert(not ((LB<=UB) xor (STEP>0)), "step must go in the same direction as bounds");
     static_assert((not (STEP==0) || (LB==UB)), "if STEP is 0, then LB must equal UB");
   protected:
     static void _check(range_t value_) {
@@ -249,7 +249,7 @@ namespace romp {
     size_t __get_index_val() const { return static_cast<size_t>(get() - LB); }
     static constexpr RangeType __LB() { return RangeType(LB); }
     static constexpr RangeType __UB() { RangeType tmp(UB); tmp.set(UB+STEP); return tmp; } 
-    static constexpr size_t __COUNT() { return static_cast<size_t>((UB-LB+1)/STEP); }
+    static constexpr size_t __COUNT() { return (((UB-LB)+1)/STEP); }
     RangeType& __step() {
       // step needs to account for uneven ranges or modifying values in model between steps
       range_t val = get() + STEP;
@@ -261,43 +261,66 @@ namespace romp {
       return *this;
     }
 
-    template<range_t RLB, range_t RUB>
-    friend inline range_t operator + (const RangeType& l, const RangeType<RLB,RUB>& r) { return l.get() + r.get(); }
-    template<range_t RLB, range_t RUB>
-    friend inline range_t operator - (const RangeType& l, const RangeType<RLB,RUB>& r) { return l.get() - r.get(); }
-    template<range_t RLB, range_t RUB>
-    friend inline range_t operator * (const RangeType& l, const RangeType<RLB,RUB>& r) { return l.get() * r.get(); }
-    template<range_t RLB, range_t RUB>
-    friend inline range_t operator / (const RangeType& l, const RangeType<RLB,RUB>& r) { return l.get() / r.get(); }
-    template<range_t RLB, range_t RUB>
-    friend inline range_t operator % (const RangeType& l, const RangeType<RLB,RUB>& r) { return l.get() % r.get(); }
-    template<range_t RLB, range_t RUB>
-    friend inline range_t operator & (const RangeType& l, const RangeType<RLB,RUB>& r) { return l.get() & r.get(); }
-    template<range_t RLB, range_t RUB>
-    friend inline range_t operator | (const RangeType& l, const RangeType<RLB,RUB>& r) { return l.get() | r.get(); }
-    template<range_t RLB, range_t RUB>
-    friend inline range_t operator ^ (const RangeType& l, const RangeType<RLB,RUB>& r) { return l.get() ^ r.get(); }
+    inline range_t __get_value() const { return get(); }
 
-    template<range_t RLB, range_t RUB>
-    friend inline bool operator < (const RangeType& l, const RangeType<RLB,RUB>& r) { return l.get() < r.get(); }
-    template<range_t RLB, range_t RUB>
-    friend inline bool operator <= (const RangeType& l, const RangeType<RLB,RUB>& r) { return l.get() <= r.get(); }
-    template<range_t RLB, range_t RUB>
-    friend inline bool operator == (const RangeType& l, const RangeType<RLB,RUB>& r) { return l.get() == r.get(); }
-    template<range_t RLB, range_t RUB>
-    friend inline bool operator != (const RangeType& l, const RangeType<RLB,RUB>& r) { return l.get() != r.get(); }
-    template<range_t RLB, range_t RUB>
-    friend inline bool operator >= (const RangeType& l, const RangeType<RLB,RUB>& r) { return l.get() >= r.get(); }
-    template<range_t RLB, range_t RUB>
-    friend inline bool operator > (const RangeType& l, const RangeType<RLB,RUB>& r) { return l.get() > r.get(); }
+    template<range_t RLB, range_t RUB, range_t RST>
+    friend inline range_t operator + (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() + r.__get_value(); }
+    template<range_t RLB, range_t RUB, range_t RST>
+    friend inline range_t operator - (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() - r.__get_value(); }
+    template<range_t RLB, range_t RUB, range_t RST>
+    friend inline range_t operator * (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() * r.__get_value(); }
+    template<range_t RLB, range_t RUB, range_t RST>
+    friend inline range_t operator / (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() / r.__get_value(); }
+    template<range_t RLB, range_t RUB, range_t RST>
+    friend inline range_t operator % (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() % r.__get_value(); }
+    template<range_t RLB, range_t RUB, range_t RST>
+    friend inline range_t operator & (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() & r.__get_value(); }
+    template<range_t RLB, range_t RUB, range_t RST>
+    friend inline range_t operator | (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() | r.__get_value(); }
+    template<range_t RLB, range_t RUB, range_t RST>
+    friend inline range_t operator ^ (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() ^ r.__get_value(); }
+
+    template<range_t RLB, range_t RUB, range_t RST>
+    friend inline bool operator < (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() < r.__get_value(); }
+    template<range_t RLB, range_t RUB, range_t RST>
+    friend inline bool operator <= (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() <= r.__get_value(); }
+    template<range_t RLB, range_t RUB, range_t RST>
+    friend inline bool operator == (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() == r.__get_value(); }
+    template<range_t RLB, range_t RUB, range_t RST>
+    friend inline bool operator != (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() != r.__get_value(); }
+    template<range_t RLB, range_t RUB, range_t RST>
+    friend inline bool operator >= (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() >= r.__get_value(); }
+    template<range_t RLB, range_t RUB, range_t RST>
+    friend inline bool operator > (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() > r.__get_value(); }
     
-    
+    friend inline range_t operator + (const RangeType& l, const range_t& r) { return l.get() + r; }
+    friend inline range_t operator - (const RangeType& l, const range_t& r) { return l.get() - r; }
+    friend inline range_t operator * (const RangeType& l, const range_t& r) { return l.get() * r; }
+    friend inline range_t operator / (const RangeType& l, const range_t& r) { return l.get() / r; }
+    friend inline range_t operator % (const RangeType& l, const range_t& r) { return l.get() % r; }
+    friend inline range_t operator & (const RangeType& l, const range_t& r) { return l.get() & r; }
+    friend inline range_t operator | (const RangeType& l, const range_t& r) { return l.get() | r; }
+    friend inline range_t operator ^ (const RangeType& l, const range_t& r) { return l.get() ^ r; }
     friend inline bool operator < (const RangeType& l, const range_t& r) { return l.get() < r; }
     friend inline bool operator <= (const RangeType& l, const range_t& r) { return l.get() <= r; }
     friend inline bool operator == (const RangeType& l, const range_t& r) { return l.get() == r; }
     friend inline bool operator != (const RangeType& l, const range_t& r) { return l.get() != r; }
     friend inline bool operator >= (const RangeType& l, const range_t& r) { return l.get() >= r; }
     friend inline bool operator > (const RangeType& l, const range_t& r) { return l.get() > r; }
+    friend inline range_t operator + (const range_t& l, const RangeType& r) { return l + r.get(); }
+    friend inline range_t operator - (const range_t& l, const RangeType& r) { return l - r.get(); }
+    friend inline range_t operator * (const range_t& l, const RangeType& r) { return l * r.get(); }
+    friend inline range_t operator / (const range_t& l, const RangeType& r) { return l / r.get(); }
+    friend inline range_t operator % (const range_t& l, const RangeType& r) { return l % r.get(); }
+    friend inline range_t operator & (const range_t& l, const RangeType& r) { return l & r.get(); }
+    friend inline range_t operator | (const range_t& l, const RangeType& r) { return l | r.get(); }
+    friend inline range_t operator ^ (const range_t& l, const RangeType& r) { return l ^ r.get(); }
+    friend inline bool operator < (const range_t& l, const RangeType& r) { return l < r.get(); }
+    friend inline bool operator <= (const range_t& l, const RangeType& r) { return l <= r.get(); }
+    friend inline bool operator == (const range_t& l, const RangeType& r) { return l == r.get(); }
+    friend inline bool operator != (const range_t& l, const RangeType& r) { return l != r.get(); }
+    friend inline bool operator >= (const range_t& l, const RangeType& r) { return l >= r.get(); }
+    friend inline bool operator > (const range_t& l, const RangeType& r) { return l > r.get(); }
 
 
     static constexpr const std::string __p_type() { 

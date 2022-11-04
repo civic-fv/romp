@@ -143,10 +143,10 @@ namespace romp {
   QuantExpansion::QuantExpansion(const murphi::Quantifier& q) 
     : type(q.decl->type->clone())
   {
-    if (auto _tid = dynamic_cast<const murphi::TypeExprID*>(q.decl->type.get()))
-      type_id = _tid->name;
-    else
-      throw murphi::Error("Unprocessed anonymous type found in ruleset quantifier!!\t[dev-error]",q.type->loc);
+    // if (auto _tid = dynamic_cast<const murphi::TypeExprID*>(q.decl->type.get()))
+    //   type_id = _tid->name;
+    // else
+    //   throw murphi::Error("Unprocessed anonymous type found in ruleset quantifier!!\t[dev-error]",q.type->loc);
     if (q.type == nullptr)
       resolve_quantifier_bounds(q);
     else
