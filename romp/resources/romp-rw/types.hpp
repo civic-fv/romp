@@ -1123,15 +1123,15 @@ namespace romp {
     static constexpr bool __IS_RECORD() { return true; }
     static constexpr bool __IS_TYPEID() { return false; }
     static constexpr bool __DO_P_SEP() {
-#     if __cplusplus >= 201703L
-        return ((sizeof...(FIELDS)>3) || (FIELDS::__DO_P_SEP() || ...)); // [[requires C++17]]
-#     else
+// #     if __cplusplus >= 201703L
+//         return ((sizeof...(FIELDS)>3) || (FIELDS::__DO_P_SEP() || ...)); // [[requires C++17]]
+// #     else
         bool f_p_seps[] = {FIELDS::__DO_P_SEP()...}; 
         bool res = false;
         for (size_t i=0; i<(sizeof...(FIELDS)); ++i)
           res |= f_p_seps[i];
         return res || (sizeof...(FIELDS)>3);
-#     endif
+// #     endif
     }
 
     template<size_t I>

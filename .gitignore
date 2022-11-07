@@ -8,8 +8,7 @@ CMakeFiles/**
 **/traces/**
 **/traces/*.json
 
-# ignore generated test files
-**/tests/**/*.*
+
 # but don't ignore test models, scripts, docs, or test build config data
 !**/tests/**/*.m
 !**/tests/**/*.py
@@ -20,6 +19,8 @@ CMakeFiles/**
 !**/tests/**/*.rst
 !**/tests/**/*.eml
 !**/tests/**/*.ipynb
+!**/tests/makefile
+!**/tests/**/makefile
 !tests/makefile
 !tests/**/makefile
 !scratch/*.test.cpp
@@ -32,6 +33,9 @@ CMakeFiles/**
 !**/README
 !tests/config/**
 !tests/murphi-comment-ls/*.cc
+
+# ignore generated test files
+**/tests/**/*.*
 
 # debug files
 *.test.cpp

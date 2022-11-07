@@ -62,53 +62,53 @@ ALL_MODEL_EXE := $(ROMP_MODEL_EXE) $(CMURPHI_MODEL_EXE) $(RUMUR_MODEL_EXE)
 #generate romp directives
 define __generate_romp_model_directive
 $(1).romp.cpp: $(1).m
-	@printf "Generating $(1) with romp ...\n"
-	@printf "  $(ROMP) $(ROMP_FLAGS) -o $@ $(1).m\n"
-	@$(ROMP) $(ROMP_FLAGS) -o $@ $(1).m
-	@printf "Finished Generating $@ ...\n"
+	@printf "Generating $$@ with romp ...\n"
+	@printf "  $$(ROMP) $$(ROMP_FLAGS) -o $$@ $(1).m\n"
+	@$$(ROMP) $$(ROMP_FLAGS) -o $$@ $(1).m
+	@printf "Finished Generating: $$@\n"
 $(1).sym.romp: $(1).romp.cpp
-	@printf "Building $@ ...\n"
-	@printf "  $(CXX) $(CXXFLAGS) -D__romp__ENABLE_symmetry -o $@ $(1).romp.cpp\n"
-	@$(CXX) $(CXXFLAGS) -D__romp__ENABLE_symmetry -o $@ $(1).romp.cpp
-	@printf "Finished Building: $@\n"
+	@printf "Building $$@ ...\n"
+	@printf "  $$(CXX) $$(CXXFLAGS) -D__romp__ENABLE_symmetry -o $$@ $(1).romp.cpp\n"
+	@$$(CXX) $$(CXXFLAGS) -D__romp__ENABLE_symmetry -o $$@ $(1).romp.cpp
+	@printf "Finished Building: $$@\n"
 $(1).nsym.romp: $(1).romp.cpp
-	@printf "Building $@ ...\n"
-	@printf "  $(CXX) $(CXXFLAGS) -o $@ $(1).romp.cpp\n"
-	@$(CXX) $(CXXFLAGS) -o $@ $(1).romp.cpp
-	@printf "Finished Building: $@\n"
+	@printf "Building $$@ ...\n"
+	@printf "  $$(CXX) $$(CXXFLAGS) -o $$@ $(1).romp.cpp\n"
+	@$$(CXX) $$(CXXFLAGS) -o $$@ $(1).romp.cpp
+	@printf "Finished Building: $$@\n"
 $(1).romp: $(1).sym.romp
-	@printf "``Making'' $@ with `cp` ...\n"
-	@printf "  $(CP) $(1).sym.romp $(1).romp\n"
-	@$(CP) $(1).sym.romp $(1).romp
-	@printf "Finished ``Making'' $@ ...\n"
+	@printf "``Making'' $$@ with `cp` ...\n"
+	@printf "  $$(CP) $(1).sym.romp $(1).romp\n"
+	@$$(CP) $(1).sym.romp $(1).romp
+	@printf "Finished ``Making'': $$@\n"
 endef
 $(foreach model,$(ROMP_MODELS),$(eval $(call __generate_romp_model_directive,$(model:%.m=%))))
 #generate cmurphi directives
 define __generate_cmurphi_model_directive
 $(1).cm.cpp: $(1).m
-	@printf "Generating $(1) with cmurphi ...\n"
-	@printf " $(CMURPHI) $(CMURPHI_FLAGS) $(1).m\n"
-	@$(CMURPHI) $(CMURPHI_FLAGS) $(1).m
-	@printf "Finished Generating $@ ...\n"
+	@printf "Generating $$@ with cmurphi ...\n"
+	@printf " $$(CMURPHI) $$(CMURPHI_FLAGS) $(1).m\n"
+	@$$(CMURPHI) $$(CMURPHI_FLAGS) $(1).m
+	@printf "Finished Generating: $$@\n"
 $(1).cm: $(1).cm.cpp
-	@printf "Building $@ ...\n"
-	@printf "  $(CXX) $(CXXFLAGS) -I$(CMURPHI_INCLUDE_DIR) -o $(1).cm $(1).cpp\n"
-	@$(CXX) $(CXXFLAGS) -I$(CMURPHI_INCLUDE_DIR) -o $(1).cm $(1).cpp
-	@printf "Finished Building: $@\n"
+	@printf "Building $$@ ...\n"
+	@printf "  $$(CXX) $$(CXXFLAGS) -I$$(CMURPHI_INCLUDE_DIR) -o $$@ $(1).cpp\n"
+	@$$(CXX) $$(CXXFLAGS) -I$$(CMURPHI_INCLUDE_DIR) -o $$@ $(1).cpp
+	@printf "Finished Building: $$@\n"
 endef
 $(foreach model,$(CMURPHI_MODELS),$(eval $(call __generate_cmurphi_model_directive,$(model:%.m=%))))
 #generate rumur directives
 define __generate_rumur_model_directive
 $(1).ru.c: $(1).m
-	@printf "Generating $(1) with rumur ...\n"
-	@printf "  $(RUMUR) $(RUMUR_FLAGS) -o $(1).ru.c $(1).m\n"
-	@$(RUMUR) $(RUMUR_FLAGS) -o $(1).ru.c $(1).m
-	@printf "Finished Generating $@ ...\n"
+	@printf "Generating $$@ with rumur ...\n"
+	@printf "  $$(RUMUR) $$(RUMUR_FLAGS) -o $$@ $(1).m\n"
+	@$$(RUMUR) $$(RUMUR_FLAGS) -o $$@ $(1).m
+	@printf "Finished Generating: $$@\n"
 $(1).ru: $(1).ru.c
-	@printf "Building $@ ...\n"
-	@printf "  $(CC) $(CFLAGS) -o $(1).ru $(1).ru.c\n"
-	@$(CC) $(CFLAGS) -o $(1).ru $(1).ru.c
-	@printf "Finished Building: $@\n"
+	@printf "Building $$@ ...\n"
+	@printf "  $$(CC) $$(CFLAGS) -o $$@ $(1).ru.c\n"
+	@$$(CC) $(CFLAGS) -o $$@ $(1).ru.c
+	@printf "Finished Building: $$@\n"
 endef
 $(foreach model,$(CMURPHI_MODELS),$(eval $(call __generate_rumur_model_directive,$(model:%.m=%))))
 #generate per model directives
