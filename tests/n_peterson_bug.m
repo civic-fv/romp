@@ -76,10 +76,10 @@
 --------------------------------------------------------------------------
 
 Const
-  N: 7; -- the number of processes
-  LHL: N; -- the size of the history buffer
+  N: 4; -- 7; -- the number of processes
+  LHL: N*4; -- the size of the history buffer
   BL: (N*2); /*N;*/ -- the length of the total bug sequence
-  MSL: 4; -- the minimum length of the bug sub sequence
+  MSL: 3; -- the minimum length of the bug sub sequence
 
 Type
   --  The scalarset is used for symmetry, which is implemented in Murphi 1.5
@@ -109,12 +109,12 @@ Var
   b_size: b_ind_t;
   lh_is_full, bug_is_full: boolean;  -- if we circling yet (aka need to move start/lh_i forward)
 
-Procedure print_bug(tmp:boolean)
-Begin
-  put "Bug := [ ";
-  put bug;
-  put "\n\n"
-EndProcedure;
+-- Procedure print_bug(tmp:boolean)
+-- Begin
+--   put "Bug := [ ";
+--   put bug;
+--   put "\n\n"
+-- EndProcedure;
 
 
 Ruleset i: pid  Do
@@ -201,8 +201,8 @@ Begin
   bug_is_full := False;
   lh_size := 0;
   b_size := 0;
-  Clear lock_hist;
-  Clear bug;
+  Undefine lock_hist;
+  Undefine bug;
   If (MSL<2) 
     Then Error "CONFIG ERROR: `MSL` needs to >= 2 to be a proper subseq !!";
   EndIf;

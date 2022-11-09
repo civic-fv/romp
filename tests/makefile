@@ -26,7 +26,7 @@ RUMUR := ../../rumur/build/rumur/rumur
 
 CFLAGS := -std=c11 -O3 -pthread -march=native
 CXXFLAGS := -std=c++17 -O3 -pthread
-ROMP_FLAGS := -s --do-measure
+ROMP_FLAGS := -s --do-measure --simple-trace-rep
 CMURPHI_FLAGS := 
 CMURPHI_INCLUDE_DIR := ../../cmurphi/include
 RUMUR_FLAGS := --smt-path z3 --smt-arg=-smt2 --smt-arg=-in --smt-arg=-t:5000
@@ -42,7 +42,7 @@ CP := cp -rf
 ALL_MODELS := $(wildcard *.m)
 ROMP_MODELS := $(filter-out %multi.m,$(ALL_MODELS))
 CMURPHI_MODELS := $(wildcard *.m)
-RUMUR_MODELS := $(filter-out %multi.m,$(ALL_MODELS))
+RUMUR_MODELS := $(filter-out %dash.m,$(filter-out %multi.m,$(ALL_MODELS)))
 # RUMUR_MODELS := $(wildcard ru*.m)
 
 ROMP_MODEL_SOURCES := $(foreach model,$(ROMP_MODELS),$(model:%.m=%.romp.cpp))

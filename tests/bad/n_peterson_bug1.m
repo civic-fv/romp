@@ -147,11 +147,13 @@ End; --Ruleset
 
 Function bug(i:bug_r): pid
 type m_int: (-9223372036854775807)..(9223372036854775807);
-var pids: array [pid_r] of pid; 
+var pids: array [pid_r] of pid;
     fact, sum: m_int;
+    tmp: pid_r;
 Begin
+  Clear tmp;
   -- build a hacky map from range to scalarset
-  For p: pid Do For tmp := p to p Do pids[tmp] := p EndFor EndFor;
+  For p: pid Do pids[tmp] := p; tmp := tmp+1; EndFor;
   -- factorial & sum
   fact := i+3; 
   For j := 2 to (i+2) Do fact := fact * j; EndFor;

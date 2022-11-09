@@ -630,13 +630,13 @@ namespace romp {
     bool operator == (const SCALAR_ENUM_t& other) const { return value == other; }
     bool operator != (const SCALAR_ENUM_t& other) const { return value != other; }
     template<size_t EID, size_t B>
-    bool operator == (const EnumType<EID,B>& other) const { return value == other.__get_value(); }
+    bool operator == (const EnumType<EID,B>& other) const { return value == other.__get_scalar_value(); }
     template<size_t EID, size_t B>
-    bool operator != (const EnumType<EID,B>& other) const { return value != other.__get_value(); }
+    bool operator != (const EnumType<EID,B>& other) const { return value != other.__get_scalar_value(); }
 
     template<size_t EID, size_t B>
     friend inline bool operator == (const EnumType<EID,B>& e, const ScalarsetUnionType& u) { return u == e; }
-    template<size_t EID, size_t B, class... U_M>
+    template<size_t EID, size_t B>
     friend inline bool operator != (const EnumType<EID,B>& e, const ScalarsetUnionType& u) { return u == e; }
 
     /* this IsMember is the one associated with the IsMember() Murphi language operator */
@@ -692,6 +692,14 @@ namespace romp {
       friend inline bool operator != (const ScalarsetUnionType& l, const iterator& r) { return l != r.u; }
       friend inline bool operator == (const iterator& l, const ScalarsetUnionType& r) { return l.u == r; }
       friend inline bool operator != (const iterator& l, const ScalarsetUnionType& r) { return l.u != r; }
+      template<size_t EID, size_t B>
+      friend inline bool operator == (const EnumType<EID,B>& e, const ScalarsetUnionType::iterator& ui) { return ui.u == e; }
+      template<size_t EID, size_t B>
+      friend inline bool operator != (const EnumType<EID,B>& e, const ScalarsetUnionType::iterator& ui) { return ui.u == e; }
+      template<size_t EID, size_t B>
+      friend inline bool operator == (const ScalarsetUnionType::iterator& ui, const EnumType<EID,B>& e) { return ui.u == e; }
+      template<size_t EID, size_t B>
+      friend inline bool operator != (const ScalarsetUnionType::iterator& ui, const EnumType<EID,B>& e) { return ui.u == e; }
       friend std::ostream& operator << (std::ostream& out, const iterator& val) { return (out << val.u); }
     };
 

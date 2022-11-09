@@ -118,7 +118,7 @@ suppress generation errors about the existence of unsupported rumur properties
 in the model, when the appropriate enable options are not provided.
 .RE
 .PP
-\fB--value-type\fR \fI TYPE\fR
+\fB--range-type\fR \fI TYPE\fR
 .RS
 Change the C/C++ type used to represent range values in the emitted code. 
 By default, \fI int\fR is used. 
@@ -154,6 +154,7 @@ this can cause noticeable slowdowns as it often requires
 unnecessary system calls.
 Additionally all time measurements are only given in seconds to the nearest
 second, so short random-walks often result in reported 0s times.
+.RE
 .RE
 .PP
 \fB--simple-trace\fR

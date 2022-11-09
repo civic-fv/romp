@@ -891,7 +891,7 @@ class ModelResult:
                 f"    {'STATES:':_^72}\n"+
                 f"             {self.unique_state_count.str_label:-<66s}\n"+
                 f"      found: {self.unique_state_count.summary_str:<67s}\n"+
-                f"   possible: {float(self.possible_state_count):<67.9g}\n"+
+                # f"   possible: {float(self.possible_state_count):<67.9g}\n"+
                 f"    |found|: {self.abs_unique_state_count:<67,d}\n"+
                 f"             {self.avg_state_coverage.str_label:-<66s}\n"+
                 f"   coverage: {self.avg_state_coverage.summary_str:<67s}\n"+

@@ -158,11 +158,11 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
     //   source = false;
     //   break;
 
-    // case 129: // --scalar-type
+    // case 130: // --scalar-type
     //   gen.scalar_type = optarg;
     //   break;
 
-    case 130: // --range-type
+    case 120: // --range-type
       // note that we just assume the type the user gave us exists
       gen.value_type = optarg;
       break;
