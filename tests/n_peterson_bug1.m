@@ -146,7 +146,7 @@ End; --Ruleset
 
 
 Function bug(i:bug_r): pid
-type m_int: (-9223372036854775807)..(9223372036854775807);
+type m_int: (-2147483648)..(2147483647);
 var pids: array [pid_r] of pid;
     fact, sum: m_int;
     tmp: pid_r;

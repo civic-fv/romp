@@ -43,7 +43,7 @@ namespace romp {
 
 
     // the backend type for ranges
-    std::string value_type = "int";
+    std::string value_type = "int"; INT
     // the backend type for scalars and enum values (not currently supported)
     std::string scalar_type = "";
 
