@@ -181,36 +181,37 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
   if (optind == argc - 1) {
     struct stat buf;
     if (stat(argv[optind], &buf) < 0) {
-      std::cerr << "failed to open " << argv[optind] << ": " << strerror(errno)
-                << "\n";
+      std::cerr << "failed to open \"" << argv[optind] << "\": " << strerror(errno)
+                << std::endl;
       exit(EXIT_FAILURE);
     }
 
     if (S_ISDIR(buf.st_mode)) {
-      std::cerr << "failed to open " << argv[optind]
-                << ": this is a directory\n";
+      std::cerr << "failed to open \"" << argv[optind]
+                << "\": this is a directory\n"
+                << std::flush;
       exit(EXIT_FAILURE);
     }
 
-    in_filename = argv[optind];
+    gen.input_file_path = make_path(argv[optind]);
 
-    auto i = std::make_shared<std::ifstream>(in_filename);
-    auto j = std::make_shared<std::ifstream>(in_filename);
+    auto i = std::make_shared<std::ifstream>(gen.input_file_path);
+    auto j = std::make_shared<std::ifstream>(gen.input_file_path);
     if (!i->is_open() || !j->is_open()) {
-      std::cerr << "failed to open " << in_filename << "\n";
+      std::cerr << "failed to open \"" << gen.input_file_path << "\"\n" << std::flush;
       exit(EXIT_FAILURE);
     }
     in = dup_t(i, j);
-    gen.input_file_path = make_path(in_filename);
   }
   if (not out_file_provided) {
-    auto o = std::make_shared<std::ofstream>(in_filename + ".romp.cpp");
+    gen.output_file_path = gen.input_file_path;
+    gen.output_file_path.replace_extension(".romp.cpp");
+    auto o = std::make_shared<std::ofstream>(gen.output_file_path);
     if (!o->is_open()) {
-      std::cerr << "failed to open " << in_filename << ".romp.cpp\n";
+      std::cerr << "failed to open \"" << gen.output_file_path << "\"\n"  << std::flush;
       exit(EXIT_FAILURE);
     }
     out = o;
-    gen.output_file_path = make_path(in_filename + ".romp.cpp");
     gen.set_out(o);
   }
   // gen.enable_preprocessor_option(

@@ -95,6 +95,7 @@ void CodeGenerator::disable_romp_prop_errors() {
 void CodeGenerator::output_embedded_code_file(const unsigned char* ecf, const size_t ecf_l) {
   for (size_t i = 0; i < ecf_l; ++i)
     *out << (char) ecf[i];
+  *out << std::flush;
 }
 
 // CodeGenerator::~CodeGenerator() {}

@@ -126,7 +126,7 @@ void generate(const Model &m, const std::vector<Comment> &comments,
     gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/error.hpp\"\n";
     gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/types.hpp\"\n";
 # else
-    gen.output_embedded_code_file(resources_romp_rw_types_hpp, resources_romp_rw_options_hpp_len);
+    gen.output_embedded_code_file(resources_romp_rw_options_hpp, resources_romp_rw_options_hpp_len);
     gen.output_embedded_code_file(resources_romp_rw_error_hpp, resources_romp_rw_error_hpp_len);
     gen.output_embedded_code_file(resources_romp_rw_types_hpp, resources_romp_rw_types_hpp_len);
 # endif
