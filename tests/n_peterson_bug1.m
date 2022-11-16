@@ -88,7 +88,31 @@ Var
   lh_is_full: boolean;  -- if we circling yet (aka need to move start/lh_i forward)
 
 
+Function bug(i:bug_r): pid;
+Var pids: array [pid_r] of pid;
+    fact, sum: -2147483648..2147483647;
+    tmp: pid_r;
+Begin
+  tmp := 0; -- Clear tmp
+  -- build a hacky map from range to scalarset
+  For p: pid Do pids[tmp] := p; tmp := 1+tmp; EndFor;
+  -- factorial & sum
+  fact := i+3; 
+  For j := 2 to (i+2) Do fact := fact * j; EndFor;
+  sum := i+1;
+  For j := 1 to (i) Do  sum := sum + j; EndFor; 
+  return pids[((fact)-(sum))%N]
+EndFunction;
 
+Procedure print_bug(tmp:boolean);
+Begin
+  put "Bug := [ ";
+  For i: bug_r Do
+    put bug(i);
+    put " "
+  EndFor;
+    put "]\n\n"
+EndProcedure;
 
 Ruleset i: pid  Do
 
@@ -145,34 +169,6 @@ Ruleset i: pid  Do
 End; --Ruleset
 
 
-Function bug(i:bug_r): pid
-type m_int: (-2147483648)..(2147483647);
-var pids: array [pid_r] of pid;
-    fact, sum: m_int;
-    tmp: pid_r;
-Begin
-  Clear tmp;
-  -- build a hacky map from range to scalarset
-  For p: pid Do pids[tmp] := p; tmp := tmp+1; EndFor;
-  -- factorial & sum
-  fact := i+3; 
-  For j := 2 to (i+2) Do fact := fact * j; EndFor;
-  sum := i+1;
-  For j := 1 to (i) Do  sum := sum + j; EndFor; 
-  return pids[((fact)-(sum))%N]
-End;
-
-Procedure print_bug(tmp:boolean)
-Begin
-  put "Bug := [ ";
-  For i: bug_r Do
-    put bug(i);
-    put " "
-  EndFor;
-    put "]\n\n"
-End;
-
-
 Startstate "init"
 Begin
   For i:pid Do
@@ -189,14 +185,14 @@ Begin
   -- hist bug stuff
   lh_is_full := False;
   lh_size := 0;
-  Clear lock_hist;
+  Undefine lock_hist;
   If (MSL<2) 
     Then Error "CONFIG ERROR: `MSL` needs to >= 2 to be a proper subseq !!";
   EndIf;
   If (MSL>LHL) 
     Then Error "CONFIG ERROR: `MSL` needs to <=`LHL` for a subsequence to be found !!";
   EndIf;
-  print_bug(True);
+  -- print_bug(True);
 End;
 
 Invariant "only one P has lock"

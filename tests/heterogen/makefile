@@ -32,7 +32,7 @@ CP := cp -rf
 CFLAGS := -std=c11 -O3 -pthread -march=native
 CXXFLAGS := -std=c++17 -O3 -pthread
 ROMP_FLAGS := -s --do-measure --simple-trace-rep
-CMURPHI_FLAGS := 
+CMURPHI_FLAGS := -c
 CMURPHI_INCLUDE_DIR := ../../../cmurphi/include
 RUMUR_FLAGS := --smt-path z3 --smt-arg=-smt2 --smt-arg=-in --smt-arg=-t:5000
 
@@ -90,7 +90,7 @@ $(1).cm.cpp: $(1).m
 	@printf " $$(CMURPHI) $$(CMURPHI_FLAGS) $(1).m\n"
 	@$$(CMURPHI) $$(CMURPHI_FLAGS) $(1).m
 	@printf "Finished Generating: $$@\n"
-$(1).cm: $(1).cm.cpp
+$(1).cm: $(1).cpp
 	@printf "Building $$@ ...\n"
 	@printf "  $$(CXX) $$(CXXFLAGS) -I$$(CMURPHI_INCLUDE_DIR) -o $$@ $(1).cpp\n"
 	@$$(CXX) $$(CXXFLAGS) -I$$(CMURPHI_INCLUDE_DIR) -o $$@ $(1).cpp

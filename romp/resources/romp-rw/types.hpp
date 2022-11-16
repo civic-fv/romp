@@ -363,7 +363,7 @@ namespace romp {
   public:
     EnumType() : value(SCALAR_ENUM_t::_UNDEFINED_) {}
     EnumType(const SCALAR_ENUM_t& value_) : value(value_) {
-      if (not IsMember(value_))
+      if (value_ != SCALAR_ENUM_t::_UNDEFINED_ && not IsMember(value_))
         throw std::logic_error("`"+ to_str(value_) +"` is not a member of this enum type");
     }
     template<class... UM>
@@ -373,9 +373,9 @@ namespace romp {
     inline void Undefine() { value = SCALAR_ENUM_t::_UNDEFINED_; }
     inline void Clear() { value = make_SCALAR_ENUM_t(ENUM_ID); }
     
-    static inline bool IsMember(const SCALAR_ENUM_t& v) { 
-      return ((v == SCALAR_ENUM_t::_UNDEFINED_) //NOTE: might need to not include _UNDEFINED_ in values
-              || ((make_SCALAR_ENUM_t(ENUM_ID) <= v) 
+    static inline bool IsMember(const SCALAR_ENUM_t& v) {
+      //NOTE: IsMember does not recognise Undefined as a Member of this type
+      return (((make_SCALAR_ENUM_t(ENUM_ID) <= v) 
                     && (v <= make_SCALAR_ENUM_t(ENUM_ID+BOUND))));
     }
     
@@ -404,7 +404,7 @@ namespace romp {
     template<class... U_M>
     inline EnumType& operator = (const ScalarsetUnionType<U_M...>& other) { __assign(*this,other); return *this; }
     inline EnumType& operator = (const SCALAR_ENUM_t& val) {
-      if (not IsMember(val))
+      if (val != SCALAR_ENUM_t::_UNDEFINED_ && not IsMember(val))
         throw std::logic_error("`"+ to_str(value) +"` is not a member of this enum type");
       value = val;
       return *this;
@@ -472,7 +472,7 @@ namespace romp {
   public:
     ScalarsetType() : EnumType<ENUM_ID,BOUND>() {}
     ScalarsetType(const SCALAR_ENUM_t& value_) {
-      if (not EnumType<ENUM_ID,BOUND>::IsMember(value_))
+      if (value_ != SCALAR_ENUM_t::_UNDEFINED_ && not EnumType<ENUM_ID,BOUND>::IsMember(value_))
         throw std::logic_error("`"+ to_str(value_) +"` is not a member of this scalarset type");
       this->value = value_;
     }
@@ -495,7 +495,7 @@ namespace romp {
     template<class... U_M>
     inline ScalarsetType& operator = (const ScalarsetUnionType<U_M...>& other) { __assign(*this,other); return *this; }
     inline ScalarsetType& operator = (const SCALAR_ENUM_t& val) {
-      if (not EnumType<ENUM_ID,BOUND>::IsMember(val))
+      if (val != SCALAR_ENUM_t::_UNDEFINED_ && not EnumType<ENUM_ID,BOUND>::IsMember(val))
         throw std::logic_error("`"+ to_str(val) +"` is not a member of this scalarset type");
       this->value = val;
       return *this;
@@ -565,7 +565,7 @@ namespace romp {
     template<class... UM>
     ScalarsetUnionType(const ScalarsetUnionType<UM...>& u_) : ScalarsetUnionType(u_.value) {}
 
-    static inline bool IsMember(const SCALAR_ENUM_t& val) { return MembersContain(val); }
+    static inline bool IsMember(const SCALAR_ENUM_t& val) { return (val != SCALAR_ENUM_t::_UNDEFINED_ && MembersContain(val)); }
     inline bool IsUndefined() const { return (value == SCALAR_ENUM_t::_UNDEFINED_); }
     inline void Undefine() { value = SCALAR_ENUM_t::_UNDEFINED_; }
     inline void Clear() { value = (((sizeof...(UNION_MEMBERS))<=0) ? SCALAR_ENUM_t::_UNDEFINED_ : make_SCALAR_ENUM_t(ENUM_IDS[1]) ); }

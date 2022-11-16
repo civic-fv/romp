@@ -28,6 +28,7 @@ CFLAGS := -std=c11 -O3 -pthread -march=native
 CXXFLAGS := -std=c++17 -O3 -pthread
 ROMP_FLAGS := -s --do-measure --simple-trace-rep
 CMURPHI_FLAGS := 
+$(info $(CMURPHI_FLAGS))
 CMURPHI_INCLUDE_DIR := ../../cmurphi/include
 RUMUR_FLAGS := --smt-path z3 --smt-arg=-smt2 --smt-arg=-in --smt-arg=-t:5000
 
@@ -50,7 +51,7 @@ CMURPHI_MODEL_SOURCES := $(foreach model,$(CMURPHI_MODELS),$(model:%.m=%.cpp))
 RUMUR_MODEL_SOURCES := $(foreach model,$(RUMUR_MODELS),$(model:%.m=%.ru.c))
 
 ROMP_MODEL_EXE := $(foreach model,$(ROMP_MODELS),$(model:%.m=%.sym.romp)) $(foreach model,$(ROMP_MODELS),$(model:%.m=%.nsym.romp)) $(foreach model,$(ROMP_MODELS),$(model:%.m=%.romp))
-CMURPHI_MODEL_EXE := $(foreach model,$(CMURPHI_MODELS),$(model:%.m=%.cm))
+CMURPHI_MODEL_EXE := $(foreach model,$(CMURPHI_MODELS),$(model:%.m=%.mu))
 RUMUR_MODEL_EXE := $(foreach model,$(RUMUR_MODELS),$(model:%.m=%.ru))
 ALL_MODEL_EXE := $(ROMP_MODEL_EXE) $(CMURPHI_MODEL_EXE) $(RUMUR_MODEL_EXE)
 
@@ -84,12 +85,12 @@ endef
 $(foreach model,$(ROMP_MODELS),$(eval $(call __generate_romp_model_directive,$(model:%.m=%))))
 #generate cmurphi directives
 define __generate_cmurphi_model_directive
-$(1).cm.cpp: $(1).m
+$(1).cpp: $(1).m
 	@printf "Generating $$@ with cmurphi ...\n"
 	@printf " $$(CMURPHI) $$(CMURPHI_FLAGS) $(1).m\n"
 	@$$(CMURPHI) $$(CMURPHI_FLAGS) $(1).m
 	@printf "Finished Generating: $$@\n"
-$(1).cm: $(1).cm.cpp
+$(1).cm: $(1).cpp
 	@printf "Building $$@ ...\n"
 	@printf "  $$(CXX) $$(CXXFLAGS) -I$$(CMURPHI_INCLUDE_DIR) -o $$@ $(1).cpp\n"
 	@$$(CXX) $$(CXXFLAGS) -I$$(CMURPHI_INCLUDE_DIR) -o $$@ $(1).cpp
