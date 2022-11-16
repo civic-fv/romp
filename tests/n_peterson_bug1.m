@@ -91,7 +91,7 @@ Var
 Function bug(i:bug_r): pid;
 Var pids: array [pid_r] of pid;
     fact, sum: -2147483648..2147483647;
-    tmp: pid_r;
+    tmp: 0..N; -- pid_r;
 Begin
   tmp := 0; -- Clear tmp
   -- build a hacky map from range to scalarset
