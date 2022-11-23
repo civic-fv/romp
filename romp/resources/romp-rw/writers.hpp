@@ -219,7 +219,7 @@ namespace romp {
       }
       if (msu > _s || dur >= seconds(10)) {
         s = duration_cast<seconds>(dur);
-        dur -= m; msu = ((msu > _s) ? msu : _s);
+        dur -= s; msu = ((msu > _s) ? msu : _s);
       } 
       if (msu > _ms || dur >= microseconds(1)) {
         ms = duration_cast<milliseconds>(dur);
