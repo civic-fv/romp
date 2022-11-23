@@ -45,7 +45,7 @@ using time_mr_t = std::chrono::time_point<std::chrono::high_resolution_clock,std
  * 
  */
 template<typename T>
-T rand_choice(unsigned int &seed, T min, T max) {
+T rand_choice(RandSeed_t &seed, T min, T max) {
     //not done fully
     seed = (((seed ^ (seed >> 3)) >> 12) & 0xffff) | ((seed & 0x7fff) << 16); // modifies the seed
     int choice = seed % (max-min) + min;  // generates the random number
@@ -58,8 +58,8 @@ private:
   const id_t id;
   const Options& OPTIONS;
   id_t start_id;
-  const unsigned int init_rand_seed;
-  unsigned int rand_seed;
+  const RandSeed_t init_rand_seed;
+  RandSeed_t rand_seed;
   size_t _fuel; // = OPTIONS.depth;
   bool _valid = true;  // legacy 
   bool _is_error = false; // legacy
@@ -156,7 +156,7 @@ public:
   bool is_done() const { return not (_valid && _fuel > 0 && _attempt_limit > 0); }
 #endif
 
-  RandWalker(unsigned int rand_seed_, const Options& OPTIONS_) 
+  RandWalker(RandSeed_t rand_seed_, const Options& OPTIONS_) 
     : id(RandWalker::next_id++),
       rand_seed(rand_seed_), init_rand_seed(rand_seed_),
       OPTIONS(OPTIONS_),
@@ -663,7 +663,7 @@ public:
  * rand is generated using UNIX timestamp 
  * @param root_seed the parent seed for generating the random seeds.
  */
-unsigned int gen_random_seed(unsigned int &root_seed) {
+RandSeed_t gen_random_seed(RandSeed_t &root_seed) {
   return rand_choice(root_seed, 1u, UINT32_MAX);
 }
 
@@ -671,11 +671,13 @@ unsigned int gen_random_seed(unsigned int &root_seed) {
  * @brief generate all the random seeds for the various rand walkers
  * 
  */
-std::vector<unsigned int> gen_random_seeds(const Options& OPTIONS, unsigned int root_seed)   {
-  std::vector<id_t> seeds;
-  for(int i=0; i<OPTIONS.walks; i++) {
-    seeds.push_back(gen_random_seed(root_seed));
-  }
+std::unordered_set<RandSeed_t> gen_random_seeds(const Options& OPTIONS, RandSeed_t& root_seed)   {
+  std::unordered_set<RandSeed_t> seeds;
+  for(int i=0; (seeds.size()<OPTIONS.walks) && (i<OPTIONS.walks*2); i++)
+    seeds.insert(gen_random_seed(root_seed));
+  if (seeds.size()<OPTIONS.walks)
+    std::cerr << "\nWARNING : provided seed was only able to produce " << seeds.size() << " unique walker seeds before timing out !!\n"
+                 "        |-> ONLY " << seeds.size() << "/" << OPTIONS.walks << " walkers will be run!\n\n" << std::flush;
   return seeds;
 }
 
@@ -703,7 +705,7 @@ void print_romp_results_summary(const ResultTree& summary) {
  * @param fuel the max number of rules any \c RandWalker will try to apply.
  * @param thread_count the max number of threads to use to accomplish all said random walks.
  */
-void launch_OpenMP(unsigned int root_seed) {
+void launch_OpenMP(RandSeed_t root_seed) {
   std::cout << "\n\t!! NOT YET IMPLEMENTED !!\n" << std::endl; return; //!! temp, remove when finished !! 
   
   // std::vector<RandWalker> rws;
@@ -724,9 +726,9 @@ void launch_OpenMP(unsigned int root_seed) {
  * @param fuel the max number of rules any \c RandWalker will try to apply.
  * @param thread_count the max number of threads to use to accomplish all said random walks.
  */
-void launch_threads(const Options& OPTIONS, unsigned int rand_seed) {
-  auto rws = gen_random_seeds(OPTIONS,rand_seed);
-  std::queue<unsigned int> in_seeds(std::deque<unsigned int>(rws.begin(),rws.end()));
+void launch_threads(const Options& OPTIONS, RandSeed_t rand_seed) {
+  auto tmp_seeds = gen_random_seeds(OPTIONS,rand_seed);
+  std::queue<RandSeed_t> in_seeds(std::deque<RandSeed_t>(tmp_seeds.begin(),tmp_seeds.end()));
   // std::queue<RandWalkers*> parallel_rws; // probs threads
   std::queue<RandWalker*> out_rws;
   size_t walks_done = 0;
@@ -830,7 +832,7 @@ void launch_threads(const Options& OPTIONS, unsigned int rand_seed) {
  * @param root_seed the starting random seed that will generate all other random seeds
  * @param fuel the max number of rules any \c RandWalker will try to apply.
  */
-void launch_CUDA(unsigned int root_seed);
+void launch_CUDA(RandSeed_t root_seed);
 
 
 /**
@@ -840,7 +842,7 @@ void launch_CUDA(unsigned int root_seed);
  * @param root_seed the starting random seed that will generate all other random seeds
  * @param fuel the max number of rules any \c RandWalker will try to apply.
  */
-void launch_SYCL(unsigned int root_seed);
+void launch_SYCL(RandSeed_t root_seed);
 
 
 /**
@@ -850,7 +852,7 @@ void launch_SYCL(unsigned int root_seed);
  * @param root_seed the starting random seed that will generate all other random seeds
  * @param fuel the max number of rules any \c RandWalker will try to apply.
  */
-void launch_OpenMPI(unsigned int root_seed);
+void launch_OpenMPI(RandSeed_t root_seed);
 
 
 /**
@@ -858,7 +860,7 @@ void launch_OpenMPI(unsigned int root_seed);
  * @param rand_seed the random seed
  * @param fuel the max number of rules to try to apply
  */
-void launch_single(const Options& OPTIONS, unsigned int rand_seed) {
+void launch_single(const Options& OPTIONS, RandSeed_t rand_seed) {
   RandWalker* rw = new RandWalker(rand_seed, OPTIONS);
   rw->init();
   ResultTree summary(OPTIONS);

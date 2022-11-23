@@ -101,7 +101,7 @@ namespace romp {
 
   
   typedef _ROMP_STATE_TYPE State_t;
-
+  typedef unsigned int RandSeed_t;
 
   struct file_position {
     size_t row;
