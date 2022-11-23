@@ -28,7 +28,7 @@ CFLAGS := -std=c11 -O3 -pthread -march=native
 CXXFLAGS := -std=c++17 -O3 -pthread
 ROMP_FLAGS := -s --do-measure --simple-trace-rep
 CMURPHI_FLAGS := 
-$(info $(CMURPHI_FLAGS))
+# $(info CMURPHI_FLAGS = $(CMURPHI_FLAGS))
 CMURPHI_INCLUDE_DIR := ../../cmurphi/include
 RUMUR_FLAGS := --smt-path z3 --smt-arg=-smt2 --smt-arg=-in --smt-arg=-t:5000
 
