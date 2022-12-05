@@ -42,15 +42,43 @@ using time_mr_t = std::chrono::time_point<std::chrono::high_resolution_clock,std
 
 /**
  * @brief helper function rand_choice 
- * 
  */
 template<typename T>
-T rand_choice(RandSeed_t &seed, T min, T max) {
-    //not done fully
-    seed = (((seed ^ (seed >> 3)) >> 12) & 0xffff) | ((seed & 0x7fff) << 16); // modifies the seed
-    int choice = seed % (max-min) + min;  // generates the random number
-    return choice;
+T rand_choice(RandGen_t& gen, const T min, const T max) {
+// # if (sizeof(size_t) <= 4)
+//   std::mt19937 gen(seed+modifier);    // change + to something else to get different results
+// # else
+  // std::mt19937_64 gen(seed+modifier); // change + to something else to get different results
+// # endif
+  std::uniform_int_distribution<T> distro(min,max-1); // function gives [min,max) but uniform distribution uses [min.max] ==> adjust
+  // seed = (((seed ^ (seed >> 3)) >> 12) & 0xffff) | ((seed & 0x7fff) << 16); // modifies the seed (MESSY compatibility thing, FIX ME LATER)
+  return distro(gen);
 }
+#ifdef __romp__ENABLE_depth_rand
+/**
+ * @brief helper function rand_choice, burns n random choices
+ */
+template<typename T>
+T rand_choice(RandGen_t& gen, const T min, const T max, size_t modifier) {
+// # if (sizeof(size_t) <= 4)
+//   std::mt19937 gen(seed+modifier);    // change + to something else to get different results
+// # else
+  // std::mt19937_64 gen(seed+modifier); // change + to something else to get different results
+// # endif
+  std::uniform_int_distribution<T> distro(min,max-1); // function gives [min,max) but uniform distribution uses [min.max] ==> adjust
+  // seed = (((seed ^ (seed >> 3)) >> 12) & 0xffff) | ((seed & 0x7fff) << 16); // modifies the seed (MESSY compatibility thing, FIX ME LATER)
+  return distro(gen);
+}
+#endif
+// template<typename T, size_t MIN, size_t MAX>
+// T rand_choice(RandSeed_t &seed) {}
+// template<typename T>
+// T rand_choice(RandSeed_t &seed, const T min, const T max) {
+//   // not done fully
+//   seed = (((seed ^ (seed >> 3)) >> 12) & 0xffff) | ((seed & 0x7fff) << 16); // modifies the seed
+//   int choice = seed % (max-min) + min;  // generates the random number
+//   return choice;
+// }
 
 class RandWalker : public ::romp::IRandWalker {
 private:
@@ -59,7 +87,7 @@ private:
   const Options& OPTIONS;
   id_t start_id;
   const RandSeed_t init_rand_seed;
-  RandSeed_t rand_seed;
+  RandGen_t rand_gen;
   size_t _fuel; // = OPTIONS.depth;
   bool _valid = true;  // legacy 
   bool _is_error = false; // legacy
@@ -158,7 +186,7 @@ public:
 
   RandWalker(RandSeed_t rand_seed_, const Options& OPTIONS_) 
     : id(RandWalker::next_id++),
-      rand_seed(rand_seed_), init_rand_seed(rand_seed_),
+      rand_gen(rand_seed_), init_rand_seed(rand_seed_),
       OPTIONS(OPTIONS_),
       sim1Step(((OPTIONS.do_trace) 
                   ? std::function<void()>([this](){sim1Step_trace();}) 
@@ -172,13 +200,13 @@ public:
       _fuel(OPTIONS_.depth), _attempt_limit(OPTIONS_.attempt_limit), init_attempt_limit(OPTIONS_.attempt_limit)
   { 
     if (OPTIONS.start_id != ~0u) {
-      rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN); // burn one rand operation for consistency
+      rand_choice(rand_gen,0ul,_ROMP_STARTSTATES_LEN); // burn one rand operation for consistency
       start_id = OPTIONS.start_id;
     } else if (OPTIONS.do_even_start) {
-      rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN); // burn one rand operation for consistency
+      rand_choice(rand_gen,0ul,_ROMP_STARTSTATES_LEN); // burn one rand operation for consistency
       start_id = id % _ROMP_STARTSTATES_LEN;
     } else
-      start_id = rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN);
+      start_id = rand_choice(rand_gen,0ul,_ROMP_STARTSTATES_LEN);
     state.__rw__ = this; /* provide a semi-hidden reference to this random walker for calling the property handlers */ 
     if (OPTIONS.do_trace) {
       init_trace();
@@ -258,27 +286,31 @@ private:
    * @brief to pick a rule in random for simulation step
    */
   // const RuleSet& rand_ruleset(){
-  //   return ::__caller__::RULESETS[rand_choice<size_t>(rand_seed,0ul,_ROMP_RULESETS_LEN)]; 
+  //   return ::__caller__::RULESETS[rand_choice<size_t>(rand_gen,0ul,_ROMP_RULESETS_LEN)]; 
   // }
 
-#ifdef __romp__ENABLE_symmetry
+# ifdef __romp__ENABLE_symmetry
   // keeps track of what rule to call next for our heuristic symmetry reduction
   id_t next_rule[_ROMP_RULESETS_LEN];
-#endif
+# endif
   /**
    * @brief to pick a rule in random for simulation step
    */
-  const Rule& get_rand_rule(){
-    const size_t rs_id = rand_choice<size_t>(rand_seed,0ul,_ROMP_RULESETS_LEN);
+  const Rule& get_rand_rule() {
+#   ifdef __romp__ENABLE_depth_rand
+      const size_t rs_id = rand_choice<size_t>(rand_gen,0ul,_ROMP_RULESETS_LEN,_fuel);
+#   else
+      const size_t rs_id = rand_choice<size_t>(rand_gen,0ul,_ROMP_RULESETS_LEN);
+#   endif 
     const RuleSet& rs = ::__caller__::RULESETS[rs_id];
-#ifdef __romp__ENABLE_symmetry
-    id_t& r_id = next_rule[rs_id];  // this is a reference
-    const Rule& r = rs.rules[r_id]; 
-    if (++r_id >= rs.rules.size())
-      r_id = 0;
-#else
-     const Rule& r = rs.rules[rand_choice<size_t>(rand_seed,0ul,rs.rules.size())];
-#endif
+#   ifdef __romp__ENABLE_symmetry
+      id_t& r_id = next_rule[rs_id];  // this is a reference
+      const Rule& r = rs.rules[r_id]; 
+      if (++r_id >= rs.rules.size())
+        r_id = 0;
+#   else
+      const Rule& r = rs.rules[rand_choice<size_t>(rand_gen,0ul,rs.rules.size())];
+#   endif
     return r;
   }
 
@@ -663,8 +695,12 @@ public:
  * rand is generated using UNIX timestamp 
  * @param root_seed the parent seed for generating the random seeds.
  */
-RandSeed_t gen_random_seed(RandSeed_t &root_seed) {
-  return rand_choice(root_seed, 1u, UINT32_MAX);
+RandSeed_t gen_random_seed(RandSeed_t &seed) {
+  // not done fully
+    seed = (((seed ^ (seed >> 3)) >> 12) & 0xffff) | ((seed & 0x7fff) << 16); // modifies the seed
+    int choice = seed % (UINT32_MAX) + 1u;  // generates the random number
+    return choice;
+  // return rand_choice(root_seed, 1u, UINT32_MAX);
 }
 
 /**

@@ -42,6 +42,7 @@
 #include <unordered_set>
 #include <chrono>
 #include <ctime>
+#include <random>
 
 #ifndef __romp__GENERATED_CODE
 #include "pregen-fix.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!

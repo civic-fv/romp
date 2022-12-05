@@ -70,8 +70,8 @@
                 "--do-measure",
                 "--simple-trace",
                 "--output",
-                "${workspaceFolder}/romp/tests/german.m.test.cpp",
-                "${workspaceFolder}/romp/tests/german.m"
+                "${workspaceFolder}/tests/german.m.test.cpp",
+                "${workspaceFolder}/tests/german.m"
             ],
             "dependsOn": [
                 "CMake: build romp"
@@ -90,8 +90,8 @@
                 "-g",
                 "-pthread",
                 "-o",
-                "${workspaceFolder}/romp/tests/german.m.test",
-                "${workspaceFolder}/romp/tests/german.m.test.cpp"
+                "${workspaceFolder}/tests/german.m.test",
+                "${workspaceFolder}/tests/german.m.test.cpp"
             ],
             "dependsOn": [
                 "romp: generate german test"
@@ -110,8 +110,8 @@
                 "--do-measure",
                 // "--simple-trace",
                 "--output",
-                "${workspaceFolder}/romp/tests/german.m.test.cpp",
-                "${workspaceFolder}/romp/tests/german.m"
+                "${workspaceFolder}/tests/german.m.test.cpp",
+                "${workspaceFolder}/tests/german.m"
             ],
             "presentation": {
                 "clear": true
@@ -127,8 +127,8 @@
                 "-g",
                 "-pthread",
                 "-o",
-                "${workspaceFolder}/romp/tests/german.m.test",
-                "${workspaceFolder}/romp/tests/german.m.test.cpp"
+                "${workspaceFolder}/tests/german.m.test",
+                "${workspaceFolder}/tests/german.m.test.cpp"
             ],
             "dependsOn": [
                 "romp: generate german test [no-build]"

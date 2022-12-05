@@ -102,6 +102,8 @@ namespace romp {
   
   typedef _ROMP_STATE_TYPE State_t;
   typedef unsigned int RandSeed_t;
+  typedef std::mt19937_64 RandGen_t;
+  typedef std::uniform_int_distribution<size_t> RandDistro_t;
 
   struct file_position {
     size_t row;
