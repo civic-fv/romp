@@ -152,4 +152,5 @@ clean:
 	$(RM) ./*.romp
 	$(RM) ./*.cm
 	$(RM) ./*.ru
+	$(RM) ./*.test
 	@printf "Cleaning Finished !!\n"
