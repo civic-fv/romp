@@ -1,3 +1,7 @@
+/**
+ * Credit: http://www.cs.cmu.edu/~tmurali/flow_examples/
+ */
+
 --| Variable declarations
 const
   PROC_NUM : 3;

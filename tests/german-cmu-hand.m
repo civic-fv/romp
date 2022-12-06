@@ -1,3 +1,7 @@
+/**
+ * Credit: http://www.cs.cmu.edu/~tmurali/flow_examples/
+ */
+
 const  ---- Configuration parameters ----
 
   NODE_NUM : 2;
