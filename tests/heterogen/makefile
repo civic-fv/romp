@@ -132,7 +132,7 @@ romp_models: $(ROMP_MODEL_EXE)
 cmurphi_models: $(CMURPHI_MODEL_EXE)
 rumur_models: $(RUMUR_MODEL_EXE)
 
-.PHONY: all clean romp_models cmurphi_models rumur_models $(patsubst %.m,%,$(ALL_MODELS))
+.PHONY: all clean clean-inter romp_models cmurphi_models rumur_models $(patsubst %.m,%,$(ALL_MODELS))
 .DEFAULT_GOAL := all
 
 # =================
@@ -143,14 +143,14 @@ rumur_models: $(RUMUR_MODEL_EXE)
 #	$(RM) $(ROMP_MODEL_SOURCES) $(CMURPHI_MODEL_SOURCES) $(RUMUR_MODEL_SOURCES)
 #	$(RM) $(ROMP_MODEL_EXE) $(CMURPHI_MODEL_EXE) $(RUMUR_MODEL_EXE)
 clean-inter:
-	$(RM) ./*.cpp
-	$(RM) ./*.c
+	@$(RM) ./*.cpp
+	@$(RM) ./*.c
 
 clean:
-	$(RM) ./*.cpp
-	$(RM) ./*.c
-	$(RM) ./*.romp
-	$(RM) ./*.cm
-	$(RM) ./*.ru
-	$(RM) ./*.test
+	@$(RM) ./*.cpp
+	@$(RM) ./*.c
+	@$(RM) ./*.romp
+	@$(RM) ./*.cm
+	@$(RM) ./*.ru
+	@$(RM) ./*.test
 	@printf "Cleaning Finished !!\n"
