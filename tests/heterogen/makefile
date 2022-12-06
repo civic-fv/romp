@@ -145,6 +145,7 @@ rumur_models: $(RUMUR_MODEL_EXE)
 clean-inter:
 	@$(RM) ./*.cpp
 	@$(RM) ./*.c
+	@printf "Cleaning of intermedairies Finished !!\n"
 
 clean:
 	@$(RM) ./*.cpp
