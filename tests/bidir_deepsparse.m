@@ -8,7 +8,7 @@
 
 
 Const
-        INITIAL_VAL: 50;  -- where to start the count. 
+        INITIAL_VAL: 50;  -- where to start the count.
         L: 1;             -- 
 --        H: 3;             -- H - L + 1 = number of counter processes. 
                           -- determines branching factor and # of states.

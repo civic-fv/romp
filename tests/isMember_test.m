@@ -1,5 +1,5 @@
 /**
- * a test of how is member works in romp vs CMurphi
+ * a test of how IsMember works in romp vs CMurphi
  */
 
 Const N: 8;

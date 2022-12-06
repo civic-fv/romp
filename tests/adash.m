@@ -106,7 +106,7 @@ Const
                                 -- buffer size in a single channel
 
   -- options
-  bug1:         false;           -- options to introduce the bug described or not
+  bug1:         true;           -- options to introduce the bug described or not
   nohome:       true;           -- options to switch off processors at Home.
                                 -- to simplify the protocol.
 

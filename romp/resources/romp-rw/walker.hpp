@@ -534,7 +534,7 @@ public:
     tripped = new ModelPropertyError(prop_id);
     _valid = false;  // legacy
     _is_error = true;  // legacy
-    status = Result::MERROR_REACHED;
+    status = Result::PROPERTY_VIOLATED;
     return true;
   }
   bool invariant_handler(bool expr, id_t prop_id) {
