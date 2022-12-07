@@ -451,5 +451,6 @@
         "zotero"
     ],
     "C_Cpp.formatting": "clangFormat",
-    "cmake.generator": "Unix Makefiles"
+    "cmake.generator": "Unix Makefiles",
+    "esbonio.sphinx.confDir": ""
 }

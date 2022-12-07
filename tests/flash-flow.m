@@ -1,6 +1,5 @@
-/**
- * Credit: http://www.cs.cmu.edu/~tmurali/flow_examples/
- */
+
+-- Credit: http://www.cs.cmu.edu/~tmurali/flow_examples/
 
 --| Variable declarations
 const
@@ -16,10 +15,11 @@ type
   CacheState : enum { M, E, S, I };
   Command : enum { Empty, Get, GetFwd, Getx, GetxFwd, Puts, PutsFwd, Putx,
                    PutxFwd, Nak, Nakc, NakFwd, Shwb, FAck, Inv, InvAck };
+  FlowEnum : enum { None, fl_0_1_2_3, fl_0, fl_1, fl_2_3, fl_2, fl_3,
+                    fl_4_5_6_7_8_9, fl_4, fl_5, fl_5_6_7, fl_6, fl_7,
+                    fl_8, fl_9 };
   Flow : union { Command,
-                 enum { None, fl_0_1_2_3, fl_0, fl_1, fl_2_3, fl_2, fl_3,
-                        fl_4_5_6_7_8_9, fl_4, fl_5, fl_5_6_7, fl_6, fl_7,
-                        fl_8, fl_9 } };
+                 FlowEnum };
   EVENTS : enum { ProcSendsGet, DirRecvsGetAndSendsNak, ProcRecvsNak,
                   DirRecvsGetAndSendsPuts, ProcRecvsPuts,
                   DirRecvsGetAndSendsGetFwd, ProcRecvsGetFwdAndSendsPutsFwd,
@@ -1390,6 +1390,10 @@ end;
 
 --invariant
 invariant "safety"
-  forall i: ProcId; j:ProcId; d: DirId do
-                      ((i != j & !dirs[d].pending) ->  (procs[i].state = E -> procs[j].state = I))
-                        end;
+  forall i: ProcId do 
+    forall j:ProcId do 
+      forall d: DirId do
+        ((i != j & !dirs[d].pending) ->  (procs[i].state = E -> procs[j].state = I))
+      endForall
+    endForall
+  endForall;

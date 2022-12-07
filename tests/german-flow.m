@@ -16,8 +16,9 @@ type
   DirTxnId : scalarset(DIRTXN_NUM);
   CacheState : enum { M_state, E_state, S_state, I_state };
   Command : enum { Empty, ReqS, ReqE, SnpInv, InvAck, GntS, GntE };
+  FlowEnum : enum { None, fl_0_1, fl_0, fl_1, fl_2, fl_3_4, fl_3, fl_4 };
   Flow : union { Command,
-                 enum { None, fl_0_1, fl_0, fl_1, fl_2, fl_3_4, fl_3, fl_4 } };
+                 FlowEnum };
   Event : enum { NoEvent, AgtSendsReqS, DirRecvsReqSAndSendsGntS,
                  AgtRecvsGntS, DirRecvsReqSAndSendsSnpInv,
                  DirRecvsInvAckAndSendsGntS, AgtRecvsSnpInvAndSendsInvAck,
