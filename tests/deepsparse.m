@@ -1,3 +1,6 @@
+
+-- Credit: http://formalverification.cs.utah.edu/pdmc03.html
+
 -- --------------------------------------------------------------------
 -- Filename:    ss7-bidirected.m
 -- Content:     really big transition system, bidirectional edges. 

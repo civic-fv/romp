@@ -119,8 +119,8 @@ make adash_bug                                    # build the model checkers
 
 |   Tool  |  t _(ms)_  | Bug(s) Found / Property(s) Violated                                        |
 |:-------:|-----------:|:---------------------------------------------------------------------------|
-|   romp  |  5,799.183 | "Explicit writeback for non dirty remote" & "WRD at home cluster"          |
-| ns-romp |  5,841.320 | "Explicit writeback for non dirty remote" & "WRD at home cluster"          |
+|   romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
+| ns-romp |  5,841.320 | "Explicit writeback for non dirty remote" (x510) & "WRD at home cluster" (x514) |
 | CMurphi |  1,550.000 | "Consistency of data"                                                      |
 |  rumur  |         -- | Not compatible with rumur (remove later)                                   |
 
@@ -166,7 +166,36 @@ TODO AV ...
 
 
 ### [`deepdense.m`](./deepdense.m)
-TODO AO ...
+This model is a synthetic model that introduces a bottleneck at a set distance away from the start,
+that after being passed the model enters a "dense field" of violating states. 
+
+#### About the Bug
+TODO description of what causes the bug
+
+#### Build & Run _(recommended settings)_
+```bash
+make deepdense                                    # build the model checkers
+./deepdense.romp -s 1234 -w 1024 -d 4096 -y       # check with romp
+./deepdense.nsym.romp -s 1234 -w 1024 -d 4096 -y  # check with romp (no symmetry)
+./deepdense.ru                                    # verify with rumur
+./deepdense.cm -m1024                             # verify with CMurphi
+```
+
+#### Expected Results
+> _**Note:** run times are highly dependent on your hardware & current utilization,_
+> _all our results are on x86-64/AMD64 systems with at least 6 cores_
+
+|   Tool  |  t _(ms)_  | Bug(s) Found / Property(s) Violated                                        |
+|:-------:|-----------:|:---------------------------------------------------------------------------|
+|   romp  |  6,073.600 | invariant "sum" (x45)                                                      |
+| ns-romp | 20,687.000 | invariant "sum" (x2)                                                       |
+|  rumur  |  1,000.000 | invariant "sum"                                                            |
+| CMurphi |  1,550.000 | invariant "sum"                                                            |
+
+Note how romp with no symmetry reduction requires more walks 
+and a greater depth than it's counterpart with our symmetry reduction enabled 
+and still only a few of the walks with this seed find the bug.
+
 
 
 ### [`deepsparse.m`](./deepsparse.m)
