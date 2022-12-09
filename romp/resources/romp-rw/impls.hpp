@@ -316,7 +316,7 @@ namespace romp {
       for (const auto& _a : r.properties_violated) {
         const PropertyInfo& _info =_a.first.info();
         out << out.indentation()
-            << "\033[1m-(" << (i++) << ") " << _info.type << " \"" << _info.label << "\":\033[0m "
+            << "\033[1m-(" << (i) << ") " << _info.type << " \"" << _info.label << "\":\033[0m "
                 "(x"<< _a.second.size() <<")\n";
         out.indent();
         int j = 0;

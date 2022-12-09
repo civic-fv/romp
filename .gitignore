@@ -8,35 +8,6 @@ CMakeFiles/**
 **/traces/**
 **/traces/*.json
 
-
-# but don't ignore test models, scripts, docs, or test build config data
-!**/tests/**/*.m
-!**/tests/**/*.py
-!**/tests/**/*.sh
-!**/tests/**/*.zsh
-!**/tests/**/*.txt
-!**/tests/**/*.md
-!**/tests/**/*.rst
-!**/tests/**/*.eml
-!**/tests/**/*.ipynb
-!**/tests/makefile
-!**/tests/**/makefile
-!tests/makefile
-!tests/**/makefile
-!scratch/*.test.cpp
-!scratch/*.test.hpp
-!scratch/*.test.py
-!scratch/*.test.sh
-!scratch/*.test.txt
-!scratch/*.test.md
-!scratch/*.test.rst
-!**/README
-!tests/config/**
-!tests/murphi-comment-ls/*.cc
-
-# ignore generated test files
-**/tests/**/*.*
-
 # debug files
 *.test.cpp
 *.test.hpp
@@ -74,15 +45,13 @@ CMakeFiles/**
 *.romp.hh
 *.romp.hpp
 *.romp
-
-/*.c
-/*.C
-/*.cc
-/*.cpp
-/*.h
-/*.H
-/*.hh
-/*.hpp
+*.ru.c
+*.ru
+*.cm
+tests/*.cpp
+tests/*.out
+tests/**/*.cpp
+tests/**/*.out
 
 # Prerequisites
 *.d
