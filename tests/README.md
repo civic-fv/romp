@@ -82,6 +82,10 @@ Though one or more of the model-checkers might time out on them.
 
  Models with *"Real"* Bugs
 ---------------------------
+These models have bugs that are "real" or at least "naturally occurring."
+Meaning that they represent bugs that were in some way not intended to exist by
+the original creator of the modeled protocol, the author of the murphi model,
+or the author of whatever software was used to programmatically generate that specific murphi model.
 
 <!--
 - things to include in description:
@@ -144,6 +148,14 @@ TODO AO ... (invariant violation)
 
  Models with _"Synthetic"_ Bugs
 --------------------------------
+These models are designed as synthetic benchmarks,
+as such they are designed to have bugs in them with varying levels fo difficulty to find in 
+a handful of different ways.
+Such as introducing bottlenecks that have to be passed, and varying degrees of sparsity for the
+violating states in the model.
+These factors are such that they are likely to occur naturally in "real" models, 
+but in these models they are isolated to better understand the effects that varying design choices in
+model checkers can have.
 
 ### [`n_peterson_bug.m`](./n_peterson_bug.m)
 TODO AV ...
