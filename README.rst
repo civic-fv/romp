@@ -42,10 +42,10 @@ Then:
   make install
 
   # Generate a checker
-  romp my-model.m --output my-model.m.romp.cpp
+  romp my-model.m
 
-  # Compile the checker (also pass -mcx16 if using GCC on x86-64)
-  cc -std=c++11 -pthread -O3 my-model.m.romp.cpp
+  # Compile the checker
+  cc -std=c++17 -pthread -O3 my-model.m.romp.cpp
 
   # Run the checker
   ./a.out
@@ -63,6 +63,10 @@ Compilation produces several artifacts including the `romp` binary itself:
 .. model checkers at `doc/vs-cmurphi.rst`_.
 
 .. _doc/vs-cmurphi.rst: doc/vs-cmurphi.rst
+
+Tests
+-----
+There is a directory (tests/) full of test models to run with the checker, accompanied by an instructional README.md
 
 Legal
 -----
