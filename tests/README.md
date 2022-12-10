@@ -143,21 +143,20 @@ TODO AV ...
 
 
 
-
 ### [`flash-flow.m`](./flash-flow.m)
-This is the classic adash (sometimes called stanford dash or just dash) cache coherence protocol.
-It has the famous bug of the original version still included in it, and enabled.
-This bug is easy for any of the model checkers to find.
+This is the classic flash cache coherency protocol programmatically translated into murphi from
+the flows language, by an experimental tool.
 
 #### About the Bug
-TODO description of what causes the bug
+We have not bothered t figure out what is actually broken in this model, 
+since the generated murphi model is unnecessarily complicated.
 
 #### Build & Run _(with recommended settings)_
 ```bash
 make flash-flow                                    # build the model checkers
-./flash-flow.romp -s 1234 -w 1024 -d 512 -y        # check with romp
-./flash-flow.nsym.romp -s 1234 -w 1024 -d 512 -y   # check with romp (no symmetry)
-./flash-flow.cm -m1024                             # verify with CMurphi
+./flash-flow.romp -s 1234 -w 1024 -d 512 -y       # check with romp
+./flash-flow.nsym.romp -s 1234 -w 1024 -d 1024 -y  # check with romp (no symmetry)
+./flash-flow.cm -m2048                             # verify with CMurphi
 ```
 
 #### Expected Results
@@ -165,16 +164,41 @@ make flash-flow                                    # build the model checkers
 > _all our results are on x86-64/AMD64 systems with at least 6 cores._<br/>
 > `#` denotes when the value of the place was not given by the measuring software.
 
-|   Tool  |  t _(ms)_  | Bug(s) Found / Property(s) Violated                                        |
-|:-------:|-----------:|:---------------------------------------------------------------------------|
-|   romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
-| ns-romp |  5,841.320 | "Explicit writeback for non dirty remote" (x510) & "WRD at home cluster" (x514) |
-| CMurphi |  1,55#.### | "Consistency of data"                                                      |
-|  rumur  |         -- | _-- Not compatible with rumur (contains union) --_                         |
+|   Tool  |   t _(ms)_  | Bug(s) Found / Property(s) Violated                                       |
+|:-------:|------------:|:--------------------------------------------------------------------------|
+|   romp  |  31,607.### | invariant "safety" (x69)                                                  |
+| ns-romp |  28,189.### | invariant "safety" (x21)                                                  |
+| CMurphi | 178,55#.### | invariant "safety"                                                        |
+|  rumur  |          -- | _-- Not compatible with rumur (contains union) --_                        |
 
 
 ### [`german-flow.m`](./flash-flow.m)
-TODO AO ... (invariant violation)
+This is the classic german protocol programmatically translated into murphi from
+the flows language, by an experimental tool.
+
+#### About the Bug
+We have not bothered t figure out what is actually broken in this model, 
+since the generated murphi model is unnecessarily complicated.
+
+#### Build & Run _(with recommended settings)_
+```bash
+make flash-flow                                    # build the model checkers
+./flash-flow.romp -s 1234 -w 1024 -d 512 -y        # check with romp
+./flash-flow.nsym.romp -s 1234 -w 1024 -d 512 -y   # check with romp (no symmetry)
+./flash-flow.cm -m2048                             # verify with CMurphi
+```
+
+#### Expected Results
+> _**Note:** run times are highly dependent on your hardware & current utilization,_
+> _all our results are on x86-64/AMD64 systems with at least 6 cores._<br/>
+> `#` denotes when the value of the place was not given by the measuring software.
+
+|   Tool  |   t _(ms)_  | Bug(s) Found / Property(s) Violated                                       |
+|:-------:|------------:|:--------------------------------------------------------------------------|
+|   romp  |  28,133.### | invariant "CntrlPropl" (x4)                                               |
+| ns-romp |  27,375.### | invariant "CntrlPropl" (x6)                                               |
+| CMurphi |   3,42#.### | Deadlocked state found                                                    |
+|  rumur  |          -- | _-- Not compatible with rumur (contains union) --_                        |
 
 
 
