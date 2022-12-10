@@ -104,7 +104,7 @@ This bug is easy for any of the model checkers to find.
 #### About the Bug
 TODO description of what causes the bug
 
-#### Build & Run _(recommended settings)_
+#### Build & Run _(with recommended settings)_
 ```bash
 make adash_bug                                    # build the model checkers
 ./adash_bug.romp -s 1234 -w 1024 -d 512 -y        # check with romp
@@ -115,34 +115,68 @@ make adash_bug                                    # build the model checkers
 
 #### Expected Results
 > _**Note:** run times are highly dependent on your hardware & current utilization,_
-> _all our results are on x86-64/AMD64 systems with at least 6 cores_
+> _all our results are on x86-64/AMD64 systems with at least 6 cores._<br/>
+> `#` denotes when the value of the place was not given by the measuring software.
 
 |   Tool  |  t _(ms)_  | Bug(s) Found / Property(s) Violated                                        |
 |:-------:|-----------:|:---------------------------------------------------------------------------|
 |   romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
 | ns-romp |  5,841.320 | "Explicit writeback for non dirty remote" (x510) & "WRD at home cluster" (x514) |
-| CMurphi |  1,550.000 | "Consistency of data"                                                      |
-|  rumur  |         -- | Not compatible with rumur (remove later)                                   |
+| CMurphi |  1,55#.### | "Consistency of data"                                                      |
+|  rumur  |         -- | _-- Not compatible with rumur (contains union) --_                         |
+
 
 
 ### [`arbiter.m`](./arbiter.m)
 TODO AV ... describe this one give results etc.
 
 
+
 ### [`dpnew.m`](./dpnew.m)
 TODO AV ...
 
 
+
 ### [`sort5.m`](./sort5.m)
-TODO AV ... describe the bug (this one needs to be prefaced as a basic proof of concept bug)
+TODO AV ...
+
+
+
 
 
 ### [`flash-flow.m`](./flash-flow.m)
-TODO AO ... (cm: deadlock, romp: invariant violation)
+This is the classic adash (sometimes called stanford dash or just dash) cache coherence protocol.
+It has the famous bug of the original version still included in it, and enabled.
+This bug is easy for any of the model checkers to find.
+
+#### About the Bug
+TODO description of what causes the bug
+
+#### Build & Run _(with recommended settings)_
+```bash
+make flash-flow                                    # build the model checkers
+./flash-flow.romp -s 1234 -w 1024 -d 512 -y        # check with romp
+./flash-flow.nsym.romp -s 1234 -w 1024 -d 512 -y   # check with romp (no symmetry)
+./flash-flow.cm -m1024                             # verify with CMurphi
+```
+
+#### Expected Results
+> _**Note:** run times are highly dependent on your hardware & current utilization,_
+> _all our results are on x86-64/AMD64 systems with at least 6 cores._<br/>
+> `#` denotes when the value of the place was not given by the measuring software.
+
+|   Tool  |  t _(ms)_  | Bug(s) Found / Property(s) Violated                                        |
+|:-------:|-----------:|:---------------------------------------------------------------------------|
+|   romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
+| ns-romp |  5,841.320 | "Explicit writeback for non dirty remote" (x510) & "WRD at home cluster" (x514) |
+| CMurphi |  1,55#.### | "Consistency of data"                                                      |
+|  rumur  |         -- | _-- Not compatible with rumur (contains union) --_                         |
 
 
 ### [`german-flow.m`](./flash-flow.m)
 TODO AO ... (invariant violation)
+
+
 
 
 
@@ -172,7 +206,7 @@ that after being passed the model enters a "dense field" of violating states.
 #### About the Bug
 TODO description of what causes the bug
 
-#### Build & Run _(recommended settings)_
+#### Build & Run _(with recommended settings)_
 ```bash
 make deepdense                                    # build the model checkers
 ./deepdense.romp -s 1234 -w 1024 -d 4096 -y       # check with romp
@@ -183,31 +217,63 @@ make deepdense                                    # build the model checkers
 
 #### Expected Results
 > _**Note:** run times are highly dependent on your hardware & current utilization,_
-> _all our results are on x86-64/AMD64 systems with at least 6 cores_
+> _all our results are on x86-64/AMD64 systems with at least 6 cores._<br/>
+> `#` denotes when the value of the place was not given by the measuring software.
 
 |   Tool  |  t _(ms)_  | Bug(s) Found / Property(s) Violated                                        |
 |:-------:|-----------:|:---------------------------------------------------------------------------|
 |   romp  |  6,073.600 | invariant "sum" (x45)                                                      |
-| ns-romp | 20,687.000 | invariant "sum" (x2)                                                       |
-|  rumur  |  1,000.000 | invariant "sum"                                                            |
-| CMurphi |  1,550.000 | invariant "sum"                                                            |
+| ns-romp | 20,687.### | invariant "sum" (x2)                                                       |
+|  rumur  |  1,###.### | invariant "sum"                                                            |
+| CMurphi |  1,55#.### | invariant "sum"                                                            |
 
 Note how romp with no symmetry reduction requires more walks 
-and a greater depth than it's counterpart with our symmetry reduction enabled 
+and a greater max depth than it's counterpart with our symmetry reduction enabled 
 and still only a few of the walks with this seed find the bug.
 
 
 
 ### [`deepsparse.m`](./deepsparse.m)
-TODO AO ...
+This model is a synthetic model that introduces a bottleneck at a set distance away from the start,
+that after being passed the model enters a "sparse field" of violating states. 
+
+#### About the Bug
+TODO description of what causes the bug
+
+#### Build & Run _(with recommended settings)_
+```bash
+make deepsparse                                    # build the model checkers
+./deepsparse.romp -s 1234 -w 1024 -d 2048 -y       # check with romp
+./deepsparse.nsym.romp -s 1234 -w 1024 -d 4096 -y  # check with romp (no symmetry)
+./deepsparse.ru                                    # verify with rumur
+./deepsparse.cm -m1024                             # verify with CMurphi
+```
+
+#### Expected Results
+> _**Note:** run times are highly dependent on your hardware & current utilization,_
+> _all our results are on x86-64/AMD64 systems with at least 6 cores._<br/>
+> `#` denotes when the value of the place was not given by the measuring software.
+
+|   Tool  |  t _(ms)_  | Bug(s) Found / Property(s) Violated                                        |
+|:-------:|-----------:|:---------------------------------------------------------------------------|
+|   romp  |  5,871.763 | invariant "everyone_is_not_ideal" (x18)                                    |
+| ns-romp | 11,802.### | invariant "everyone_is_not_ideal" (x2)                                     |
+|  rumur  |  2,###.### | invariant "everyone_is_not_ideal"                                          |
+| CMurphi |  6,76#.### | invariant "everyone_is_not_ideal"                                          |
+
+Note how romp with no symmetry reduction requires more walks 
+and a greater max depth than it's counterpart with our symmetry reduction enabled 
+and still only a few of the walks with this seed find the bug.
 
 
 ### [`flash_bug.m`](./flash_bug.m)
 TODO AO ...
+TODO AO finish creating this model before inserting it's info here
 
 
 ### [`dash_bug.m`](./dash_bug.m)
 TODO AO ...
+TODO AO finish creating this model before inserting it's info here
 
 
 

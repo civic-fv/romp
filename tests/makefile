@@ -43,7 +43,7 @@ CP := cp -rf
 ALL_MODELS := $(wildcard *.m)
 ROMP_MODELS := $(filter-out %multi.m,$(ALL_MODELS))
 CMURPHI_MODELS := $(wildcard *.m)
-RUMUR_MODELS := $(filter-out %dash_bug.m,$(filter-out %dash.m,$(filter-out %multi.m,$(ALL_MODELS))))
+RUMUR_MODELS := $(filter-out %-flow.m,$(filter-out %dash_bug.m,$(filter-out %dash.m,$(filter-out %multi.m,$(ALL_MODELS)))))
 # RUMUR_MODELS := $(wildcard ru*.m)
 
 ROMP_MODEL_SOURCES := $(foreach model,$(ROMP_MODELS),$(model:%.m=%.romp.cpp))
@@ -114,7 +114,7 @@ $(foreach model,$(CMURPHI_MODELS),$(eval $(call __generate_rumur_model_directive
 #generate per model directives
 define __generate_per_model_directive
 $(1): $(2)
-	@printf "\nFinished Building all `$$@` model checkers!\n\n"
+	@printf "\nFinished Building all `$(1)` model checkers!\n\n"
 endef
 $(foreach model,$(ALL_MODELS),$(eval $(call __generate_per_model_directive,$(model:%.m=%),$(if $(filter $(model:%.m=%).m,$(ROMP_MODELS)),$(model:%.m=%).romp $(model:%.m=%).nsym.romp )$(if $(filter $(model:%.m=%).m,$(CMURPHI_MODELS)),$(model:%.m=%).cm )$(if $(filter $(model:%.m=%).m,$(RUMUR_MODELS)),$(model:%.m=%).ru))))
 
@@ -129,8 +129,8 @@ romp_models: $(ROMP_MODEL_EXE)
 cmurphi_models: $(CMURPHI_MODEL_EXE)
 rumur_models: $(RUMUR_MODEL_EXE)
 
-.PHONY: all clean clean-inter romp_models cmurphi_models rumur_models
-# .PHONY: all clean romp_models cmurphi_models rumur_models $(patsubst %.m,%,$(ALL_MODELS))
+# .PHONY: all clean clean-inter romp_models cmurphi_models rumur_models
+.PHONY: all clean clean-inter romp_models cmurphi_models rumur_models $(patsubst %.m,%,$(ALL_MODELS))
 .DEFAULT_GOAL := all
 
 # =================

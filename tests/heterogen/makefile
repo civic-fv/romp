@@ -112,13 +112,12 @@ $(1).ru: $(1).ru.c
 endef
 $(foreach model,$(CMURPHI_MODELS),$(eval $(call __generate_rumur_model_directive,$(model:%.m=%))))
 #generate per model directives
-# define __genrate_per_model_directive
-# $(1): $(2)
-# 	@printf "\nFinished Building all `$@` model checkers!\n\n"
-# endef
-# $(foreach model,$(ALL_MODELS),$(eval $(call __generate_per_model_directive,$(model:%.m=%),$(if $(filter $(model:%.m=%).m,$(ROMP_MODELS)),$(model:%.m=%).sym.romp $(model:%.m=%).nsym.romp )$(if $(filter $(model:%.m=%).m,$(CMURPHI_MODELS)),$(model:%.m=%).cm )$(if $(filter $(model:%.m=%).m,$(RUMUR_MODELS)),$(model:%.m=%).ru))))
-# $(info $(foreach model,$(ALL_MODELS),$(model:%.m=%): $(ifeq $(filter $(1),$(ROMP_MODELS)),$(1),$(1).sym.romp $(1).nsym.romp) $(ifeq $(filter $(model:%.m=%),$(CMURPHI_MODELS)),$(model:%.m=%),$(model:%.m=%).cm) $(ifeq $(filter $(model:%.m=%),$(RUMUR_MODELS)),$(model:%.m=%),$(model:%.m=%).ru)))
-# $(foreach model,$(ALL_MODELS),$(info $(model:%.m=%): $(if $(filter $(model:%.m=%).m,$(ROMP_MODELS)),$(model:%.m=%).sym.romp $(model:%.m=%).nsym.romp )$(if $(filter $(model:%.m=%).m,$(CMURPHI_MODELS)),$(model:%.m=%).cm )$(if $(filter $(model:%.m=%).m,$(RUMUR_MODELS)),$(model:%.m=%).ru)))
+define __generate_per_model_directive
+$(1): $(2)
+	@printf "\nFinished Building all `$(1)` model checkers!\n\n"
+endef
+$(foreach model,$(ALL_MODELS),$(eval $(call __generate_per_model_directive,$(model:%.m=%),$(if $(filter $(model:%.m=%).m,$(ROMP_MODELS)),$(model:%.m=%).romp $(model:%.m=%).nsym.romp )$(if $(filter $(model:%.m=%).m,$(CMURPHI_MODELS)),$(model:%.m=%).cm )$(if $(filter $(model:%.m=%).m,$(RUMUR_MODELS)),$(model:%.m=%).ru))))
+
 
 
 
