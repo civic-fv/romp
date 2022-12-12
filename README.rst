@@ -32,7 +32,7 @@ Then:
 
   # Download romp
   git clone https://github.com/civic-fv/romp
-  cd rumur
+  cd romp
 
   # Configure and compile
   mkdir build
