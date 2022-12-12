@@ -129,8 +129,10 @@ make adash_bug                                    # build the model checkers
 
 ### [`arbiter.m`](./arbiter.m)
 
+This is classic example to illustrate distributed mutual exclusion protocol. The protocol usess token-passing mechanism to ensure that shared resource can be accessed by one processor at a time. 
 #### About the Bug
 
+Invariant checks if the token is lost by the processor holding it. When the token is set to False accidentally and none of the processors is using the sharing resource causing deadlock.
 #### Build & Run _(with recommended settings)_
 ```bash
 make arbiter                                    # build the model checkers
@@ -161,6 +163,7 @@ This is a classsic implmentation of synchronization issues in concurrent systems
 
 Deadlock Invariant checks if all the philosophers picking up their left forks and  waiting for
 their right forks. All philosophers are waiting for the adjacent philosopher to release their right fork. However, the adjacent philosopher  cannot release their right fork until the philosopher next to them acquires their left fork. It creates a cycle of all philosophers waiting for the adjacent philosopher to release their fork, causing a deadlock.
+
 #### Build & Run _(with recommended settings)_
 ```bash
 make dpnew                                    # build the model checkers
@@ -287,9 +290,12 @@ but in these models they are isolated to better understand the effects that vary
 model checkers can have.
 
 ### [`n_peterson_bug.m`](./n_peterson_bug.m)
-
+ 
+ n_peterson is a classic solution to the critical section problem. The critical section problem ensures that no two process change or modify the value of a resource at the same time.
 #### About the Bug
 
+The bug state is a synthetically injected "Hard Bug" designed to be difficult to find. If a sequence of processors is in the queue , then that substring of orderings causes error. 
+Increasing the number of processors and making the substring to be equal to length of three makes it hard bug.
 #### Build & Run _(with recommended settings)_
 ```bash
 make n_peterson_bug                                    # build the model checkers
@@ -313,7 +319,12 @@ make n_peterson_bug                                    # build the model checker
 
 ### [`n_peterson_bug1.m`](./n_peterson_bug1.m)
 
+ n_peterson is a classic solution to the critical section problem. The critical section problem ensures that no two process change or modify the value of a resource at the same time.
+
 #### About the Bug
+
+The bug state is a synthetically injected "Hard Bug" designed to be difficult to find. If a sequence of processors is in the queue , then that substring of orderings causes error. 
+Increasing the number of processors and making the substring to be equal to length of three makes it hard bug.
 
 #### Build & Run _(with recommended settings)_
 ```bash
