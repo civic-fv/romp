@@ -128,18 +128,83 @@ make adash_bug                                    # build the model checkers
 
 
 ### [`arbiter.m`](./arbiter.m)
-TODO AV ... describe this one give results etc.
+
+#### About the Bug
+
+#### Build & Run _(with recommended settings)_
+```bash
+make arbiter                                    # build the model checkers
+./arbiter.romp -s 1234 -w 1024 -d 512 -y        # check with romp
+./arbiter.nsym.romp -s 1234 -w 1024 -d 512 -y   # check with romp (no symmetry)
+./arbiter.ru                                    # verify with rumur
+./arbiter.cm -m1024                             # verify with CMurphi
+```
+
+#### Expected Results
+> _**Note:** run times are highly dependent on your hardware & current utilization,_
+> _all our results are on x86-64/AMD64 systems with at least 6 cores._<br/>
+> `#` denotes when the value of the place was not given by the measuring software.
+
+|   Tool  |  t _(ms)_  | Bug(s) Found / Property(s) Violated                                        |
+|:-------:|-----------:|:---------------------------------------------------------------------------|
+|   romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
+| ns-romp |  5,841.320 | "Explicit writeback for non dirty remote" (x510) & "WRD at home cluster" (x514) |
+| CMurphi |  1,55#.### | "Consistency of data"                                                      |
+|  rumur  |         -- | _-- Not compatible with rumur (contains union) --_                         |
 
 
 
 ### [`dpnew.m`](./dpnew.m)
-TODO AV ...
+
+#### About the Bug
+
+#### Build & Run _(with recommended settings)_
+```bash
+make dpnew                                    # build the model checkers
+./dpnew.romp -s 1234 -w 1024 -d 512 -y        # check with romp
+./dpnew.nsym.romp -s 1234 -w 1024 -d 512 -y   # check with romp (no symmetry)
+./dpnew.ru                                    # verify with rumur
+./dpnew.cm -m1024                             # verify with CMurphi
+```
+
+#### Expected Results
+> _**Note:** run times are highly dependent on your hardware & current utilization,_
+> _all our results are on x86-64/AMD64 systems with at least 6 cores._<br/>
+> `#` denotes when the value of the place was not given by the measuring software.
+
+|   Tool  |  t _(ms)_  | Bug(s) Found / Property(s) Violated                                        |
+|:-------:|-----------:|:---------------------------------------------------------------------------|
+|   romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
+| ns-romp |  5,841.320 | "Explicit writeback for non dirty remote" (x510) & "WRD at home cluster" (x514) |
+| CMurphi |  1,55#.### | "Consistency of data"                                                      |
+|  rumur  |         -- | _-- Not compatible with rumur (contains union) --_   
 
 
 
 ### [`sort5.m`](./sort5.m)
-TODO AV ...
 
+#### About the Bug
+
+#### Build & Run _(with recommended settings)_
+```bash
+make sort5                                    # build the model checkers
+./sort5.romp -s 1234 -w 1024 -d 512 -y        # check with romp
+./sort5.nsym.romp -s 1234 -w 1024 -d 512 -y   # check with romp (no symmetry)
+./sort5.ru                                    # verify with rumur
+./sort5.cm -m1024                             # verify with CMurphi
+```
+
+#### Expected Results
+> _**Note:** run times are highly dependent on your hardware & current utilization,_
+> _all our results are on x86-64/AMD64 systems with at least 6 cores._<br/>
+> `#` denotes when the value of the place was not given by the measuring software.
+
+|   Tool  |  t _(ms)_  | Bug(s) Found / Property(s) Violated                                        |
+|:-------:|-----------:|:---------------------------------------------------------------------------|
+|   romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
+| ns-romp |  5,841.320 | "Explicit writeback for non dirty remote" (x510) & "WRD at home cluster" (x514) |
+| CMurphi |  1,55#.### | "Consistency of data"                                                      |
+|  rumur  |         -- | _-- Not compatible with rumur (contains union) --_    
 
 
 
@@ -216,12 +281,54 @@ but in these models they are isolated to better understand the effects that vary
 model checkers can have.
 
 ### [`n_peterson_bug.m`](./n_peterson_bug.m)
-TODO AV ...
 
+#### About the Bug
+
+#### Build & Run _(with recommended settings)_
+```bash
+make n_peterson_bug                                    # build the model checkers
+./n_peterson_bug.romp -s 1234 -w 1024 -d 512 -y        # check with romp
+./n_peterson_bug.nsym.romp -s 1234 -w 1024 -d 512 -y   # check with romp (no symmetry)
+./n_peterson_bug.ru                                    # verify with rumur
+./n_peterson_bug.cm -m1024                             # verify with CMurphi
+```
+
+#### Expected Results
+> _**Note:** run times are highly dependent on your hardware & current utilization,_
+> _all our results are on x86-64/AMD64 systems with at least 6 cores._<br/>
+> `#` denotes when the value of the place was not given by the measuring software.
+
+|   Tool  |  t _(ms)_  | Bug(s) Found / Property(s) Violated                                        |
+|:-------:|-----------:|:---------------------------------------------------------------------------|
+|   romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
+| ns-romp |  5,841.320 | "Explicit writeback for non dirty remote" (x510) & "WRD at home cluster" (x514) |
+| CMurphi |  1,55#.### | "Consistency of data"                                                      |
+|  rumur  |         -- | _-- Not compatible with rumur (contains union) --_   
 
 ### [`n_peterson_bug1.m`](./n_peterson_bug1.m)
-TODO AV ...
 
+#### About the Bug
+
+#### Build & Run _(with recommended settings)_
+```bash
+make n_peterson_bug1                                    # build the model checkers
+./n_peterson_bug1.romp -s 1234 -w 1024 -d 512 -y        # check with romp
+./n_peterson_bug1.nsym.romp -s 1234 -w 1024 -d 512 -y   # check with romp (no symmetry)
+./n_peterson_bug1.ru                                    # verify with rumur
+./n_peterson_bug1.cm -m1024                             # verify with CMurphi
+```
+
+#### Expected Results
+> _**Note:** run times are highly dependent on your hardware & current utilization,_
+> _all our results are on x86-64/AMD64 systems with at least 6 cores._<br/>
+> `#` denotes when the value of the place was not given by the measuring software.
+
+|   Tool  |  t _(ms)_  | Bug(s) Found / Property(s) Violated                                        |
+|:-------:|-----------:|:---------------------------------------------------------------------------|
+|   romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
+| ns-romp |  5,841.320 | "Explicit writeback for non dirty remote" (x510) & "WRD at home cluster" (x514) |
+| CMurphi |  1,55#.### | "Consistency of data"                                                      |
+|  rumur  |         -- | _-- Not compatible with rumur (contains union) --_   
 
 ### [`deepdense.m`](./deepdense.m)
 This model is a synthetic model that introduces a bottleneck at a set distance away from the start,
