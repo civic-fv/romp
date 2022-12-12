@@ -156,8 +156,11 @@ make arbiter                                    # build the model checkers
 
 ### [`dpnew.m`](./dpnew.m)
 
+This is a classsic implmentation of synchronization issues in concurrent systems using  Dining Philosophers example. 
 #### About the Bug
 
+Deadlock Invariant checks if all the philosophers picking up their left forks and  waiting for
+their right forks. All philosophers are waiting for the adjacent philosopher to release their right fork. However, the adjacent philosopher  cannot release their right fork until the philosopher next to them acquires their left fork. It creates a cycle of all philosophers waiting for the adjacent philosopher to release their fork, causing a deadlock.
 #### Build & Run _(with recommended settings)_
 ```bash
 make dpnew                                    # build the model checkers
@@ -183,7 +186,10 @@ make dpnew                                    # build the model checkers
 
 ### [`sort5.m`](./sort5.m)
 
+This is the implementation of bubble sort algorithm in Murphi. The code iterates through a list , compares adjustment elements and swaps them if they are in wrong order. 
 #### About the Bug
+
+Invariant checks if there exists atleast one pair of adjacent elements where the first element is greater than second element. Once, the array is completely sorted the model fails.
 
 #### Build & Run _(with recommended settings)_
 ```bash
