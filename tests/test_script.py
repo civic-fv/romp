@@ -1,4 +1,4 @@
-import os
+from os import system as cmd_line
 from typing import List, Union as Un, Dict
 from pathlib import Path
 from dataclasses import dataclass
@@ -12,7 +12,6 @@ class CompilerConfigOption:
 @dataclass
 class ModelCheckerConfigOption:
     value:str
-
 class SlurmConfigOption:
     value:str
 
@@ -31,25 +30,23 @@ MCO = ModelCheckerConfigOption
 CC = "gcc"
 CXX = "g++"
 
-CPARAMS = "-std=c11 -O3 -pthread"
 CXXPARAMS = "-std=c++17 -O3 -pthread"
 CCPARAMS ="-march=native -O3 -lpthread"
 
 SAVE_PATH = "./submit_jobs.sh"
 ROMP = None #TODO: path to romp executable from planned cwd or machines root
-ROMP_PARAMS:Params_t = {"symmetry":[None,GCO('-s')],"trace":[MCO('-t %s'),None],} 
+ROMP_PARAMS:Params_t = {"symmetry":[None,GCO('-s')],"trace":[MCO('-t'),None],"trace-comp":[GCO('--simple-trace-re')]} 
 CMURPHI = None #TODO: path to cmurphi executable from planned cwd or machines root
-CMURPHI_PARAMS:Params_t = {"HashCompaction":[GCO("-c"),None],"BitCompaction":[GCO("-b"),None],"MemLimit":[None,MCO("-m10000")],"trace-DFS":[MCO("ON"),MCO("OFF")]}
+CMURPHI_PARAMS:Params_t = {"HashCompaction":[GCO("-c"),None],"BitCompaction":[GCO("-b"),None],"MemLimit":[MCO("-m10000")],"trace-DFS":[MCO("ON"),MCO("OFF")]} #TODO make this option match cmurphi man/help page
 RUMUR = None #TODO: path to rumur executable from planned cwd or machines root
 RUMUR_PARAMS:Params_t = {"symmetry":[GCO("--symetry-reduction="+i) for i in ["heustric", "exhaustive", "off"]],
-                        "pack-state":["ON","OFF"],
-                        "bound":["default",10000],
-                        "trace-DFS":["ON","OFF"]}
+                        "bound":["default",10000], #TODO make this option match rumur man/help page
+                        "trace-DFS":["ON","OFF"]}  #TODO make this option match rumur man/help page
 
 SBATCH_PARMAS:str = "-M kingspeak --account=ganesh --partition=kingspeak-shared --nodes=1 --ntasks=1 -C c16 -c 16 --exclusive --time=20:00:00 --mail-type=FAIL,BEGIN,END --mail-user=**0@gmail.com"
 
 ALL_MODELS: List[str] = [
-        #TODO
+        #TODO past in all file dirs
     ]
 # SPIN_PARAMS  = {} # TODO: add this when we work with everything else
 
@@ -66,13 +63,12 @@ ALL_MODELS: List[str] = [
 
 class ConfigGenerator:
     """To generate the configuration for the testing ROMP"""
-    def __init__(self, modgen:str, comp:str, comp_params:str, params:Params_t, models:List[str], exe_ext:str=None, sbatch_params:str=None) -> None:
+    def __init__(self, modgen:str, comp:str, comp_params:str, params:Params_t, models:List[str], exe_ext:str=None) -> None:
         self.__modgen: str = modgen
         self.__exe_ext: str = Path(modgen).stem if exe_ext is None else exe_ext
         self.__src_ext: str = ".cpp" if "++" in comp else ".c"
         self.__comp: str = comp
         self.__comp_params: str = comp_params
-        self.__sbatch_params: str = sbatch_params #contains the launch options for the slurm job/sbatch-launch
         self.__PARAMS: Params_t = dict(params)
         self.__models: List[Path] = [Path(i) for i in models]
         self.__param_keys: List[str] = self.__PARAMS.keys().sort()
@@ -110,8 +106,9 @@ class ConfigGenerator:
         if self.__index is None:
             raise Exception("ConfigGenerator not in iterator mode!!")
         base_model = self.__models[self.__i].with_suffix('')
-        other_opts = [i.value for i in self.__config.values() if isinstance(i,ModelCheckerConfigOption)].join(' ')
+        other_opts = [i.value for i in self.__config.values() if isinstance(i,GeneratorConfigOption)].join(' ')
         return f"{self.__modgen} {other_opts} -o {base_model}.{self.__src_ext}"
+        # note CMurphy does not accept -o or any output config details (because its annoying and poorly made)
 
     
     @property
@@ -123,19 +120,18 @@ class ConfigGenerator:
         return f"{self.__comp} {self.__comp_params} {other_opts} -o {base_model}.{self.__exe_ext} {base_model}.{self.__src_ext}"
     
     
-    @property
-    def sbatch_cmd(self) -> str:
+    def sbatch_cmd(self,slurmOpts:str) -> str:
         if self.__index is None:
             raise Exception("ConfigGenerator not in iterator mode!!")
         base_model = self.__models[self.__i].with_suffix('')
-        sbatch_opts = [i.value for i in self.__config.values() if isinstance(i,SlurmConfigOption)].join(' ')
-        return f"sbatch {self.__sbatch_params} {sbatch_opts} {base_model}.{self.__exe_ext}"
+        launch_opts = [i.value for i in self.__config.values() if isinstance(i, ModelCheckerConfigOption)].join(' ')
+        return f"sbatch {slurmOpts} {base_model}.{self.__exe_ext} {self.__config.values().join(' ')}"
 
     def __calc_len(self) -> int:
-        len = 1
+        _len = 1
         for values in self.__PARAMS.values():
-            len *= len(values)
-        self.__len = len
+            _len *= len(values)
+        self.__len = _len
         return self.__len
     
     def __len__(self) -> int:
@@ -173,12 +169,36 @@ class ConfigGenerator:
         return self      
 
 
+def launch(cg:ConfigGenerator,slurmOpts:str) -> None:
+    # var = [1,2,3,4]
+    # for i in var:
+    #     pass #lOOP BODY
+    # iter(var) # --> var.__iter__()
+    # while:
+    #     try:
+    #         pass  #lOOP BODY
+    #     except StopIteration as ex:
+    #         break
+    #     next(var) # --> var.__next__()
+    for i in cg:
+        # gencmd 
+        #compcmd
+        #sbatch_cmd
+        pass
+    #TODO use the config gen passed in
+    pass
+
+
 def main(args)-> None:
-    romp_configs = ConfigGenerator(ROMP_PARAMS, ["TODO:models"])# how to take the default vlues ????
-    cmurphi_configs = ConfigGenerator(CMURPHI_PARAMS,
-                                      ["TODO:models"])
-    rumur_configs = ConfigGenerator(RUMUR_PARAMS,
-                                    ["TODO:models"])
+    romp_configs = ConfigGenerator(ROMP,CXX,CXX_PARAMS,ROMP_PARAMS,ALL_MODELS,".romp")
+    cmurphi_configs = ConfigGenerator(CMURPHI,CXX,CXX_PARAMS,CMURPHI_PARAMS,
+                                      ALL_MODELS,".cm")
+    rumur_configs = ConfigGenerator(RUMUR,CC,CC_PARAMS,RUMUR_PARAMS,
+                                    [i for i in ALL_MODELS if not ("dash.m" in i or "-flow.m" in i or "multi.m" in i)],
+                                    ".ru")
+    launch(romp_configs,SBATCH_PARMAS)
+    launch(cmurphi_configs,SBATCH_PARMAS)
+    launch(rumur_configs,SBATCH_PARMAS)
    
 if __name__ == "__main__":
     main()
