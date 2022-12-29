@@ -13,6 +13,9 @@ class CompilerConfigOption:
 class ModelCheckerConfigOption:
     value:str
 
+class SlurmConfigOption:
+    value:str
+
 ConfigOpt_t = Un[None,GeneratorConfigOption,CompilerConfigOption,ModelCheckerConfigOption]
 Params_t = Dict[str,List[ConfigOpt_t]]
 Config_t = Dict[str,ConfigOpt_t]
@@ -100,10 +103,16 @@ class ConfigGenerator:
             raise Exception("config not generated")
         return self.__config
     
+   
+
     @property
     def gen_cmd(self) -> str:
-        #TODO first
-        pass
+        if self.__index is None:
+            raise Exception("ConfigGenerator not in iterator mode!!")
+        base_model = self.__models[self.__i].with_suffix('')
+        other_opts = [i.value for i in self.__config.values() if isinstance(i,ModelCheckerConfigOption)].join(' ')
+        return f"{self.__modgen} {other_opts} -o {base_model}.{self.__src_ext}"
+
     
     @property
     def comp_cmd(self) -> str:
@@ -113,15 +122,21 @@ class ConfigGenerator:
         other_opts = [i.value for i in self.__config.values() if isinstance(i,CompilerConfigOption)].join(' ')
         return f"{self.__comp} {self.__comp_params} {other_opts} -o {base_model}.{self.__exe_ext} {base_model}.{self.__src_ext}"
     
-    @property    
-    def sbatch_cmd(self) -> str:
-        #TODO second
-        pass
     
+    @property
+    def sbatch_cmd(self) -> str:
+        if self.__index is None:
+            raise Exception("ConfigGenerator not in iterator mode!!")
+        base_model = self.__models[self.__i].with_suffix('')
+        sbatch_opts = [i.value for i in self.__config.values() if isinstance(i,SlurmConfigOption)].join(' ')
+        return f"sbatch {self.__sbatch_params} {sbatch_opts} {base_model}.{self.__exe_ext}"
+
     def __calc_len(self) -> int:
-        #TODO calculate permutation count    
-        self.__len = #TODO third
-        pass
+        len = 1
+        for values in self.__PARAMS.values():
+            len *= len(values)
+        self.__len = len
+        return self.__len
     
     def __len__(self) -> int:
         return self.__len
