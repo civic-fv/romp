@@ -128,8 +128,8 @@ make adash_bug                                    # build the model checkers
 
 
 ### [`arbiter.m`](./arbiter.m)
-
 This is classic example to illustrate distributed mutual exclusion protocol. The protocol usess token-passing mechanism to ensure that shared resource can be accessed by one processor at a time. 
+
 #### About the Bug
 
 Invariant checks if the token is lost by the processor holding it. When the token is set to False accidentally and none of the processors is using the sharing resource causing deadlock.
