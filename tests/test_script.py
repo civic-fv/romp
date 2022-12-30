@@ -169,7 +169,8 @@ class ConfigGenerator:
         return self      
 
 
-def launch(cg:ConfigGenerator,slurmOpts:str) -> None:
+
+'''def launch(cg:ConfigGenerator,slurmOpts:str) -> None:
     # var = [1,2,3,4]
     # for i in var:
     #     pass #lOOP BODY
@@ -187,7 +188,6 @@ def launch(cg:ConfigGenerator,slurmOpts:str) -> None:
         pass
     #TODO use the config gen passed in
     pass
-'''
 '''
 
 def launch(cg:ConfigGenerator,slurmOpts:str) -> None:
