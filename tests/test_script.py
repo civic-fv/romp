@@ -187,7 +187,21 @@ def launch(cg:ConfigGenerator,slurmOpts:str) -> None:
         pass
     #TODO use the config gen passed in
     pass
+'''
+'''
 
+def launch(cg:ConfigGenerator,slurmOpts:str) -> None:
+    for i in cg:
+        gen_cmd = cg.gen_cmd
+        cmd_line.system(gen_cmd)
+
+        # Compiling the model
+        comp_cmd = cg.comp_cmd
+        cmd_line.system(comp_cmd)
+
+        # Launching  model 
+        sbatch_cmd = cg.sbatch_cmd(slurmOpts)
+        cmd_line.system(sbatch_cmd)
 
 def main(args)-> None:
     romp_configs = ConfigGenerator(ROMP,CXX,CXX_PARAMS,ROMP_PARAMS,ALL_MODELS,".romp")
