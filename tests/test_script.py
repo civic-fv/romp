@@ -227,7 +227,10 @@ class ConfigGenerator:
 
 def launch(cg: ConfigGenerator, slurmOpts: str, outputDir: str = "./") -> None:
     if outputDir != "./" and not DEBUG:
-        mkdir(outputDir)
+        try:
+            mkdir(outputDir)
+        except:
+            pass
     for i in cg:
         gen_cmd = i.gen_cmd
         print("Running :", gen_cmd)
