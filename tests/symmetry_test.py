@@ -7,7 +7,7 @@ from typing import Tuple, NamedTuple, Type
 from time import time
 
 
-DEBUG: bool = False
+DEBUG: bool = True
 
 class SymTestData(NamedTuple):
     """Named Tuple containing the sym and no_sym trace_stats.ModelResult objects

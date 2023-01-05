@@ -5,7 +5,8 @@ from dataclasses import dataclass
 import sys
 from datetime import datetime
 
-DEBUG = True
+DEBUG = False
+
 
 """TODOs & known issues:
     -[X] romp needs way to pass in random seeds
@@ -57,7 +58,7 @@ CXX = "g++"
 CXX_PARAMS = "-std=c++17 -O3 -pthread"
 CC_PARAMS = "-march=native -O3 -lpthread"
 
-SAVE_PATH = "./submit_jobs.sh"
+SAVE_PATH = "/scratch/general/vast/u1350795/romp"
 ROMP = "../build/romp/romp"
 ROMP_PARAMS: Params_t = {"symmetry": [None, GCO('-s')], "trace": [MCO('-t'), None], "trace-comp": [GCO('--simple-trace-rep')],
                          "seed": [None, MCO('-s scrappy'), MCO('-s 1234567890')],
@@ -73,7 +74,19 @@ RUMUR_PARAMS: Params_t = {"symmetry": [GCO("--symmetry-reduction="+i) for i in [
                           # TODO make this option match rumur man/help page
                           "bound": [None,GCO("--bound=4096"),GCO("--bound=8192"),GCO("--bound=16384")]}  # TODO make this option match rumur man/help page
 
-SBATCH_PARMAS: str = "-M kingspeak --account=ganesh --partition=kingspeak-shared --nodes=4 --ntasks=8 -C c16 -c 16 --exclusive --time=12:00:00 --mail-type=FAIL --mail-user=**0@gmail.com"
+SBATCH_PARMAS: str = '''
+#SBATCH -M kingspeak
+#SBATCH --account=ganesh
+#SBATCH --partition=kingspeak-shared
+#SBATCH --nodes=4
+#SBATCH --ntasks=8
+#SBATCH -C c16
+#SBATCH -c 16
+#SBATCH --exclusive
+#SBATCH --time=12:00:00
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=ajanthav10@gmail.com '''
+# SBATCH_PARMAS: str = "-M kingspeak --account=ganesh --partition=kingspeak-shared --nodes=4 --ntasks=8 -C c16 -c 16 --exclusive --time=12:00:00 --mail-type=FAIL --mail-user=ajanthav10@gmail.com"
 
 ALL_MODELS: List[str] = [
     "./german.m",
@@ -141,8 +154,8 @@ class ConfigGenerator:
         other_opts = ' '.join(
             [i.value for i in self._config.values() if isinstance(i, GeneratorConfigOption)])
         if self._modgen[-3::] == "/mu":
-            return f"{self._modgen} {other_opts}"
-        return f"{self._modgen} {other_opts} -o {base_model}.{self._src_ext}"
+            return f"{self._modgen} {other_opts} {self._models[self._i]}"
+        return f"{self._modgen} {other_opts} -o {base_model}.{self._src_ext} {self._models[self._i]}"
         # note CMurphy does not accept -o or any output config details (because its annoying and poorly made)
 
     @property
@@ -152,7 +165,7 @@ class ConfigGenerator:
         base_model = self._models[self._i].with_suffix('')
         other_opts = ' '.join(
             [i.value for i in self._config.values() if isinstance(i, CompilerConfigOption)])
-        return f"{self._comp} {self._comp_params} {other_opts} -o {base_model}.{self._exe_ext} {base_model}.{self._src_ext}"
+        return f"{self._comp} {self._comp_params} {other_opts} -o {base_model}.{self._index}.{self._exe_ext} {base_model}.{self._src_ext}"
 
     def sbatch_cmd(self, slurmOpts: str, outdir:str) -> str:
         if self._index is None:
@@ -160,8 +173,8 @@ class ConfigGenerator:
         base_model = self._models[self._i].with_suffix('')
         launch_opts = ' '.join([i.value for i in self._config.values(
         ) if isinstance(i, ModelCheckerConfigOption)])
-        return (f"sbatch {slurmOpts} '{base_model.absolute()}.{self._exe_ext} {launch_opts} "
-                f"> {outdir}/{base_model}__{self._exe_ext}__{self._index}_%j.txt'")
+        return (f"{base_model.absolute()}.{self._index}.{self._exe_ext} {launch_opts} "
+                f"> {outdir}/{base_model}__{self._exe_ext}__{self._index}_%j.txt")
 
     def _calc_len(self) -> int:
         _len = len(self._models)
@@ -231,30 +244,37 @@ def launch(cg: ConfigGenerator, slurmOpts: str, outputDir: str = "./") -> None:
             mkdir(outputDir)
         except:
             pass
-    for i in cg:
-        gen_cmd = i.gen_cmd
-        print("Running :", gen_cmd)
-        if not DEBUG:
-            if system(gen_cmd) != 0:
-                print("ERROR :: could not generate!")
-                continue
+    with open(outputDir+f"/launch_{cg._exe_ext}.slurm",'w') as file:
+        file.write("#!/bin/bash" + slurmOpts + '\n')
+        for i in cg:
+            gen_cmd = i.gen_cmd
+            print("Running :", gen_cmd)
+            if not DEBUG:
+                if system(gen_cmd) != 0:
+                    print("ERROR :: could not generate!")
+                    continue
+                
+            # Compiling the model
+            comp_cmd = i.comp_cmd
+            print("Running :", comp_cmd)
+            if not DEBUG:
+                if system(comp_cmd) != 0:
+                    print("ERROR :: could not build!")
+                    continue
+                
+            # Launching  model
+            sbatch_cmd = i.sbatch_cmd(slurmOpts, outputDir)
+            print("Writing :", sbatch_cmd)
+            # if not DEBUG:
+            #     if system(sbatch_cmd) != 0:
+            #         print("ERROR :: durning sbatch launch!")
+            #         continue
+            file.write(sbatch_cmd+'\n')
+            print()
+    if system(f"sbatch {slurmOpts} {outputDir}/launch_{cg._exe_ext}.slurm") != 0:
+        print("ERROR :: FAILED TO LAUNCH SBATCH")
             
-        # Compiling the model
-        comp_cmd = i.comp_cmd
-        print("Running :", comp_cmd)
-        if not DEBUG:
-            if system(comp_cmd) != 0:
-                print("ERROR :: could not build!")
-                continue
             
-        # Launching  model
-        sbatch_cmd = i.sbatch_cmd(slurmOpts, outputDir)
-        print("Running :", sbatch_cmd)
-        if not DEBUG:
-            if system(sbatch_cmd) != 0:
-                print("ERROR :: durning sbatch launch!")
-                continue
-        print()
 
 
 def main(args) -> None:
@@ -266,11 +286,11 @@ def main(args) -> None:
                                     [i for i in ALL_MODELS if not (
                                         "dash.m" in i or "-flow.m" in i or "multi.m" in i)],
                                     "ru")
-    launch_time = "./" + datetime.now().strftime("%y-%m-%d_%H-%M-%S")
+    launch_time = SAVE_PATH + "/" + datetime.now().strftime("%y-%m-%d_%H-%M-%S")
     
     
-    launch(romp_configs, SBATCH_PARMAS, launch_time)
-    launch(cmurphi_configs, SBATCH_PARMAS, launch_time)
+    #launch(romp_configs, SBATCH_PARMAS, launch_time)
+    #launch(cmurphi_configs, SBATCH_PARMAS, launch_time)
     launch(rumur_configs, SBATCH_PARMAS, launch_time)
 
 
