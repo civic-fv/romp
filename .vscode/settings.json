@@ -454,5 +454,6 @@
     ],
     "C_Cpp.formatting": "clangFormat",
     "cmake.generator": "Unix Makefiles",
-    "esbonio.sphinx.confDir": ""
+    "esbonio.sphinx.confDir": "",
+    "python.analysis.typeCheckingMode": "off"
 }

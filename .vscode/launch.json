@@ -2,6 +2,14 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: test_script.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/test_script.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
             "name": "(gdb) Launch romp (german test)",
             "type": "cppdbg",
             "request": "launch",
@@ -550,8 +558,8 @@
                 "256",
                 "-ll",
                 "64",
-                "-ros"
-                ,"-y"
+                "-ros",
+                "-y"
             ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
@@ -648,7 +656,9 @@
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/tests/trace_stats.py",
-            "args": ["${workspaceFolder}/traces"],
+            "args": [
+                "${workspaceFolder}/traces"
+            ],
             "console": "integratedTerminal",
             "justMyCode": true
         },
@@ -682,7 +692,7 @@
                     "ignoreFailures": true
                 },
                 {
-                    "description":  "Set Disassembly Flavor to Intel",
+                    "description": "Set Disassembly Flavor to Intel",
                     "text": "-gdb-set disassembly-flavor intel",
                     "ignoreFailures": true
                 }
