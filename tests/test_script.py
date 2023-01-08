@@ -86,7 +86,7 @@ SBATCH_PARMAS: str = '''
 #SBATCH --time=12:00:00
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-user=ajanthav10@gmail.com '''
-# SBATCH_PARMAS: str = "-M kingspeak --account=ganesh --partition=kingspeak-shared --nodes=4 --ntasks=8 -C c16 -c 16 --exclusive --time=12:00:00 --mail-type=FAIL --mail-user=ajanthav10@gmail.com"
+# SBATCH_PARMAS: str = "-M kingspeak --account=ganesh --partition=kingspeak-shared --nodes=2 --ntasks=8 -C c16 -c 16 --exclusive --time=12:00:00 --mail-type=FAIL --mail-user=ajanthav10@gmail.com"
 
 ALL_MODELS: List[str] = [
     "./german.m",
