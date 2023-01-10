@@ -168,6 +168,10 @@
 #define ROMP_GENERATED_FILE_PREFACE(p) \
         "/*\n" p "\n*/\n"
 
+#define ROMP_MODEL_HASH_METHOD_NAME "__romp__model_hash";
+#define ROMP_HASH_COMBINER ROMP_UTIL_NAMESPACE "::combine_hash";
+#define ROMP_MAKE_HASH_COMBINER(_h,_v) ROMP_UTIL_NAMESPACE "::combine_hash(" << (_h) << ", " << (_v) << ")"
+
 #define ROMP_PREDEFINED_TYPES "boolean"
 
 #define ROMP_STARTSTATE_PREFIX "__romp__StartState__"

@@ -64,5 +64,20 @@ void generate_state_stream(romp::CodeGenerator& gen, const murphi::Model& m) {
 }
 
 
+void generate_state_stream(romp::CodeGenerator& gen, const murphi::Model& m) {
+  gen << gen.indentation() << "inline size_t " ROMP_MODEL_HASH_METHOD_NAME " const {\n";
+  gen.indent();
+  gen << gen.indentation() << "size_t _hash = 0ul;\n";
+  for (const auto& c : m.children) {
+    if (const auto _vd = dynamic_cast<const VarDecl*>(c.get())) {
+      gen << gen.indentation() << ROMP_MAKE_HASH_COMBINER("_hash",_vd->name) << ";\n";
+    }
+  }
+  gen << gen.indentation() << "return _hash;\n";
+  gen.dedent();
+  gen << gen.indentation() << "}\n"; 
+}
+
+
 } // namespace romp
 

@@ -16,8 +16,9 @@
 
 
 #ifndef __romp__GENERATED_CODE
-#include "romp-rw.hpp"  // LANGUAGE SERVER SUPPORT ONLY !!
-#include "romp-rw-options.hpp" // LANGUAGE SERVER SUPPORT ONLY !!
+#include "walker.hpp"  // LANGUAGE SERVER SUPPORT ONLY !!
+#include "bfs.hpp"  // LANGUAGE SERVER SUPPORT ONLY !!
+#include "options.hpp" // LANGUAGE SERVER SUPPORT ONLY !!
 #endif
 
 // #include <unistd.h>

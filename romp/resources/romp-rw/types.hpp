@@ -132,6 +132,7 @@ namespace romp {
         return (json << val.get() << '}');
 #     endif 
     }
+    friend class std::hash<BaseUndefinableType>;
   };
 
 
@@ -907,6 +908,7 @@ namespace romp {
         return (json << "]}");
 #     endif
     }
+    friend std::hash<ArrayType>;
   };
 
   template<typename INDEX_t, typename ELEMENT_t>
@@ -1073,6 +1075,7 @@ namespace romp {
         return (json << "]}");
 #     endif
     }
+    friend std::hash<MultisetType>;
   };
 
   template<size_t MAX, typename ELEMENT_t>
@@ -1246,6 +1249,7 @@ namespace romp {
         return (json << "]}");
 #     endif
     }
+    friend std::hash<RecordType>;
   };
 
 

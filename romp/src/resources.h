@@ -33,6 +33,10 @@ extern const size_t resources_romp_rw_error_hpp_len;
 extern const unsigned char resources_romp_rw_types_hpp[];
 extern const size_t resources_romp_rw_types_hpp_len;
 
+// ../resources/romp-rw/hash.hpp
+extern const unsigned char resources_romp_rw_hash_hpp[];
+extern const size_t resources_romp_rw_hash_hpp_len;
+
 // ../resources/romp-rw/options.hpp
 extern const unsigned char resources_romp_rw_options_hpp[];
 extern const size_t resources_romp_rw_options_hpp_len;
@@ -40,6 +44,10 @@ extern const size_t resources_romp_rw_options_hpp_len;
 // ../resources/romp-rw/walker.hpp
 extern const unsigned char resources_romp_rw_walker_hpp[];
 extern const size_t resources_romp_rw_walker_hpp_len;
+
+// ../resources/romp-rw/bfs.hpp
+extern const unsigned char resources_romp_rw_bfs_hpp[];
+extern const size_t resources_romp_rw_bfs_hpp_len;
 
 // ../resources/romp-rw/impls.hpp
 extern const unsigned char resources_romp_rw_impls_hpp[];

@@ -26,6 +26,12 @@ namespace romp {
    *        used to output the state to json traces and the console output
    */
   void generate_state_stream(romp::CodeGenerator& gen, const murphi::Model& m);
+  
+  /**
+   * @brief Generate the std::hash object for the state data object 
+   *        used to hash the state into a hash compacted state during initial BFS
+   */
+  void generate_state_hash(romp::CodeGenerator& gen, const murphi::Model& m);
 
 
 

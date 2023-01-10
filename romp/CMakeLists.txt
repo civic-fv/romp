@@ -35,6 +35,12 @@ add_custom_command(# the type templates for the genrated model checker
   MAIN_DEPENDENCY resources/romp-rw/types.hpp
   DEPENDS ../misc/xxd.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_custom_command(# the hahser templates for the genrated model checker
+  OUTPUT resources_romp-rw_hash.cpp
+  COMMAND ../misc/xxd.py resources/romp-rw/hash.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_types.cpp
+  MAIN_DEPENDENCY resources/romp-rw/hash.hpp
+  DEPENDS ../misc/xxd.py
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(# file with CLI config options
   OUTPUT resources_romp-rw_options.cpp
   COMMAND ../misc/xxd.py resources/romp-rw/options.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_options.cpp
@@ -45,6 +51,12 @@ add_custom_command(# our main definition and code file for the random walker and
   OUTPUT resources_romp-rw_walker.cpp
   COMMAND ../misc/xxd.py resources/romp-rw/walker.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_walker.cpp
   MAIN_DEPENDENCY resources/romp-rw/walker.hpp
+  DEPENDS ../misc/xxd.py
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_custom_command(# our main definition and code file for the preliminary BFS
+  OUTPUT resources_romp-rw_bfs.cpp
+  COMMAND ../misc/xxd.py resources/romp-rw/bfs.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_bfs.cpp
+  MAIN_DEPENDENCY resources/romp-rw/bfs.hpp
   DEPENDS ../misc/xxd.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(# just some random implementations of functions that need to have everythign else declared and impl'ed first
@@ -83,9 +95,11 @@ add_executable(romp
   ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_writers.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_error.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_types.cpp
+  ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_hash.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_options.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_impls.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_walker.cpp
+  ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_bfs.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_main.cpp
   ../common/escape.cc
   ../common/help.cc

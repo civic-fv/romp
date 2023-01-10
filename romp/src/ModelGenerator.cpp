@@ -583,6 +583,8 @@ void ModelGenerator::visit_model(const Model &n) {
   *this << "\n";
   romp::generate_state_stream(*this,n);
   *this << "\n";
+  romp::generate_state_hash(*this,n);
+  *this << "\n";
   dedent();
   *this << indentation() << "};\n\n" << /*std::*/flush();
 # ifdef DEBUG

@@ -125,10 +125,12 @@ void generate(const Model &m, const std::vector<Comment> &comments,
     gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/options.hpp\"\n";
     gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/error.hpp\"\n";
     gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/types.hpp\"\n";
+    gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/hash.hpp\"\n";
 # else
     gen.output_embedded_code_file(resources_romp_rw_options_hpp, resources_romp_rw_options_hpp_len);
     gen.output_embedded_code_file(resources_romp_rw_error_hpp, resources_romp_rw_error_hpp_len);
     gen.output_embedded_code_file(resources_romp_rw_types_hpp, resources_romp_rw_types_hpp_len);
+    gen.output_embedded_code_file(resources_romp_rw_hash_hpp, resources_romp_rw_hash_hpp_len);
 # endif
   gen << "\n#pragma endregion romp_infix\n\n" << /*std::*/gen.flush();
 
@@ -175,7 +177,8 @@ void generate(const Model &m, const std::vector<Comment> &comments,
 
   gen << "\n\n#pragma region rule_caller__generated_code\n\n"
       << gen.indentation() << "namespace " ROMP_CALLER_NAMESPACE_NAME " {\n\n"
-      << gen.indentation() << "// << ==================================== Rule Expansions ===================================== >> \n\n";
+      << gen.indentation() 
+      << "// << ==================================== Rule Expansions ===================================== >> \n\n";
   romp::generate_ruleset_callers(gen,m);
   gen << "\n\n" << gen.indentation() 
       << "// << =============================== Property Rule Expansions ================================= >> \n\n";
@@ -190,9 +193,11 @@ void generate(const Model &m, const std::vector<Comment> &comments,
   gen << "\n#pragma region romp_postfix\n\n";
 # ifdef _ROMP_DEV_DEBUG_INCLUDE_DIR
     gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/walker.hpp\"\n";
+    gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/bfs.hpp\"\n";
     gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/impls.hpp\"\n";
 # else
     gen.output_embedded_code_file(resources_romp_rw_walker_hpp, resources_romp_rw_walker_hpp_len);
+    gen.output_embedded_code_file(resources_romp_rw_bfs_hpp, resources_romp_rw_bfs_hpp_len);
     gen.output_embedded_code_file(resources_romp_rw_impls_hpp, resources_romp_rw_impls_hpp_len);
 # endif
   gen << "\n#pragma endregion romp_postfix\n\n" << /*std::*/gen.flush();
