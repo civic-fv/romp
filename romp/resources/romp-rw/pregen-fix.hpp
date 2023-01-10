@@ -95,10 +95,10 @@ namespace __model__ {// LANGUAGE SERVER SUPPORT ONLY!!
 } // namespace __model__ // LANGUAGE SERVER SUPPORT ONLY!!
 
 namespace __model__ { // LANGUAGE SERVER SUPPORT ONLY!!
-  struct __State__ { // LANGUAGE SERVER SUPPORT ONLY !!
+  struct __romp__Model__ { // LANGUAGE SERVER SUPPORT ONLY !!
     ::romp::IRandWalker* __rw__; // LANGUAGE SERVER SUPPORT ONLY !!
     unsigned long test1[16]; // LANGUAGE SERVER SUPPORT ONLY !!
-    
+    size_t __romp__model_hash() { return 1ul; } // LANGUAGE SERVER SUPPORT ONLY !!
     // template <class O> friend ::romp::ojstream<O> operator << (::romp::ojstream<O> out, const __State__& s); // LANGUAGE SERVER SUPPORT ONLY !!
     // friend ::std::ostream operator << (::std::ostream out, const __State__& s); // LANGUAGE SERVER SUPPORT ONLY !!
   }; // LANGUAGE SERVER SUPPORT ONLY !!
