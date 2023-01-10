@@ -1,4 +1,4 @@
-from os import system, mkdir
+from os import system, makedirs
 from typing import List, Union as Un, Dict
 from pathlib import Path
 from dataclasses import dataclass
@@ -6,7 +6,13 @@ import sys
 from datetime import datetime
 
 DEBUG = False
+DO_SLURM = False
 
+"""
+NOTE:
+    If you want to run this locally I recommend running it with the `nohup` command 
+     to allow to ssh in and leave the session and still have it finish running.
+"""
 
 """TODOs & known issues:
     -[X] romp needs way to pass in random seeds
@@ -56,11 +62,16 @@ CC = "gcc"
 CXX = "g++"
 
 CXX_PARAMS = "-std=c++17 -O3 -pthread"
-CC_PARAMS = "-march=native -O3 -lpthread"
+CC_PARAMS = "-march=native -O3 -pthread"
 
-SAVE_PATH = "/scratch/general/vast/u1350795/romp"
+INIT_TIME = datetime.now().strftime("%y-%m-%d_%H-%M-%S")
+
+LOCAL_SAVE_PATH = "./test_results/" + INIT_TIME
+CHPC_SAVE_PATH = "/scratch/general/vast/u1350795/romp/" + INIT_TIME
 ROMP = "../build/romp/romp"
-ROMP_PARAMS: Params_t = {"symmetry": [None, GCO('-s')], "trace": [MCO('-t'), None], "trace-comp": [GCO('--simple-trace-rep')],
+ROMP_PARAMS: Params_t = {"symmetry": [None, GCO('-s')],
+                         "trace": [MCO(f'-t {CHPC_SAVE_PATH if DO_SLURM else LOCAL_SAVE_PATH}'), None],
+                         "trace-comp": [GCO('--simple-trace-rep')],
                          "seed": [None, MCO('-s scrappy'), MCO('-s 1234567890')],
                          "walkers":[None,MCO("-w 512"),MCO("-w 1024"),MCO("-w 2048"),MCO("-w 4096"),MCO("-w 8192"), MCO("-w 16384")],
                          "depth":[None,MCO("-d 512"),MCO("-d 1024"),MCO("-d 2048"),MCO("-d 4096"),MCO("-d 8192"), MCO("-d 16384"),MCO("-d 32768")],
@@ -74,12 +85,14 @@ RUMUR_PARAMS: Params_t = {"symmetry": [GCO("--symmetry-reduction="+i) for i in [
                           # TODO make this option match rumur man/help page
                           "bound": [None,GCO("--bound=4096"),GCO("--bound=8192"),GCO("--bound=16384")]}  # TODO make this option match rumur man/help page
 
-SBATCH_PARMAS: str = '''
+PASSES: int = 8
+
+SBATCH_PARMAS: str = f'''
 #SBATCH -M kingspeak
 #SBATCH --account=ganesh
 #SBATCH --partition=kingspeak-shared
 #SBATCH --nodes=4
-#SBATCH --ntasks=8
+#SBATCH --ntasks={PASSES}
 #SBATCH -C c16
 #SBATCH -c 16
 #SBATCH --exclusive
@@ -177,7 +190,14 @@ class ConfigGenerator:
         return (f"time {base_model.absolute()}.{self._index}.{self._exe_ext} {launch_opts} "
                 f"> {outdir}/{base_model}__{self._exe_ext}__{self._index}_%j.txt")
         
-        
+    def launch_cmd(self, outdir:str) -> str:
+        if self._index is None:
+            raise Exception("ConfigGenerator not in iterator mode!!")
+        base_model = self._models[self._i].with_suffix('')
+        launch_opts = ' '.join([i.value for i in self._config.values(
+        ) if isinstance(i, ModelCheckerConfigOption)])
+        return (f"{base_model.absolute()}.{self._index}.{self._exe_ext} {launch_opts} "
+                f"> {outdir}/{base_model}__{self._exe_ext}__{self._index}_$j.txt")
     
     def valgrind_cmd(self, slurmOpts: str, outdir:str) -> str:
         if self._index is None:
@@ -252,13 +272,17 @@ class ConfigGenerator:
 
 
 def launch(cg: ConfigGenerator, slurmOpts: str, outputDir: str = "./") -> None:
-    if outputDir != "./" and not DEBUG:
+    if outputDir != "./":
         try:
-            mkdir(outputDir)
+            makedirs(outputDir)
         except:
+            if DEBUG:
+                print("ERROR : Failed to create new directory (could already exist)")
             pass
-    with open(outputDir+f"/launch_{cg._exe_ext}.slurm",'w') as file:
-        file.write("#!/bin/bash" + slurmOpts + '\n')
+    if not DO_SLURM:
+        bash_for_template = f"for j in {' '.join(str(i) for i in range(PASSES))}\ndo\n  {{cmd}}\ndone\n\n"
+    with open(outputDir+f"/launch_{cg._exe_ext}.{'slurm' if DO_SLURM else 'sh'}",'w') as file:
+        file.write("#!/bin/bash" + slurmOpts if DO_SLURM else '' + '\n')
         for i in cg:
             gen_cmd = i.gen_cmd
             print("Running :", gen_cmd)
@@ -276,20 +300,35 @@ def launch(cg: ConfigGenerator, slurmOpts: str, outputDir: str = "./") -> None:
                     continue
                 
             # Launching  model
-            sbatch_cmd = i.sbatch_cmd(slurmOpts, outputDir)
-            print("Writing :", sbatch_cmd)
+            run_cmd = i.sbatch_cmd(slurmOpts, outputDir) if DO_SLURM else i.launch_cmd(outputDir)
+            print("Writing :", run_cmd)
             # if not DEBUG:
             #     if system(sbatch_cmd) != 0:
             #         print("ERROR :: durning sbatch launch!")
             #         continue
-            file.write(sbatch_cmd+'\n')
+            if DO_SLURM:
+                file.write(run_cmd+'\n')
+            else:
+                file.write(bash_for_template.format(cmd=run_cmd))
             #valgrind 
             valgrind_cmd = i.valgrind_cmd(slurmOpts, outputDir)
             print("Writing :", valgrind_cmd)
             file.write(valgrind_cmd+'\n')
             print()
-    if system(f"sbatch {slurmOpts} {outputDir}/launch_{cg._exe_ext}.slurm") != 0:
-        print("ERROR :: FAILED TO LAUNCH SBATCH")
+    if DEBUG:
+        print("\nRunning : cat {outputDir}/launch_{cg._exe_ext}.slurm\n```")
+        system(f"cat {outputDir}/launch_{cg._exe_ext}.{'slurm' if DO_SLURM else 'sh'}")
+        print("```\n")
+    if DO_SLURM:
+        print("\nRunning : sbatch {slurmOpts} {outputDir}/launch_{cg._exe_ext}.slurm\n")
+        if not DEBUG:
+            if system(f"sbatch {slurmOpts} {outputDir}/launch_{cg._exe_ext}.slurm") != 0:
+                print("ERROR :: FAILED TO LAUNCH SBATCH")
+    else:
+        print(f"\nRunning : {outputDir}/launch_{cg._exe_ext}.sh\n")
+        if not DEBUG:
+            if system(f"{outputDir}/launch_{cg._exe_ext}.sh") != 0:
+                print("ERROR :: FAILED TO LAUNCH BASH SCRIPT")
             
             
 
@@ -303,7 +342,7 @@ def main(args) -> None:
                                     [i for i in ALL_MODELS if not (
                                         "dash.m" in i or "-flow.m" in i or "multi.m" in i)],
                                     "ru")
-    launch_time = SAVE_PATH + "/" + datetime.now().strftime("%y-%m-%d_%H-%M-%S")
+    outdir = CHPC_SAVE_PATH if DO_SLURM else LOCAL_SAVE_PATH
     
     
     launch(romp_configs, SBATCH_PARMAS, launch_time)

@@ -152,4 +152,5 @@ clean:
 	@$(RM) ./*.cm
 	@$(RM) ./*.ru
 	@$(RM) ./*.test
+	@$(RM) ./test_results
 	@printf "Cleaning Finished !!\n"
