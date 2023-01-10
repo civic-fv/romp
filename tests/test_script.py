@@ -89,8 +89,9 @@ SBATCH_PARMAS: str = '''
 # SBATCH_PARMAS: str = "-M kingspeak --account=ganesh --partition=kingspeak-shared --nodes=2 --ntasks=8 -C c16 -c 16 --exclusive --time=12:00:00 --mail-type=FAIL --mail-user=ajanthav10@gmail.com"
 
 ALL_MODELS: List[str] = [
-    "./german.m",
-    "./sort5.m"
+    "./abp.m",
+    "./adash_bug.m"
+    "./adash.m"
 ]
 # SPIN_PARAMS  = {} # TODO: add this when we work with everything else
 
@@ -173,8 +174,20 @@ class ConfigGenerator:
         base_model = self._models[self._i].with_suffix('')
         launch_opts = ' '.join([i.value for i in self._config.values(
         ) if isinstance(i, ModelCheckerConfigOption)])
-        return (f"{base_model.absolute()}.{self._index}.{self._exe_ext} {launch_opts} "
+        return (f"time {base_model.absolute()}.{self._index}.{self._exe_ext} {launch_opts} "
                 f"> {outdir}/{base_model}__{self._exe_ext}__{self._index}_%j.txt")
+        
+        
+    
+    def valgrind_cmd(self, slurmOpts: str, outdir:str) -> str:
+        if self._index is None:
+            raise Exception("ConfigGenerator not in iterator mode!!")
+        base_model = self._models[self._i].with_suffix('')
+        launch_opts = ' '.join([i.value for i in self._config.values(
+        ) if isinstance(i, ModelCheckerConfigOption)])
+        return (f" {base_model.absolute()}.{self._index}.{self._exe_ext} {launch_opts} "
+                f"> {outdir}/{base_model}__{self._exe_ext}__{self._index}_%j.txt")
+    
 
     def _calc_len(self) -> int:
         _len = len(self._models)
@@ -270,6 +283,10 @@ def launch(cg: ConfigGenerator, slurmOpts: str, outputDir: str = "./") -> None:
             #         print("ERROR :: durning sbatch launch!")
             #         continue
             file.write(sbatch_cmd+'\n')
+            #valgrind 
+            valgrind_cmd = i.valgrind_cmd(slurmOpts, outputDir)
+            print("Writing :", valgrind_cmd)
+            file.write(valgrind_cmd+'\n')
             print()
     if system(f"sbatch {slurmOpts} {outputDir}/launch_{cg._exe_ext}.slurm") != 0:
         print("ERROR :: FAILED TO LAUNCH SBATCH")
@@ -289,10 +306,11 @@ def main(args) -> None:
     launch_time = SAVE_PATH + "/" + datetime.now().strftime("%y-%m-%d_%H-%M-%S")
     
     
-    #launch(romp_configs, SBATCH_PARMAS, launch_time)
-    #launch(cmurphi_configs, SBATCH_PARMAS, launch_time)
+    launch(romp_configs, SBATCH_PARMAS, launch_time)
+    launch(cmurphi_configs, SBATCH_PARMAS, launch_time)
     launch(rumur_configs, SBATCH_PARMAS, launch_time)
 
 
 if __name__ == "__main__":
     main(sys.argv)
+
