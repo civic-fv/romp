@@ -295,10 +295,11 @@ namespace romp {
         MERROR_REACHED
     };
     id_t id; // RandWalker id
+    boolean is_bfs; // if this is a bfs result not a random walk result
     id_t root_seed; // the root seed of the RW
     id_t start_id; // id of start state
     Cause cause;  // the kind of cause that stoped the Rand Walker
-    size_t depth; // depth reached 
+    size_t depth; // depth reached
     const IModelError* tripped;  // what was tripped (promised not nested)
     const IModelError* inside;  // where it was tripped (could be nested w/ root cause)
 #ifdef __ROMP__DO_MEASURE
