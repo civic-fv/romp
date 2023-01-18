@@ -82,7 +82,7 @@ struct Options {
   unsigned int tab_size = 2;
   char tab_char = ' ';
   // bfs options ----
-  bool do_bfs = false;
+  bool do_bfs = true;
   bool single_bfs = true;
   size_t bfs_coverage = 16ul;
   size_t bfs_limit = INT16_MAX; // max number of states to explore before giving up

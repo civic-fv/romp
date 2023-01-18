@@ -37,7 +37,7 @@ add_custom_command(# the type templates for the genrated model checker
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(# the hahser templates for the genrated model checker
   OUTPUT resources_romp-rw_hash.cpp
-  COMMAND ../misc/xxd.py resources/romp-rw/hash.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_types.cpp
+  COMMAND ../misc/xxd.py resources/romp-rw/hash.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_hash.cpp
   MAIN_DEPENDENCY resources/romp-rw/hash.hpp
   DEPENDS ../misc/xxd.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})

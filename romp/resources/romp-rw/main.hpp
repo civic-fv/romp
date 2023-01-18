@@ -68,7 +68,9 @@ int main(int argc, char **argv) {
   if (OPTIONS.do_trace)
     ::romp::init_trace_dir(OPTIONS);
 
-  if (OPTIONS.do_single)
+  if (OPTIONS.do_bfs)
+    BFSHandler(OPTIONS).launch();
+  else if (OPTIONS.do_single)
     ::romp::launch_single(OPTIONS,OPTIONS.rand_seed);
 
   else
