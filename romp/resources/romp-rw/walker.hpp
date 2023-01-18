@@ -120,7 +120,7 @@ public:
   bool is_done() const { return ((status != Result::RUNNING) ||  _fuel <= 0 || _attempt_limit <= 0 || complete_cover()); }
 #else
   // bool is_done() const { return (_is_error || (not _valid) || _fuel <= 0 || _attempt_limit <= 0); }
-  bool is_done() const { return not (_valid && _fuel > 0 && _attempt_limit > 0); }
+  bool is_done() const { return (status != Result::RUNNING) || not (_valid && _fuel > 0 && _attempt_limit > 0); }
 #endif
 
   RandWalker(const Options& OPTIONS_)
