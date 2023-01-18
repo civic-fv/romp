@@ -52,15 +52,14 @@ T rand_choice(RandSeed_t &seed, T min, T max) {
     return choice;
 }
 
-class BFSWalker; // useful pre-definition
-
 class RandWalker : public ::romp::IRandWalker {
 private:
   static id_t next_id;
   const id_t id;
   const Options& OPTIONS;
+  const bool IS_BFS; 
   id_t start_id;
-  RandSeed_t init_rand_seed;
+  const RandSeed_t init_rand_seed;
   RandSeed_t rand_seed;
   size_t _fuel; // = OPTIONS.depth;
   bool _valid = true;  // legacy 
@@ -72,11 +71,9 @@ private:
   IModelError* tripped_inside = nullptr;
   size_t _attempt_limit; // = OPTIONS.attempt_limit;
   const size_t init_attempt_limit; // = OPTIONS.attempt_limit;
-public:
   struct History {
     const Rule* rule;
   };
-private:
   size_t history_level = 0;
   constexpr size_t history_size() const {return _ROMP_HIST_LEN;}
   History history[_ROMP_HIST_LEN];
@@ -98,114 +95,7 @@ private:
   duration_mr_t active_time = duration_mr_t(0l);
   duration_ms_t total_time = duration_ms_t(0l);
 #endif
-
-  template<typename R, typename E>
-  void __handle_exception(const R& r, const E& er) noexcept {
-    if (OPTIONS.do_trace) {
-       *json << "],\"error-trace\":[" << er; // << "]";
-    }
-    tripped_inside = r.make_error();
-  }
-
-public:
-  const std::function<void()> sim1Step;
-  size_t fuel() const { return _fuel; }
-  size_t attempt_limit() const { return _attempt_limit; }
-  static void reset_ids() { next_id = 0u; }
-  const State_t& get_state() const { return state; }
-  // bool is_valid() { return _valid; }
-  // bool is_error() { return _is_error; }
-#ifdef __romp__ENABLE_cover_property
-  // bool is_done() const { return (_is_error || (not _valid) || _fuel <= 0 || _attempt_limit <= 0 || complete_cover()); }
-  bool is_done() const { return ((status != Result::RUNNING) ||  _fuel <= 0 || _attempt_limit <= 0 || complete_cover()); }
-#else
-  // bool is_done() const { return (_is_error || (not _valid) || _fuel <= 0 || _attempt_limit <= 0); }
-  bool is_done() const { return (status != Result::RUNNING) || not (_valid && _fuel > 0 && _attempt_limit > 0); }
-#endif
-
-  RandWalker(const Options& OPTIONS_)
-    : id(RandWalker::next_id++),
-      OPTIONS(OPTIONS_),
-      sim1Step(((OPTIONS.do_trace) 
-                  ? std::function<void()>([this](){sim1Step_trace(choose_rule());}) 
-                  : std::function<void()>([this](){sim1Step_no_trace(choose_rule());}))),
-#     ifdef __romp__ENABLE_cover_property
-        enable_cover(OPTIONS_.complete_on_cover), goal_cover_count(OPTIONS_.cover_count),
-#     endif
-#     ifdef __romp__ENABLE_liveness_property
-        enable_liveness(OPTIONS_.liveness), init_lcount(OPTIONS.lcount),
-#     endif
-      _fuel(OPTIONS_.depth), _attempt_limit(OPTIONS_.attempt_limit), init_attempt_limit(OPTIONS_.attempt_limit)
-  {
-    state.__rw__ = this; /* provide a semi-hidden reference to this random walker for calling the property handlers */ 
-    for (int i=0; i<history_size(); ++i) this->history[i] = History{nullptr};
-#ifdef __romp__ENABLE_symmetry
-    for (int i=0; i<_ROMP_RULESETS_LEN; ++i) next_rule[i] = 0;
-#endif
-#ifdef __romp__ENABLE_cover_property
-    for (int i=0; i<_ROMP_COVER_PROP_COUNT; ++i) cover_counts[i] = 0;
-#endif
-#ifdef __romp__ENABLE_liveness_property
-    for (int i=0; i<_ROMP_LIVENESS_PROP_COUNT; ++i) lcounts[i] = init_lcount;
-#endif
-  }
-
-
-  // RandWalker(RandSeed_t rand_seed_, const State_t start_state, &const Options& OPTIONS_) 
-  //   : RandWalker(OPTIONS_),
-  //     state(start_state), start_id(~0u),
-  //     init_rand_seed(rand_seed_), rand_seed(rand_seed_)
-  // { state.__rw__ = this; start_id = 0; }
-
-
-  RandWalker(RandSeed_t rand_seed_, const Options& OPTIONS_) 
-    : RandWalker(OPTIONS),
-      rand_seed(rand_seed_), init_rand_seed(rand_seed_),
-  { 
-    if (OPTIONS.start_id != ~0u) {
-      rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN); // burn one rand operation for consistency
-      start_id = OPTIONS.start_id;
-    } else if (OPTIONS.do_even_start) {
-      rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN); // burn one rand operation for consistency
-      start_id = id % _ROMP_STARTSTATES_LEN;
-    } else
-      start_id = rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN);
-  } 
-
-  // RandWalker(const RandWalker& other) 
-  //   : RandWalker(other.state,other.OPTIONS)
-  // {
-  //   //NOTE: might need to define this to get BFS working
-  // }
-
-  ~RandWalker() { 
-    if (json != nullptr) delete json; 
-    if (tripped != nullptr) delete tripped;
-    if (tripped_inside != nullptr) delete tripped_inside;
-    // if (history != nullptr) delete[] history; 
-  }
-
-  inline void init() noexcept {
-    if (OPTIONS.do_trace) {
-      init_trace();
-    }
-#ifdef __ROMP__DO_MEASURE
-    init_time = time_ms();
-#endif
-    init_state();
-  }
-
-  inline void init(const RandSeed_t& seed_) noexcept {
-    if (OPTIONS.do_trace) {
-      init_trace();
-    }
-#ifdef __ROMP__DO_MEASURE
-    init_time = time_ms();
-#endif
-    init_rand_seed = seed_;
-    rand_seed = seed_;
-  }
-
+  
   void init_state() noexcept {    
     const StartState& startstate = ::__caller__::STARTSTATES[start_id];
 #ifdef __ROMP__DO_MEASURE
@@ -245,6 +135,117 @@ public:
 #endif
   }
 
+  template<typename R, typename E>
+  void __handle_exception(const R& r, const E& er) noexcept {
+    if (OPTIONS.do_trace) {
+       *json << "],\"error-trace\":[" << er; // << "]";
+    }
+    tripped_inside = r.make_error();
+  }
+
+public:
+  const std::function<void()> sim1Step;
+  size_t fuel() { return _fuel; }
+  size_t attempt_limit() { return _attempt_limit; }
+  // bool is_valid() { return _valid; }
+  // bool is_error() { return _is_error; }
+#ifdef __romp__ENABLE_cover_property
+  // bool is_done() const { return (_is_error || (not _valid) || _fuel <= 0 || _attempt_limit <= 0 || complete_cover()); }
+  bool is_done() const { return ((status != Result::RUNNING) ||  _fuel <= 0 || _attempt_limit <= 0 || complete_cover()); }
+#else
+  // bool is_done() const { return (_is_error || (not _valid) || _fuel <= 0 || _attempt_limit <= 0); }
+  bool is_done() const { return not (_valid && _fuel > 0 && _attempt_limit > 0); }
+#endif
+
+  RandomWalker() 
+    : id(RandWalker::next_id++)
+#     ifdef __romp__ENABLE_cover_property
+        enable_cover(OPTIONS_.complete_on_cover), goal_cover_count(OPTIONS_.cover_count),
+#     endif
+#     ifdef __romp__ENABLE_liveness_property
+        enable_liveness(OPTIONS_.liveness), init_lcount(OPTIONS.lcount),
+#     endif
+  {
+    for (int i=0; i<history_size(); ++i) this->history[i] = History{nullptr};
+#ifdef __romp__ENABLE_symmetry
+    for (int i=0; i<_ROMP_RULESETS_LEN; ++i) next_rule[i] = 0;
+#endif
+#ifdef __romp__ENABLE_cover_property
+    for (int i=0; i<_ROMP_COVER_PROP_COUNT; ++i) cover_counts[i] = 0;
+#endif
+#ifdef __romp__ENABLE_liveness_property
+    for (int i=0; i<_ROMP_LIVENESS_PROP_COUNT; ++i) lcounts[i] = init_lcount;
+#endif
+  }
+
+protected:
+  RandWalker(const Options& OPTIONS_)
+    : RandWalker(),
+      OPTIONS(OPTIONS_),
+      sim1Step(((OPTIONS.do_trace) 
+                  ? std::function<void()>([this](){sim1Step_trace();}) 
+                  : std::function<void()>([this](){sim1Step_no_trace();}))),
+#     ifdef __romp__ENABLE_cover_property
+        enable_cover(OPTIONS_.complete_on_cover), goal_cover_count(OPTIONS_.cover_count),
+#     endif
+#     ifdef __romp__ENABLE_liveness_property
+        enable_liveness(OPTIONS_.liveness), init_lcount(OPTIONS.lcount),
+#     endif
+      _attempt_limit(OPTIONS_.attempt_limit), init_attempt_limit(OPTIONS_.attempt_limit)
+    {
+      if (OPTIONS.do_trace) init_trace();
+    }
+
+public:
+  RandWalker(RandSeed_t rand_seed_, const Options& OPTIONS_) 
+    : RandWalker(OPTIONS_),
+      rand_seed(rand_seed_), init_rand_seed(rand_seed_),
+      _fuel(OPTIONS_.depth), IS_BFS(false)
+  { 
+    if (OPTIONS.start_id != ~0u) {
+      rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN); // burn one rand operation for consistency
+      start_id = OPTIONS.start_id;
+    } else if (OPTIONS.do_even_start) {
+      rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN); // burn one rand operation for consistency
+      start_id = id % _ROMP_STARTSTATES_LEN;
+    } else
+      start_id = rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN);
+    state.__rw__ = this; /* provide a semi-hidden reference to this random walker for calling the property handlers */ 
+  }
+
+  RandWalker(const BFSWalker& bfs, RandSeed_t rand_seed_, const Options& OPTIONS_)
+    : RandWalker(OPTIONS_),
+      rand_seed(rand_seed_), init_rand_seed(rand_seed_),
+      _fuel(OPTIONS_.depth-bfs.depth),
+      state(bfs.state), start_id(bfs.start_id), status(bfs.status), IS_BFS(true),
+      history_start(bfs.history_start), history_level(bfs.history_level),
+      put_msgs(bfs.put_msgs)
+    {
+      state->__rw__ = this;
+      if (OPTIONS.do_trace) init_trace();
+      bfs_trace(bfs);
+      // transfer history from bfs
+      for (size_t i=bfs.history_start; i<bfs.history_level; ++i) 
+        history[i%history_size()] = bfs.history[i%bfs.history_size()];
+      //NOTE: this is lazy and overwrites previous data while transferring data 
+      //     since the history buffer on a BFS Walker is always larger than a random walker
+    }
+
+
+  ~RandWalker() { 
+    if (json != nullptr) delete json; 
+    if (tripped != nullptr) delete tripped;
+    if (tripped_inside != nullptr) delete tripped_inside;
+    // if (history != nullptr) delete[] history; 
+  }
+
+  inline void init() noexcept {
+#ifdef __ROMP__DO_MEASURE
+    init_time = time_ms();
+#endif
+    init_state();
+  }
+
   inline void finalize() noexcept {
 #ifdef __ROMP__DO_MEASURE
     total_time = (time_ms() - init_time);
@@ -272,7 +273,7 @@ public:
       // delete json;
     }
     Result* result = new Result{
-                  id,false,init_rand_seed,start_id,
+                  id,init_rand_seed,start_id,
                   status,
                   OPTIONS.depth - _fuel,
                   tripped,tripped_inside
@@ -288,6 +289,13 @@ public:
 
 private:
 
+  /**
+   * @brief to pick a rule in random for simulation step
+   */
+  // const RuleSet& rand_ruleset(){
+  //   return ::__caller__::RULESETS[rand_choice<size_t>(rand_seed,0ul,_ROMP_RULESETS_LEN)]; 
+  // }
+
 #ifdef __romp__ENABLE_symmetry
   // keeps track of what rule to call next for our heuristic symmetry reduction
   id_t next_rule[_ROMP_RULESETS_LEN];
@@ -295,7 +303,7 @@ private:
   /**
    * @brief to pick a rule in random for simulation step
    */
-  const Rule& choose_rule(){
+  const Rule& get_rand_rule(){
     const size_t rs_id = rand_choice<size_t>(rand_seed,0ul,_ROMP_RULESETS_LEN);
     const RuleSet& rs = ::__caller__::RULESETS[rs_id];
 #ifdef __romp__ENABLE_symmetry
@@ -309,11 +317,13 @@ private:
     return r;
   }
 
-public:
-  void sim1Step_trace(const Rule& r) noexcept {
+  void sim1Step_trace() noexcept {
 #ifdef __ROMP__DO_MEASURE
     start_time = time_mr();
 #endif
+    // const RuleSet& rs = rand_ruleset();
+    // const Rule& r = rand_rule(rs);
+    const Rule& r = get_rand_rule();
     bool pass = false;
     try {  
       if ((pass = r.guard(state)) == true) {
@@ -363,10 +373,13 @@ public:
       json->out.flush();
   }
 
-  void sim1Step_no_trace(const Rule& r) noexcept {
-#   ifdef __ROMP__DO_MEASURE
-      start_time = time_mr();
-#   endif
+  void sim1Step_no_trace() noexcept {
+#ifdef __ROMP__DO_MEASURE
+    start_time = time_mr();
+#endif
+    // const RuleSet& rs= rand_ruleset();
+    // const Rule& r= rand_rule(rs);
+    const Rule& r = get_rand_rule();
     bool pass = false;
     try {  
       if ((pass = r.guard(state)) == true) {
@@ -407,7 +420,6 @@ public:
 #endif             
   }
 
-private:
   void init_trace() {
     json = new json_file_t(OPTIONS.get_trace_file_path(id));
     *json << "{\"$type\":\"";
@@ -422,6 +434,19 @@ private:
           << ",\"start-id\":" << start_id
           << ",\"metadata\":" << OPTIONS // .write_metadata_json(json->out)
           << ",\"trace\":[";
+  }
+
+  void bfs_trace(const BFSWalker& bfs) {
+    *json << "{\"$type\":\"bfs-init\","
+             "\"startstate\":" << ::__info__::STARTSTATE_INFOS[start_id] << ","
+             "\"depth\":" << bfs.depth << ","
+             "\"history\":[";
+    std::string sep;
+    for (size_t i=bfs.history_start; i<bfs.history_level; ++i) {
+      *json << sep << *bfs.history[i%bfs.history_size()].rule;
+    }
+    *json << "],"  
+            "\"state\":" << bfs.state << '}';
   }
 
   void trace_result_out() const {
@@ -581,7 +606,7 @@ public:
   }
 #else
   bool assumption_handler(bool expr, id_t prop_id) {
-    return false;  // don't do anything if the assume property is not enabled
+    return false;  // don't do anything if the assume property is nto enabled
   }
 #endif
 #ifdef __romp__ENABLE_cover_property

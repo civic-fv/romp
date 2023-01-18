@@ -336,12 +336,17 @@ protected:
    */
   void multithreaded_bfs() {
     //TODO code this part & hope it performs well without too many data race checkpoints
+
+    /* Ideas
+        - short term store new states in vector per threads then lock to add new states in bulk 
+    */
   }
 
   /**
    * @brief Launch threads with a collection of states to start with
    */
   void launch_threads() {
+    states.clear(); // clear states to free up memory
     // RandWalker::reset_ids();
     auto tmp_seeds = gen_random_seeds(OPTIONS,rand_seed);
     std::vector<BFSWalker*> l(q.begin(),q.end()); // transfer contents for speed later
@@ -363,12 +368,12 @@ protected:
     auto lambda = [&]() { // code the threads run
       in_queue.lock();
       while (in_seeds.size() > 0) { 
-        in_seeds.front(); RandWalker *rw = new RandWalker(l[in_seeds.size()%OPTIONS.bfs_coverage%l.size()],
+        in_seeds.front(); RandWalker *rw = new RandWalker(*l[in_seeds.size()%OPTIONS.bfs_coverage%l.size()],
                                                           in_seeds.front(),OPTIONS);
         in_seeds.pop(); 
         in_queue.unlock();
 
-        rw->init();
+        // rw->init(); // no need to init when starting from bfs
         while (not rw->is_done())
           rw->sim1Step();
         rw->finalize();
