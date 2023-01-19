@@ -1164,4 +1164,58 @@ inline std::ostream& operator << (std::ostream& out, const Options& opts) {
 }
 ostream_p& operator << (ostream_p& out, const Options& opts) noexcept { opts.write_config(out); return out; }
 
+
+  RandWalker::RandWalker(const BFSWalker& bfs, RandSeed_t rand_seed_, const Options& OPTIONS_)
+    : // RandWalker(OPTIONS_),
+      rand_seed(rand_seed_), init_rand_seed(rand_seed_),
+      _fuel(OPTIONS_.depth-bfs._depth),
+      state(bfs.state), start_id(bfs._start_id), status(bfs.status), IS_BFS(true),
+      history_start(bfs.history_start), history_level(bfs.history_level),
+      put_msgs(bfs.put_msgs),
+      id(RandWalker::next_id++),
+      OPTIONS(OPTIONS_),
+      sim1Step(((OPTIONS.do_trace) 
+                  ? std::function<void()>([this](){sim1Step_trace();}) 
+                  : std::function<void()>([this](){sim1Step_no_trace();}))),
+#     ifdef __romp__ENABLE_cover_property
+        enable_cover(OPTIONS_.complete_on_cover), goal_cover_count(OPTIONS_.cover_count),
+#     endif
+#     ifdef __romp__ENABLE_liveness_property
+        enable_liveness(OPTIONS_.liveness), init_lcount(OPTIONS.lcount),
+#     endif
+      _attempt_limit(OPTIONS_.attempt_limit), init_attempt_limit(OPTIONS_.attempt_limit)
+  {
+#ifdef __romp__ENABLE_symmetry
+    for (int i=0; i<_ROMP_RULESETS_LEN; ++i) next_rule[i] = 0;
+#endif
+#ifdef __romp__ENABLE_cover_property
+    for (int i=0; i<_ROMP_COVER_PROP_COUNT; ++i) cover_counts[i] = 0;
+#endif
+#ifdef __romp__ENABLE_liveness_property
+    for (int i=0; i<_ROMP_LIVENESS_PROP_COUNT; ++i) lcounts[i] = init_lcount;
+#endif
+    state.__rw__ = this;
+    if (OPTIONS.do_trace) init_trace();
+    bfs_trace(bfs);
+    // transfer history from bfs
+    for (size_t i=bfs.history_start; i<bfs.history_level; ++i) 
+      history[i%history_size()] = bfs.history[i%bfs.history_size()];
+    //NOTE: this is lazy and overwrites previous data while transferring data 
+    //     since the history buffer on a BFS Walker is always larger than a random walker
+  }
+
+  void RandWalker::bfs_trace(const BFSWalker& bfs) {
+    *json << "{\"$type\":\"bfs-init\","
+             "\"startstate\":" << ::__info__::STARTSTATE_INFOS[start_id] << ","
+             "\"depth\":" << bfs.depth << ","
+             "\"history\":[";
+    std::string sep;
+    for (size_t i=bfs.history_start; i<bfs.history_level; ++i) {
+      *json << sep << *bfs.history[i%bfs.history_size()].rule;
+    }
+    *json << "],"  
+            "\"state\":" << bfs.state << '}';
+  }
+
+
 } // namespace romp

@@ -28,6 +28,9 @@
 #ifndef _ROMP_HIST_LEN
 #define _ROMP_HIST_LEN (4ul)
 #endif
+#ifndef _ROMP_BFS_COEF
+#define _ROMP_BFS_COEF (16ul)
+#endif
 #ifndef _ROMP_RULESETS_LEN
 #define _ROMP_RULESETS_LEN (6ul)
 #endif

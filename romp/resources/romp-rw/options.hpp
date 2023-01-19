@@ -83,8 +83,8 @@ struct Options {
   char tab_char = ' ';
   // bfs options ----
   bool do_bfs = true;
-  bool single_bfs = true;
-  size_t bfs_coverage = 16ul;
+  bool bfs_single = true;
+  size_t bfs_coefficient = _ROMP_BFS_COEF;
   size_t bfs_limit = INT16_MAX; // max number of states to explore before giving up
 
   const std::string get_trace_dir() const noexcept {

@@ -67,7 +67,7 @@ struct hash<::romp::BooleanType> {
 };
 
 
-template<range_t LB, range_t UB, range_t S=(range_t)((LB<=UB) ? 1 : -1)>
+template<::romp::range_t LB, ::romp::range_t UB, ::romp::range_t S=(::romp::range_t)((LB<=UB) ? 1 : -1)>
 struct hash<::romp::RangeType<LB,UB,S>> {
   inline size_t operator () (const ::romp::RangeType<LB,UB,S>& val) {
     return ((val.IsUndefined()) ? 0ul : val.__get_index_val());
@@ -108,7 +108,7 @@ struct hash<::romp::MultisetType<M,E_t>> {
     std::unordered_multiset<E_t> ms;
     for (size_t i=0; i<val.occupancy; ++i)
       ms.insert(val.data[i]);
-    return std::hash<std::unordered_multiset<E_t>>{}(ms);
+    return std::hash<std::unordered_multiset<E_t>>()(ms);
   }
 };
 
@@ -116,17 +116,19 @@ struct hash<::romp::MultisetType<M,E_t>> {
 template<size_t FID, typename... FIELDS>
 struct hash<::romp::RecordType<FID,FIELDS...>> {
   inline size_t operator () (const ::romp::RecordType<FID,FIELDS...>& val) {
-    return std::hash<tuple<FIELDS...>>{}(val);
+    return std::hash<tuple<FIELDS...>>()(val);
   }
 };
 
 
+/* // defined in bfs.hpp for orderings sake
 template<>
 struct hash<::romp::State_t> {
-  inline size_t operator () (const State_t& state) {
+  inline size_t operator () (const ::romp::State_t& state) { 
     return state.__romp__model_hash();
   }
 };
+*/
 
 
 } //namespace std

@@ -52,6 +52,8 @@ T rand_choice(RandSeed_t &seed, T min, T max) {
     return choice;
 }
 
+class BFSWalker; // useful pre-definition
+
 class RandWalker : public ::romp::IRandWalker {
 private:
   static id_t next_id;
@@ -71,9 +73,11 @@ private:
   IModelError* tripped_inside = nullptr;
   size_t _attempt_limit; // = OPTIONS.attempt_limit;
   const size_t init_attempt_limit; // = OPTIONS.attempt_limit;
+public:
   struct History {
     const Rule* rule;
   };
+private:
   size_t history_level = 0;
   constexpr size_t history_size() const {return _ROMP_HIST_LEN;}
   History history[_ROMP_HIST_LEN];
@@ -157,15 +161,63 @@ public:
   bool is_done() const { return not (_valid && _fuel > 0 && _attempt_limit > 0); }
 #endif
 
-  RandomWalker() 
-    : id(RandWalker::next_id++)
+
+protected:
+//   RandWalker(const Options& OPTIONS_)
+//     : id(RandWalker::next_id++),
+//       OPTIONS(OPTIONS_),
+//       sim1Step(((OPTIONS.do_trace) 
+//                   ? std::function<void()>([this](){sim1Step_trace();}) 
+//                   : std::function<void()>([this](){sim1Step_no_trace();}))),
+// #     ifdef __romp__ENABLE_cover_property
+//         enable_cover(OPTIONS_.complete_on_cover), goal_cover_count(OPTIONS_.cover_count),
+// #     endif
+// #     ifdef __romp__ENABLE_liveness_property
+//         enable_liveness(OPTIONS_.liveness), init_lcount(OPTIONS.lcount),
+// #     endif
+//       _attempt_limit(OPTIONS_.attempt_limit), init_attempt_limit(OPTIONS_.attempt_limit)
+//     {
+//       if (OPTIONS.do_trace) init_trace();
+//       for (int i=0; i<history_size(); ++i) this->history[i] = History{nullptr};
+// #ifdef __romp__ENABLE_symmetry
+//     for (int i=0; i<_ROMP_RULESETS_LEN; ++i) next_rule[i] = 0;
+// #endif
+// #ifdef __romp__ENABLE_cover_property
+//     for (int i=0; i<_ROMP_COVER_PROP_COUNT; ++i) cover_counts[i] = 0;
+// #endif
+// #ifdef __romp__ENABLE_liveness_property
+//     for (int i=0; i<_ROMP_LIVENESS_PROP_COUNT; ++i) lcounts[i] = init_lcount;
+// #endif
+//     }
+
+public:
+  RandWalker(RandSeed_t rand_seed_, const Options& OPTIONS_) 
+    : // RandWalker(OPTIONS_),
+      rand_seed(rand_seed_), init_rand_seed(rand_seed_),
+      _fuel(OPTIONS_.depth), IS_BFS(false),
+      id(RandWalker::next_id++),
+      OPTIONS(OPTIONS_),
+      sim1Step(((OPTIONS.do_trace) 
+                  ? std::function<void()>([this](){sim1Step_trace();}) 
+                  : std::function<void()>([this](){sim1Step_no_trace();}))),
 #     ifdef __romp__ENABLE_cover_property
         enable_cover(OPTIONS_.complete_on_cover), goal_cover_count(OPTIONS_.cover_count),
 #     endif
 #     ifdef __romp__ENABLE_liveness_property
         enable_liveness(OPTIONS_.liveness), init_lcount(OPTIONS.lcount),
 #     endif
-  {
+      _attempt_limit(OPTIONS_.attempt_limit), init_attempt_limit(OPTIONS_.attempt_limit)
+  { 
+    if (OPTIONS.start_id != ~0u) {
+      rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN); // burn one rand operation for consistency
+      start_id = OPTIONS.start_id;
+    } else if (OPTIONS.do_even_start) {
+      rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN); // burn one rand operation for consistency
+      start_id = id % _ROMP_STARTSTATES_LEN;
+    } else
+      start_id = rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN);
+    state.__rw__ = this; /* provide a semi-hidden reference to this random walker for calling the property handlers */ 
+    if (OPTIONS.do_trace) init_trace();
     for (int i=0; i<history_size(); ++i) this->history[i] = History{nullptr};
 #ifdef __romp__ENABLE_symmetry
     for (int i=0; i<_ROMP_RULESETS_LEN; ++i) next_rule[i] = 0;
@@ -178,58 +230,7 @@ public:
 #endif
   }
 
-protected:
-  RandWalker(const Options& OPTIONS_)
-    : RandWalker(),
-      OPTIONS(OPTIONS_),
-      sim1Step(((OPTIONS.do_trace) 
-                  ? std::function<void()>([this](){sim1Step_trace();}) 
-                  : std::function<void()>([this](){sim1Step_no_trace();}))),
-#     ifdef __romp__ENABLE_cover_property
-        enable_cover(OPTIONS_.complete_on_cover), goal_cover_count(OPTIONS_.cover_count),
-#     endif
-#     ifdef __romp__ENABLE_liveness_property
-        enable_liveness(OPTIONS_.liveness), init_lcount(OPTIONS.lcount),
-#     endif
-      _attempt_limit(OPTIONS_.attempt_limit), init_attempt_limit(OPTIONS_.attempt_limit)
-    {
-      if (OPTIONS.do_trace) init_trace();
-    }
-
-public:
-  RandWalker(RandSeed_t rand_seed_, const Options& OPTIONS_) 
-    : RandWalker(OPTIONS_),
-      rand_seed(rand_seed_), init_rand_seed(rand_seed_),
-      _fuel(OPTIONS_.depth), IS_BFS(false)
-  { 
-    if (OPTIONS.start_id != ~0u) {
-      rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN); // burn one rand operation for consistency
-      start_id = OPTIONS.start_id;
-    } else if (OPTIONS.do_even_start) {
-      rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN); // burn one rand operation for consistency
-      start_id = id % _ROMP_STARTSTATES_LEN;
-    } else
-      start_id = rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN);
-    state.__rw__ = this; /* provide a semi-hidden reference to this random walker for calling the property handlers */ 
-  }
-
-  RandWalker(const BFSWalker& bfs, RandSeed_t rand_seed_, const Options& OPTIONS_)
-    : RandWalker(OPTIONS_),
-      rand_seed(rand_seed_), init_rand_seed(rand_seed_),
-      _fuel(OPTIONS_.depth-bfs.depth),
-      state(bfs.state), start_id(bfs.start_id), status(bfs.status), IS_BFS(true),
-      history_start(bfs.history_start), history_level(bfs.history_level),
-      put_msgs(bfs.put_msgs)
-    {
-      state->__rw__ = this;
-      if (OPTIONS.do_trace) init_trace();
-      bfs_trace(bfs);
-      // transfer history from bfs
-      for (size_t i=bfs.history_start; i<bfs.history_level; ++i) 
-        history[i%history_size()] = bfs.history[i%bfs.history_size()];
-      //NOTE: this is lazy and overwrites previous data while transferring data 
-      //     since the history buffer on a BFS Walker is always larger than a random walker
-    }
+  RandWalker(const BFSWalker& bfs, RandSeed_t rand_seed_, const Options& OPTIONS_); //defined in impls.hpp
 
 
   ~RandWalker() { 
@@ -436,18 +437,7 @@ private:
           << ",\"trace\":[";
   }
 
-  void bfs_trace(const BFSWalker& bfs) {
-    *json << "{\"$type\":\"bfs-init\","
-             "\"startstate\":" << ::__info__::STARTSTATE_INFOS[start_id] << ","
-             "\"depth\":" << bfs.depth << ","
-             "\"history\":[";
-    std::string sep;
-    for (size_t i=bfs.history_start; i<bfs.history_level; ++i) {
-      *json << sep << *bfs.history[i%bfs.history_size()].rule;
-    }
-    *json << "],"  
-            "\"state\":" << bfs.state << '}';
-  }
+  void bfs_trace(const BFSWalker& bfs); // defined in impls.hpp
 
   void trace_result_out() const {
     using namespace std::chrono;

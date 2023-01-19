@@ -65,7 +65,7 @@ void generate_state_stream(romp::CodeGenerator& gen, const murphi::Model& m) {
 
 
 void generate_state_hash(romp::CodeGenerator& gen, const murphi::Model& m) {
-  gen << gen.indentation() << "inline size_t " ROMP_MODEL_HASH_METHOD_NAME " const {\n";
+  gen << gen.indentation() << "inline size_t " ROMP_MODEL_HASH_METHOD_NAME "() const {\n";
   gen.indent();
   gen << gen.indentation() << "size_t _hash = 0ul;\n";
   for (const auto& c : m.children) {

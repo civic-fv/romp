@@ -22,6 +22,16 @@
 #include "options.hpp" // LANGUAGE SERVER SUPPORT ONLY !!
 #endif
 
+namespace std {
+  template<>
+  struct hash<::romp::State_t> {
+    inline size_t operator () (const ::romp::State_t& state) { 
+      return state.__romp__model_hash();
+    }
+  };
+
+} //namespace std
+
 namespace romp {
 
   class BFSWalker : public IRandWalker {
@@ -31,10 +41,10 @@ namespace romp {
     Result::Cause status = Result::NO_CAUSE;
     IModelError* tripped = nullptr;
     IModelError* tripped_inside = nullptr;
-    size_t history_level = 0;
+    size_t history_level = 0ul;
     constexpr size_t history_size() const { return _ROMP_HIST_LEN*2+1; }
     RandWalker::History history[_ROMP_HIST_LEN*2+1];
-    size_t history_start = 0;
+    size_t history_start = 0ul;
     /**
      * @brief call if rule is applied to store what rule made the change in the
      * history circular buffer.
@@ -60,10 +70,10 @@ namespace romp {
     std::function<void(size_t,size_t)> sim1step;
 
     BFSWalker(const Options OPTIONS_, id_t start_id_)
-      : OPTIONS(OPTIONS_), start_id(start_id_)
+      : OPTIONS(OPTIONS_), _start_id(start_id_)
     {
         sim1step = std::function<void(size_t,size_t)>([this](size_t i, size_t j) { 
-                    sim1step_no_trace(::__caller__::RULESETS[i].rules[j]); });
+                    this->sim1Step_no_trace(::__caller__::RULESETS[i].rules[j]); });
     }
 
     ~BFSWalker() {
@@ -72,7 +82,7 @@ namespace romp {
     }
 
   void init_state() noexcept {    
-    const StartState& startstate = ::__caller__::STARTSTATES[start_id];
+    const StartState& startstate = ::__caller__::STARTSTATES[_start_id];
 #   ifdef __ROMP__DO_MEASURE
       start_time = time_mr();
 #   endif
@@ -108,16 +118,7 @@ namespace romp {
     }
 
   inline void finalize() noexcept {
-#ifdef __ROMP__DO_MEASURE
-    total_time = (time_ms() - init_time);
-#endif
     if (status == Result::UNKNOWN_CAUSE) {
-    } else if (_attempt_limit <= 0) {
-      status = Result::ATTEMPT_LIMIT_REACHED;
-      const Rule* _last = history[(history_level-1)%history_size()].rule;
-      if (_last != nullptr)
-        tripped_inside = new ModelRuleError(*_last);
-      else tripped_inside = nullptr;
     } else if (_depth >= OPTIONS.depth) {
       status = Result::MAX_DEPTH_REACHED;
     }
@@ -125,11 +126,11 @@ namespace romp {
 
   const Result* get_result() noexcept {
     Result* result = new Result{
-                  0ul, true, 0ul,
-                  start_id, status, depth,
+                  0ul, 0ul,
+                  _start_id, status, _depth,
                   tripped, tripped_inside
 #ifdef __ROMP__DO_MEASURE
-                  ,active_time, 0ul
+                  ,active_time, duration_mr_t(0ul)
 #endif
                   };
     tripped = nullptr;
@@ -137,7 +138,7 @@ namespace romp {
     return result;
   }
 
-    void is_done() const { return status != Result::RUNNING; }
+    bool is_done() const { return status != Result::RUNNING || _depth >= OPTIONS.depth; }
 
     void sim1Step_no_trace(const Rule& r) noexcept {
 #     ifdef __ROMP__DO_MEASURE
@@ -245,6 +246,72 @@ namespace romp {
       return false;  // never throw anything if cover is not enabled by romp generator
     }
 # endif
+
+    // called when trying to print the results of the BFS walker when it finishes (will finish up trace file if necessary too)
+    //  the calling context should ensure that the BFSWalker is not being used else where & safe output to the ostream 
+    friend ostream_p& operator << (ostream_p& out, const BFSWalker& rw) {
+      std::string res_color = get_color(rw.status);
+      out << out.nl()
+          << "======== BEGIN :: Report of BFS ERROR ========"                         << out.nl()
+          << "BASIC INFO: "                                                           << out.indent() << out.nl()
+          << "      Depth: " << rw._depth                                             << out.nl()
+          << "   Start ID: " << rw._start_id                                          << out.nl()
+          << " StartState: " << ::__caller__::STARTSTATES[rw._start_id]               << out.nl()
+          << "     Result: " << res_color << std::to_string(rw.status) << "\033[0m"   << out.nl()
+          << out.dedent()                                                             << out.nl()
+          << "TRACE LITE:"                                            << out.indent() << out.nl();
+      if (rw.OPTIONS.do_trace) 
+        out << "NOTE - BFS does not currently support rich json traces" << out.nl();
+      out << "History: ["                             << out.indent() << out.indent() << out.nl()
+          << "-(0) " << ::__caller__::STARTSTATES[rw._start_id] << '\n';
+        if (rw.history_start > 0)
+          out << out.indentation() << "-(..) ... forgotten past ...\n";
+        for (size_t i=rw.history_start; i<rw.history_level; ++i)
+          out << out.indentation() << "-(" << i+1 <<") " << *(rw.history[i%rw.history_size()].rule) << "\n";
+      out << out.dedent() << out.indentation() << ']' << out.dedent() << out.dedent();
+      if (rw.OPTIONS.report_emit_state)
+        out                                                                           << out.nl()
+            << "  State: " <<  out.indent() << out.indent() << rw.state << out.dedent() << out.dedent();
+      if (rw.tripped != nullptr || rw.tripped_inside != nullptr) {
+        out                                                                           << out.nl()
+            << "ISSUE REPORT:"                                        << out.indent() << out.nl();
+        if (rw.tripped != nullptr) {
+          out << "Tripped: \033[31m" << *rw.tripped << "\033[0m"                      << out.nl();
+          if (rw.tripped_inside != nullptr)
+            out << "  Trace: "                                        << out.indent() << out.nl()
+                << *rw.tripped_inside                                 << out.dedent() << out.nl();
+                // << '}'                                                               << out.nl();
+        }
+      }
+      if (rw.put_msgs.size() > 0) {
+        out << "Put Statements: \"\"\""               << out.indent() << out.indent() << out.nl();
+        for (auto msg : rw.put_msgs) {
+          try {
+            msg.first(out);
+          } catch (std::exception& ex) {
+            out << out.indent() << out.nl() << msg.second << " :: error occurred while evaluating put statement" 
+                << out.nl() << ex << out.dedent() << out.nl();
+          }
+        }
+        out << out.dedent() << out.nl() << "\"\"\"" << out.dedent() << out.nl();
+      }
+          
+#     ifdef __ROMP__DO_MEASURE
+        out << out.dedent()                                                         << out.nl()
+            << "TIME REPORT:"                                       << out.indent() << out.nl()
+            << "Active Time: " << rw.active_time                                    << out.nl();
+#     endif
+      out << out.dedent()                                                           << out.nl()
+          << "======== END :: Report of BFS ERROR ========"                         << out.nl();
+      out.out.flush();
+
+      return out;
+    }
+    // called when trying to print the results of the BFS walker when it finishes (will finish up trace file if necessary too)
+    //  the calling context should ensure that the BFSWalker is not being used else where & safe output to the ostream 
+    friend std::ostream& operator << (std::ostream& out, const BFSWalker& rw) 
+    { ostream_p _out(out,rw.OPTIONS,0); _out << rw; return out; }
+
     State_t state;
     friend RandWalker;
   };
@@ -253,24 +320,25 @@ namespace romp {
 
 struct BFSHandler {
 protected:
-  const Options_t& OPTIONS:
+  const Options& OPTIONS;
   std::deque<BFSWalker*> q;
   std::unordered_set<State_t> states;
   size_t rules_applied = 0ul;
   const size_t TARGET;
   time_ms_t start_time;
-  ostream_p out(OPTIONS,std::cout);
+  ostream_p out;
 
 
 public:
 
-  BFSHandler(const Options_t OPTIONS_) 
+  BFSHandler(const Options& OPTIONS_) 
     : OPTIONS(OPTIONS_),
-      TARGET(OPTIONS_.walks / OPTIONS_.bfs_coverage)
+      TARGET(OPTIONS_.walks / OPTIONS_.bfs_coefficient),
+      out(std::cout,OPTIONS_,0)
   {}
 
   ~BFSHandler() {
-    for (auto w : q) if (w != nullptr) delete w;
+    for (BFSWalker* w : q) if (w != nullptr) delete w;
   }
 
   /**
@@ -288,12 +356,13 @@ public:
       walker->init_state();
       ++rules_applied;
       if (walker->is_done()) {  // discover error during 
-        return end_bfs_report_error(walker);
+        end_bfs_report_error(walker);
+        return;
       } else if (insert_state(walker->state))
         q.push_back(walker);
     }
 
-    if (OPTIONS.bfs_single) single_bfs());
+    if (OPTIONS.bfs_single) single_bfs();
     else multithreaded_bfs();
 
   }
@@ -310,10 +379,14 @@ protected:
       q.pop_front();
       for (size_t i=0; q.size()<TARGET && i<_ROMP_RULESETS_LEN; ++i)
         for (auto rule : ::__caller__::RULESETS[i].rules) {
-          auto walker = new BFSWalker(b_w);
-          walker->sim1step(rule);
-          if (walker->is_done()) 
-            return end_bfs_report_error(walker);
+          BFSWalker* walker = (BFSWalker*) std::malloc(sizeof(BFSWalker));
+          std::memcpy(walker,b_w,sizeof(BFSWalker)); // copy base walker
+          // walker->sim1step(rule);
+          walker->sim1Step_no_trace(rule);
+          if (walker->is_done()) {
+            end_bfs_report_error(walker);
+            return;
+          } 
           if (insert_state(walker->state)) {
               ++rules_applied;
               q.push_back(walker);
@@ -340,6 +413,8 @@ protected:
     /* Ideas
         - short term store new states in vector per threads then lock to add new states in bulk 
     */
+    std::cerr << "\n\nERROR : multithreaded BFS not yet implemented\n\n" << std::flush;
+    exit(EXIT_FAILURE);
   }
 
   /**
@@ -348,7 +423,7 @@ protected:
   void launch_threads() {
     states.clear(); // clear states to free up memory
     // RandWalker::reset_ids();
-    auto tmp_seeds = gen_random_seeds(OPTIONS,rand_seed);
+    auto tmp_seeds = gen_random_seeds(OPTIONS,OPTIONS.rand_seed);
     std::vector<BFSWalker*> l(q.begin(),q.end()); // transfer contents for speed later
     std::queue<RandSeed_t> in_seeds(std::deque<RandSeed_t>(tmp_seeds.begin(),tmp_seeds.end()));
     // std::queue<RandWalkers*> parallel_rws; // probs threads
@@ -368,7 +443,7 @@ protected:
     auto lambda = [&]() { // code the threads run
       in_queue.lock();
       while (in_seeds.size() > 0) { 
-        in_seeds.front(); RandWalker *rw = new RandWalker(*l[in_seeds.size()%OPTIONS.bfs_coverage%l.size()],
+        in_seeds.front(); RandWalker *rw = new RandWalker(*l[in_seeds.size()%OPTIONS.bfs_coefficient%l.size()],
                                                           in_seeds.front(),OPTIONS);
         in_seeds.pop(); 
         in_queue.unlock();
@@ -446,7 +521,7 @@ protected:
 
 
   inline bool insert_state(const State_t& state) {
-    return std::get<1>(set.insert(state));
+    return std::get<1>(states.insert(state));
   }
 
   /**
@@ -455,15 +530,15 @@ protected:
    * @param walker the walker that finished its run (will be deleted during call)
    */
   inline void end_bfs_report_error(BFSWalker* walker) {
-    auto t = time_ms() - start;
+    auto t = time_ms() - start_time;
     walker->finalize();
-    std::string color = ((issues>0) ? "\033[30;1;4m" : "\033[32;1m");
+    std::string color = "\033[30;1;4m";
     out << out.nl()
         << "\n\nError found during initial BFS\n\n"
-        << RandWalker(*walker) << "\n\n"
+        << *walker << "\n\n"
         << out.nl() << "\033[1;4mBFS SUMMARY:\033[0m" << out.indent()
         << out.nl() << "Error found see above for details"
-        << out.nl() << "    States Found: " << states.size();
+        << out.nl() << "    States Found: " << states.size()
         << out.nl() << "   Rules Applied: " << rules_applied
         << out.nl() << "         Runtime: " << t
         << "\n\n" << std::flush;
@@ -474,18 +549,15 @@ protected:
    * @brief call when bfs ends with no new items in the queue
    */
   inline void end_bfs_solved() {
-    auto t = time_ms() - start;
-    walker->finalize();
-    std::string color = ((issues>0) ? "\033[30;1;4m" : "\033[32;1m");
+    auto t = time_ms() - start_time;
+    std::string color = "\033[32;1m";
     out << out.nl()
-        << "\n\nNO ERRORS found during initial BFS\n\n"
-        << RandWalker(*walker) << "\n\n"
+        << "\n\nNO ERRORS found during initial BFS\n"
         << out.nl() << "\033[1;4mBFS SUMMARY:\033[0m" << out.indent()
         << out.nl() << "    States Found: " << states.size();
         << out.nl() << "   Rules Applied: " << rules_applied
         << out.nl() << "         Runtime: " << t
         << "\n\n" << std::flush;
-    delete walker;
   }
 
 };
