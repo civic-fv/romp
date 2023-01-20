@@ -39,13 +39,13 @@ namespace std {
 
 template<>
 struct hash<::romp::SCALAR_ENUM_t> {
-  inline size_t operator () (const ::romp::SCALAR_ENUM_t val) { return static_cast<size_t>(val); }
+  inline size_t operator () (const ::romp::SCALAR_ENUM_t val) const { return static_cast<size_t>(val); }
 };
 
 
 template<typename T>
 struct hash<::romp::BaseUndefinableType<T>> {
-  inline size_t operator () (const ::romp::BaseUndefinableType<T>& val) {
+  inline size_t operator () (const ::romp::BaseUndefinableType<T>& val) const {
     return static_cast<size_t>(val.value) + 1ul * static_cast<size_t>(val.is_defined);
   }
 };
@@ -53,23 +53,23 @@ struct hash<::romp::BaseUndefinableType<T>> {
 
 template<size_t TID, class T>
 struct hash<::romp::TypeIdType<TID,T>> {
-  inline size_t operator () (const ::romp::TypeIdType<TID,T>& val) {
-    return std::hash<T>{}(val);
+  inline size_t operator () (const ::romp::TypeIdType<TID,T>& val) const {
+    return std::hash<T>()(val);
   }
 };
 
 
 template<>
 struct hash<::romp::BooleanType> {
-  inline size_t operator () (const ::romp::BooleanType& val) {
+  inline size_t operator () (const ::romp::BooleanType& val) const {
     return ((val.IsUndefined()) ? 0ul : static_cast<size_t>(val==true)+1ul);
   }
 };
 
 
-template<::romp::range_t LB, ::romp::range_t UB, ::romp::range_t S=(::romp::range_t)((LB<=UB) ? 1 : -1)>
+template<::romp::range_t LB, ::romp::range_t UB, ::romp::range_t S>
 struct hash<::romp::RangeType<LB,UB,S>> {
-  inline size_t operator () (const ::romp::RangeType<LB,UB,S>& val) {
+  inline size_t operator () (const ::romp::RangeType<LB,UB,S>& val) const {
     return ((val.IsUndefined()) ? 0ul : val.__get_index_val());
   }
 };
@@ -77,7 +77,14 @@ struct hash<::romp::RangeType<LB,UB,S>> {
 
 template<size_t EID, size_t B>
 struct hash<::romp::EnumType<EID,B>> {
-  inline size_t operator () (const ::romp::EnumType<EID,B>& val) {
+  inline size_t operator () (const ::romp::EnumType<EID,B>& val) const {
+    return static_cast<size_t>(val.__get_scalar_value()); // same as SCALAR_ENUM_t that is it's only stored data
+  }
+};
+
+template<size_t EID, size_t B>
+struct hash<::romp::ScalarsetType<EID,B>> {
+  inline size_t operator () (const ::romp::ScalarsetType<EID,B>& val) const {
     return static_cast<size_t>(val.__get_scalar_value()); // same as SCALAR_ENUM_t that is it's only stored data
   }
 };
@@ -85,7 +92,7 @@ struct hash<::romp::EnumType<EID,B>> {
 
 template<class... MEM>
 struct hash<::romp::ScalarsetUnionType<MEM...>> {
-  inline size_t operator () (const ::romp::ScalarsetUnionType<MEM...>& val) {
+  inline size_t operator () (const ::romp::ScalarsetUnionType<MEM...>& val) const {
     return static_cast<size_t>(val.__get_scalar_value()); // same as SCALAR_ENUM_t that is it's only stored data
   }
 };
@@ -93,7 +100,7 @@ struct hash<::romp::ScalarsetUnionType<MEM...>> {
 
 template<typename I_t, typename E_t>
 struct hash<::romp::ArrayType<I_t,E_t>> {
-  inline size_t operator () (const ::romp::ArrayType<I_t,E_t>& val) {
+  inline size_t operator () (const ::romp::ArrayType<I_t,E_t>& val) const {
     size_t _hash = 0ul;
     for (size_t i=0; i<I_t::__COUNT(); ++i)
       ::romp::hash_combine(_hash,val.data[i]);
@@ -104,19 +111,43 @@ struct hash<::romp::ArrayType<I_t,E_t>> {
 
 template<size_t M, typename E_t>
 struct hash<::romp::MultisetType<M,E_t>> {
-  inline size_t operator () (const ::romp::MultisetType<M,E_t>& val) {
-    std::unordered_multiset<E_t> ms;
+  // credit: Alex Reinking (https://stackoverflow.com/users/2137996/alex-reinking)
+  // from: https://stackoverflow.com/questions/36520235/algorithm-for-hash-crc-of-unordered-multiset
+  inline size_t operator () (const ::romp::MultisetType<M,E_t>& val) const {
+    size_t _h = 0ul;
+    std::hash<E_t> _hash;
     for (size_t i=0; i<val.occupancy; ++i)
-      ms.insert(val.data[i]);
-    return std::hash<std::unordered_multiset<E_t>>()(ms);
+      _h += log_pow(_hash(val.data[i]));
+    return _h % UINT64_MAX;
   }
+  size_t log_pow(size_t ex) const {
+    size_t res = 1;
+    size_t base = 0xA67; // set base to reasonably large prime
+    while (ex > 0) {
+        if (ex % 2) {
+            res = res * base;
+        }
+        base *= base;
+        ex /= 2;
+    }
+    return res;
+   }
 };
 
 
 template<size_t FID, typename... FIELDS>
 struct hash<::romp::RecordType<FID,FIELDS...>> {
-  inline size_t operator () (const ::romp::RecordType<FID,FIELDS...>& val) {
-    return std::hash<tuple<FIELDS...>>()(val);
+  inline size_t operator () (const ::romp::RecordType<FID,FIELDS...>& val) const {
+    // return std::hash<tuple<FIELDS...>>()(val);
+    size_t _h = 0ul; return _hash(val,_h);
+  }
+protected:
+  template<size_t I>
+  typename std::enable_if<(I>=sizeof...(FIELDS)),size_t>::type _hash(const ::romp::RecordType<FID,FIELDS...>& val, size_t _h) const { return _h; }
+  template<size_t I=0>
+  typename std::enable_if<(I<sizeof...(FIELDS)),size_t>::type _hash(const ::romp::RecordType<FID,FIELDS...>& val, size_t _h) const {
+    ::romp::hash_combine(_h,std::get<I>(val.data));
+    return _hash<I+1>(val,_h);
   }
 };
 
@@ -124,7 +155,7 @@ struct hash<::romp::RecordType<FID,FIELDS...>> {
 /* // defined in bfs.hpp for orderings sake
 template<>
 struct hash<::romp::State_t> {
-  inline size_t operator () (const ::romp::State_t& state) { 
+  inline size_t operator () (const ::romp::State_t& state) const { 
     return state.__romp__model_hash();
   }
 };

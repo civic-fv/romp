@@ -69,12 +69,12 @@ int main(int argc, char **argv) {
     ::romp::init_trace_dir(OPTIONS);
 
   if (OPTIONS.do_bfs)
-    BFSHandler(OPTIONS).launch();
+    ::romp::BFSHandler(OPTIONS).launch();
   else if (OPTIONS.do_single)
-    ::romp::launch_single(OPTIONS,OPTIONS.rand_seed);
+    ::romp::launch_single(OPTIONS);
 
   else
-    ::romp::launch_threads(OPTIONS,OPTIONS.rand_seed);
+    ::romp::launch_threads(OPTIONS);
     // ::romp::launch_OpenMP(::romp::OPTIONS.rand_seed);
 
 

@@ -709,7 +709,7 @@ RandSeed_t gen_random_seed(RandSeed_t &root_seed) {
  * @brief generate all the random seeds for the various rand walkers
  * 
  */
-std::unordered_set<RandSeed_t> gen_random_seeds(const Options& OPTIONS, RandSeed_t& root_seed)   {
+std::unordered_set<RandSeed_t> gen_random_seeds(const Options& OPTIONS, RandSeed_t root_seed)   {
   std::unordered_set<RandSeed_t> seeds;
   for(int i=0; (seeds.size()<OPTIONS.walks) && (i<OPTIONS.walks*2); i++)
     seeds.insert(gen_random_seed(root_seed));
@@ -764,8 +764,8 @@ void launch_OpenMP(RandSeed_t root_seed) {
  * @param fuel the max number of rules any \c RandWalker will try to apply.
  * @param thread_count the max number of threads to use to accomplish all said random walks.
  */
-void launch_threads(const Options& OPTIONS, RandSeed_t rand_seed) {
-  auto tmp_seeds = gen_random_seeds(OPTIONS,rand_seed);
+void launch_threads(const Options& OPTIONS) {
+  auto tmp_seeds = gen_random_seeds(OPTIONS,OPTIONS.rand_seed);
   std::queue<RandSeed_t> in_seeds(std::deque<RandSeed_t>(tmp_seeds.begin(),tmp_seeds.end()));
   // std::queue<RandWalkers*> parallel_rws; // probs threads
   std::queue<RandWalker*> out_rws;
@@ -898,8 +898,8 @@ void launch_OpenMPI(RandSeed_t root_seed);
  * @param rand_seed the random seed
  * @param fuel the max number of rules to try to apply
  */
-void launch_single(const Options& OPTIONS, RandSeed_t rand_seed) {
-  RandWalker* rw = new RandWalker(rand_seed, OPTIONS);
+void launch_single(const Options& OPTIONS) {
+  RandWalker* rw = new RandWalker(OPTIONS.rand_seed, OPTIONS);
   rw->init();
   ResultTree summary(OPTIONS);
   while( not rw->is_done() )

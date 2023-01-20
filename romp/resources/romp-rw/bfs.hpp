@@ -25,7 +25,7 @@
 namespace std {
   template<>
   struct hash<::romp::State_t> {
-    inline size_t operator () (const ::romp::State_t& state) { 
+    inline size_t operator () (const ::romp::State_t& state) const { 
       return state.__romp__model_hash();
     }
   };
@@ -72,8 +72,9 @@ namespace romp {
     BFSWalker(const Options OPTIONS_, id_t start_id_)
       : OPTIONS(OPTIONS_), _start_id(start_id_)
     {
-        sim1step = std::function<void(size_t,size_t)>([this](size_t i, size_t j) { 
-                    this->sim1Step_no_trace(::__caller__::RULESETS[i].rules[j]); });
+      state.__rw__ = this;
+      sim1step = std::function<void(size_t,size_t)>([this](size_t i, size_t j) { 
+                  this->sim1Step_no_trace(::__caller__::RULESETS[i].rules[j]); });
     }
 
     ~BFSWalker() {
@@ -221,31 +222,29 @@ namespace romp {
     }
 # endif
     bool cover_handler(bool expr, id_t cover_id, id_t prop_id) {
-      return false;  // never throw anything if cover is not enabled by romp generator
+      return false;  // BFS does not currently implement liveness
     }
-# ifdef __romp__ENABLE_liveness_property
-  private:
-    const bool enable_liveness; // = OPTIONS.liveness;
-    const size_t init_lcount; // = OPTIONS.lcount;
-    size_t lcounts[_ROMP_LIVENESS_PROP_COUNT];
-  public:
+// # ifdef __romp__ENABLE_liveness_property
+//   private:
+//     const bool enable_liveness; // = OPTIONS.liveness;
+//     const size_t init_lcount; // = OPTIONS.lcount;
+//     size_t lcounts[_ROMP_LIVENESS_PROP_COUNT];
+//   public:
+//     bool liveness_handler(bool expr, id_t liveness_id, id_t prop_id) {
+//       if (not enable_liveness) return false;
+//       if (expr) {
+//         lcounts[liveness_id] = init_lcount;
+//         return false;
+//       }
+//       if (--lcounts[liveness_id] > 0) return false;
+//       tripped = new ModelPropertyError(prop_id);
+//       return true;  // [?]TODO actually handle this as described in the help page
+//     }
+// # else
     bool liveness_handler(bool expr, id_t liveness_id, id_t prop_id) {
-      if (not enable_liveness) return false;
-      if (expr) {
-        lcounts[liveness_id] = init_lcount;
-        return false;
-      }
-      if (--lcounts[liveness_id] > 0) return false; 
-      _valid = false;
-      _is_error = true;
-      tripped = new ModelPropertyError(prop_id);
-      return true;  // [?]TODO actually handle this as described in the help page
+      return false;  // BFS does not currently implement liveness
     }
-# else
-    bool liveness_handler(bool expr, id_t liveness_id, id_t prop_id) {
-      return false;  // never throw anything if cover is not enabled by romp generator
-    }
-# endif
+// # endif
 
     // called when trying to print the results of the BFS walker when it finishes (will finish up trace file if necessary too)
     //  the calling context should ensure that the BFSWalker is not being used else where & safe output to the ostream 
@@ -520,6 +519,11 @@ protected:
   }
 
 
+  /**
+   * @brief Helper function to insert states into the state hash set
+   * @param state the state to be hashed and stored in the state.
+   * @return \c bool - true if the state is a new addition false if seen before
+   */
   inline bool insert_state(const State_t& state) {
     return std::get<1>(states.insert(state));
   }
@@ -541,8 +545,9 @@ protected:
         << out.nl() << "    States Found: " << states.size()
         << out.nl() << "   Rules Applied: " << rules_applied
         << out.nl() << "         Runtime: " << t
-        << "\n\n" << std::flush;
+        << "\n\n";
     delete walker;
+    out.out << std::flush;
   }
   
   /**
@@ -554,10 +559,11 @@ protected:
     out << out.nl()
         << "\n\nNO ERRORS found during initial BFS\n"
         << out.nl() << "\033[1;4mBFS SUMMARY:\033[0m" << out.indent()
-        << out.nl() << "    States Found: " << states.size();
+        << out.nl() << "    States Found: " << states.size()
         << out.nl() << "   Rules Applied: " << rules_applied
         << out.nl() << "         Runtime: " << t
-        << "\n\n" << std::flush;
+        << "\n\n";
+    out.out << std::flush;
   }
 
 };

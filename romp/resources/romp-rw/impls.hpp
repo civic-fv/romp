@@ -187,7 +187,11 @@ namespace romp {
       out << out.indentation() << "\033[1;4mASSUMPTION(S) VIOLATED (n="<< r.assumptions_violated.size() 
           << " |n|=" << r.n_assumptions_violated << "):\033[0m\n";
       out.indent(); i = 1;
-      for (const auto& _a : r.assumptions_violated) {  
+      for (const auto& _a : r.assumptions_violated) {
+        if (i > _ROMP_HIST_LEN && not (r.OPTIONS.report_all || r.OPTIONS.report_error)) { 
+          out << out.indentation() << "-(..) ... " << _a.second.size()-(i-1) << " more ...\n"; 
+          break;
+        } 
         out << out.indentation()
             << "\033[1m-(" << (i++) << ") assume \"" << _a.first.label() << "\":\033[0m\n";
         out.indent();
@@ -224,6 +228,10 @@ namespace romp {
         out.indent();
         i = 1;
         for (const auto& _al : r.attempt_limits_reached) {
+          if (i > _ROMP_HIST_LEN && not (r.OPTIONS.report_all)) { 
+            out << out.indentation() << "-(..) ... " << r.attempt_limits_reached.size()-(i-1) << " more ...\n"; 
+            break;
+          }
           out << out.indentation()
               << "-(" << i << ") [w#" << _al->id << "] seed=" << _al->root_seed << " start-id=" << _al->start_id <<" depth=" << _al->depth;
 #ifdef __ROMP__DO_MEASURE
@@ -250,6 +258,10 @@ namespace romp {
         out.indent();
         i = 1;
         for (const auto& _c : r.completed_covers) {
+          if (i > _ROMP_HIST_LEN+1 && not (r.OPTIONS.report_all)) { 
+            out << out.indentation() << "-[..] ... " << _c.second.size()-(i-1) << " more ...\n"; 
+            break;
+          }
           out << out.indentation()
               << "-(" << i << ") [w#" << _c->id << "] seed=" << _c->root_seed << " start-id=" << _c->start_id <<" depth=" << _c->depth;
 #ifdef __ROMP__DO_MEASURE
@@ -271,7 +283,11 @@ namespace romp {
         out.indent();
         i = 1;
         for (const auto& _r : r.max_depths_reached) {
-          out << out.nl()
+          if (i > _ROMP_HIST_LEN && not (r.OPTIONS.report_all)) { 
+            out << out.indentation() << "-(..) ... " << r.max_depths_reached.size()-(i-1) << " more ...\n"; 
+            break;
+          }
+            out << out.nl()
               << "-(" << i++ << ") [w#" << _r->id << "] seed=" << _r->root_seed << " start-id=" << _r->start_id;
 #ifdef __ROMP__DO_MEASURE
           out << " t=" << _r->active_time << " (Δt=" << _r->total_time << ')';
@@ -289,7 +305,12 @@ namespace romp {
         out << out.indentation()
             << "\033[1m-(" << (i++) << ") error \"" << _a.first.label() << "\":\033[0m\n";
         out.indent();
+        int j = 0;
         for (const auto& a : _a.second) {
+          if (j > _ROMP_HIST_LEN && not (r.OPTIONS.report_all || r.OPTIONS.report_error)) { 
+            out << out.indentation() << "-[..] ... " << _a.second.size()-j << " more ...\n"; 
+            break;
+          }
           out << out.indentation()
               << "-[w#" << a->id << "] seed=" << a->root_seed << " start-id=" << a->start_id <<" depth=" << a->depth
 #ifdef __ROMP__DO_MEASURE
@@ -1195,8 +1216,10 @@ ostream_p& operator << (ostream_p& out, const Options& opts) noexcept { opts.wri
     for (int i=0; i<_ROMP_LIVENESS_PROP_COUNT; ++i) lcounts[i] = init_lcount;
 #endif
     state.__rw__ = this;
-    if (OPTIONS.do_trace) init_trace();
-    bfs_trace(bfs);
+    if (OPTIONS.do_trace) {
+      init_trace();
+      bfs_trace(bfs);
+    }
     // transfer history from bfs
     for (size_t i=bfs.history_start; i<bfs.history_level; ++i) 
       history[i%history_size()] = bfs.history[i%bfs.history_size()];
@@ -1206,8 +1229,8 @@ ostream_p& operator << (ostream_p& out, const Options& opts) noexcept { opts.wri
 
   void RandWalker::bfs_trace(const BFSWalker& bfs) {
     *json << "{\"$type\":\"bfs-init\","
-             "\"startstate\":" << ::__info__::STARTSTATE_INFOS[start_id] << ","
-             "\"depth\":" << bfs.depth << ","
+             "\"startstate\":" << ::__caller__::STARTSTATES[start_id] << ","
+             "\"depth\":" << bfs._depth << ","
              "\"history\":[";
     std::string sep;
     for (size_t i=bfs.history_start; i<bfs.history_level; ++i) {

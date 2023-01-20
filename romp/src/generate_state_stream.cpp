@@ -65,17 +65,26 @@ void generate_state_stream(romp::CodeGenerator& gen, const murphi::Model& m) {
 
 
 void generate_state_hash(romp::CodeGenerator& gen, const murphi::Model& m) {
+  std::stringstream eq;
   gen << gen.indentation() << "inline size_t " ROMP_MODEL_HASH_METHOD_NAME "() const {\n";
   gen.indent();
   gen << gen.indentation() << "size_t _hash = 0ul;\n";
+  std::string eq_sep;
   for (const auto& c : m.children) {
     if (const auto _vd = dynamic_cast<const VarDecl*>(c.get())) {
       gen << gen.indentation() << ROMP_MAKE_HASH_COMBINER("_hash",_vd->name) << ";\n";
+      eq << eq_sep << gen.indentation() << "l." << _vd->name << " == " << "r." << _vd->name;
+      eq_sep = " && \n";
     }
   }
   gen << gen.indentation() << "return _hash;\n";
   gen.dedent();
-  gen << gen.indentation() << "}\n"; 
+  gen << gen.indentation() << "}\n\n"
+      << gen.indentation() << "friend inline bool operator == (const " ROMP_STATE_TYPE "& l, const " ROMP_STATE_TYPE "& r) {\n";
+  gen.indent();
+  gen << gen.indentation() << "return (" << eq.str() << ");\n";
+  gen.dedent();
+  gen << gen.indentation() << "}\n\n";
 }
 
 
