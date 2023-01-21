@@ -67,14 +67,15 @@ namespace romp {
     }
   
   public:
-    std::function<void(size_t,size_t)> sim1step;
 
     BFSWalker(const Options OPTIONS_, id_t start_id_)
-      : OPTIONS(OPTIONS_), _start_id(start_id_)
+      : OPTIONS(OPTIONS_), 
+#       if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
+          enable_liveness(OPTIONS_.liveness),
+#       endif
+        _start_id(start_id_)
     {
       state.__rw__ = this;
-      sim1step = std::function<void(size_t,size_t)>([this](size_t i, size_t j) { 
-                  this->sim1Step_no_trace(::__caller__::RULESETS[i].rules[j]); });
     }
 
     ~BFSWalker() {
@@ -141,11 +142,13 @@ namespace romp {
 
     bool is_done() const { return status != Result::RUNNING || _depth >= OPTIONS.depth; }
 
+    bool pass = false;
+
     void sim1Step_no_trace(const Rule& r) noexcept {
 #     ifdef __ROMP__DO_MEASURE
         start_time = time_mr();
 #     endif
-      bool pass = false;
+      pass = false;
       try {  
         if ((pass = r.guard(state)) == true) {
           r.action(state);
@@ -224,27 +227,40 @@ namespace romp {
     bool cover_handler(bool expr, id_t cover_id, id_t prop_id) {
       return false;  // BFS does not currently implement liveness
     }
-// # ifdef __romp__ENABLE_liveness_property
-//   private:
-//     const bool enable_liveness; // = OPTIONS.liveness;
-//     const size_t init_lcount; // = OPTIONS.lcount;
-//     size_t lcounts[_ROMP_LIVENESS_PROP_COUNT];
-//   public:
-//     bool liveness_handler(bool expr, id_t liveness_id, id_t prop_id) {
-//       if (not enable_liveness) return false;
-//       if (expr) {
-//         lcounts[liveness_id] = init_lcount;
-//         return false;
-//       }
-//       if (--lcounts[liveness_id] > 0) return false;
-//       tripped = new ModelPropertyError(prop_id);
-//       return true;  // [?]TODO actually handle this as described in the help page
-//     }
-// # else
+# if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
+  private:
+    const bool enable_liveness; // = OPTIONS.liveness;
+  public:
+    bool is_live[_ROMP_LIVENESS_PROP_COUNT];
+    bool liveness_handler(bool expr, id_t liveness_id, id_t prop_id) {
+      if (not enable_liveness) return false;
+      if (expr) {
+        is_live[liveness_id] = true;
+        return false;
+      }
+      if (--lcounts[liveness_id] > 0) return false;
+      tripped = new ModelPropertyError(prop_id);
+      return true;  // [?]TODO actually handle this as described in the help page
+    }
+    void reset_liveness() {
+      for (size_t i=0; i<_ROMP_LIVENESS_PROP_COUNT; ++i)
+        is_live[i] = false;
+    }
+    void merge_liveness(bool *liveness) {
+      for (size_t i=0; i<_ROMP_LIVENESS_PROP_COUNT; ++i) {
+        liveness[i] |= is_live[i];
+        is_live[i] = false;
+      }
+    }
+    void set_liveness_violation(id_t liveness_id) {
+      tripped = new ModelPropertyError(*::__info__::LIVENESS_INFOS[liveness_id]);
+      status = Result::PROPERTY_VIOLATED;
+    }
+# else
     bool liveness_handler(bool expr, id_t liveness_id, id_t prop_id) {
       return false;  // BFS does not currently implement liveness
     }
-// # endif
+# endif
 
     // called when trying to print the results of the BFS walker when it finishes (will finish up trace file if necessary too)
     //  the calling context should ensure that the BFSWalker is not being used else where & safe output to the ostream 
@@ -373,9 +389,16 @@ protected:
    *        NOTE: must be called after processing start states
    */
   void single_bfs() {
+#   if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
+      const bool enable_liveness = OPTIONS.liveness;
+      bool liveness[_ROMP_LIVENESS_PROP_COUNT];
+#   endif
     while (not q.empty() && q.size()<TARGET && rules_applied < OPTIONS.bfs_limit) {
       auto b_w = q.front();
       q.pop_front();
+#     if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
+        if (enable_liveness) std::memset(liveness,0u,sizeof(bool)*_ROMP_LIVENESS_PROP_COUNT);
+#     endif
       for (size_t i=0; q.size()<TARGET && i<_ROMP_RULESETS_LEN; ++i)
         for (auto rule : ::__caller__::RULESETS[i].rules) {
           BFSWalker* walker = (BFSWalker*) std::malloc(sizeof(BFSWalker));
@@ -385,19 +408,32 @@ protected:
           if (walker->is_done()) {
             end_bfs_report_error(walker);
             return;
-          } 
+          }
+#         if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
+            if (enable_liveness) walker->merge_liveness(liveness);
+#         endif
+          if (walker->pass) ++rules_applied;
           if (insert_state(walker->state)) {
-              ++rules_applied;
               q.push_back(walker);
             if (q.size() >= TARGET)
               break;
           }
         }
+#     if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
+        // end if liveness property violated
+        if (enable_liveness && (size_t liveness_id = is_live(liveness)) < _ROMP_LIVENESS_PROP_COUNT) {
+          b_w->set_liveness_violation(liveness_id);
+          end_bfs_report_error(b_w);
+          return;
+        }
+#     endif
+      delete b_w;
     }
 
-    if (not q.empty())
+    if (not q.empty()) {
+      end_bfs();
       this->launch_threads();
-    else
+    } else
       end_bfs_solved();
   }
 
@@ -408,12 +444,146 @@ protected:
    */
   void multithreaded_bfs() {
     //TODO code this part & hope it performs well without too many data race checkpoints
+    std::mutex mut_in, mut_out;
+    BFSWalker* bad = nullptr;
+    std::vector<std::thread> threads;
+    size_t cycle = 0ul;
 
+#   ifdef DEBUG
+      const auto pause_delay = std::chrono::milliseconds(20); //DEBUG SLOW ME DOWN
+      const size_t update_coef = 1<<3;
+#   else
+      const auto pause_delay = std::chrono::milliseconds(50);
+      const size_t update_coef = 1<<4;
+#   endif
+
+    std::function<void(BFSWalker*)> end_bfs_with_error_mt = [&] (BFSWalker* w) -> void {
+      mut_out.lock();
+      bad = w;
+      mut_out.unlock();
+    };
+
+    std::function<void()> lambda_bfs = [&]() -> void {
+      std::vector<BFSWalker*> buffer;
+      const size_t bfs_limit = OPTIONS.bfs_limit;
+#     if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
+        const bool enable_liveness = OPTIONS.liveness;
+        bool liveness[_ROMP_LIVENESS_PROP_COUNT];
+#     endif
+      mut_in.lock();
+      mut_out.lock();
+      while (not q.empty() && q.size()<TARGET && rules_applied < bfs_limit && bad == nullptr) {
+        mut_out.unlock();
+        auto b_w = q.front();
+        q.pop_front();
+        mut_in.unlock();
+#       if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
+          if (enable_liveness) std::memset(liveness,0u,sizeof(bool)*_ROMP_LIVENESS_PROP_COUNT);
+#       endif
+        for (size_t i=0; /*q.size()<TARGET &&*/ i<_ROMP_RULESETS_LEN; ++i)
+          for (auto rule : ::__caller__::RULESETS[i].rules) {
+            BFSWalker* walker = (BFSWalker*) std::malloc(sizeof(BFSWalker));
+            std::memcpy(walker,b_w,sizeof(BFSWalker)); // copy base walker
+            // walker->sim1step(rule);
+            walker->sim1Step_no_trace(rule);
+            if (walker->is_done()) {
+              end_bfs_with_error_mt(walker);
+              return;
+            }
+#           if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
+              if (enable_liveness) walker->merge_liveness(liveness);
+#           endif
+            buffer.push_back(walker);
+            // if (insert_state(walker->state)) {
+            //   // ++rules_applied;
+            //   // if (q.size() >= TARGET) break;
+            // }
+          }
+#       if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
+          // end if liveness property violated
+          if (enable_liveness && (size_t liveness_id = is_live(liveness)) < _ROMP_LIVENESS_PROP_COUNT) {
+            b_w->set_liveness_violation(liveness_id);
+            end_bfs_with_error_mt(b_w);
+            return;
+          }
+#       endif
+        mut_out.lock();
+        if (bad != nullptr) return; // end early if another thread found an error
+        mut_out.unlock();
+        mut_in.lock();
+        for (BFSWalker* w : buffer) {
+          if (w->pass) ++rules_applied;
+          if (insert_state(w->state)) {
+            q.push_back(w);
+          }
+        }
+        buffer.clear();
+        delete b_w;
+        mut_out.lock();
+      }
+      mut_out.unlock();
+      mut_in.unlock();
+    };
+
+    for (size_t i=0; i<OPTIONS.threads; ++i) {
+      threads.push_back(std::thread(lambda_bfs));
+    }
+
+    out << "\n\033[34;1m"
+          "=====================================\n"
+          "  INITIAL BFS MULTITHREADED STATUS:  \n"
+          "=====================================\n"
+          "\033[0m\n\n";
+    out.out.flush();
+    std::this_thread::sleep_for(pause_delay*2);
+
+    mut_in.lock();
+    mut_out.lock();
+    while (not q.empty() && q.size()<TARGET && rules_applied < OPTIONS.bfs_limit && bad == nullptr) {
+      mut_out.unlock();
+      // if (cycle % update_coef == 0) {
+      //   out << out.indentation() 
+      //       << '[' << (time_mr() - start_time) << "] " 
+      //         "States found: " << states.size() << "; "
+      //         "Rules Applied: " << rules_applied << "; "
+      //         "BFS Progress: " << ((long long)((q.size()*100)/(TARGET*100)))
+      //       << " (" << q.size() << '/' << TARGET << ");\n";
+      //   mut_in.unlock();
+      //   out.out.flush();
+      // } else 
+        mut_in.unlock();
+      // ++cycle;
+      std::this_thread::sleep_for(pause_delay);
+      mut_in.lock();
+      mut_out.lock();
+    }
+    mut_in.unlock();
+    mut_out.unlock();
+
+    std::this_thread::sleep_for(pause_delay*2); // might be able to skip this
+    for (auto& t : threads) {
+      t.join(); // might be able to skip this
+    }
+
+    if (bad != nullptr) {
+      end_bfs_report_error(bad);
+      return;
+    }
+
+    if (not q.empty()) {
+      out << "\n\033[34;1m"
+             "=====================================\n"
+             "   INITIAL BFS MULTITHREADED DONE    \n"
+             "=====================================\n"
+             "\033[0m\n\n";
+      out.out.flush();
+      end_bfs();
+      this->launch_threads();
+    } else
+      end_bfs_solved();
     /* Ideas
         - short term store new states in vector per threads then lock to add new states in bulk 
     */
-    std::cerr << "\n\nERROR : multithreaded BFS not yet implemented\n\n" << std::flush;
-    exit(EXIT_FAILURE);
   }
 
   /**
@@ -430,14 +600,18 @@ protected:
     size_t walks_done = 0;
     std::mutex in_queue;
     std::mutex out_queue;
+    size_t cycles = 0ul;
+    size_t progress = 0ul;
     // std::mutex _in_queue_mutex;
     // std::mutex _out_queue_mutex;
 
-# ifdef DEBUG
-    const auto pause_delay = std::chrono::milliseconds(250); //DEBUG SLOW ME DOWN
-# else
-    const auto pause_delay = std::chrono::milliseconds(5);
-# endif
+#   ifdef DEBUG
+      const auto pause_delay = std::chrono::milliseconds(250); //DEBUG SLOW ME DOWN
+      const size_t update_coef = 1<<6;
+#   else
+      const auto pause_delay = std::chrono::milliseconds(20);
+      const size_t update_coef = 1<<8;
+#   endif
 
     auto lambda = [&]() { // code the threads run
       in_queue.lock();
@@ -472,17 +646,25 @@ protected:
     // std::lock_guard<std::mutex> in_queue(_in_queue_mutex);
     // std::lock_guard<std::mutex> out_queue(_out_queue_mutex);
 
-    if (OPTIONS.report_any()) {
-      out << "\n\033[34;1m"
-            "===================================\n"
-            "  WALKS OF INTEREST ROMP RESULTS:  \n"
-            "===================================\n"
-            "\033[0m\n\n";
-      out.out.flush();
-    }
+    out << "\n\033[34;1m"
+          "==================================\n"
+          "   PARALLEL RANDOM WALK STATUS:   \n"
+          "==================================\n"
+          "\033[0m\n\n";
+    out.out.flush();
+    
     std::this_thread::sleep_for(pause_delay*2);
     while (true) {
       while (true) {  // handel outputs
+        // if (cycles % update_coef == 0) { // this really slows things down
+        //   out.indent();
+        //   out << '[' << (time_ms() - start_time) << "] " 
+        //       << progress << '/' << OPTIONS.walks
+        //       << " walks complete" << out.nl();
+        //   out.dedent();
+        //   out.out.flush();
+        // }
+        ++cycles;
         std::this_thread::sleep_for(pause_delay);
         out_queue.lock();
         if (not (out_rws.size() > 0)) {
@@ -493,6 +675,7 @@ protected:
         out_rws.pop();
         out_queue.unlock();
         if (rw != nullptr) {
+          ++progress;
           if (rw->do_report())
             std::cout << *rw << std::endl;
           // todo get the results
@@ -500,6 +683,7 @@ protected:
           delete rw;
         }
       }
+      
       std::this_thread::sleep_for(pause_delay); 
       out_queue.lock();
       if (not (walks_done < OPTIONS.walks)) {
@@ -516,6 +700,10 @@ protected:
       threads[i].join();
 
     print_romp_results_summary(summary);
+    out.indent();
+    out << out.nl() << "Actual Runtime: " << (time_ms()-start_time) << "\n\n";
+    out.dedent();
+    out.out.flush();
   }
 
 
@@ -527,6 +715,14 @@ protected:
   inline bool insert_state(const State_t& state) {
     return std::get<1>(states.insert(state));
   }
+
+# if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
+    size_t was_live(bool* is_live) const {
+      for (size_t i=0; i<_ROMP_LIVENESS_PROP_COUNT; ++i)
+        if (not is_live[i]) return i;
+      return _ROMP_LIVENESS_PROP_COUNT;
+    }
+# endif
 
   /**
    * @brief call when an error occurs during BFS (ends run early)
@@ -544,7 +740,7 @@ protected:
         << out.nl() << "Error found see above for details"
         << out.nl() << "    States Found: " << states.size()
         << out.nl() << "   Rules Applied: " << rules_applied
-        << out.nl() << "         Runtime: " << t
+        << out.nl() << "  Actual Runtime: " << t
         << "\n\n";
     delete walker;
     out.out << std::flush;
@@ -557,11 +753,23 @@ protected:
     auto t = time_ms() - start_time;
     std::string color = "\033[32;1m";
     out << out.nl()
-        << "\n\nNO ERRORS found during initial BFS\n"
+        << "\nNO ERRORS found!  BFS had FULL COVERAGE!\n"
         << out.nl() << "\033[1;4mBFS SUMMARY:\033[0m" << out.indent()
         << out.nl() << "    States Found: " << states.size()
         << out.nl() << "   Rules Applied: " << rules_applied
-        << out.nl() << "         Runtime: " << t
+        << out.nl() << "  Actual Runtime: " << t
+        << "\n\n";
+    out.out << std::flush;
+  }
+
+  inline void end_bfs() {
+    auto t = time_ms() - start_time;
+    out << out.nl()
+        << "\nNO ERRORS found during initial BFS\n"
+        << out.nl() << "\033[1;4mBFS SUMMARY:\033[0m" << out.indent()
+        << out.nl() << "    States Found: " << states.size()
+        << out.nl() << "   Rules Applied: " << rules_applied
+        << out.nl() << "     BFS Runtime: " << t
         << "\n\n";
     out.out << std::flush;
   }

@@ -83,7 +83,7 @@ struct Options {
   char tab_char = ' ';
   // bfs options ----
   bool do_bfs = true;
-  bool bfs_single = true;
+  bool bfs_single = false;
   size_t bfs_coefficient = _ROMP_BFS_COEF;
   size_t bfs_limit = INT16_MAX; // max number of states to explore before giving up
 

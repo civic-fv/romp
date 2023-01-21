@@ -172,7 +172,7 @@ protected:
 // #     ifdef __romp__ENABLE_cover_property
 //         enable_cover(OPTIONS_.complete_on_cover), goal_cover_count(OPTIONS_.cover_count),
 // #     endif
-// #     ifdef __romp__ENABLE_liveness_property
+// #     if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
 //         enable_liveness(OPTIONS_.liveness), init_lcount(OPTIONS.lcount),
 // #     endif
 //       _attempt_limit(OPTIONS_.attempt_limit), init_attempt_limit(OPTIONS_.attempt_limit)
@@ -185,7 +185,7 @@ protected:
 // #ifdef __romp__ENABLE_cover_property
 //     for (int i=0; i<_ROMP_COVER_PROP_COUNT; ++i) cover_counts[i] = 0;
 // #endif
-// #ifdef __romp__ENABLE_liveness_property
+// #if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
 //     for (int i=0; i<_ROMP_LIVENESS_PROP_COUNT; ++i) lcounts[i] = init_lcount;
 // #endif
 //     }
@@ -203,7 +203,7 @@ public:
 #     ifdef __romp__ENABLE_cover_property
         enable_cover(OPTIONS_.complete_on_cover), goal_cover_count(OPTIONS_.cover_count),
 #     endif
-#     ifdef __romp__ENABLE_liveness_property
+#     if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
         enable_liveness(OPTIONS_.liveness), init_lcount(OPTIONS.lcount),
 #     endif
       _attempt_limit(OPTIONS_.attempt_limit), init_attempt_limit(OPTIONS_.attempt_limit)
@@ -225,7 +225,7 @@ public:
 #ifdef __romp__ENABLE_cover_property
     for (int i=0; i<_ROMP_COVER_PROP_COUNT; ++i) cover_counts[i] = 0;
 #endif
-#ifdef __romp__ENABLE_liveness_property
+#if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
     for (int i=0; i<_ROMP_LIVENESS_PROP_COUNT; ++i) lcounts[i] = init_lcount;
 #endif
   }
@@ -622,7 +622,7 @@ public:
     return false;  // never throw anything if cover is not enabled by romp generator
   }
 #endif
-#ifdef __romp__ENABLE_liveness_property
+#if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
 private:
   const bool enable_liveness; // = OPTIONS.liveness;
   const size_t init_lcount; // = OPTIONS.lcount;

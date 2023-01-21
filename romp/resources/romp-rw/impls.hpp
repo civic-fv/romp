@@ -259,7 +259,7 @@ namespace romp {
         i = 1;
         for (const auto& _c : r.completed_covers) {
           if (i > _ROMP_HIST_LEN+1 && not (r.OPTIONS.report_all)) { 
-            out << out.indentation() << "-[..] ... " << _c.second.size()-(i-1) << " more ...\n"; 
+            out << out.indentation() << "-[..] ... " << r.completed_covers.size()-(i-1) << " more ...\n"; 
             break;
           }
           out << out.indentation()
@@ -398,7 +398,7 @@ namespace romp {
     }
     std::string color = ((issues>0) ? "\033[30;1;4m" : "\033[32;1m");
     out << out.nl()
-        << out.nl() << "\033[1;4mSUMMARY:\033[0m" << out.indent()
+        << out.nl() << "\033[1;4mRW SUMMARY:\033[0m" << out.indent()
         << out.nl() << "       issues found: n=" << color << issues << "\033[0m"
                                           << "  (|n|=" << color << abs_issues << "\033[0m)"
         << out.nl() << "total rules applied: " << r.rules_fired
@@ -410,7 +410,7 @@ namespace romp {
                                           "(Δt=" << r.total_walk_time << ")" 
         << out.nl() << "     mean walk time: mean(t)=" << (r.total_walk_active_time/r.size) << " "
                                            "(mean(Δt)=" << (r.total_walk_time/r.size) << ')' 
-        << out.nl() << "     actual runtime: " << r.get_time();
+        << out.nl() << "         RW runtime: " << r.get_time();
 #endif
     out.out << "\n\n" << std::flush;
     return out;
@@ -1201,20 +1201,20 @@ ostream_p& operator << (ostream_p& out, const Options& opts) noexcept { opts.wri
 #     ifdef __romp__ENABLE_cover_property
         enable_cover(OPTIONS_.complete_on_cover), goal_cover_count(OPTIONS_.cover_count),
 #     endif
-#     ifdef __romp__ENABLE_liveness_property
+#     if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
         enable_liveness(OPTIONS_.liveness), init_lcount(OPTIONS.lcount),
 #     endif
       _attempt_limit(OPTIONS_.attempt_limit), init_attempt_limit(OPTIONS_.attempt_limit)
   {
-#ifdef __romp__ENABLE_symmetry
-    for (int i=0; i<_ROMP_RULESETS_LEN; ++i) next_rule[i] = 0;
-#endif
-#ifdef __romp__ENABLE_cover_property
-    for (int i=0; i<_ROMP_COVER_PROP_COUNT; ++i) cover_counts[i] = 0;
-#endif
-#ifdef __romp__ENABLE_liveness_property
-    for (int i=0; i<_ROMP_LIVENESS_PROP_COUNT; ++i) lcounts[i] = init_lcount;
-#endif
+#   ifdef __romp__ENABLE_symmetry
+      for (int i=0; i<_ROMP_RULESETS_LEN; ++i) next_rule[i] = 0;
+    #endif
+#   ifdef __romp__ENABLE_cover_property
+      for (int i=0; i<_ROMP_COVER_PROP_COUNT; ++i) cover_counts[i] = 0;
+#   endif
+#   if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
+      for (int i=0; i<_ROMP_LIVENESS_PROP_COUNT; ++i) lcounts[i] = init_lcount;
+#   endif
     state.__rw__ = this;
     if (OPTIONS.do_trace) {
       init_trace();

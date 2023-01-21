@@ -46,8 +46,11 @@
 #ifndef _ROMP_PROPERTY_RULES_LEN 
 #define _ROMP_PROPERTY_RULES_LEN (2ul)
 #endif
-#ifndef _ROMP_LIVENESS_TESTS_LEN
-#define _ROMP_LIVENESS_TESTS_LEN (2ul)
+#ifndef _ROMP_LIVENESS_PROP_COUNT
+#define _ROMP_LIVENESS_PROP_COUNT (2ul)
+#endif
+#ifndef _ROMP_COVER_PROP_COUNT
+#define _ROMP_COVER_PROP_COUNT (2ul)
 #endif
 #ifndef _ROMP_STARTSTATES_LEN
 #define _ROMP_STARTSTATES_LEN (2ul)
@@ -87,11 +90,17 @@ namespace romp {
   // struct StartState_info;
 }
 
+namespace __info__ { // LANGUAGE SERVER SUPPORT ONLY!!
+ extern const ::romp::PropertyInfo* LIVENESS_INFOS[_ROMP_LIVENESS_PROP_COUNT]; // LANGUAGE SERVER SUPPORT ONLY!!
+ extern const ::romp::PropertyInfo* COVER_INFOS[_ROMP_COVER_PROP_COUNT]; // LANGUAGE SERVER SUPPORT ONLY!!
+} // LANGUAGE SERVER SUPPORT ONLY !!
+
 namespace __caller__ { // LANGUAGE SERVER SUPPORT ONLY!!
  extern const ::romp::RuleSet RULE_SETS[_ROMP_RULESETS_LEN]; // LANGUAGE SERVER SUPPORT ONLY!!
  extern const ::romp::Property PROPERTIES[_ROMP_PROPERTY_RULES_LEN]; // LANGUAGE SERVER SUPPORT ONLY!!
  extern const ::romp::StartState STARTSTATES[_ROMP_STARTSTATES_LEN]; // LANGUAGE SERVER SUPPORT ONLY!!
 } // LANGUAGE SERVER SUPPORT ONLY !!
+
 
 namespace __model__ {// LANGUAGE SERVER SUPPORT ONLY!!
   enum SCALAR {_UNDEFINED_=0, enum_test, scalar_1, scalar_2 /* , ... */}; // LANGUAGE SERVER SUPPORT ONLY!!

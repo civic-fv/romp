@@ -823,6 +823,7 @@ void ModelGenerator::visit_propertyrule(const PropertyRule &n) {
   if (not is_prop_enabled(Property::COVER))
       throw Error("`cover` properties are not enabled !!", n.loc);
     _id = next_cover_id++;
+    cover_id_map.push_back(prop_id);
     *this  << ROMP_COVER_HANDLER(n,prop_id,_id);
     break;
 
@@ -830,6 +831,7 @@ void ModelGenerator::visit_propertyrule(const PropertyRule &n) {
   if (not is_prop_enabled(Property::LIVENESS))
       throw Error("`liveness` properties are not enabled !!", n.loc);
     _id = next_liveness_id++;
+    liveness_id_map.push_back(prop_id);
     *this << ROMP_LIVENESS_HANDLER(n,prop_id,_id);
     break;
   }
@@ -892,6 +894,7 @@ void ModelGenerator::visit_propertystmt(const PropertyStmt &n) {
     if (not is_prop_enabled(Property::COVER))
       throw Error("`cover` properties are not enabled !!", n.loc);
     _id = next_cover_id++;
+    cover_id_map.push_back(id);
     *this << "#ifdef " ROMP_COVER_PREPROCESSOR_VAR "\n"
           << indentation() << "if (" << ROMP_COVER_HANDLER(n,id,_id) << ")"
           /* << indentation() */ << "throw " ROMP_MAKE_MODEL_ERROR_PROPERTY(n,id) ";\n"

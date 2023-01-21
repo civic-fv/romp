@@ -30,7 +30,8 @@ namespace romp {
    */
   template <class T>
   inline void hash_combine(std::size_t& seed, const T& v) {
-      seed ^= std::hash<T>{}(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+    // credit: geeks4geeks.com
+    seed ^= std::hash<T>{}(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
   }
 
 } //namespace romp
@@ -122,11 +123,10 @@ struct hash<::romp::MultisetType<M,E_t>> {
   }
   size_t log_pow(size_t ex) const {
     size_t res = 1;
-    size_t base = 0xA67; // set base to reasonably large prime
+    size_t base = 0xA67; // set base to a reasonably large prime
     while (ex > 0) {
-        if (ex % 2) {
+        if (ex % 2)
             res = res * base;
-        }
         base *= base;
         ex /= 2;
     }

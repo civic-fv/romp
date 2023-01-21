@@ -162,7 +162,21 @@ void generate(const Model &m, const std::vector<Comment> &comments,
       << "/* the number of cover property statements & rules in the model */\n"
       << "#define " ROMP_COVER_PROP_COUNT " (" << prop_ids.first <<  "ul)\n"
       << "/* the number of liveness property rules in the model */\n"
-      << "#define " ROMP_LIVENESS_PROP_COUNT " (" << prop_ids.second <<  "ul)\n"
+      << "#define " ROMP_LIVENESS_PROP_COUNT " (" << prop_ids.second <<  "ul)\n\n"
+      << gen.indentation() << "const " ROMP_INFO_PROPERTY_TYPE "* LIVENESS_INFOS[" ROMP_LIVENESS_PROP_COUNT "] = {";
+  std::string sep = "";
+  for (auto i : m_gen.liveness_id_map) {
+    gen << sep << "&" ROMP_INFO_PROPERTIES_VAR "[" << i << ']';
+    sep = ",";
+  }
+  gen << "};\n"
+      << gen.indentation() << "const " ROMP_INFO_PROPERTY_TYPE "* COVER_INFOS[" ROMP_COVER_PROP_COUNT "] = {";
+  sep = "";
+  for (auto i : m_gen.cover_id_map) {
+    gen << sep << "&" ROMP_INFO_PROPERTIES_VAR "[" << i << ']';
+    sep = ",";
+  }
+  gen << "};\n\n"
       << gen.indentation() << ROMP_INFO_STARTSTATES_DECL " = ";
   romp::generate_startstate_metadata(gen,m);
   gen << ";\n"
