@@ -52,11 +52,14 @@ T rand_choice(RandSeed_t &seed, T min, T max) {
     return choice;
 }
 
+class BFSWalker; // useful pre-definition
+
 class RandWalker : public ::romp::IRandWalker {
 private:
   static id_t next_id;
   const id_t id;
   const Options& OPTIONS;
+  const bool IS_BFS; 
   id_t start_id;
   const RandSeed_t init_rand_seed;
   RandSeed_t rand_seed;
@@ -70,9 +73,11 @@ private:
   IModelError* tripped_inside = nullptr;
   size_t _attempt_limit; // = OPTIONS.attempt_limit;
   const size_t init_attempt_limit; // = OPTIONS.attempt_limit;
+public:
   struct History {
     const Rule* rule;
   };
+private:
   size_t history_level = 0;
   constexpr size_t history_size() const {return _ROMP_HIST_LEN;}
   History history[_ROMP_HIST_LEN];
@@ -156,9 +161,41 @@ public:
   bool is_done() const { return not (_valid && _fuel > 0 && _attempt_limit > 0); }
 #endif
 
+
+protected:
+//   RandWalker(const Options& OPTIONS_)
+//     : id(RandWalker::next_id++),
+//       OPTIONS(OPTIONS_),
+//       sim1Step(((OPTIONS.do_trace) 
+//                   ? std::function<void()>([this](){sim1Step_trace();}) 
+//                   : std::function<void()>([this](){sim1Step_no_trace();}))),
+// #     ifdef __romp__ENABLE_cover_property
+//         enable_cover(OPTIONS_.complete_on_cover), goal_cover_count(OPTIONS_.cover_count),
+// #     endif
+// #     if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
+//         enable_liveness(OPTIONS_.liveness), init_lcount(OPTIONS.lcount),
+// #     endif
+//       _attempt_limit(OPTIONS_.attempt_limit), init_attempt_limit(OPTIONS_.attempt_limit)
+//     {
+//       if (OPTIONS.do_trace) init_trace();
+//       for (int i=0; i<history_size(); ++i) this->history[i] = History{nullptr};
+// #ifdef __romp__ENABLE_symmetry
+//     for (int i=0; i<_ROMP_RULESETS_LEN; ++i) next_rule[i] = 0;
+// #endif
+// #ifdef __romp__ENABLE_cover_property
+//     for (int i=0; i<_ROMP_COVER_PROP_COUNT; ++i) cover_counts[i] = 0;
+// #endif
+// #if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
+//     for (int i=0; i<_ROMP_LIVENESS_PROP_COUNT; ++i) lcounts[i] = init_lcount;
+// #endif
+//     }
+
+public:
   RandWalker(RandSeed_t rand_seed_, const Options& OPTIONS_) 
-    : id(RandWalker::next_id++),
+    : // RandWalker(OPTIONS_),
       rand_seed(rand_seed_), init_rand_seed(rand_seed_),
+      _fuel(OPTIONS_.depth), IS_BFS(false),
+      id(RandWalker::next_id++),
       OPTIONS(OPTIONS_),
       sim1Step(((OPTIONS.do_trace) 
                   ? std::function<void()>([this](){sim1Step_trace();}) 
@@ -166,10 +203,10 @@ public:
 #     ifdef __romp__ENABLE_cover_property
         enable_cover(OPTIONS_.complete_on_cover), goal_cover_count(OPTIONS_.cover_count),
 #     endif
-#     ifdef __romp__ENABLE_liveness_property
+#     if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
         enable_liveness(OPTIONS_.liveness), init_lcount(OPTIONS.lcount),
 #     endif
-      _fuel(OPTIONS_.depth), _attempt_limit(OPTIONS_.attempt_limit), init_attempt_limit(OPTIONS_.attempt_limit)
+      _attempt_limit(OPTIONS_.attempt_limit), init_attempt_limit(OPTIONS_.attempt_limit)
   { 
     if (OPTIONS.start_id != ~0u) {
       rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN); // burn one rand operation for consistency
@@ -180,11 +217,7 @@ public:
     } else
       start_id = rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN);
     state.__rw__ = this; /* provide a semi-hidden reference to this random walker for calling the property handlers */ 
-    if (OPTIONS.do_trace) {
-      init_trace();
-    } /* else {
-      json = nullptr;
-    } */
+    if (OPTIONS.do_trace) init_trace();
     for (int i=0; i<history_size(); ++i) this->history[i] = History{nullptr};
 #ifdef __romp__ENABLE_symmetry
     for (int i=0; i<_ROMP_RULESETS_LEN; ++i) next_rule[i] = 0;
@@ -192,10 +225,13 @@ public:
 #ifdef __romp__ENABLE_cover_property
     for (int i=0; i<_ROMP_COVER_PROP_COUNT; ++i) cover_counts[i] = 0;
 #endif
-#ifdef __romp__ENABLE_liveness_property
+#if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
     for (int i=0; i<_ROMP_LIVENESS_PROP_COUNT; ++i) lcounts[i] = init_lcount;
 #endif
-  } 
+  }
+
+  RandWalker(const BFSWalker& bfs, RandSeed_t rand_seed_, const Options& OPTIONS_); //defined in impls.hpp
+
 
   ~RandWalker() { 
     if (json != nullptr) delete json; 
@@ -401,6 +437,8 @@ private:
           << ",\"trace\":[";
   }
 
+  void bfs_trace(const BFSWalker& bfs); // defined in impls.hpp
+
   void trace_result_out() const {
     using namespace std::chrono;
     *json << "]"; // close trace
@@ -584,7 +622,7 @@ public:
     return false;  // never throw anything if cover is not enabled by romp generator
   }
 #endif
-#ifdef __romp__ENABLE_liveness_property
+#if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
 private:
   const bool enable_liveness; // = OPTIONS.liveness;
   const size_t init_lcount; // = OPTIONS.lcount;
@@ -671,7 +709,7 @@ RandSeed_t gen_random_seed(RandSeed_t &root_seed) {
  * @brief generate all the random seeds for the various rand walkers
  * 
  */
-std::unordered_set<RandSeed_t> gen_random_seeds(const Options& OPTIONS, RandSeed_t& root_seed)   {
+std::unordered_set<RandSeed_t> gen_random_seeds(const Options& OPTIONS, RandSeed_t root_seed)   {
   std::unordered_set<RandSeed_t> seeds;
   for(int i=0; (seeds.size()<OPTIONS.walks) && (i<OPTIONS.walks*2); i++)
     seeds.insert(gen_random_seed(root_seed));
@@ -726,8 +764,8 @@ void launch_OpenMP(RandSeed_t root_seed) {
  * @param fuel the max number of rules any \c RandWalker will try to apply.
  * @param thread_count the max number of threads to use to accomplish all said random walks.
  */
-void launch_threads(const Options& OPTIONS, RandSeed_t rand_seed) {
-  auto tmp_seeds = gen_random_seeds(OPTIONS,rand_seed);
+void launch_threads(const Options& OPTIONS) {
+  auto tmp_seeds = gen_random_seeds(OPTIONS,OPTIONS.rand_seed);
   std::queue<RandSeed_t> in_seeds(std::deque<RandSeed_t>(tmp_seeds.begin(),tmp_seeds.end()));
   // std::queue<RandWalkers*> parallel_rws; // probs threads
   std::queue<RandWalker*> out_rws;
@@ -860,8 +898,8 @@ void launch_OpenMPI(RandSeed_t root_seed);
  * @param rand_seed the random seed
  * @param fuel the max number of rules to try to apply
  */
-void launch_single(const Options& OPTIONS, RandSeed_t rand_seed) {
-  RandWalker* rw = new RandWalker(rand_seed, OPTIONS);
+void launch_single(const Options& OPTIONS) {
+  RandWalker* rw = new RandWalker(OPTIONS.rand_seed, OPTIONS);
   rw->init();
   ResultTree summary(OPTIONS);
   while( not rw->is_done() )

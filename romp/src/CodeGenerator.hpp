@@ -55,6 +55,8 @@ namespace romp {
     size_t hist_len = ROMP_HISTORY_SIZE_PREPROCESSOR_VAR_DEFAULT_VALUE;
     // the number of rule applications to keep track of for trace reports
     size_t default_walk_multiplier = 16u;
+    // the number of walkers per unique state to explore upto during initial BFS
+    size_t default_bfs_coefficient = 16u;
     // function attributes to prepend before the definition of any murphi function's C/C++ function.
     std::string M_FUNCTION__FUNC_ATTRS = "";
     // function attributes to prepend before the definition of any murphi simple rule's guard C/C++ function.

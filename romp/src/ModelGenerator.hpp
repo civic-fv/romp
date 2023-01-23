@@ -68,6 +68,10 @@ protected:
   // id_t next_record_member_id = 0u;
 
 public:
+  std::vector<id_t> liveness_id_map;
+  std::vector<id_t> cover_id_map;
+
+public:
   ModelGenerator(const romp::CodeGenerator& gen_,
                  const std::unordered_map<std::string,size_t>& enum_ids_,
                  const std::vector<murphi::Comment> &comments_)

@@ -132,6 +132,7 @@ namespace romp {
         return (json << val.get() << '}');
 #     endif 
     }
+    friend class std::hash<BaseUndefinableType>;
   };
 
 
@@ -184,6 +185,16 @@ namespace romp {
     static inline constexpr size_t __COUNT() { return 2u; }
 
     static inline const std::string __p_type() { return "Boolean"; }
+
+    friend inline bool operator == (const BooleanType& l, const BooleanType& r) {
+      return !(l.IsUndefined() || r.IsUndefined()) && (l.unsafe_get() == r.unsafe_get());
+    }
+    friend inline bool operator == (const BooleanType& l, const bool& r) {
+      return (not l.IsUndefined()) && (l.unsafe_get() == r);
+    }
+    friend inline bool operator == (const bool& l, const BooleanType& r) {
+      return (not r.IsUndefined()) && (l == r.unsafe_get());
+    }
 
     // friend inline ostream_p& operator << (ostream_p& out, const BooleanType& val) {
     friend inline std::ostream& operator << (std::ostream& out, const BooleanType& val) {
@@ -281,15 +292,15 @@ namespace romp {
     friend inline range_t operator ^ (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() ^ r.__get_value(); }
 
     template<range_t RLB, range_t RUB, range_t RST>
-    friend inline bool operator < (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() < r.__get_value(); }
+    friend inline bool operator < (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return r.get() < r.__get_value(); }
     template<range_t RLB, range_t RUB, range_t RST>
     friend inline bool operator <= (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() <= r.__get_value(); }
     template<range_t RLB, range_t RUB, range_t RST>
-    friend inline bool operator == (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() == r.__get_value(); }
+    friend inline bool operator == (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return !(l.IsUndefined() || r.IsUndefined()) && l.get() == r.__get_value(); }
     template<range_t RLB, range_t RUB, range_t RST>
-    friend inline bool operator != (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() != r.__get_value(); }
+    friend inline bool operator != (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return !(l.IsUndefined() || r.IsUndefined()) && l.unsafe_get() != r.__get_value(); }
     template<range_t RLB, range_t RUB, range_t RST>
-    friend inline bool operator >= (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() >= r.__get_value(); }
+    friend inline bool operator >= (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.unsafe_get() >= r.__get_value(); }
     template<range_t RLB, range_t RUB, range_t RST>
     friend inline bool operator > (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() > r.__get_value(); }
     
@@ -303,8 +314,8 @@ namespace romp {
     friend inline range_t operator ^ (const RangeType& l, const range_t& r) { return l.get() ^ r; }
     friend inline bool operator < (const RangeType& l, const range_t& r) { return l.get() < r; }
     friend inline bool operator <= (const RangeType& l, const range_t& r) { return l.get() <= r; }
-    friend inline bool operator == (const RangeType& l, const range_t& r) { return l.get() == r; }
-    friend inline bool operator != (const RangeType& l, const range_t& r) { return l.get() != r; }
+    friend inline bool operator == (const RangeType& l, const range_t& r) { return (not l.IsUndefined()) && l.unsafe_get() == r; }
+    friend inline bool operator != (const RangeType& l, const range_t& r) { return (not l.IsUndefined()) && l.unsafe_get() != r; }
     friend inline bool operator >= (const RangeType& l, const range_t& r) { return l.get() >= r; }
     friend inline bool operator > (const RangeType& l, const range_t& r) { return l.get() > r; }
     friend inline range_t operator + (const range_t& l, const RangeType& r) { return l + r.get(); }
@@ -317,8 +328,8 @@ namespace romp {
     friend inline range_t operator ^ (const range_t& l, const RangeType& r) { return l ^ r.get(); }
     friend inline bool operator < (const range_t& l, const RangeType& r) { return l < r.get(); }
     friend inline bool operator <= (const range_t& l, const RangeType& r) { return l <= r.get(); }
-    friend inline bool operator == (const range_t& l, const RangeType& r) { return l == r.get(); }
-    friend inline bool operator != (const range_t& l, const RangeType& r) { return l != r.get(); }
+    friend inline bool operator == (const range_t& l, const RangeType& r) { return (not r.IsUndefined()) && l == r.unsafe_get(); }
+    friend inline bool operator != (const range_t& l, const RangeType& r) { return (not r.IsUndefined()) && l != r.unsafe_get(); }
     friend inline bool operator >= (const range_t& l, const RangeType& r) { return l >= r.get(); }
     friend inline bool operator > (const range_t& l, const RangeType& r) { return l > r.get(); }
 
@@ -907,6 +918,7 @@ namespace romp {
         return (json << "]}");
 #     endif
     }
+    friend std::hash<ArrayType>;
   };
 
   template<typename INDEX_t, typename ELEMENT_t>
@@ -1073,6 +1085,7 @@ namespace romp {
         return (json << "]}");
 #     endif
     }
+    friend std::hash<MultisetType>;
   };
 
   template<size_t MAX, typename ELEMENT_t>
@@ -1246,6 +1259,7 @@ namespace romp {
         return (json << "]}");
 #     endif
     }
+    friend std::hash<RecordType>;
   };
 
 

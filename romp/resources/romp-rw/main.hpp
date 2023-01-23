@@ -16,8 +16,9 @@
 
 
 #ifndef __romp__GENERATED_CODE
-#include "romp-rw.hpp"  // LANGUAGE SERVER SUPPORT ONLY !!
-#include "romp-rw-options.hpp" // LANGUAGE SERVER SUPPORT ONLY !!
+#include "walker.hpp"  // LANGUAGE SERVER SUPPORT ONLY !!
+#include "bfs.hpp"  // LANGUAGE SERVER SUPPORT ONLY !!
+#include "options.hpp" // LANGUAGE SERVER SUPPORT ONLY !!
 #endif
 
 // #include <unistd.h>
@@ -67,11 +68,13 @@ int main(int argc, char **argv) {
   if (OPTIONS.do_trace)
     ::romp::init_trace_dir(OPTIONS);
 
-  if (OPTIONS.do_single)
-    ::romp::launch_single(OPTIONS,OPTIONS.rand_seed);
+  if (OPTIONS.do_bfs)
+    ::romp::BFSHandler(OPTIONS).launch();
+  else if (OPTIONS.do_single)
+    ::romp::launch_single(OPTIONS);
 
   else
-    ::romp::launch_threads(OPTIONS,OPTIONS.rand_seed);
+    ::romp::launch_threads(OPTIONS);
     // ::romp::launch_OpenMP(::romp::OPTIONS.rand_seed);
 
 

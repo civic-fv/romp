@@ -62,6 +62,7 @@ void generate(const Model &m, const std::vector<Comment> &comments,
   gen << "\n#define _ROMP_STATE_TYPE " ROMP_STATE_TYPE "\n\n";
   gen << "\n#define _ROMP_HIST_LEN (" << gen.hist_len << "ul)\n\n";
   gen << "\n#define _ROMP_THREAD_TO_RW_RATIO (" << gen.default_walk_multiplier << "ul)\n\n";
+  gen << "\n#define _ROMP_BFS_COEF (" << gen.default_bfs_coefficient << "ul)\n\n";
   std::string file_path = gen.input_file_path.string();
   gen << "\n#define __model__filepath \"" << nEscape(file_path) << "\"\n\n";
   int _count = std::count(file_path.begin(), file_path.end(), ' ');
@@ -125,10 +126,12 @@ void generate(const Model &m, const std::vector<Comment> &comments,
     gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/options.hpp\"\n";
     gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/error.hpp\"\n";
     gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/types.hpp\"\n";
+    gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/hash.hpp\"\n";
 # else
     gen.output_embedded_code_file(resources_romp_rw_options_hpp, resources_romp_rw_options_hpp_len);
     gen.output_embedded_code_file(resources_romp_rw_error_hpp, resources_romp_rw_error_hpp_len);
     gen.output_embedded_code_file(resources_romp_rw_types_hpp, resources_romp_rw_types_hpp_len);
+    gen.output_embedded_code_file(resources_romp_rw_hash_hpp, resources_romp_rw_hash_hpp_len);
 # endif
   gen << "\n#pragma endregion romp_infix\n\n" << /*std::*/gen.flush();
 
@@ -159,7 +162,21 @@ void generate(const Model &m, const std::vector<Comment> &comments,
       << "/* the number of cover property statements & rules in the model */\n"
       << "#define " ROMP_COVER_PROP_COUNT " (" << prop_ids.first <<  "ul)\n"
       << "/* the number of liveness property rules in the model */\n"
-      << "#define " ROMP_LIVENESS_PROP_COUNT " (" << prop_ids.second <<  "ul)\n"
+      << "#define " ROMP_LIVENESS_PROP_COUNT " (" << prop_ids.second <<  "ul)\n\n"
+      << gen.indentation() << "const " ROMP_INFO_PROPERTY_TYPE "* LIVENESS_INFOS[" ROMP_LIVENESS_PROP_COUNT "] = {";
+  std::string sep = "";
+  for (auto i : m_gen.liveness_id_map) {
+    gen << sep << "&" ROMP_INFO_PROPERTIES_VAR "[" << i << ']';
+    sep = ",";
+  }
+  gen << "};\n"
+      << gen.indentation() << "const " ROMP_INFO_PROPERTY_TYPE "* COVER_INFOS[" ROMP_COVER_PROP_COUNT "] = {";
+  sep = "";
+  for (auto i : m_gen.cover_id_map) {
+    gen << sep << "&" ROMP_INFO_PROPERTIES_VAR "[" << i << ']';
+    sep = ",";
+  }
+  gen << "};\n\n"
       << gen.indentation() << ROMP_INFO_STARTSTATES_DECL " = ";
   romp::generate_startstate_metadata(gen,m);
   gen << ";\n"
@@ -175,7 +192,8 @@ void generate(const Model &m, const std::vector<Comment> &comments,
 
   gen << "\n\n#pragma region rule_caller__generated_code\n\n"
       << gen.indentation() << "namespace " ROMP_CALLER_NAMESPACE_NAME " {\n\n"
-      << gen.indentation() << "// << ==================================== Rule Expansions ===================================== >> \n\n";
+      << gen.indentation() 
+      << "// << ==================================== Rule Expansions ===================================== >> \n\n";
   romp::generate_ruleset_callers(gen,m);
   gen << "\n\n" << gen.indentation() 
       << "// << =============================== Property Rule Expansions ================================= >> \n\n";
@@ -190,9 +208,11 @@ void generate(const Model &m, const std::vector<Comment> &comments,
   gen << "\n#pragma region romp_postfix\n\n";
 # ifdef _ROMP_DEV_DEBUG_INCLUDE_DIR
     gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/walker.hpp\"\n";
+    gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/bfs.hpp\"\n";
     gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/impls.hpp\"\n";
 # else
     gen.output_embedded_code_file(resources_romp_rw_walker_hpp, resources_romp_rw_walker_hpp_len);
+    gen.output_embedded_code_file(resources_romp_rw_bfs_hpp, resources_romp_rw_bfs_hpp_len);
     gen.output_embedded_code_file(resources_romp_rw_impls_hpp, resources_romp_rw_impls_hpp_len);
 # endif
   gen << "\n#pragma endregion romp_postfix\n\n" << /*std::*/gen.flush();

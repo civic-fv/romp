@@ -228,7 +228,7 @@ since the generated murphi model is unnecessarily complicated.
 #### Build & Run _(with recommended settings)_
 ```bash
 make flash-flow                                    # build the model checkers
-./flash-flow.romp -s 1234 -w 1024 -d 512 -y       # check with romp
+./flash-flow.romp -s 1234 -w 1024 -d 512 -y        # check with romp
 ./flash-flow.nsym.romp -s 1234 -w 1024 -d 1024 -y  # check with romp (no symmetry)
 ./flash-flow.cm -m2048                             # verify with CMurphi
 ```

@@ -81,6 +81,12 @@ struct Options {
   bool report_emit_state = true;
   unsigned int tab_size = 2;
   char tab_char = ' ';
+  // bfs options ----
+  bool do_bfs = false;
+  bool bfs_single = true;
+  size_t bfs_coefficient = _ROMP_BFS_COEF;
+  size_t bfs_limit = INT16_MAX; // max number of states to explore before giving up
+
   const std::string get_trace_dir() const noexcept {
     if (do_single) return trace_dir;
     std::stringstream buf; buf << INIT_TIME_STAMP;

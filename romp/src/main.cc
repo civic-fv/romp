@@ -60,17 +60,18 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
         // { "header",             no_argument,       0, 128 },
         // { "source",             no_argument,       0, 129 },
         // { "scalar-type",        required_argument,  0,  130 },
-        { "range-type",         required_argument,  0,  120 },
-        { "version",            no_argument,        0,  131 },
-        { "do-measure",         no_argument,        0,  132 },
-        { "simple-trace-rep",   no_argument,        0,  133 },
+        { "range-type",         required_argument,  0,  'R' },
+        { "version",            no_argument,        0,  'v' },
+        { "do-measure",         no_argument,        0,  'm' },
+        { "simple-trace-rep",   no_argument,        0,  'S' },
         { "default-walk-multiplier",   required_argument,        0,  'w' },
+        { "default-bfs-coefficient",   required_argument,        0,  'b' },
         { 0, 0, 0, 0 },
         // clang-format on
     };
 
     int option_index = 0;
-    int c = getopt_long(argc, argv, "ho:sacl", options, &option_index);
+    int c = getopt_long(argc, argv, "ho:r:sacliR:vSw:b:", options, &option_index);
 
     if (c == -1)
       break;
@@ -86,7 +87,7 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
       exit(EXIT_SUCCESS);
 
     case 'o': { // --output
-      auto o = std::make_shared<std::ofstream>(optarg);
+      auto o = std::make_shared<std::ofstream>(optarg,std::ios::out);
       if (!o->is_open()) {
         std::cerr << "failed to open " << optarg << "\n";
         exit(EXIT_FAILURE);
@@ -145,12 +146,25 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
         exit(EXIT_FAILURE);
       }
       break;
+    case 'b': // --default-bfs-coefficient <uint:size>
+      try {
+        gen.default_bfs_coefficient = std::stoul(optarg, nullptr, 0);
+      } catch (std::invalid_argument &ia) {
+        std::cerr << "invalid argument : provided default bfs coefficient value was not a number (NaN) !! (for -w/--default-wal-multiplier flag)\n"
+                  << std::flush;
+        exit(EXIT_FAILURE);
+      } catch (std::out_of_range &oor) {
+        std::cerr << "invalid argument : provided default bfs coefficient value was out of range (pos ints only) !! (for -w/--default-wal-multiplier flag)\n"
+                  << std::flush;
+        exit(EXIT_FAILURE);
+      }
+      break;
 
-    case 132: // --do-measure
+    case 'm': // --do-measure
       gen.enable_preprocessor_option(ROMP_MEASURE_PREPROCESSOR_VAR);
       break;
 
-    case 133: // --simple-trace-rep
+    case 'S': // --simple-trace-rep
       gen.enable_preprocessor_option(ROMP_SIMPLE_TRACE_PREPROCESSOR_VAR);
       break;
 
@@ -162,14 +176,14 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
     //   gen.scalar_type = optarg;
     //   break;
 
-    case 120: // --range-type
+    case 'R': // --range-type
       // note that we just assume the type the user gave us exists
       gen.value_type = optarg;
       break;
 
-    case 131: // --version
+    case 'v': // --version
       std::cout << "ROMP version " ROMP_VERSION "\n"
-                   "Rumur version " << murphi::get_version() << "\n";
+                   "libmurphi version " << murphi::get_version() << "\n";
       exit(EXIT_SUCCESS);
 
     default:
