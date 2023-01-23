@@ -82,8 +82,8 @@ struct Options {
   unsigned int tab_size = 2;
   char tab_char = ' ';
   // bfs options ----
-  bool do_bfs = true;
-  bool bfs_single = false;
+  bool do_bfs = false;
+  bool bfs_single = true;
   size_t bfs_coefficient = _ROMP_BFS_COEF;
   size_t bfs_limit = INT16_MAX; // max number of states to explore before giving up
 

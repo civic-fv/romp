@@ -421,138 +421,162 @@ void print_help() {
   using namespace std;
   Options default_opts;
   // clang-format off
-  std::cout << "This is a murphi model checker generated from the romp random walker tool.\n"
-               "   generated from: " __model__filename "\n"
-               "\n\n"
-               "CLI USAGE:    <> - required  {} - optional  * - can have 0 or more\n"
-               "   ./<this-file> {options}*\n"
-               "\n\n"
-               "NOTE:\n"
-               "  Option flags and arguments are NOT POSIX compliant!\n"
-               "  Please separate all options and their arguments with spaces,\n"
-               "   and do not join multiple short option flags into one.\n"
-               "    (i.e. `-s <str/int>` and `-y` must be input as\n"
-               "          ``-y -s 5`` and NOT ``-ys 5``, ``-ys5``, \n"
-               "            ``-ys=5``, ``-y -s=5``, or ``-y --seed=5``)\n"
-               "\n"
-               "GENERAL OPTIONS:\n"
-               "   -h | --help      Display help information (this page).\n"
-               "   -y | -l          Launch without prompting (skip launch prompt).\n"
-               "   --list-starts    Output a list of all the ruleset expanded\n"
-               "     | -ls            startstates & their id's\n"
-               "                     (see --start-id/-sid for more info)\n"
-               "\n"
-               "RANDOM WALKER OPTIONS:\n"
-               "  --depth <int>     Maximum number of rules to apply in a walk \n"
-               "    | -d <int>        before termination.\n"
-               "                      default: " << default_opts.depth << "\n"
-               "  --threads <int>   Specifies the number of threads to use.\n"
-               "    | -ptn <int>      default: " << default_opts.threads << " (machine specific)\n"
-               "  --walks <int>     Specifies the number of random  walks to do.\n"
-               "     | -w <int>       default: " << _ROMP_THREAD_TO_RW_RATIO << " * #-of-threads\n"
-               "  --single-walk     Perform a single random walker on a single thread.\n"
-               "     | -sw            note: overrides -ptn/--threads \n"
-               "                              & -w/--walks/--walk-count\n"
-               "  --seed <str/int>  Random seed for generating the random walks\n"
-               "    | -s <str/int>    default: current system time\n"
-               "  --even-start      Determine startstate for even distribution\n"
-               "    | -es             rather than random choice (default behavior).\n"
-               "  --start-id <id>   Set a single startstate to use (For all walks).\n"  
-               "    | -sid <id>       <id> is an int determined by a startstate's\n"
-               "                      position in the file after ruleset expansion.\n"
-               "                      Valid <id> values are integers between:\n"
-               "                         0 to " << _ROMP_STARTSTATES_LEN-1 << " inclusive\n"
-               "                      Use -ls/--list-starts to see mappings of id's\n"
-               "                        to the ruleset expanded startstates of\n"
-               "                        of your model.\n"
-               "                      NOTE: overrides --even-start/-es\n"
-               "\n"
-               "PROPERTY CONFIGURATIONS:\n"
-               "  --no-deadlock           Disable Deadlock detection.\n"
-               "    | -nd                   (overrides all property options below)\n"
+  std::cout << 
+    "This is a murphi model checker generated from the romp random walker tool.\n"
+    "   generated from: " __model__filename "\n"
+    "\n\n"
+    "CLI USAGE:    <> - required  {} - optional  * - can have 0 or more\n"
+    "   ./<this-file> {options}*\n"
+    "\n\n"
+    "NOTE:\n"
+    "  Option flags and arguments are NOT POSIX compliant!\n"
+    "  Please separate all options and their arguments with spaces,\n"
+    "   and do not join multiple short option flags into one.\n"
+    "    (i.e. `-s <str/int>` and `-y` must be input as\n"
+    "          ``-y -s 5`` and NOT ``-ys 5``, ``-ys5``, \n"
+    "            ``-ys=5``, ``-y -s=5``, or ``-y --seed=5``)\n"
+    "\n"
+    "GENERAL OPTIONS:\n"
+    "   -h | --help      Display help information (this page).\n"
+    "   -y | -l          Launch without prompting (skip launch prompt).\n"
+    "   --list-starts    Output a list of all the ruleset expanded\n"
+    "     | -ls            startstates & their id's\n"
+    "                     (see --start-id/-sid for more info)\n"
+    "\n"
+    "RANDOM WALKER OPTIONS:\n"
+    "  --depth <int>     Maximum number of rules to apply in a walk \n"
+    "    | -d <int>        before termination.\n"
+    "                      default: " << default_opts.depth << "\n"
+    "  --threads <int>   Specifies the number of threads to use.\n"
+    "    | -ptn <int>      default: " << default_opts.threads << " (machine specific)\n"
+    "  --walks <int>     Specifies the number of random  walks to do.\n"
+    "     | -w <int>       default: " << _ROMP_THREAD_TO_RW_RATIO << " * #-of-threads\n"
+    "  --single-walk     Perform a single random walker on a single thread.\n"
+    "     | -sw            note: overrides -ptn/--threads \n"
+    "                              & -w/--walks/--walk-count\n"
+    "  --seed <str/int>  Random seed for generating the random walks\n"
+    "    | -s <str/int>    default: current system time\n"
+    "  --even-start      Determine startstate for even distribution\n"
+    "    | -es             rather than random choice (default behavior).\n"
+    "  --start-id <id>   Set a single startstate to use (For all walks).\n"  
+    "    | -sid <id>       <id> is an int determined by a startstate's\n"
+    "                      position in the file after ruleset expansion.\n"
+    "                      Valid <id> values are integers between:\n"
+    "                         0 to " << _ROMP_STARTSTATES_LEN-1 << " inclusive\n"
+    "                      Use -ls/--list-starts to see mappings of id's\n"
+    "                        to the ruleset expanded startstates of\n"
+    "                        of your model.\n"
+    "                      NOTE: overrides --even-start/-es\n"
+    "\n"
+    "INITIAL BFS CONFIGURATION:\n"
+    "You can start your romp with a limited Breadth first search by using the\n"
+    " following command.  This can allow you to increase the likely converge of the\n"
+    " statespace covered by each romp, but does prevent you from using the normal\n"
+    " strategy of using a mass romp then repeating walks of interest in a \n"
+    " single walk with traces enabled.  This is because the pseudo random nature of\n"
+    " the romp process is not preserved through the BFS process.  We recommend\n"
+    " instead just rerunning the same config with traces enabled if you need more\n"
+    " detailed information, it may be slower but it will work.\n"
+    "  --bfs {single|multi} {int}  Enables an initial Breadth First Search of the\n"
+    "    | -bfs {s|m} {int}          statespace, that is either single threaded or\n"
+    "                                multithreaded (defaults to single).\n"
+    "                                The BFS will terminate and a swarm of random\n"
+    "                                walkers will start when there are enough\n"
+    "                                unique states in the BFS queue to have the\n"
+    "                                number of walkers specified with the `-w` flag\n"
+    "                                where each unique state gets {int} random walks\n"
+    "                                to increase the total coverage\n"
+    "                                ({int} defaults to " << default_opts.bfs_coefficient << ").\n"
+    "  --bfs-limit <int>           Sets a limit on how long the initial BFS can go\n"
+    "    | -bfsl <int>               on for.  This is measured in number of rules\n"
+    "                                applied. (<int> defaults to " << default_opts.bfs_limit << ")\n"
+    "\n"
+    "PROPERTY CONFIGURATIONS:\n"
+    "  --no-deadlock           Disable Deadlock detection.\n"
+    "    | -nd                   (overrides all property options below)\n"
 #ifdef __romp__ENABLE_liveness_property
-               "  --liveness-check {int}  Allows you to enable a heuristic test for\n"
-               "    | -lc {int}             rumur's liveness property. Where it \n"
-               "                            require the properties expr to resolve\n"
-               "                            to true with in {int} rule applications\n"
-               "                            since the start or the last time it was\n"
-               "                            true."
-               "                            {int} - an optional arg (see above).\n"
-               "                              default: " << default_opts.lcount << "\n"
+    "  --liveness-check {int}  Allows you to enable a heuristic test for\n"
+    "    | -lc {int}             rumur's liveness property. Where it \n"
+    "                            require the properties expr to resolve\n"
+    "                            to true with in {int} rule applications\n"
+    "                            since the start or the last time it was\n"
+    "                            true."
+    "                            {int} - an optional arg (see above).\n"
+    "                              default: " << default_opts.lcount << "\n"
 #endif
 #ifdef __romp__ENABLE_cover_property
-               "  --complete-on-cover {int} Allows you to enable a heuristic test"
-               "    | --cover-check {int}     for rumur's cover property. Where it\n"
-               "    | -cc {int}               considers a walk complete once every\n"
-               "                              cover property has been reached {int}\n"
-               "                              times.\n"
-               "                              {int} - an optional arg (see above).\n"
-               "                                default: " << default_opts.cover_count << "\n"
+    "  --complete-on-cover {int} Allows you to enable a heuristic test"
+    "    | --cover-check {int}     for rumur's cover property. Where it\n"
+    "    | -cc {int}               considers a walk complete once every\n"
+    "                              cover property has been reached {int}\n"
+    "                              times.\n"
+    "                              {int} - an optional arg (see above).\n"
+    "                                default: " << default_opts.cover_count << "\n"
 #endif
-               "  --attempt-guard {int}   Stop a random walk if no randomly \n"
-               "    | -ag {int}             selected rule can be applied to a State\n"
-               "                            after {int} many rules in a row.\n"
-               "                            {int} - an optional arg (see above).\n"
-               "                              (default: 2x #-of-rules in the model)\n"
-               "  --loop-limit {int}      Same thing as --attempt-guard/-ag. \n"
-               "    | -ll {int}             {int} - an optional arg (see above).\n"
-               "                              (default: 2x #-of-rules in the model)\n"
-               "\n"
-               "Trace Options\t\n"
-               "  --trace {dir-path}    Enable detailed traces to be made for every\n"
-               "    | -t {dir-path}       random walk performed. Outputs as a \n"
-               "                          separate ``compressed json'' file for \n"
-               "                          each random walk performed.\n"
-               "                          NOTE: slows down the process noticeably!\n"
-               "                          {dir-path} - (optional) the directory you\n"
-               "                            want to have the trace files output to.\n"
-               "                            default: \""<< default_opts.trace_dir <<"\"\n"
-               "\n"
-               "RESULT OUTPUT OPTIONS:\n"
-               "  --report-error        Provide detailed report for each walk that\n"
-               "    | -re                 ends in an ``error''.\n"
-               "    | -e                  (aka: violates a property or reaches a \n"
-               "                            murphi error statement)\n"
-               "                          (NOTE: --single-walk/-sw only outputs \n"
-               "                            this and not the summery data)"
-               "  --report-all          Report on all walks not just those with \n"
-               "    | --all              ``errors''. Including those stopped by \n"
-               "    | -a                  the --attempt-guard/-ag/--loop-limit/-ll\n"
-               "                          option, or max --depth/-d being reached.\n"
+    "  --attempt-guard {int}   Stop a random walk if no randomly \n"
+    "    | -ag {int}             selected rule can be applied to a State\n"
+    "                            after {int} many rules in a row.\n"
+    "                            {int} - an optional arg (see above).\n"
+    "                              (default: 2x #-of-rules in the model)\n"
+    "  --loop-limit {int}      Same thing as --attempt-guard/-ag. \n"
+    "    | -ll {int}             {int} - an optional arg (see above).\n"
+    "                              (default: 2x #-of-rules in the model)\n"
+    "\n"
+    "Trace Options\t\n"
+    "  --trace {dir-path}    Enable detailed traces to be made for every\n"
+    "    | -t {dir-path}       random walk performed. Outputs as a \n"
+    "                          separate ``compressed json'' file for \n"
+    "                          each random walk performed.\n"
+    "                          NOTE: slows down the process noticeably!\n"
+    "                          {dir-path} - (optional) the directory you\n"
+    "                            want to have the trace files output to.\n"
+    "                            default: \""<< default_opts.trace_dir <<"\"\n"
+    "\n"
+    "RESULT OUTPUT OPTIONS:\n"
+    "  --report-error        Provide detailed report for each walk that\n"
+    "    | -re                 ends in an ``error''.\n"
+    "    | -e                  (aka: violates a property or reaches a \n"
+    "                            murphi error statement)\n"
+    "                          (NOTE: --single-walk/-sw only outputs \n"
+    "                            this and not the summery data)"
+    "  --report-all          Report on all walks not just those with \n"
+    "    | --all              ``errors''. Including those stopped by \n"
+    "    | -a                  the --attempt-guard/-ag/--loop-limit/-ll\n"
+    "                          option, or max --depth/-d being reached.\n"
 #ifdef __romp__ENABLE_assume_property
-               "                          This also performs --report-assume/-ra.\n"
-               "  --report-assume       Report walks that are violate an assume\n"
-               "    | --r-assume          property (defined by rumur), rather than\n"
-               "    | -ra                 just discarding them as invalid states.\n"
-               "                          (NOTE: only effective if --report-error\n"
-               "                            is provided)\n"
+    "                          This also performs --report-assume/-ra.\n"
+    "  --report-assume       Report walks that are violate an assume\n"
+    "    | --r-assume          property (defined by rumur), rather than\n"
+    "    | -ra                 just discarding them as invalid states.\n"
+    "                          (NOTE: only effective if --report-error\n"
+    "                            is provided)\n"
 #endif
 #ifdef __romp__ENABLE_cover_property
-               "                          This also performs --report-assume/-ra.\n"
-               "  --report-cover        Report walks that ``complete on cover''\n"
-               "    | --r-cover           (see --complete-on-cover for more info)\n"
-               "    | -rc                 \n"
+    "                          This also performs --report-assume/-ra.\n"
+    "  --report-cover        Report walks that ``complete on cover''\n"
+    "    | --r-cover           (see --complete-on-cover for more info)\n"
+    "    | -rc                 \n"
 #endif
-              //  "  --r-history <int>     Specify how much of a history of rules\n"
-              //  "    | -rhl <int>          applied you want to see in a walks report\n"
-              //  "                          <int> - (required) size of history buffer\n"
-              //  "                            default: " << default_opts.history_length << "\n"
-              //  "                          NOTE: larger the size == more RAM used.\n"
-               "  --r-omit-state        Don't output the values in the model state\n"
-               "    | -ros                in the results\n"
-               "  --r-show-type         Output variable type next to name when\n"
-               "    | -rst                reporting the value of the model state\n"
-               "  --r-tab-size <int>    Set the indentation size for the result \n"
-               "    | -rts <int>          output (NOTE: not used for trace output)\n"
-               "                          (default: "<< default_opts.tab_size <<")\n"
-               "  --r-use-tab           Indent using tab chars instead of spaces.\n"
-               "    | -rut                (NOTE: not used in json trace output)\n"
-               "                          (NOTE: overrides --r-tab-size/-rts)\n"
-              //  "  --output <file-path>  Specify a file you wish to output to\n"
-              //  "    | -o <file-path>      instead of to stdout.\n"
-               "\n"
-            << std::endl;
-  // clang-format on
+  //  "  --r-history <int>     Specify how much of a history of rules\n"
+  //  "    | -rhl <int>          applied you want to see in a walks report\n"
+  //  "                          <int> - (required) size of history buffer\n"
+  //  "                            default: " << default_opts.history_length << "\n"
+  //  "                          NOTE: larger the size == more RAM used.\n"
+    "  --r-omit-state        Don't output the values in the model state\n"
+    "    | -ros                in the results\n"
+    "  --r-show-type         Output variable type next to name when\n"
+    "    | -rst                reporting the value of the model state\n"
+    "  --r-tab-size <int>    Set the indentation size for the result \n"
+    "    | -rts <int>          output (NOTE: not used for trace output)\n"
+    "                          (default: "<< default_opts.tab_size <<")\n"
+    "  --r-use-tab           Indent using tab chars instead of spaces.\n"
+    "    | -rut                (NOTE: not used in json trace output)\n"
+    "                          (NOTE: overrides --r-tab-size/-rts)\n"
+  //  "  --output <file-path>  Specify a file you wish to output to\n"
+  //  "    | -o <file-path>      instead of to stdout.\n"
+    "\n"
+    << std::endl;
+    // clang-format on
 }
 
 std::string validate_dir_path(const std::string val) {
@@ -876,8 +900,61 @@ void Options::parse_args(int argc, char **argv) {
       std::cerr << "\nWARNING : enabling traces can significantly reduce performance "
                    "& can take up a large amount of system recourses !!\n"
                 << std::flush;
+    } else if ("-bfs" == std::string(argv[i]) || "--bfs" == std::string(argv[i])
+               || "-BFS" == std::string(argv[i]) || "--BFS" == std::string(argv[i])) {
+      do_bfs = true;
+      if (i + 1 < argc && '-' != argv[i + 1][0]) {
+        ++i;
+        if ('m' == argv[i][0] || 'M' == argv[i][0]) {
+          bfs_single = false;
+          if (i + 1 < argc && '-' != argv[i + 1][0]) ++i;
+        } else if ('s' == argv[i][0] || 'S' == argv[i][0]) {
+          bfs_single == true;
+          if (i + 1 < argc && '-' != argv[i + 1][0]) ++i;
+        }
+        try {
+          bfs_coefficient = std::stoul(argv[i], nullptr, 0);
+        } catch (std::invalid_argument &ia) {
+          std::cerr << "invalid argument : provided initial BFS Coefficient was not a number (NaN) !!\n"
+                       "                   |-> (for --bfs/-bfs {single|multiple} {int} flag)\n"
+                       "                                                         ^^^^^\n"
+                    << std::flush;
+          exit(EXIT_FAILURE);
+        } catch (std::out_of_range &oor) {
+          std::cerr << "invalid argument : provided initial BFS Coefficient was out of range must be unsigned int (aka "
+                       "must be positive & less than 2.147 billion)\n"
+                       "                   |-> (for --bfs/-bfs {single|multiple} {int} flag)\n"
+                       "                                                         ^^^^^\n"
+                    << std::flush;
+          exit(EXIT_FAILURE);
+        }
+      }
+    } else if ("-bfsl" == std::string(argv[i]) || "--bfs-limit" == std::string(argv[i])
+               || "-bfs-l" == std::string(argv[i]) || "--bfsl" == std::string(argv[i])
+               || "-bfs-limit" == std::string(argv[i]) || "--bfs-l" == std::string(argv[i])) {
+      if (i + 1 < argc && '-' != argv[i + 1][0]) {
+        ++i;
+        try {
+          bfs_limit = std::stoul(argv[i], nullptr, 0);
+        } catch (std::invalid_argument &ia) {
+          std::cerr << "invalid argument : provided initial BFS Limit was not a number (NaN) !!\n"
+                       "                   |-> (for " << argv[i-1] << " flag)\n"
+                    << std::flush;
+          exit(EXIT_FAILURE);
+        } catch (std::out_of_range &oor) {
+          std::cerr << "invalid argument : provided initial BFS Limit was out of range must be unsigned int (aka "
+                       "must be positive & less than 2.147 billion)\n"
+                       "                   |-> (for `" << argv[i-1] << "` flag)\n"
+                    << std::flush;
+          exit(EXIT_FAILURE);
+        }
+      } else {
+        std::cerr << "invalid argument : `" << argv[i] << "` requires an unsigned int to follow as a parameter !!\n"
+                  << std::flush;
+        exit(EXIT_FAILURE);
+      }
     }
-  }
+  } // end for loop
     // modifying values to match complex default values
     if (tab_char == '\t') {
       tab_size = 1;
@@ -885,6 +962,15 @@ void Options::parse_args(int argc, char **argv) {
     if (do_single) {
       threads = 1;
       walks = 1;
+      if (do_bfs) {
+        do_bfs = false;
+        std::cerr << "\nWARNING : Single walk (`--single-walk`/`-sw`) is not compatible and overrides initial BFS (`--bfs`)\n" << std::flush;
+      }
+    } else if (do_bfs) {
+      if (bfs_limit == 0) {
+        std::cerr << "\nERROR : The BFS Limit must be greater than 0 to be of any effect (usually a really big number) !!\n" << std::flush;
+        exit(EXIT_FAILURE);
+      }
     }
     
     // check for inconsistent or contradictory options here
@@ -1036,6 +1122,16 @@ const stream_void Options::write_config(ostream_p& out) const noexcept {
       << "   symmetry: NO  \t(config when generating with romp)"
 #endif
       << out.dedent()                                                               << out.nl()
+      << "INITIAL BFS OPTIONS:"                                     << out.indent() << out.nl();
+  if (do_bfs) {
+    out<<"   do initial BFS: YES"                                                         << out.nl()
+       <<"  concurency mode: " << ((bfs_single) ? "SINGLE threaded \t(default)" : "MULTI-threaded" ) << out.nl()
+       <<"  BFS coefficient: " << bfs_coefficient << out.nl()
+       <<"        BFS limit: " << bfs_limit << ((bfs_limit==defaults.bfs_limit) ? " \t(default)" : "");
+  } else {
+    out << "\t>>\tDISABLED \t(default)\t<<";
+  }
+  out << out.dedent()                                                               << out.nl()
       << "TRACE OPTIONS:"                                           << out.indent() << out.nl();
   if (do_trace) {
     out<<"   do trace: YES"                                                         << out.nl()
@@ -1122,6 +1218,10 @@ ojstream<O>& operator << (ojstream<O>& json, const Options& opts) noexcept {
             "\"walks\":" << opts.walks << ","
             "\"threads\":" << opts.threads << ","
             "\"do-single\":" << opts.do_single << ","
+            "\"initial-bfs\":" << opts.do_bfs << ","
+            "\"bfs-mode\":" << ((opts.do_bfs) ? ((opts.bfs_single) ? "\"single\"" : "\"multi\"") : "null") << ","
+            "\"bfs-coef\":" << ((opts.do_bfs) ? std::to_string(opts.bfs_coefficient) : "null") << ","
+            "\"bfs-limit\":" << ((opts.do_bfs) ? std::to_string(opts.bfs_limit) : "null") << ","
             "\"max-depth\":" << opts.depth << ","
             "\"abs-attempt-limit\":" << std::to_string(_ROMP_ATTEMPT_LIMIT_DEFAULT) << ","
             "\"attempt-limit\":" << ((opts.attempt_limit != _ROMP_ATTEMPT_LIMIT_DEFAULT

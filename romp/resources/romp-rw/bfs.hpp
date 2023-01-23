@@ -417,7 +417,7 @@ protected:
               q.push_back(walker);
             if (q.size() >= TARGET)
               break;
-          }
+          } else delete walker;
         }
 #     if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
         // end if liveness property violated
@@ -515,7 +515,7 @@ protected:
           if (w->pass) ++rules_applied;
           if (insert_state(w->state)) {
             q.push_back(w);
-          }
+          } else delete w;
         }
         buffer.clear();
         delete b_w;
@@ -733,9 +733,9 @@ protected:
     auto t = time_ms() - start_time;
     walker->finalize();
     std::string color = "\033[30;1;4m";
-    out << out.nl()
-        << "\n\nError found during initial BFS\n\n"
-        << *walker << "\n\n"
+    out << '\n' << out.nl() 
+        << "Error found during initial BFS"
+        << out.nl() << *walker << '\n'
         << out.nl() << "\033[1;4mBFS SUMMARY:\033[0m" << out.indent()
         << out.nl() << "Error found see above for details"
         << out.nl() << "    States Found: " << states.size()
@@ -753,7 +753,7 @@ protected:
     auto t = time_ms() - start_time;
     std::string color = "\033[32;1m";
     out << out.nl()
-        << "\nNO ERRORS found!  BFS had FULL COVERAGE!\n"
+        << "NO ERRORS found!  BFS had FULL COVERAGE!"
         << out.nl() << "\033[1;4mBFS SUMMARY:\033[0m" << out.indent()
         << out.nl() << "    States Found: " << states.size()
         << out.nl() << "   Rules Applied: " << rules_applied
@@ -765,7 +765,11 @@ protected:
   inline void end_bfs() {
     auto t = time_ms() - start_time;
     out << out.nl()
-        << "\nNO ERRORS found during initial BFS\n"
+        << "NO ERRORS found during initial BFS\n"
+        << out.nl() 
+          << ((rules_applied >= OPTIONS.bfs_limit) 
+                ? "WARNING : BFS limit was reached, statespace might not have been sufficiently explored before launching the walkers !!\n" 
+                : std::string(""))
         << out.nl() << "\033[1;4mBFS SUMMARY:\033[0m" << out.indent()
         << out.nl() << "    States Found: " << states.size()
         << out.nl() << "   Rules Applied: " << rules_applied
