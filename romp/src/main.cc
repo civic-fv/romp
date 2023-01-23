@@ -62,7 +62,7 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
         // { "scalar-type",        required_argument,  0,  130 },
         { "range-type",         required_argument,  0,  'R' },
         { "version",            no_argument,        0,  'v' },
-        { "do-measure",         no_argument,        0,  'd' },
+        { "do-measure",         no_argument,        0,  'm' },
         { "simple-trace-rep",   no_argument,        0,  'S' },
         { "default-walk-multiplier",   required_argument,        0,  'w' },
         { "default-bfs-coefficient",   required_argument,        0,  'b' },
@@ -160,7 +160,7 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
       }
       break;
 
-    case 'd': // --do-measure
+    case 'm': // --do-measure
       gen.enable_preprocessor_option(ROMP_MEASURE_PREPROCESSOR_VAR);
       break;
 
