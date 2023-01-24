@@ -68,19 +68,20 @@ INIT_TIME = datetime.now().strftime("%y-%m-%d_%H-%M-%S")
 
 LOCAL_SAVE_PATH = "./test_results/" + INIT_TIME
 CHPC_SAVE_PATH = "/scratch/general/vast/u1350795/romp/" + INIT_TIME
-ROMP = "../build/romp/romp"
+ROMP = str(Path("../build/romp/romp").absolute())
 ROMP_PARAMS: Params_t = {"symmetry": [None, GCO('-s')],
                          "trace": [MCO(f'-t {CHPC_SAVE_PATH if DO_SLURM else LOCAL_SAVE_PATH}'), None],
                          "trace-comp": [GCO('--simple-trace-rep')],
                          "seed": [None, MCO('-s scrappy'), MCO('-s 1234567890')],
                          "walkers":[None,MCO("-w 512"),MCO("-w 1024"),MCO("-w 2048"),MCO("-w 4096"),MCO("-w 8192"), MCO("-w 16384")],
                          "depth":[None,MCO("-d 512"),MCO("-d 1024"),MCO("-d 2048"),MCO("-d 4096"),MCO("-d 8192"), MCO("-d 16384"),MCO("-d 32768")],
+                         "bfs": [None,MCO("-bfs s 1"), MCO("-bfs s 16"), MCO("-bfs s 64"), MCO("-bfs s 256"),MCO("-bfs m 1"), MCO("-bfs m 16"), MCO("-bfs m 64"), MCO("-bfs m 256")],
                          "attempt-limit":[None,MCO("-ll"),MCO("-ll 4096")]}
-CMURPHI = "../../cmurphi/src/mu"
+CMURPHI = str(Path("../../cmurphi/src/mu").absolute())
 CMURPHI_PARAMS: Params_t = {"HashCompaction": [GCO("-c"), None], "BitCompaction": [GCO("-b"), None],
                             "MemLimit":[MCO("-m10000")], "trace-DFS": [MCO("ON"), MCO("OFF")],
                             "deadlock":[GCO("--deadlock-detection "+i) for i in ["off", "stuck", "stuttering"]]}  # TODO make this option match cmurphi man/help page
-RUMUR = "../../rumur/build/rumur/rumur"
+RUMUR = str(Path("../../rumur/build/rumur/rumur").absolute())
 RUMUR_PARAMS: Params_t = {"symmetry": [GCO("--symmetry-reduction="+i) for i in ["heuristic", "exhaustive", "off"]],
                           # TODO make this option match rumur man/help page
                           "bound": [None,GCO("--bound=4096"),GCO("--bound=8192"),GCO("--bound=16384")]}  # TODO make this option match rumur man/help page
@@ -104,6 +105,32 @@ SBATCH_PARMAS: str = f'''
 ALL_MODELS: List[str] = [
     "./adash.m"
 ]
+
+SLURM_TEMPLATE:str = f"""#!/usr/bin/bash
+{SBATCH_PARMAS}
+
+export TEST_DIR="{CHPC_SAVE_PATH}"
+
+cd $TEST_DIR
+mkdir %j
+cd %j
+
+"""
+
+PY_JOB_TEMPLATE:str = f"""#!/usr/bin/python3
+
+from os import system
+from sys import argv
+
+JOBS = [%s]
+
+def main():
+    pass
+
+if __name__ == "__main__":
+    main()
+
+"""
 # SPIN_PARAMS  = {} # TODO: add this when we work with everything else
 
 # << =========================================================================================== >>
@@ -269,6 +296,65 @@ class ConfigGenerator:
 '''
 
 
+# def launch(cg: ConfigGenerator, slurmOpts: str, outputDir: str = "./") -> None:
+#     if outputDir != "./":
+#         try:
+#             makedirs(outputDir)
+#         except:
+#             if DEBUG:
+#                 print("ERROR : Failed to create new directory (could already exist)")
+#             pass
+#     if not DO_SLURM:
+#         bash_for_template = f"for j in {' '.join(str(i) for i in range(PASSES))}\ndo\n  {{cmd}}\ndone\n\n"
+#     with open(outputDir+f"/launch_{cg._exe_ext}.{'slurm' if DO_SLURM else 'sh'}",'w') as file:
+#         file.write("#!/bin/bash" + slurmOpts if DO_SLURM else '' + '\n')
+#         for i in cg:
+#             gen_cmd = i.gen_cmd
+#             print("Running :", gen_cmd)
+#             if not DEBUG:
+#                 if system(gen_cmd) != 0:
+#                     print("ERROR :: could not generate!")
+#                     continue
+                
+#             # Compiling the model
+#             comp_cmd = i.comp_cmd
+#             print("Running :", comp_cmd)
+#             if not DEBUG:
+#                 if system(comp_cmd) != 0:
+#                     print("ERROR :: could not build!")
+#                     continue
+                
+#             # Launching  model
+#             run_cmd = i.sbatch_cmd(slurmOpts, outputDir) if DO_SLURM else i.launch_cmd(outputDir)
+#             print("Writing :", run_cmd)
+#             # if not DEBUG:
+#             #     if system(sbatch_cmd) != 0:
+#             #         print("ERROR :: durning sbatch launch!")
+#             #         continue
+#             if DO_SLURM:
+#                 file.write(run_cmd+'\n')
+#             else:
+#                 file.write(bash_for_template.format(cmd=run_cmd))
+#             #valgrind 
+#             valgrind_cmd = i.valgrind_cmd(slurmOpts, outputDir)
+#             print("Writing :", valgrind_cmd)
+#             file.write(valgrind_cmd+'\n')
+#             print()
+#     if DEBUG:
+#         print("\nRunning : cat {outputDir}/launch_{cg._exe_ext}.slurm\n```")
+#         system(f"cat {outputDir}/launch_{cg._exe_ext}.{'slurm' if DO_SLURM else 'sh'}")
+#         print("```\n")
+#     if DO_SLURM:
+#         print("\nRunning : sbatch {slurmOpts} {outputDir}/launch_{cg._exe_ext}.slurm\n")
+#         if not DEBUG:
+#             if system(f"sbatch {slurmOpts} {outputDir}/launch_{cg._exe_ext}.slurm") != 0:
+#                 print("ERROR :: FAILED TO LAUNCH SBATCH")
+#     else:
+#         print(f"\nRunning : {outputDir}/launch_{cg._exe_ext}.sh\n")
+#         if not DEBUG:
+#             if system(f"{outputDir}/launch_{cg._exe_ext}.sh") != 0:
+#                 print("ERROR :: FAILED TO LAUNCH BASH SCRIPT")
+            
 def launch(cg: ConfigGenerator, slurmOpts: str, outputDir: str = "./") -> None:
     if outputDir != "./":
         try:
@@ -279,8 +365,8 @@ def launch(cg: ConfigGenerator, slurmOpts: str, outputDir: str = "./") -> None:
             pass
     if not DO_SLURM:
         bash_for_template = f"for j in {' '.join(str(i) for i in range(PASSES))}\ndo\n  {{cmd}}\ndone\n\n"
-    with open(outputDir+f"/launch_{cg._exe_ext}.{'slurm' if DO_SLURM else 'sh'}",'w') as file:
-        file.write("#!/bin/bash" + slurmOpts if DO_SLURM else '' + '\n')
+    with open(outputDir+f"/{cg._exe_ext}_job.py",'w') as file:
+        file.write("#!/bin/python3\n")
         for i in cg:
             gen_cmd = i.gen_cmd
             print("Running :", gen_cmd)
