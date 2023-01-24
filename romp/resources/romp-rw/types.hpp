@@ -87,7 +87,7 @@ namespace romp {
   class BaseUndefinableType {
     T value;
     bool is_defined;
-  protected:
+  public: // NOTE: I was lazy and just made this section public instead of protected
     inline T get() const {
       if (not is_defined) 
         throw std::logic_error("value was undefined");
@@ -1006,21 +1006,39 @@ namespace romp {
 
     template<size_t RM, typename RE>  
     friend bool operator == (const MultisetType& l, const MultisetType<RM,RE>& r) {
+      if (l.occupancy != r.occupancy) return false; // makes multiplicity matter
+      bool res = true;
+      size_t found = 0;
+      bool matched[MAX];
+      for (size_t j=0; j<l.occupancy; ++j) matched[j] = false;
+      for (size_t i=0; i<r.occupancy; ++i) {
+        for (size_t j=0; j<l.occupancy; ++j) {
+          if (r.data[i] == l.data[j] && not matched[j]) {
+            matched[j] = true; ++found;
+          }
+        }
+        if (found!=i) return false;
+      }
+      for (size_t j=0; j<l.occupancy; ++j) res &= matched[j];
+      return res;
+      /* // rewriting to make multiplicity matter and order not matter
       // if (MAX != RM) return false; // evaluate-able at compile time
       if (l.occupancy != r.occupancy) return false;
       for (size_t i=0; i<l.occupancy; ++i)
         if (l.data[i] != r.data[i])
           return false;
-      return true;
+      return true; */
     }
     template< size_t RM, typename RE> 
     friend bool operator != (const MultisetType& l, const MultisetType<RM,RE>& r) {
+      return not (l == r);
+      /* // rewriting to make multiplicity matter and order not matter
       // if (LM != RM) return true; // evaluate-able at compile time
       if (l.occupancy != r.occupancy) return true;
       for (size_t i=0; i<l.occupancy; ++i)
         if (l.data[i] == r.data[i])
           return false;
-      return true;
+      return true; */
     }
 
   protected:
