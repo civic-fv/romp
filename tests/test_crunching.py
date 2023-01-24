@@ -1,13 +1,12 @@
 #using pandas then converting it into a csv ?
 import pandas as pd
+import subprocess
 import re
 import os
 path = "Path"
+from trace_stats import TraceData
 #changing the current working directory to the provided path
 os.chdir(path)
-
-
-
 
 def romp(f):
     '''1) read the file data 
@@ -18,6 +17,7 @@ def cmurphi(f):
     pass
 import re
 
+'''
 def rumur(f):
     lines = f.readlines()
     memory_usage = lines[0]
@@ -44,33 +44,39 @@ def rumur(f):
     stats_df = stats_df.append(data, ignore_index=True)
 
     return stats_df
+'''
 
 
 def rumur(f):
-    '''1)read all lines in the file 
-    '''
-    lines = f.readlines()
-    memory_usage = lines[0]
-    status = lines[2]
-    state_space_explored = lines[3]
+    lines = subprocess.run(['grep', '-E', 'bits|slots|states|rules|Status', f], capture_output=True).stdout.decode().split('\n')
 
-    size_of_state = int(memory_usage.split(':')[1].split()[0])
-    size_of_hash_table = int(memory_usage.split(':')[2].split()[0])
+    memory_usage = [line for line in lines if 'bits' in line][0]
+    progress_report = [line for line in lines if 'states' in line and 'explored' in line][0]
+    status = [line for line in lines if 'Status' in line][0]
+    state_space_explored = [line for line in lines if 'states' in line and 'explored' not in line][0]
 
-    error_status = status.split(':')[1].strip()
+    size_of_state = int(re.search(r'(\d+) bits', memory_usage).group(1))
+    size_of_hash_table = int(re.search(r'(\d+) slots', memory_usage).group(1))
 
-    states = int(state_space_explored.split(':')[1].split()[0])
-    rules_fired = int(state_space_explored.split(':')[1].split()[4])
-    time_taken = float(state_space_explored.split(':')[1].split()[7][:-1])
+    states_explored = int(re.search(r'(\d+) states explored', progress_report).group(1))
+    rules_fired = int(re.search(r'(\d+) rules fired', progress_report).group(1))
+    time_taken = float(re.search(r'(\d+\.\d+)s', progress_report).group(1))
+
+    error_status = re.search(r'Status:(.+)', status).group(1).strip()
+
+    states = int(re.search(r'(\d+) states', state_space_explored).group(1))
+    rules_fired = int(re.search(r'(\d+) rules', state_space_explored).group(1))
+    time_taken = float(re.search(r'(\d+\.\d+)s', state_space_explored).group(1))
 
     data = {'model':'rumur', 'States_visited': states_explored, 'Rules_Fired': rules_fired, 'Time': time_taken,
             'Memory': size_of_state, 'Hashtable_Size': size_of_hash_table, 'Error_Status':error_status}
 
     stats_df = stats_df.append(data, ignore_index=True)
 
-    #TODO USE REGEX LIB not split of datatype
-    #todo index from the model 
-    #todo fsdfs use list 
+    return stats_df
+#TODO add relative path
+file_list=fs_DFS(relative_path)
+
 
 '''use fsdfs to get list of files
     create the config generator objects
