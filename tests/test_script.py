@@ -102,8 +102,6 @@ SBATCH_PARMAS: str = f'''
 # SBATCH_PARMAS: str = "-M kingspeak --account=ganesh --partition=kingspeak-shared --nodes=2 --ntasks=8 -C c16 -c 16 --exclusive --time=12:00:00 --mail-type=FAIL --mail-user=ajanthav10@gmail.com"
 
 ALL_MODELS: List[str] = [
-    "./abp.m",
-    "./adash_bug.m"
     "./adash.m"
 ]
 # SPIN_PARAMS  = {} # TODO: add this when we work with everything else
