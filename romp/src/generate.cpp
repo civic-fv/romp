@@ -97,8 +97,11 @@ void generate(const Model &m, const std::vector<Comment> &comments,
     gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/writers.hpp\"\n";
 # else
     gen.output_embedded_code_file( resources_romp_rw_include_hpp, resources_romp_rw_include_hpp_len);
+    gen << '\n';
     gen.output_embedded_code_file( resources_romp_rw_decl_hpp, resources_romp_rw_decl_hpp_len);
+    gen << '\n';
     gen.output_embedded_code_file( resources_romp_rw_writers_hpp, resources_romp_rw_writers_hpp_len);
+    gen << '\n';
 # endif
   gen << "\n#pragma endregion romp_prefix\n\n" << /*std::*/gen.flush();
 
@@ -129,9 +132,13 @@ void generate(const Model &m, const std::vector<Comment> &comments,
     gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/hash.hpp\"\n";
 # else
     gen.output_embedded_code_file(resources_romp_rw_options_hpp, resources_romp_rw_options_hpp_len);
+    gen << '\n';
     gen.output_embedded_code_file(resources_romp_rw_error_hpp, resources_romp_rw_error_hpp_len);
+    gen << '\n';
     gen.output_embedded_code_file(resources_romp_rw_types_hpp, resources_romp_rw_types_hpp_len);
+    gen << '\n';
     gen.output_embedded_code_file(resources_romp_rw_hash_hpp, resources_romp_rw_hash_hpp_len);
+    gen << '\n';
 # endif
   gen << "\n#pragma endregion romp_infix\n\n" << /*std::*/gen.flush();
 
@@ -208,8 +215,11 @@ void generate(const Model &m, const std::vector<Comment> &comments,
   gen << "\n#pragma region romp_postfix\n\n";
 # ifdef _ROMP_DEV_DEBUG_INCLUDE_DIR
     gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/walker.hpp\"\n";
+    gen << '\n';
     gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/bfs.hpp\"\n";
+    gen << '\n';
     gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/impls.hpp\"\n";
+    gen << '\n';
 # else
     gen.output_embedded_code_file(resources_romp_rw_walker_hpp, resources_romp_rw_walker_hpp_len);
     gen.output_embedded_code_file(resources_romp_rw_bfs_hpp, resources_romp_rw_bfs_hpp_len);

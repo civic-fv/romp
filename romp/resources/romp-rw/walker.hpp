@@ -914,26 +914,4 @@ void launch_single(const Options& OPTIONS) {
 }
 
 
-// void Sim1Step(RandWalker::State state, Rule rule, size_t state_count) {
-//   for (int s = 0; s < state_count; s++)
-//     if (rule.Guard(states[s])) {
-//       rule.Run(states[s]);
-//       states[i].rule_applied(
-//           rule.id); // this keeps track of history and other overhead
-//       // These could possibly be parallelized even better for GPU using
-//       // shared memory. (not implemented here, could introduce data races)
-//       for (int i = 0; i < _ROMP_INVARIANTS_LEN; i++)
-//         states[s].valid |= State::INVARIANTS[i](
-//             states[i]); // this will need to change after we figure shit out
-//       for (int a = 0; a < _ROMP_ASSERTIONS_LEN; a++)
-//         states[s].valid |= State::ASSERTIONS[a](
-//             states[i]); // this will need to change after we figure shit out
-//     }
-// }
-
-
-// << ========================================================================================== >> 
-// <<                                         ROMP CODE                                          >> 
-// << ========================================================================================== >> 
-}
-// template<class S, class R>
+} //namespace romp
