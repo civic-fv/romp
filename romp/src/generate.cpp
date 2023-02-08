@@ -92,9 +92,9 @@ void generate(const Model &m, const std::vector<Comment> &comments,
   // write the static prefixes to the beginning of the source file
   gen << "\n#pragma region romp_prefix\n\n";
 # ifdef _ROMP_DEV_DEBUG_INCLUDE_DIR
-    gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/include.hpp\"\n";
-    gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/decl.hpp\"\n";
-    gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/writers.hpp\"\n";
+    gen << "#include \"" << _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/include.hpp\"\n";
+    gen << "#include \"" << _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/decl.hpp\"\n";
+    gen << "#include \"" << _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/writers.hpp\"\n";
 # else
     gen.output_embedded_code_file( resources_romp_rw_include_hpp, resources_romp_rw_include_hpp_len);
     gen << '\n';
@@ -126,10 +126,10 @@ void generate(const Model &m, const std::vector<Comment> &comments,
   // write the static infixes to the "middle" of the source file
   gen << "\n#pragma region romp_infix\n\n";
 # ifdef _ROMP_DEV_DEBUG_INCLUDE_DIR
-    gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/options.hpp\"\n";
-    gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/error.hpp\"\n";
-    gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/types.hpp\"\n";
-    gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/hash.hpp\"\n";
+    gen << "#include \"" << _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/options.hpp\"\n";
+    gen << "#include \"" << _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/error.hpp\"\n";
+    gen << "#include \"" << _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/types.hpp\"\n";
+    gen << "#include \"" << _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/hash.hpp\"\n";
 # else
     gen.output_embedded_code_file(resources_romp_rw_options_hpp, resources_romp_rw_options_hpp_len);
     gen << '\n';
@@ -214,11 +214,11 @@ void generate(const Model &m, const std::vector<Comment> &comments,
   // write the static postfixes to the end of the source file
   gen << "\n#pragma region romp_postfix\n\n";
 # ifdef _ROMP_DEV_DEBUG_INCLUDE_DIR
-    gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/walker.hpp\"\n";
+    gen << "#include \"" << _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/walker.hpp\"\n";
     gen << '\n';
-    gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/bfs.hpp\"\n";
+    gen << "#include \"" << _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/bfs.hpp\"\n";
     gen << '\n';
-    gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/impls.hpp\"\n";
+    gen << "#include \"" << _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/impls.hpp\"\n";
     gen << '\n';
 # else
     gen.output_embedded_code_file(resources_romp_rw_walker_hpp, resources_romp_rw_walker_hpp_len);
@@ -230,7 +230,7 @@ void generate(const Model &m, const std::vector<Comment> &comments,
   // write the static postfixes to the end of the source file
   gen << "\n#pragma region romp_main\n\n";
 # ifdef _ROMP_DEV_DEBUG_INCLUDE_DIR
-    gen << "#include \"" <<  _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/main.hpp\"\n";
+    gen << "#include \"" << _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/main.hpp\"\n";
 # else
     gen.output_embedded_code_file(resources_romp_rw_main_hpp, resources_romp_rw_main_hpp_len);
 # endif

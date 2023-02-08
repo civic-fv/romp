@@ -27,11 +27,12 @@ const std::unordered_set<std::string> RESERVED_FUNCT_NAMES{"clear", "ismember", 
 const std::unordered_set<std::string> RESERVED_TYPE_NAMES{"array", "boolean", "enum", "multiset", "range", "scalarset" /* , "real" */, "undefined", "union"};
 
 const IdHandler MURPHI_RESERVED_NAMES_HANDLER = [](std::string name, const IdType id_type, const location& loc) -> std::optional<std::string> {
+    std::string lower_name = _to_lower(name);
     switch (id_type) {
       case FUNCTION_NAME: {
         // if (name == "") // technically parser should never allow this
         //   throw Error("missing name/id in Function/Procedure declaration", loc); 
-        auto res = RESERVED_FUNCT_NAMES.find(_to_lower(name));
+        auto res = RESERVED_FUNCT_NAMES.find(lower_name);
         if (res != RESERVED_FUNCT_NAMES.end())
           throw Error("Function/Procedure name/id `"+name+"` conflicts with reserved id `"+*res+"`", loc);
         break;
@@ -43,14 +44,14 @@ const IdHandler MURPHI_RESERVED_NAMES_HANDLER = [](std::string name, const IdTyp
       case QUANTIFIER_NAME:
       case ALIAS_NAME:
       case FUNCT_PARAM_NAME:
-        if (_to_lower(name) == "undefined")
+        if (lower_name == "undefined")
           throw Error("name/id (`"+name+"`) conflicts with a reserved word (`undefined`) "
                       "["+murphi::to_string(id_type)+"]", loc);
         break;
       case TYPE_NAME: {
         // if (name == "") // technically parser should never allow this
         //   throw Error("missing name/id in type declaration", loc); 
-        auto res = RESERVED_TYPE_NAMES.find(_to_lower(name));
+        auto res = RESERVED_TYPE_NAMES.find(lower_name);
         if (res != RESERVED_TYPE_NAMES.end())
           throw Error("type name/id (`"+name+"`) conflicts with a reserved id (`"+*res+"`)", loc);
         break;
@@ -91,9 +92,9 @@ Ptr<Model> parse(std::istream &input, const IdHandler& id_handler) {
   parser p(s, m, [&](std::string name, const IdType id_type, const location& loc) -> std::string {
                   MURPHI_RESERVED_NAMES_HANDLER(name,id_type,loc);
                   auto result = id_handler(name, id_type, loc);
-                  if (not result)
+                  if (not result.has_value())
                     throw Error("`" + name + "` not allowed as a name/id! ["+murphi::to_string(id_type)+"]", loc);
-                  return *result;
+                  return std::string(result.value());
                  });
 
   // Parse the input model

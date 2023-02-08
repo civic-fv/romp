@@ -298,7 +298,8 @@ int main(int argc, char **argv) {
                           throw murphi::Error("name/id (`romp`) is a reserved word",loc);
                         // if (name == "")
                         //   throw murphi::Error("name/id (`romp`) is a reserved word",loc);
-                        auto res = gen.RESERVED_NAMES.find(_to_lower(name));
+                        std::string name_lower = _to_lower(name);
+                        auto res = gen.RESERVED_NAMES.find(name_lower);
                         if (res != gen.RESERVED_NAMES.end())
                           throw murphi::Error("name/id `"+name+"` is a reserved word",loc);
                         return {name};
