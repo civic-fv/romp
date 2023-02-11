@@ -26,7 +26,7 @@ RUMUR := ../../rumur/build/rumur/rumur
 
 CFLAGS := -std=c11 -O3 -pthread -march=native
 CXXFLAGS := -O3 -pthread
-ROMP_FLAGS := -s --do-measure --simple-trace-rep
+ROMP_FLAGS := -s --do-measure
 CMURPHI_FLAGS := 
 # $(info CMURPHI_FLAGS = $(CMURPHI_FLAGS))
 CMURPHI_INCLUDE_DIR := ../../cmurphi/include

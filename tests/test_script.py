@@ -1,29 +1,23 @@
-from os import system, makedirs
+from os import system, makedirs, listdir
 from typing import List, Union as Un, Dict
 from pathlib import Path
 from dataclasses import dataclass
 import sys
 from datetime import datetime
+from random import randint
 
+# turn on debug messages (also turns on debug messages in generated files)
 DEBUG = False
-DO_SLURM = False
 
-"""
-NOTE:
-    If you want to run this locally I recommend running it with the `nohup` command 
-     to allow to ssh in and leave the session and still have it finish running.
-"""
+# should the tests include a run of valgrind's cachegrind tool (more than doubles run time of generated test scripts)
+ENABLE_CACHEGRIND = False
 
-"""TODOs & known issues:
-    -[X] romp needs way to pass in random seeds
-       - put in a handful of seeds as the options for the seed flag
-    -[X] cmurphi doesn't have an -o option for generating
-       - maybe just use default output for all generators
-    -[X] launch needs to handle errors during generation building and launching
-    -[ ] Figure out how to identify the output of each job
-        - make file names: `YY-MM-DD-HH-MM-SS__model__tool__index_jid.txt`
-        - make file names: `YY-MM-DD-HH-MM-SS/model__tool__index_jid.txt`
-"""
+# set this to True if you want to just run all murphi models in the current directory
+DO_ALL_MODELS = True
+
+# this only changes file paths for debugging purposes and won't make a script that can run locally
+DO_SLURM = True
+
 
 
 @dataclass
@@ -64,19 +58,22 @@ CXX = "g++"
 CXX_PARAMS = "-std=c++17 -O3 -pthread"
 CC_PARAMS = "-march=native -O3 -pthread"
 
-INIT_TIME = datetime.now().strftime("%y-%m-%d_%H-%M-%S")
+INIT_TIME:datetime = datetime.now() 
+INIT_TIME_STR:str = INIT_TIME.strftime("%y-%m-%d_%H-%M-%S")
 
-LOCAL_SAVE_PATH = "./test_results/" + INIT_TIME
-CHPC_SAVE_PATH = "/scratch/general/vast/u1350795/romp/" + INIT_TIME
+LOCAL_SAVE_PATH = "./test_results"
+CHPC_SAVE_PATH = "/scratch/general/vast/u1350795/romp"
+SAVE_PATH = Path((CHPC_SAVE_PATH if DO_SLURM else LOCAL_SAVE_PATH) + '/' + INIT_TIME_STR).absolute()
 ROMP = str(Path("../build/romp/romp").absolute())
 ROMP_PARAMS: Params_t = {"symmetry": [None, GCO('-s')],
-                         "trace": [MCO(f'-t {CHPC_SAVE_PATH if DO_SLURM else LOCAL_SAVE_PATH}'), None],
+                         "trace": [MCO(f'-t {SAVE_PATH}/romp/traces'), None],
                          "trace-comp": [GCO('--simple-trace-rep')],
-                         "seed": [None, MCO('-s scrappy'), MCO('-s 1234567890')],
+                         "seed": [None, None, MCO('-s scrappy'), MCO('-s 1234567890'), MCO(f'{INIT_TIME_STR}'), MCO(f'{randint(0,sys.maxsize):0X}'), MCO(str(randint(0,sys.maxsize)))],
                          "walkers":[None,MCO("-w 512"),MCO("-w 1024"),MCO("-w 2048"),MCO("-w 4096"),MCO("-w 8192"), MCO("-w 16384")],
                          "depth":[None,MCO("-d 512"),MCO("-d 1024"),MCO("-d 2048"),MCO("-d 4096"),MCO("-d 8192"), MCO("-d 16384"),MCO("-d 32768")],
                          "bfs": [None,MCO("-bfs s 1"), MCO("-bfs s 16"), MCO("-bfs s 64"), MCO("-bfs s 256"),MCO("-bfs m 1"), MCO("-bfs m 16"), MCO("-bfs m 64"), MCO("-bfs m 256")],
-                         "attempt-limit":[None,MCO("-ll"),MCO("-ll 4096")]}
+                         "attempt-limit":[None,MCO("-ll"),MCO("-ll 4096")],
+                         "launch":[MCO('-y')]}
 CMURPHI = str(Path("../../cmurphi/src/mu").absolute())
 CMURPHI_PARAMS: Params_t = {"HashCompaction": [GCO("-c"), None], "BitCompaction": [GCO("-b"), None],
                             "MemLimit":[MCO("-m10000")], "trace-DFS": [MCO("ON"), MCO("OFF")],
@@ -93,7 +90,6 @@ SBATCH_PARMAS: str = f'''
 #SBATCH --account=ganesh
 #SBATCH --partition=kingspeak-shared
 #SBATCH --nodes=4
-#SBATCH --ntasks={PASSES}
 #SBATCH -C c16
 #SBATCH -c 16
 #SBATCH --exclusive
@@ -104,16 +100,26 @@ SBATCH_PARMAS: str = f'''
 
 ALL_MODELS: List[str] = [
     "./adash.m"
-]
+] if not DO_ALL_MODELS else [ Path(i) for i in listdir('./') if i[-2::] == '.m']
 
 SLURM_TEMPLATE:str = f"""#!/usr/bin/bash
 {SBATCH_PARMAS}
+#SBATCH --array={{job_arr}}
 
-export TEST_DIR="{CHPC_SAVE_PATH}"
+_EXT="{{ext}}"
+TEST_DIR="{SAVE_PATH}/$_EXT"
+TEST_RUNS={PASSES}
 
-cd $TEST_DIR
-mkdir %j
-cd %j
+
+cd "$TEST_DIR"
+mkdir -p "$SLURM_JOB_ID"
+cd "$SLURM_JOB_ID"
+
+python3 "../job.py" "$SLURM_JOB_ID" "$TEST_RUNS"
+
+cd ..
+rm -rf "$SLURM_JOB_ID"
+cd ..
 
 """
 
@@ -122,9 +128,38 @@ PY_JOB_TEMPLATE:str = f"""#!/usr/bin/python3
 from os import system
 from sys import argv
 
-JOBS = [%s]
+DEBUG: bool = {DEBUG!s}
+
+ENABLE_CACHEGRIND: bool = {ENABLE_CACHEGRIND!s}
+
+SLURM_JOB_ID: int = int(argv[1])
+TEST_RUNS: int = int(argv[2])
+
+EXT: str = "%s"
+SAVE_LOC:str = "{SAVE_PATH}/"+EXT
+JOBS = [
+    %s
+]
+
+JOB = JOBS[SLURM_JOB_ID]
 
 def main():
+    if DEBUG:
+        print('[' + str(JOB['index']) + "] GENERATING: `" + JOB['model'] + '`')
+    system(JOB['gen'] + "" if DEBUG else " > /dev/null")
+    if DEBUG:
+        print('[' + str(JOB['index']) + "] COMPILING: `" + JOB['model'] + '`')
+    system(JOB['comp'] + "" if DEBUG else " > /dev/null")
+    if DEBUG:
+        print('[' + str(JOB['index']) + "] RUNNING: `" + JOB['model'] + "` x" + str(TEST_RUNS))
+    for i in range(TEST_RUNS):
+        outfile = (SAVE_LOC + '/' + str(JOB['index']) + '-' + str(i)
+                    + '__' + JOB['model'] + '.' + EXT)
+        system(JOB['run'] + ' > "' + outfile + '.txt"')
+        if ENABLE_CACHEGRIND:
+            system(JOB['cachegrind'] + ' > "' + outfile + '.cache.txt"')
+    if DEBUG:
+        print('[' + str(JOB['index']) + "] FINISHED: `" + JOB['model'] + "` x" + str(TEST_RUNS))
     pass
 
 if __name__ == "__main__":
@@ -171,6 +206,10 @@ class ConfigGenerator:
     @property
     def index(self) -> int:
         return self._index
+    
+    @property
+    def exe_ext(self) -> str:
+        return self._exe_ext
 
     # def _create_config(self) -> None:
     #     self._config = { key: l[0] for (key,l) in self._PARAMS.items() }
@@ -184,54 +223,55 @@ class ConfigGenerator:
         if self._config is None:
             raise Exception("config not generated")
         return self._config
+    
+    @property
+    def model(self) -> Path:
+        if self._index is None:
+            raise Exception("ConfigGenerator not in iterator mode!!")
+        return self._models[self._i]
 
     @property
     def gen_cmd(self) -> str:
         if self._index is None:
             raise Exception("ConfigGenerator not in iterator mode!!")
-        base_model = self._models[self._i].with_suffix('')
+        base_model = f"{SAVE_PATH}/{self._exe_ext}/{self._models[self._i].stem}"
         other_opts = ' '.join(
             [i.value for i in self._config.values() if isinstance(i, GeneratorConfigOption)])
         if self._modgen[-3::] == "/mu":
-            return f"{self._modgen} {other_opts} {self._models[self._i]}"
-        return f"{self._modgen} {other_opts} -o {base_model}.{self._src_ext} {self._models[self._i]}"
+            return f"{self._modgen} {other_opts} '{self.model.absolute()}'"
+        return f"{self._modgen} {other_opts} -o '{base_model}.{self._src_ext}' '{self.model.absolute()}'"
         # note CMurphy does not accept -o or any output config details (because its annoying and poorly made)
 
     @property
     def comp_cmd(self) -> str:
         if self._index is None:
             raise Exception("ConfigGenerator not in iterator mode!!")
-        base_model = self._models[self._i].with_suffix('')
+        base_model = f"{SAVE_PATH}/{self._exe_ext}/{self._models[self._i].stem}"
         other_opts = ' '.join(
             [i.value for i in self._config.values() if isinstance(i, CompilerConfigOption)])
-        return f"{self._comp} {self._comp_params} {other_opts} -o {base_model}.{self._index}.{self._exe_ext} {base_model}.{self._src_ext}"
+        return f"{self._comp} {self._comp_params} {other_opts} -o '{base_model}.{self._index}.{self._exe_ext}' '{base_model}.{self._src_ext}'"
 
-    def sbatch_cmd(self, slurmOpts: str, outdir:str) -> str:
-        if self._index is None:
-            raise Exception("ConfigGenerator not in iterator mode!!")
-        base_model = self._models[self._i].with_suffix('')
-        launch_opts = ' '.join([i.value for i in self._config.values(
-        ) if isinstance(i, ModelCheckerConfigOption)])
-        return (f"time {base_model.absolute()}.{self._index}.{self._exe_ext} {launch_opts} "
-                f"> {outdir}/{base_model}__{self._exe_ext}__{self._index}_%j.txt")
-        
-    def launch_cmd(self, outdir:str) -> str:
-        if self._index is None:
-            raise Exception("ConfigGenerator not in iterator mode!!")
-        base_model = self._models[self._i].with_suffix('')
-        launch_opts = ' '.join([i.value for i in self._config.values(
-        ) if isinstance(i, ModelCheckerConfigOption)])
-        return (f"{base_model.absolute()}.{self._index}.{self._exe_ext} {launch_opts} "
-                f"> {outdir}/{base_model}__{self._exe_ext}__{self._index}_$j.txt")
+    # def sbatch_cmd(self, slurmOpts: str, outdir:str) -> str:
+    #     if self._index is None:
+    #         raise Exception("ConfigGenerator not in iterator mode!!")
+    #     base_model = f"{SAVE_PATH}/{self._exe_ext}/{self._models[self._i].stem}"
+    #     launch_opts = ' '.join([i.value for i in self._config.values(
+    #     ) if isinstance(i, ModelCheckerConfigOption)])
+    #     return (f"time {base_model.absolute()}.{self._index}.{self._exe_ext} {launch_opts} "
+    #             f"> {outdir}/{base_model}__{self._exe_ext}__{self._index}_%j.txt")
     
-    def valgrind_cmd(self, slurmOpts: str, outdir:str) -> str:
+    @property 
+    def launch_cmd(self) -> str:
         if self._index is None:
             raise Exception("ConfigGenerator not in iterator mode!!")
-        base_model = self._models[self._i].with_suffix('')
+        base_model = f"{SAVE_PATH}/{self._exe_ext}/{self._models[self._i].stem}"
         launch_opts = ' '.join([i.value for i in self._config.values(
         ) if isinstance(i, ModelCheckerConfigOption)])
-        return (f" {base_model.absolute()}.{self._index}.{self._exe_ext} {launch_opts} "
-                f"> {outdir}/{base_model}__{self._exe_ext}__{self._index}_%j.txt")
+        return (f"{base_model}.{self._index}.{self._exe_ext} {launch_opts}")
+    
+    @property
+    def cachegrind_cmd(self) -> str:
+        return (f"valgrind --tool=cachegrind {self.launch_cmd}")
     
 
     def _calc_len(self) -> int:
@@ -275,146 +315,37 @@ class ConfigGenerator:
         return False
 
 
-'''def launch(cg:ConfigGenerator,slurmOpts:str) -> None:
-    # var = [1,2,3,4]
-    # for i in var:
-    #     pass #lOOP BODY
-    # iter(var) # --> var.__iter__()
-    # while:
-    #     try:
-    #         pass  #lOOP BODY
-    #     except StopIteration as ex:
-    #         break
-    #     next(var) # --> var.__next__()
+def gen_tests(cg: ConfigGenerator, outputDir: Path) -> None:
+    outputDir = Path(str(outputDir.absolute()) + '/' + cg.exe_ext)
+    try:
+        makedirs(outputDir)
+    except Exception as ex:
+        print("ERROR : Failed to create new directory (could already exist)")
+        return
+    jobs: str = ""
+    sep: str = ""
     for i in cg:
-        # gencmd 
-        #compcmd
-        #sbatch_cmd
-        pass
-    #TODO use the config gen passed in
-    pass
-'''
+        jobs += sep
 
-
-# def launch(cg: ConfigGenerator, slurmOpts: str, outputDir: str = "./") -> None:
-#     if outputDir != "./":
-#         try:
-#             makedirs(outputDir)
-#         except:
-#             if DEBUG:
-#                 print("ERROR : Failed to create new directory (could already exist)")
-#             pass
-#     if not DO_SLURM:
-#         bash_for_template = f"for j in {' '.join(str(i) for i in range(PASSES))}\ndo\n  {{cmd}}\ndone\n\n"
-#     with open(outputDir+f"/launch_{cg._exe_ext}.{'slurm' if DO_SLURM else 'sh'}",'w') as file:
-#         file.write("#!/bin/bash" + slurmOpts if DO_SLURM else '' + '\n')
-#         for i in cg:
-#             gen_cmd = i.gen_cmd
-#             print("Running :", gen_cmd)
-#             if not DEBUG:
-#                 if system(gen_cmd) != 0:
-#                     print("ERROR :: could not generate!")
-#                     continue
-                
-#             # Compiling the model
-#             comp_cmd = i.comp_cmd
-#             print("Running :", comp_cmd)
-#             if not DEBUG:
-#                 if system(comp_cmd) != 0:
-#                     print("ERROR :: could not build!")
-#                     continue
-                
-#             # Launching  model
-#             run_cmd = i.sbatch_cmd(slurmOpts, outputDir) if DO_SLURM else i.launch_cmd(outputDir)
-#             print("Writing :", run_cmd)
-#             # if not DEBUG:
-#             #     if system(sbatch_cmd) != 0:
-#             #         print("ERROR :: durning sbatch launch!")
-#             #         continue
-#             if DO_SLURM:
-#                 file.write(run_cmd+'\n')
-#             else:
-#                 file.write(bash_for_template.format(cmd=run_cmd))
-#             #valgrind 
-#             valgrind_cmd = i.valgrind_cmd(slurmOpts, outputDir)
-#             print("Writing :", valgrind_cmd)
-#             file.write(valgrind_cmd+'\n')
-#             print()
-#     if DEBUG:
-#         print("\nRunning : cat {outputDir}/launch_{cg._exe_ext}.slurm\n```")
-#         system(f"cat {outputDir}/launch_{cg._exe_ext}.{'slurm' if DO_SLURM else 'sh'}")
-#         print("```\n")
-#     if DO_SLURM:
-#         print("\nRunning : sbatch {slurmOpts} {outputDir}/launch_{cg._exe_ext}.slurm\n")
-#         if not DEBUG:
-#             if system(f"sbatch {slurmOpts} {outputDir}/launch_{cg._exe_ext}.slurm") != 0:
-#                 print("ERROR :: FAILED TO LAUNCH SBATCH")
-#     else:
-#         print(f"\nRunning : {outputDir}/launch_{cg._exe_ext}.sh\n")
-#         if not DEBUG:
-#             if system(f"{outputDir}/launch_{cg._exe_ext}.sh") != 0:
-#                 print("ERROR :: FAILED TO LAUNCH BASH SCRIPT")
+        jobs += ("{"
+                 f"'index':{i.index},"
+                 f"'model':\"{i.model.stem}\","
+                 f"'gen':\"{i.gen_cmd}\","
+                 f"'comp':\"{i.comp_cmd}\","
+                 f"'run':\"{i.launch_cmd}\","
+                 f"'cachegrind':\"{i.cachegrind_cmd}\""
+                 "}")
+                    # % i._index, i.model.stem, i.gen_cmd, i.comp_cmd, i.launch_cmd, i.cachegrind_cmd)
+        if DEBUG:
+            print("Writing :", i.index)
             
-def launch(cg: ConfigGenerator, slurmOpts: str, outputDir: str = "./") -> None:
-    if outputDir != "./":
-        try:
-            makedirs(outputDir)
-        except:
-            if DEBUG:
-                print("ERROR : Failed to create new directory (could already exist)")
-            pass
-    if not DO_SLURM:
-        bash_for_template = f"for j in {' '.join(str(i) for i in range(PASSES))}\ndo\n  {{cmd}}\ndone\n\n"
-    with open(outputDir+f"/{cg._exe_ext}_job.py",'w') as file:
-        file.write("#!/bin/python3\n")
-        for i in cg:
-            gen_cmd = i.gen_cmd
-            print("Running :", gen_cmd)
-            if not DEBUG:
-                if system(gen_cmd) != 0:
-                    print("ERROR :: could not generate!")
-                    continue
-                
-            # Compiling the model
-            comp_cmd = i.comp_cmd
-            print("Running :", comp_cmd)
-            if not DEBUG:
-                if system(comp_cmd) != 0:
-                    print("ERROR :: could not build!")
-                    continue
-                
-            # Launching  model
-            run_cmd = i.sbatch_cmd(slurmOpts, outputDir) if DO_SLURM else i.launch_cmd(outputDir)
-            print("Writing :", run_cmd)
-            # if not DEBUG:
-            #     if system(sbatch_cmd) != 0:
-            #         print("ERROR :: durning sbatch launch!")
-            #         continue
-            if DO_SLURM:
-                file.write(run_cmd+'\n')
-            else:
-                file.write(bash_for_template.format(cmd=run_cmd))
-            #valgrind 
-            valgrind_cmd = i.valgrind_cmd(slurmOpts, outputDir)
-            print("Writing :", valgrind_cmd)
-            file.write(valgrind_cmd+'\n')
-            print()
-    if DEBUG:
-        print("\nRunning : cat {outputDir}/launch_{cg._exe_ext}.slurm\n```")
-        system(f"cat {outputDir}/launch_{cg._exe_ext}.{'slurm' if DO_SLURM else 'sh'}")
-        print("```\n")
-    if DO_SLURM:
-        print("\nRunning : sbatch {slurmOpts} {outputDir}/launch_{cg._exe_ext}.slurm\n")
-        if not DEBUG:
-            if system(f"sbatch {slurmOpts} {outputDir}/launch_{cg._exe_ext}.slurm") != 0:
-                print("ERROR :: FAILED TO LAUNCH SBATCH")
-    else:
-        print(f"\nRunning : {outputDir}/launch_{cg._exe_ext}.sh\n")
-        if not DEBUG:
-            if system(f"{outputDir}/launch_{cg._exe_ext}.sh") != 0:
-                print("ERROR :: FAILED TO LAUNCH BASH SCRIPT")
-            
-            
+        sep = ",\n    "
+        
+    with open(str(outputDir)+"/job.py",'w') as py_file:
+        py_file.write(PY_JOB_TEMPLATE % (cg.exe_ext, jobs))
+    with open(str(outputDir)+"/launch.slurm",'w') as slurm_file:
+        slurm_file.write(SLURM_TEMPLATE.format(job_arr=f"0-{len(cg)-1}", ext=cg.exe_ext))
+#? END def gen_tests() -> None       
 
 
 def main(args) -> None:
@@ -426,13 +357,15 @@ def main(args) -> None:
                                     [i for i in ALL_MODELS if not (
                                         "dash.m" in i or "-flow.m" in i or "multi.m" in i)],
                                     "ru")
-    outdir = CHPC_SAVE_PATH if DO_SLURM else LOCAL_SAVE_PATH
-    
-    
-    launch(romp_configs, SBATCH_PARMAS, launch_time)
-    launch(cmurphi_configs, SBATCH_PARMAS, launch_time)
-    launch(rumur_configs, SBATCH_PARMAS, launch_time)
 
+    gen_tests(romp_configs, SAVE_PATH)
+    gen_tests(cmurphi_configs, SAVE_PATH)
+    gen_tests(rumur_configs, SAVE_PATH)
+
+    print(f"Finished generating tests")
+    print(f"  Time Taken: {(datetime.now()-INIT_TIME).total_seconds!s:s}s")
+    print(f"      OutDir: {SAVE_PATH}")
+    print(f"   RunCmd(s): ..TODO..\n")
 
 if __name__ == "__main__":
     main(sys.argv)
