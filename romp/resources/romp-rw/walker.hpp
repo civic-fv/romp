@@ -839,7 +839,6 @@ void launch_threads(const Options& OPTIONS) {
       if (rw != nullptr) {
         if (rw->do_report())
           std::cout << *rw << std::endl;
-        // todo get the results
         summary.insert(rw->get_result());
         delete rw;
       }
