@@ -4,9 +4,9 @@ import subprocess
 import re
 import os
 from math import inf
-path = "Path"
-from trace_stats import TraceData
-from test_script import fs_DFS
+path = "Path" # idk what this is (@Ajantha)
+from trace_stats import TraceData, fs_DFS
+from gen_test_scripts import ROMP_CONFIGS, CMURPHI_CONFIGS, RUMUR_CONFIGS
 #changing the current working directory to the provided path
 os.chdir(path)
 
@@ -18,34 +18,50 @@ def romp(f):
 def cmurphi(f):
     pass
 
- 
+RUMUR_PATTERN = re.compile(r"""(?:.|\s)+
+(?<completed>Status:
+
+	(?:(?<no_error>No) error|(?<errors>\d+) error\(s\)|(?<deadlock>[Dd]eadlock)(?:\(s\))?) found.
+
+State Space Explored:
+
+	(?<states>\d+) states, (?<rules>\d+) rules fired in \d+s.
+)?
+TIME_NS=(?<time_ns>\d+)
+""")
 
 def rumur(f)->pd.DataFrame:
+    filepath = os.path(f)
+    index = int(str(filepath.stem).split('-')[0])
+    config_gen = RUMUR_CONFIGS[index]
+    config = config_gen.config
+    model = str(config_gen.model.stem)
+    content = ""
     with open(f, 'r') as f:
         content = f.read()
-        # Extract the relevant information using regular expressions
-        '''searching for a pattern in string
-            if found 
-                get capture group
-                re.search() --gets match obj'''
-
-        Model_name = '' #todo
-        Config_details = ''#todomodel_name = 'rumur'
-        completed = 'Yes' if 'No error found.' in content else 'No'
-        completed = 'Yes' if 'No error found.' in content else 'No'
-        error_status_match = re.search(r'Status:\s*(.+?)State Space Explored:', content, re.DOTALL)
-        error_status = error_status_match.group(1).strip() if error_status_match is not None else None
-        states_generated_match = re.search(r'State Space Explored:\s*(\d+) states,[\s\S]*', content)
-        states_generated = int(states_generated_match.group(1)) if states_generated_match is not None else None
-        time = #todo to be obtained using external tool
-        rules_fired_match = re.search(r'State Space Explored:\s*\d+ states,\s*(\d+) rules fired', content)
-        rules_fired = int(rules_fired_match.group(1)) if rules_fired_match is not None else 0
-        modelchecker_type = 'Rumur'
-        valgrind_data = #todo
-        data = {"Model_name":,"Config_details":,"Completed":completed,"Error_status":error_status,"States Generated":states_generated,
-                "Time":time,"Rules_Fired":rules_fired,"ModelChecker_type":modelchecker_type,"Valgrind_data":valgrind_data}
-        stats_df = stats_df.append(data, ignore_index=True)
-        return stats_df
+    if content == "":
+        raise Exception(f"File Contents unreadable ({f})")
+    # Extract the relevant information using regular expressions
+    '''searching for a pattern in string
+        if found 
+            get capture group
+            re.search() --gets match obj'''
+    m = RUMUR_PATTERN.search(content)
+    data = {
+        "Model_name": model,
+        "Config_details": config,
+        "Completed": m.group('completed') is not None,
+        "Error_status": ('NO ERROR' if m.group('no_error') is not None else (
+                            int(m.group('errors')) if m.group('errors') is not None else (
+                            'DEADLOCK' if m.group('deadlock') is not None else None))),
+        "States Generated": int(m.group('states')) if m.group('states') is not None else None,
+        "Time": int(m.group('time_ns')) if m.group('time_ns') is not None else None,
+        "Rules_Fired": int(m.group('rules')) if m.group('rules') is not None else None,
+        "ModelChecker_type": 'rumur',
+        "Valgrind_data": None # TODO read and extract valgrind data if it exists
+        }
+    stats_df = stats_df.append(data, ignore_index=True)
+    return stats_df
 
 def read_text_file(path) -> None:
     '''ip-path,op-None
@@ -56,9 +72,9 @@ def read_text_file(path) -> None:
         if file.endswith(".txt"):
             full_path = os.path.join(path, file)
             with open(full_path, 'r') as f:
-                if '__ru' in file:
+                if '.ru.txt' in file:
                     rumur(f)
-                elif '_romp' in file:
+                elif '.romp.txt' in file:
                     romp(f)
                 else:
                     cmurphi(f)
@@ -79,7 +95,7 @@ def main()->None:
     stats_df=pd.DataFrame(columns=cols)
     #created a pd dataframe with subcols each for flag + others 
     # call opening file function in loop 
-    file_list=fs_DFS("relative_path")
+    file_list=fs_DFS("TODO relative_path")
     for filename in file_list:
         read_text_file(#TODO insert the path)
 

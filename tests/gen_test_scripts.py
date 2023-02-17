@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import sys
 from datetime import datetime
 from random import randint
+import copy
 
 # turn on debug messages (also turns on debug messages in generated files)
 DEBUG = False
@@ -74,14 +75,22 @@ ROMP_PARAMS: Params_t = {"symmetry": [None, GCO('-s')],
                          "bfs": [None,MCO("-bfs s 1"), MCO("-bfs s 16"), MCO("-bfs s 64"), MCO("-bfs s 256"),MCO("-bfs m 1"), MCO("-bfs m 16"), MCO("-bfs m 64"), MCO("-bfs m 256")],
                          "attempt-limit":[None,MCO("-ll"),MCO("-ll 4096")],
                          "launch":[MCO('-y')]}
+ROMP_CONFIGS: ConfigGenerator = ConfigGenerator(ROMP, CXX, CXX_PARAMS, ROMP_PARAMS, ALL_MODELS, "romp")
+
 CMURPHI = str(Path("../../cmurphi/src/mu").absolute())
 CMURPHI_PARAMS: Params_t = {"HashCompaction": [GCO("-c"), None], "BitCompaction": [GCO("-b"), None],
                             "MemLimit":[MCO("-m10000")], "trace-DFS": [MCO("ON"), MCO("OFF")],
                             "deadlock":[GCO("--deadlock-detection "+i) for i in ["off", "stuck", "stuttering"]]}  # TODO make this option match cmurphi man/help page
+CMURPHI_CONFIGS: ConfigGenerator = ConfigGenerator(CMURPHI, CXX, CXX_PARAMS, CMURPHI_PARAMS, ALL_MODELS, "cm")
+
 RUMUR = str(Path("../../rumur/build/rumur/rumur").absolute())
 RUMUR_PARAMS: Params_t = {"symmetry": [GCO("--symmetry-reduction="+i) for i in ["heuristic", "exhaustive", "off"]],
                           # TODO make this option match rumur man/help page
                           "bound": [None,GCO("--bound=4096"),GCO("--bound=8192"),GCO("--bound=16384")]}  # TODO make this option match rumur man/help page
+RUMUR_CONFIGS = ConfigGenerator(RUMUR, CC, CC_PARAMS, RUMUR_PARAMS,
+                                [i for i in ALL_MODELS if not (
+                                    "dash.m" in i or "-flow.m" in i or "multi.m" in i)],
+                                "ru")
 
 PASSES: int = 8
 
@@ -127,6 +136,7 @@ PY_JOB_TEMPLATE:str = f"""#!/usr/bin/python3
 
 from os import system
 from sys import argv
+from time import perf_counter_ns
 
 DEBUG: bool = {DEBUG!s}
 
@@ -155,7 +165,11 @@ def main():
     for i in range(TEST_RUNS):
         outfile = (SAVE_LOC + '/' + str(JOB['index']) + '-' + str(i)
                     + '__' + JOB['model'] + '.' + EXT)
+        start = perf_counter_ns()
         system(JOB['run'] + ' > "' + outfile + '.txt"')
+        time = start - perf_counter_ns()
+        with open(outfile + '.txt','a') as file:
+            file.write('\nTIME_NS=' + str(time) + '\n')
         if ENABLE_CACHEGRIND:
             system(JOB['cachegrind'] + ' > "' + outfile + '.cache.txt"')
     if DEBUG:
@@ -218,6 +232,9 @@ class ConfigGenerator:
         self._config = {self._param_keys[j]: self._PARAMS[self._param_keys[j]][self._ks[j]] for j in range(len(self._param_keys))}
         # self._config[self._param_keys[k]] = self._PARAMS[self._param_keys[k]][j]
 
+    def set_config(self,config:dict) -> None:
+        self._config = config
+
     @property
     def config(self) -> dict:
         if self._config is None:
@@ -272,7 +289,6 @@ class ConfigGenerator:
     @property
     def cachegrind_cmd(self) -> str:
         return (f"valgrind --tool=cachegrind {self.launch_cmd}")
-    
 
     def _calc_len(self) -> int:
         _len = len(self._models)
@@ -283,6 +299,13 @@ class ConfigGenerator:
 
     def __len__(self) -> int:
         return self._len
+
+    def __item__(self, index):
+        other = copy.deepcopy(self)
+        other.__iter__()
+        while other._index < index:
+            other.__next__()
+        return other
 
     def __iter__(self):
         self._index = 0
@@ -349,18 +372,9 @@ def gen_tests(cg: ConfigGenerator, outputDir: Path) -> None:
 
 
 def main(args) -> None:
-    romp_configs = ConfigGenerator(
-        ROMP, CXX, CXX_PARAMS, ROMP_PARAMS, ALL_MODELS, "romp")
-    cmurphi_configs = ConfigGenerator(CMURPHI, CXX, CXX_PARAMS, CMURPHI_PARAMS,
-                                      ALL_MODELS, "cm")
-    rumur_configs = ConfigGenerator(RUMUR, CC, CC_PARAMS, RUMUR_PARAMS,
-                                    [i for i in ALL_MODELS if not (
-                                        "dash.m" in i or "-flow.m" in i or "multi.m" in i)],
-                                    "ru")
-
-    gen_tests(romp_configs, SAVE_PATH)
-    gen_tests(cmurphi_configs, SAVE_PATH)
-    gen_tests(rumur_configs, SAVE_PATH)
+    gen_tests(ROMP_CONFIGS, SAVE_PATH)
+    gen_tests(CMURPHI_CONFIGS, SAVE_PATH)
+    gen_tests(RUMUR_CONFIGS, SAVE_PATH)
 
     print(f"Finished generating tests")
     print(f"  Time Taken: {(datetime.now()-INIT_TIME).total_seconds!s:s}s")

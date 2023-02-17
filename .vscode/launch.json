@@ -6,7 +6,7 @@
             "cwd": "${workspaceFolder}/tests",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/tests/test_script.py",
+            "program": "${workspaceFolder}/tests/gen_test_scripts.py",
             "console": "integratedTerminal",
             "justMyCode": true
         },
