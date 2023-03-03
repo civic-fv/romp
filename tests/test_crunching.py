@@ -20,19 +20,35 @@ State Space Explored:
 
 	(?<states>\d+) states, (?<rules>\d+) rules fired in \d+s.
 )?
- 
-Omission Probabilities (caused by Hash Compaction):
-
-    Pr\[even one omitted state\]\s+<=\s+\d+\.\d+\n\tPr\[even one undetected error\]\s+<=\s+\d+\.\d+\n\tDiameter of reachability graph: \d+$ #TODO
 
 TIME_NS=(?<time_ns>\d+)
 """)
 
 
 def romp(f):
-    '''1) read the file data 
-    '''
-    pass
+    filepath = os.path(f)
+    index = int(str(filepath.stem).split('-')[0])
+    config_gen = ROMP_CONFIGS[index]
+    config = config_gen.config
+    model = str(config_gen.model.stem)
+    content = ""
+    with open(f, 'r') as f:
+        content = f.read()
+    if content == "":
+        raise Exception(f"File Contents unreadable ({f})")
+    # Extract the relevant information using regular expressions
+    m = ROMP_PATTERN.search(content)
+    data = {
+        "Model_name": model,
+        "Config_details": config,
+        #todo runtime, issues found ==error can i use if ??
+        "Time": int(m.group('time_ns')) if m.group('time_ns') is not None else None,
+        "Rules_Fired": int(m.group('rules')) if m.group('rules') is not None else None,
+        "ModelChecker_type": 'romp',#TODO addition for analysis + Omission Probabilities ??
+        "Valgrind_data": None 
+        }   
+    stats_df = stats_df.append(data, ignore_index=True)
+    return stats_df
 
 CMURPHI_PATTERN = re.compile(r"""(?:.|\s)+
 (?<completed>Status:
@@ -158,15 +174,14 @@ def main()->None:
 
     '''
     cols=["Model_name","Config_details","Completed","Error_status","States Generated","Time","Rules_Fired","ModelChecker_type","Valgrind_data"]# todo add cols name for romp and cm
-    //do col name to be added for cmurphi - omission prob stats required and analysis of state space  // -pr gives rules information is it required ?
+    #do col name to be added for cmurphi - omission prob stats required and analysis of state space  // -pr gives rules information is it required ? --todo
+    #for romp only to consider text below RW results ? other in config --TOdo
     stats_df=pd.DataFrame(columns=cols)
     #created a pd dataframe with subcols each for flag + others 
     # call opening file function in loop 
     file_list=fs_DFS("TODO relative_path")
     for filename in file_list:
         read_text_file(#TODO insert the path)
-
-
 
 if __name__ == "__main__":
     main()
