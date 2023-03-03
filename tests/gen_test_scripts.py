@@ -67,30 +67,26 @@ CHPC_SAVE_PATH = "/scratch/general/vast/u1350795/romp"
 SAVE_PATH = Path((CHPC_SAVE_PATH if DO_SLURM else LOCAL_SAVE_PATH) + '/' + INIT_TIME_STR).absolute()
 ROMP = str(Path("../build/romp/romp").absolute())
 ROMP_PARAMS: Params_t = {"symmetry": [None, GCO('-s')],
-                         "trace": [MCO(f'-t {SAVE_PATH}/romp/traces'), None],
+                        #  "trace": [MCO(f'-t {SAVE_PATH}/romp/traces/{{id}}'), None],
                          "trace-comp": [GCO('--simple-trace-rep')],
-                         "seed": [None, None, MCO('-s scrappy'), MCO('-s 1234567890'), MCO(f'{INIT_TIME_STR}'), MCO(f'{randint(0,sys.maxsize):0X}'), MCO(str(randint(0,sys.maxsize)))],
+                         "seed": [MCO('-s "{seed}"'), MCO('-s "{seed}"'), MCO('-s scrappy'), MCO('-s 1234567890'), MCO(f'{INIT_TIME_STR}'), MCO(f'{randint(0,sys.maxsize):0X}'), MCO(str(randint(0,sys.maxsize)))],
                          "walkers":[None,MCO("-w 512"),MCO("-w 1024"),MCO("-w 2048"),MCO("-w 4096"),MCO("-w 8192"), MCO("-w 16384")],
                          "depth":[None,MCO("-d 512"),MCO("-d 1024"),MCO("-d 2048"),MCO("-d 4096"),MCO("-d 8192"), MCO("-d 16384"),MCO("-d 32768")],
                          "bfs": [None,MCO("-bfs s 1"), MCO("-bfs s 16"), MCO("-bfs s 64"), MCO("-bfs s 256"),MCO("-bfs m 1"), MCO("-bfs m 16"), MCO("-bfs m 64"), MCO("-bfs m 256")],
                          "attempt-limit":[None,MCO("-ll"),MCO("-ll 4096")],
                          "launch":[MCO('-y')]}
-ROMP_CONFIGS: ConfigGenerator = ConfigGenerator(ROMP, CXX, CXX_PARAMS, ROMP_PARAMS, ALL_MODELS, "romp")
+ROMP_TRACE_DIR_TEMPLATE: str = f'{SAVE_PATH}/romp/traces/{{id}}'
 
 CMURPHI = str(Path("../../cmurphi/src/mu").absolute())
 CMURPHI_PARAMS: Params_t = {"HashCompaction": [GCO("-c"), None], "BitCompaction": [GCO("-b"), None],
                             "MemLimit":[MCO("-m10000")], "trace-DFS": [MCO("ON"), MCO("OFF")],
                             "deadlock":[GCO("--deadlock-detection "+i) for i in ["off", "stuck", "stuttering"]]}  # TODO make this option match cmurphi man/help page
-CMURPHI_CONFIGS: ConfigGenerator = ConfigGenerator(CMURPHI, CXX, CXX_PARAMS, CMURPHI_PARAMS, ALL_MODELS, "cm")
 
 RUMUR = str(Path("../../rumur/build/rumur/rumur").absolute())
 RUMUR_PARAMS: Params_t = {"symmetry": [GCO("--symmetry-reduction="+i) for i in ["heuristic", "exhaustive", "off"]],
                           # TODO make this option match rumur man/help page
                           "bound": [None,GCO("--bound=4096"),GCO("--bound=8192"),GCO("--bound=16384")]}  # TODO make this option match rumur man/help page
-RUMUR_CONFIGS = ConfigGenerator(RUMUR, CC, CC_PARAMS, RUMUR_PARAMS,
-                                [i for i in ALL_MODELS if not (
-                                    "dash.m" in i or "-flow.m" in i or "multi.m" in i)],
-                                "ru")
+
 
 PASSES: int = 8
 
@@ -151,7 +147,8 @@ JOBS = [
     %s
 ]
 
-JOB = JOBS[SLURM_JOB_ID]
+JOB_ID: int = SLURM_JOB_ID % len(JOBS)
+JOB: dict = JOBS[JOB_ID]
 
 def main():
     if DEBUG:
@@ -166,12 +163,15 @@ def main():
         outfile = (SAVE_LOC + '/' + str(JOB['index']) + '-' + str(i)
                     + '__' + JOB['model'] + '.' + EXT)
         start = perf_counter_ns()
-        system(JOB['run'] + ' > "' + outfile + '.txt"')
+        system(JOB['run'].format(seed=start) + ' > "' + outfile + '.txt"')
         time = start - perf_counter_ns()
         with open(outfile + '.txt','a') as file:
             file.write('\nTIME_NS=' + str(time) + '\n')
-        if ENABLE_CACHEGRIND:
-            system(JOB['cachegrind'] + ' > "' + outfile + '.cache.txt"')
+        if JOB['trace'] is not None and JOB['trace'] != "":
+            system(JOB['trace'].format(seed=start))
+        if ENABLE_CACHEGRIND and not JOB['trace']:
+            system((JOB['cachegrind']).format(seed=start) 
+                    + ' > "' + outfile + '.cache.txt"')
     if DEBUG:
         print('[' + str(JOB['index']) + "] FINISHED: `" + JOB['model'] + "` x" + str(TEST_RUNS))
     pass
@@ -286,6 +286,17 @@ class ConfigGenerator:
         ) if isinstance(i, ModelCheckerConfigOption)])
         return (f"{base_model}.{self._index}.{self._exe_ext} {launch_opts}")
     
+    @property 
+    def trace_cmd(self) -> str:
+        if self._index is None:
+            raise Exception("ConfigGenerator not in iterator mode!!")
+        if "romp" != self._exe_ext:
+            return None
+        base_model = f"{SAVE_PATH}/{self._exe_ext}/{self._models[self._i].stem}"
+        launch_opts = ' '.join([i.value for i in self._config.values(
+        ) if isinstance(i, ModelCheckerConfigOption)])
+        return (f"{base_model}.{self._index}.{self._exe_ext} -t {ROMP_TRACE_DIR_TEMPLATE.format(id=self._index)} {launch_opts}")
+    
     @property
     def cachegrind_cmd(self) -> str:
         return (f"valgrind --tool=cachegrind {self.launch_cmd}")
@@ -357,6 +368,7 @@ def gen_tests(cg: ConfigGenerator, outputDir: Path) -> None:
                  f"'comp':\"{i.comp_cmd}\","
                  f"'run':\"{i.launch_cmd}\","
                  f"'cachegrind':\"{i.cachegrind_cmd}\""
+                 f"'trace':{i.trace_cmd}\","
                  "}")
                     # % i._index, i.model.stem, i.gen_cmd, i.comp_cmd, i.launch_cmd, i.cachegrind_cmd)
         if DEBUG:
@@ -370,6 +382,14 @@ def gen_tests(cg: ConfigGenerator, outputDir: Path) -> None:
         slurm_file.write(SLURM_TEMPLATE.format(job_arr=f"0-{len(cg)-1}", ext=cg.exe_ext))
 #? END def gen_tests() -> None       
 
+ROMP_CONFIGS: ConfigGenerator = ConfigGenerator(ROMP, CXX, CXX_PARAMS, ROMP_PARAMS, ALL_MODELS, "romp")
+
+CMURPHI_CONFIGS: ConfigGenerator = ConfigGenerator(CMURPHI, CXX, CXX_PARAMS, CMURPHI_PARAMS, ALL_MODELS, "cm")
+
+RUMUR_CONFIGS = ConfigGenerator(RUMUR, CC, CC_PARAMS, RUMUR_PARAMS,
+                                [i for i in ALL_MODELS if not (
+                                    "dash.m" in i or "-flow.m" in i or "multi.m" in i)],
+                                "ru")
 
 def main(args) -> None:
     gen_tests(ROMP_CONFIGS, SAVE_PATH)

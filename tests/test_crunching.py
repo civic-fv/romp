@@ -5,12 +5,12 @@ import re
 import os
 from math import inf
 path = "Path" # idk what this is (@Ajantha)
-from trace_stats import TraceData, fs_DFS
+from trace_stats import ModelResult, fs_DFS
 from gen_test_scripts import ROMP_CONFIGS, CMURPHI_CONFIGS, RUMUR_CONFIGS
 #changing the current working directory to the provided path
 os.chdir(path)
 
-
+#TODO: fill this in
 ROMP_PATTERN = re.compile(r"""(?:.|\s)+
 (?<completed>Status:
 
@@ -25,7 +25,7 @@ TIME_NS=(?<time_ns>\d+)
 """)
 
 
-def romp(f):
+def romp(f, df) -> None:
     filepath = os.path(f)
     index = int(str(filepath.stem).split('-')[0])
     config_gen = ROMP_CONFIGS[index]
@@ -41,14 +41,24 @@ def romp(f):
     data = {
         "Model_name": model,
         "Config_details": config,
-        #todo runtime, issues found ==error can i use if ??
+        "Config_index": index,
+        "Completed": m.group('completed') is not None,
+        #TODO runtime, issues found ==error can i use if ??
+        "Error_status": ('NO ERROR' if m.group('no_error') is not None else (
+                            int(m.group('errors')) if m.group('errors') is not None else (
+                            'DEADLOCK' if m.group('deadlock') is not None else None))),
+        "States Generated": None,
+        # "States Generated": int(m.group('states')) if m.group('states') is not None else None,
         "Time": int(m.group('time_ns')) if m.group('time_ns') is not None else None,
-        "Rules_Fired": int(m.group('rules')) if m.group('rules') is not None else None,
-        "ModelChecker_type": 'romp',#TODO addition for analysis + Omission Probabilities ??
+        "Rules_Fired": None,
+        # "Rules_Fired": int(m.group('rules')) if m.group('rules') is not None else None,
+        "ModelChecker": 'romp',#TODO addition for analysis + Omission Probabilities ??
         "Valgrind_data": None 
-        }   
-    stats_df = stats_df.append(data, ignore_index=True)
-    return stats_df
+        }
+    #NOTE: trace dir for this model should be 
+    trace_dir:str = None #TODO figure out how to identify the corresponding trace file
+    #TODO run the trace extraction python data (import from the trace_stats.py file)
+    df.append(data, ignore_index=True)
 
 CMURPHI_PATTERN = re.compile(r"""(?:.|\s)+
 (?<completed>Status:
@@ -67,7 +77,7 @@ Omission Probabilities (caused by Hash Compaction):
 TIME_NS=(?<time_ns>\d+)
 """)
 
-def cmurphi(f)->pd.DataFrame:
+def cmurphi(f, df) -> None:
     filepath = os.path(f)
     index = int(str(filepath.stem).split('-')[0])
     config_gen = CMURPHI_CONFIGS[index]
@@ -87,6 +97,7 @@ def cmurphi(f)->pd.DataFrame:
     data = {
         "Model_name": model,
         "Config_details": config,
+        "Config_index": index,
         "Completed": m.group('completed') is not None,
         "Error_status": ('NO ERROR' if m.group('no_error') is not None else (
                             int(m.group('errors')) if m.group('errors') is not None else (
@@ -94,11 +105,10 @@ def cmurphi(f)->pd.DataFrame:
         "States Generated": int(m.group('states')) if m.group('states') is not None else None,
         "Time": int(m.group('time_ns')) if m.group('time_ns') is not None else None,
         "Rules_Fired": int(m.group('rules')) if m.group('rules') is not None else None,
-        "ModelChecker_type": 'cmuprhi',#TODO addition for analysis + Omission Probabilities ??
+        "ModelChecker": 'cmuprhi',#TODO addition for analysis + Omission Probabilities ??
         "Valgrind_data": None 
         }
-    stats_df = stats_df.append(data, ignore_index=True)
-    return stats_df
+    df.append(data, ignore_index=True)
 
 RUMUR_PATTERN = re.compile(r"""(?:.|\s)+
 (?<completed>Status:
@@ -112,7 +122,7 @@ State Space Explored:
 TIME_NS=(?<time_ns>\d+)
 """)
 
-def rumur(f)->pd.DataFrame:
+def rumur(f, df) -> None:
     filepath = os.path(f)
     index = int(str(filepath.stem).split('-')[0])
     config_gen = RUMUR_CONFIGS[index]
@@ -132,6 +142,7 @@ def rumur(f)->pd.DataFrame:
     data = {
         "Model_name": model,
         "Config_details": config,
+        "Config_index": index,
         "Completed": m.group('completed') is not None,
         "Error_status": ('NO ERROR' if m.group('no_error') is not None else (
                             int(m.group('errors')) if m.group('errors') is not None else (
@@ -139,13 +150,12 @@ def rumur(f)->pd.DataFrame:
         "States Generated": int(m.group('states')) if m.group('states') is not None else None,
         "Time": int(m.group('time_ns')) if m.group('time_ns') is not None else None,
         "Rules_Fired": int(m.group('rules')) if m.group('rules') is not None else None,
-        "ModelChecker_type": 'rumur',
+        "ModelChecker": 'rumur',
         "Valgrind_data": None # TODO read and extract valgrind data if it exists
         }
-    stats_df = stats_df.append(data, ignore_index=True)
-    return stats_df
+    df.append(data, ignore_index=True)
 
-def read_text_file(path) -> None:
+def read_text_file(path, df) -> None:
     '''ip-path,op-None
     '''
     if not os.path.exists(path):
@@ -155,11 +165,11 @@ def read_text_file(path) -> None:
             full_path = os.path.join(path, file)
             with open(full_path, 'r') as f:
                 if '.ru.txt' in file:
-                    rumur(f)
+                    rumur(f,df)
                 elif '.romp.txt' in file:
-                    romp(f)
+                    romp(f,df)
                 else:
-                    cmurphi(f)
+                    cmurphi(f,df)
 
 def main()->None:
     '''Things to do 
@@ -173,7 +183,7 @@ def main()->None:
             what are subdata to be stored
 
     '''
-    cols=["Model_name","Config_details","Completed","Error_status","States Generated","Time","Rules_Fired","ModelChecker_type","Valgrind_data"]# todo add cols name for romp and cm
+    cols=["Model_name","Config_details","Config_index","Completed","Error_status","States Generated","Time","Rules_Fired","ModelChecker","Valgrind_data"]# todo add cols name for romp and cm
     #do col name to be added for cmurphi - omission prob stats required and analysis of state space  // -pr gives rules information is it required ? --todo
     #for romp only to consider text below RW results ? other in config --TOdo
     stats_df=pd.DataFrame(columns=cols)
@@ -181,7 +191,8 @@ def main()->None:
     # call opening file function in loop 
     file_list=fs_DFS("TODO relative_path")
     for filename in file_list:
-        read_text_file(#TODO insert the path)
+        read_text_file( #TODO GET data directories
+                        ,stats_df)
 
 if __name__ == "__main__":
     main()
