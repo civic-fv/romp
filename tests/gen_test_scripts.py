@@ -56,7 +56,7 @@ MCO = ModelCheckerConfigOption
 CC = "gcc"
 CXX = "g++"
 
-CXX_PARAMS = "-std=c++17 -O3 -pthread"
+CXX_PARAMS = "-std=c++17 -O3 -pthread -D"
 CC_PARAMS = "-march=native -O3 -pthread"
 
 INIT_TIME:datetime = datetime.now() 
