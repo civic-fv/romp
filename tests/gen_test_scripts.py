@@ -166,7 +166,7 @@ def main():
         system(JOB['run'].format(seed=start) + ' > "' + outfile + '.txt"')
         time = start - perf_counter_ns()
         with open(outfile + '.txt','a') as file:
-            file.write('\nTIME_NS=' + str(time) + '\n')
+            file.write('\\nTIME_NS=' + str(time) + '\\n')
         if JOB['trace'] is not None and JOB['trace'] != "":
             system(JOB['trace'].format(seed=start))
         if ENABLE_CACHEGRIND and not JOB['trace']:

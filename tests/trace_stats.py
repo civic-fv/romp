@@ -33,6 +33,7 @@ DEBUG: bool = True
 
 Num: Type = Un[int,float]
 
+
 class StatSummary(NamedTuple):
     """a simple named tuple that holds a 5 number summary of a StatRange"""
     mean: Num
@@ -918,7 +919,7 @@ class ModelResult:
                 f"  |tr - ap|: {self.unique_tried_but_not_applied_transition_count:<67.3g}\n"+
                 # f"    |never|: {self.abs_never_tried_transition_count:<67.4g}\n"+
                 f"    {'PROPS:':_^72}\n"
-                f" #-violated: {len(self.properties_violated):<67d}\n" 
+                f" #-violated: {len(self.properties_violated):<67d}\n"
             #     f"       list: " +
             #    [f"           "  for i in self.properties_violated].join('\n') +
                 f"{'='*80}\n")

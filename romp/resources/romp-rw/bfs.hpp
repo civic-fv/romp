@@ -443,7 +443,6 @@ protected:
    *        NOTE: must be called after processing start states
    */
   void multithreaded_bfs() {
-    //TODO code this part & hope it performs well without too many data race checkpoints
     std::mutex mut_in, mut_out;
     BFSWalker* bad = nullptr;
     std::vector<std::thread> threads;
