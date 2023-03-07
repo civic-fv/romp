@@ -141,10 +141,10 @@ ENABLE_CACHEGRIND: bool = {ENABLE_CACHEGRIND!s}
 SLURM_JOB_ID: int = int(argv[1])
 TEST_RUNS: int = int(argv[2])
 
-EXT: str = "%s"
+EXT: str = "{{ext}}"
 SAVE_LOC:str = "{SAVE_PATH}/"+EXT
 JOBS = [
-    %s
+    {{jobs}}
 ]
 
 JOB_ID: int = SLURM_JOB_ID % len(JOBS)
@@ -377,7 +377,7 @@ def gen_tests(cg: ConfigGenerator, outputDir: Path) -> None:
         sep = ",\n    "
         
     with open(str(outputDir)+"/job.py",'w') as py_file:
-        py_file.write(PY_JOB_TEMPLATE % (cg.exe_ext, jobs))
+        py_file.write(PY_JOB_TEMPLATE.format(ext=cg.exe_ext, jobs=jobs))
     with open(str(outputDir)+"/launch.slurm",'w') as slurm_file:
         slurm_file.write(SLURM_TEMPLATE.format(job_arr=f"0-{len(cg)-1}", ext=cg.exe_ext))
 #? END def gen_tests() -> None       
