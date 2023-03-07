@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import sys
 from datetime import datetime
 from random import randint
+from time import perf_counter_ns
 import copy
 
 # turn on debug messages (also turns on debug messages in generated files)
@@ -120,7 +121,7 @@ cd "$TEST_DIR"
 mkdir -p "$SLURM_JOB_ID"
 cd "$SLURM_JOB_ID"
 
-python3 "../job.py" "$SLURM_JOB_ID" "$TEST_RUNS"
+python3.9 "../job.py" "$SLURM_JOB_ID" "$TEST_RUNS"
 
 cd ..
 rm -rf "$SLURM_JOB_ID"
