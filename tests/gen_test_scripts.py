@@ -378,7 +378,7 @@ def gen_tests(cg: ConfigGenerator, outputDir: Path) -> None:
         
     with open(str(outputDir)+"/job.py",'w') as py_file:
         py_file.write(PY_JOB_TEMPLATE.format(ext=cg.exe_ext, jobs=jobs))
-    with open(str(outputDir)+"/launch.slurm",'w') as slurm_file:
+    with open(str(outputDir)+f"/launch.{cg.exe_ext}.slurm",'w') as slurm_file:
         slurm_file.write(SLURM_TEMPLATE.format(job_arr=f"0-{len(cg)-1}", ext=cg.exe_ext))
 #? END def gen_tests() -> None       
 
@@ -397,7 +397,7 @@ def main(args) -> None:
     gen_tests(RUMUR_CONFIGS, SAVE_PATH)
 
     print(f"Finished generating tests")
-    print(f"  Time Taken: {(datetime.now()-INIT_TIME).total_seconds!s:s}s")
+    print(f"  Time Taken: {(datetime.now()-INIT_TIME).total_seconds()!s:s}s")
     print(f"      OutDir: {SAVE_PATH}")
     print(f"   RunCmd(s): ..TODO..\n")
 
