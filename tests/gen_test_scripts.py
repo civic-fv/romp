@@ -291,7 +291,7 @@ class ConfigGenerator:
         if self._index is None:
             raise Exception("ConfigGenerator not in iterator mode!!")
         if "romp" != self._exe_ext:
-            return None
+            return ""
         base_model = f"{SAVE_PATH}/{self._exe_ext}/{self._models[self._i].stem}"
         launch_opts = ' '.join([i.value for i in self._config.values(
         ) if isinstance(i, ModelCheckerConfigOption)])
@@ -367,8 +367,8 @@ def gen_tests(cg: ConfigGenerator, outputDir: Path) -> None:
                  f"'gen':\"{i.gen_cmd}\","
                  f"'comp':\"{i.comp_cmd}\","
                  f"'run':\"{i.launch_cmd}\","
-                 f"'cachegrind':\"{i.cachegrind_cmd}\""
-                 f"'trace':{i.trace_cmd}\","
+                 f"'cachegrind':\"{i.cachegrind_cmd}\","
+                 f"'trace':\"{i.trace_cmd}\""
                  "}")
                     # % i._index, i.model.stem, i.gen_cmd, i.comp_cmd, i.launch_cmd, i.cachegrind_cmd)
         if DEBUG:
