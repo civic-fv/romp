@@ -3,9 +3,10 @@ import pandas as pd
 from sys import argv
 import re
 import os
+import concurrent.futures as cf
 from math import inf
 from trace_stats import ModelResult, ModelResults, fs_DFS, process_data as process_trace_dir
-from gen_test_scripts import ROMP_CONFIGS, CMURPHI_CONFIGS, RUMUR_CONFIGS, ROMP_TRACE_DIR_TEMPLATE, SAVE_PATH
+from gen_test_scripts import ROMP_CONFIGS, CMURPHI_CONFIGS, RUMUR_CONFIGS
 
 COLS=["Model_name",
           "ModelChecker",
@@ -36,7 +37,7 @@ TIME_NS=(?P<time_ns>\d+)
 """)
 
 
-def romp(f, df) -> None:
+def romp(f) -> dict:
     filepath = os.path(f)
     tmp = str(filepath.stem).split('-')
     index, run = int(tmp[0]), int(tmp[1].split('__')[0])
@@ -110,7 +111,7 @@ def romp(f, df) -> None:
                                     'abs_applied': trace_data.abs_unique_applied_transition_count.summary
                                 }
                             }})
-    df.append(data, ignore_index=True)
+    return data
 #?END def romp() -> None
 
 
@@ -131,7 +132,7 @@ Omission Probabilities (caused by Hash Compaction):
 TIME_NS=(?P<time_ns>\d+)
 """)
 
-def cmurphi(f, df) -> None:
+def cmurphi(f) -> dict:
     filepath = os.path(f)
     tmp = str(filepath.stem).split('-')
     index, run = int(tmp[0]), int(tmp[1].split('__')[0])
@@ -165,7 +166,7 @@ def cmurphi(f, df) -> None:
         "Cachegrind_data": None,
         "Misc_data": dict()
         }
-    df.append(data, ignore_index=True)
+    return data
 #?END def cmurphi() -> None
 
 
@@ -181,7 +182,7 @@ State Space Explored:
 TIME_NS=(?P<time_ns>\d+)
 """)
 
-def rumur(f, df) -> None:
+def rumur(f) -> dict:
     filepath = os.path(f)
     tmp = str(filepath.stem).split('-')
     index, run = int(tmp[0]), int(tmp[1].split('__')[0])
@@ -215,35 +216,38 @@ def rumur(f, df) -> None:
         "Cachegrind_data": None, # TODO read and extract valgrind data if it exists
         "Misc_data": dict()
         }
-    df.append(data, ignore_index=True)
+    return data
 #?END def rumur() -> None    
 
 
-def read_text_file(path, df) -> None:
+def read_text_file(path, df, top_dir="./") -> dict:
     '''ip-path,op-None
     '''
     if not os.path.exists(path):
         raise Exception("Path does not exist!!")
-    file = os.path(path)
-    if file.endswith(".txt"):
-        f = os.path.join(path, file)
-        if '.ru.txt' in file:
-            rumur(f,df)
-        elif '.romp.txt' in file:
-            romp(f,df)
-        else:
-            cmurphi(f,df)
+    if path.endswith(".txt"):
+        if path.endswith('.ru.txt'):
+            return rumur(path)
+        elif path.endswith('.romp.txt'):
+            return romp(path,top_dir)
+        elif path.endswith('.cm.txt'):
+            return cmurphi(path)
+    return None
 #?END def read_text_file() -> None                
 
 def scrape_data(data_dir) -> pd.DataFrame:
     #do col name to be added for cmurphi - omission prob stats required and analysis of state space  // -pr gives rules information is it required ? --todo
     #for romp only to consider text below RW results ? other in config --TOdo
-    stats_df=pd.DataFrame(columns=COLS)
+    # df: pd.DataFrame = pd.DataFrame(columns=COLS)
     #created a pd dataframe with subcols each for flag + others 
-    # call opening file function in loop 
-    for filename in fs_DFS(data_dir): #TODO make this parallel
-        read_text_file(filename,stats_df)
-    return stats_df
+    # call opening file function in loop
+    def thread_work(filepath) -> None:
+        read_text_file(filepath,data_dir)
+    with cf.ThreadPoolExecutor() as executor:
+        return pd.DataFrame(
+                executor.map(thread_work, fs_DFS(data_dir)[1])
+                columns=COLS
+            )
 #?END def scrape_data() -> None
 
 def save_data(df:pd.DataFrame,loc="./results.tsv",fmt:str="tsv") -> None:
