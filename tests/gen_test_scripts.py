@@ -91,9 +91,9 @@ RUMUR_PARAMS: Params_t = {"symmetry": [GCO("--symmetry-reduction="+i) for i in [
 PASSES: int = 8
 
 SBATCH_PARMAS: str = f'''
-#SBATCH -M kingspeak
+#SBATCH -M notchpeak
 #SBATCH --account=ganesh
-#SBATCH --partition=kingspeak-shared
+#SBATCH --partition=notchpeak-shared
 #SBATCH --nodes=4
 #SBATCH -C c16
 #SBATCH -c 16
