@@ -1,16 +1,26 @@
 #using pandas then converting it into a csv ?
 import pandas as pd
-import subprocess
+from sys import argv
 import re
 import os
 from math import inf
-path = "Path" # idk what this is (@Ajantha)
 from trace_stats import ModelResult, ModelResults, fs_DFS, process_data as process_trace_dir
-from gen_test_scripts import ROMP_CONFIGS, CMURPHI_CONFIGS, RUMUR_CONFIGS, ROMP_TRACE_DIR_TEMPLATE
-#changing the current working directory to the provided path
-os.chdir(path)
+from gen_test_scripts import ROMP_CONFIGS, CMURPHI_CONFIGS, RUMUR_CONFIGS, ROMP_TRACE_DIR_TEMPLATE, SAVE_PATH
 
-#TODO: fill this in
+COLS=["Model_name",
+          "ModelChecker",
+          "Config_index",
+          "Config_run_index",
+          "Completed",
+          "Error_status",
+          "States Generated",
+          "Time",
+          "Transitions",
+          "Config_details",
+          "Misc_data",
+          "Cachegrind_data"]
+
+
 ROMP_PATTERN = re.compile(r"""(?:.|\s)+
 (?P<bfs>\033\[1;4mBFS SUMMARY:\033\[0m
 \s*States Found: (?P<bfs_states>\d+)
@@ -101,6 +111,8 @@ def romp(f, df) -> None:
                                 }
                             }})
     df.append(data, ignore_index=True)
+#?END def romp() -> None
+
 
 CMURPHI_PATTERN = re.compile(r"""(?:.|\s)+
 (?P<completed>Status:
@@ -154,6 +166,8 @@ def cmurphi(f, df) -> None:
         "Misc_data": dict()
         }
     df.append(data, ignore_index=True)
+#?END def cmurphi() -> None
+
 
 RUMUR_PATTERN = re.compile(r"""(?:.|\s)+
 (?P<completed>Status:
@@ -202,55 +216,52 @@ def rumur(f, df) -> None:
         "Misc_data": dict()
         }
     df.append(data, ignore_index=True)
+#?END def rumur() -> None    
+
 
 def read_text_file(path, df) -> None:
     '''ip-path,op-None
     '''
     if not os.path.exists(path):
         raise Exception("Path does not exist!!")
-    for file in os.listdir():
-        if file.endswith(".txt"):
-            f = os.path.join(path, file)
-            if '.ru.txt' in file:
-                rumur(f,df)
-            elif '.romp.txt' in file:
-                romp(f,df)
-            else:
-                cmurphi(f,df)
+    file = os.path(path)
+    if file.endswith(".txt"):
+        f = os.path.join(path, file)
+        if '.ru.txt' in file:
+            rumur(f,df)
+        elif '.romp.txt' in file:
+            romp(f,df)
+        else:
+            cmurphi(f,df)
+#?END def read_text_file() -> None                
 
-def main()->None:
-    '''Things to do 
-
-    1) open the file in the path ".\relative ?"
-        open all .txt files in loop
-        i) check which model 
-            how to do 
-            after __ what it is there if ==ru rumur , romp=romp and cm= cmurphi
-        ii) if it is rumur 
-            what are subdata to be stored
-
-    '''
-    cols=["Model_name",
-          "ModelChecker",
-          "Config_index",
-          "Config_run_index",
-          "Completed",
-          "Error_status",
-          "States Generated",
-          "Time",
-          "Transitions",
-          "Config_details",
-          "Misc_data",
-          "Cachegrind_data"]
+def scrape_data(data_dir) -> pd.DataFrame:
     #do col name to be added for cmurphi - omission prob stats required and analysis of state space  // -pr gives rules information is it required ? --todo
     #for romp only to consider text below RW results ? other in config --TOdo
-    stats_df=pd.DataFrame(columns=cols)
+    stats_df=pd.DataFrame(columns=COLS)
     #created a pd dataframe with subcols each for flag + others 
     # call opening file function in loop 
-    file_list=fs_DFS("TODO relative_path probs get from args")
-    for filename in file_list:
-        read_text_file( #TODO GET data directories
-                        ,stats_df)
+    for filename in fs_DFS(data_dir): #TODO make this parallel
+        read_text_file(filename,stats_df)
+    return stats_df
+#?END def scrape_data() -> None
+
+def save_data(df:pd.DataFrame,loc="./results.tsv",fmt:str="tsv") -> None:
+    _fmt = fmt.lower()
+    with open(loc,'w') as file:
+        if _fmt == 'tsv':
+            df.to_csv(file,columns=COLS,sep='\t')
+        elif _fmt == 'csv':
+            df.to_csv(file,columns=COLS)
+        elif _fmt == 'json':
+            df.to_json(file,orient='records')
+#?END def save_data(df,loc) -> None
+
+
+def main()->None:
+    data_dir = argv[1] if len(argv) > 1 and os.path.exists(argv[1]) else './'
+    save_data(scrape_data(data_dir))
+#?END def main() -> None:
 
 if __name__ == "__main__":
     main()

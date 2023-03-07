@@ -79,7 +79,7 @@ ROMP_TRACE_DIR_TEMPLATE: str = f'{SAVE_PATH}/romp/traces/{{id}}'
 
 CMURPHI = str(Path("../../cmurphi/src/mu").absolute())
 CMURPHI_PARAMS: Params_t = {"HashCompaction": [GCO("-c"), None], "BitCompaction": [GCO("-b"), None],
-                            "MemLimit":[MCO("-m10000")], "trace-DFS": [MCO("ON"), MCO("OFF")],
+                            "MemLimit":[MCO("-m16000")], "trace-DFS": [MCO("ON"), MCO("OFF")],
                             "deadlock":[GCO("--deadlock-detection "+i) for i in ["off", "stuck", "stuttering"]]}  # TODO make this option match cmurphi man/help page
 
 RUMUR = str(Path("../../rumur/build/rumur/rumur").absolute())
