@@ -116,19 +116,21 @@ def romp(f,data_dir) -> dict:
 
 
 CMURPHI_PATTERN = re.compile(r"""(?:.|\s)+
-(?P<completed>Status:
+(?P<completed>Result:
 
-	(?:(?P<no_error>No) error|(?P<errors>\d+) error\(s\)|(?P<deadlock>[Dd]eadlock)(?:\(s\))?) found.
+\s*(?:(?P<no_error>No error found)|(?P<errors>Invariant|Error|Assertion) \"(?:[ \w\d])\" failed)\.
 
 State Space Explored:
 
-	(?P<states>\d+) states, (?P<rules>\d+) rules fired in \d+s.
-)?
- 
+\s*(?P<states>\d+) states, (?P<rules>\d+) rules fired in (?:\d+(?:.\d*)?)s.
+)?(?:.|\s)*
+(?P<hash_compaction> 
 Omission Probabilities (caused by Hash Compaction):
 
-    Pr\[even one omitted state\]\s+<=\s+\d+\.\d+\n\tPr\[even one undetected error\]\s+<=\s+\d+\.\d+\n\tDiameter of reachability graph: \d+$ #TODO
-
+\s*Pr\[even one omitted state\]\s+<=\s+(?P<op_omitted>\d+(?:\.\d*))
+\s*Pr\[even one undetected error\]\s+<=\s+(?P<op_undetected>\d+(?:\.\d*))
+\s*Diameter of reachability graph: (?P<op_diameter>\d+(?:\.\d*))
+)?(?:.|\s)*
 TIME_NS=(?P<time_ns>\d+)
 """)
 
@@ -166,6 +168,12 @@ def cmurphi(f) -> dict:
         "Cachegrind_data": None,
         "Misc_data": dict()
         }
+    if m.groups('hash_compaction') is not None:
+        data['Misc_data'].update({
+            'omitted': float(m.groups('op_omitted')),
+            'undetected': float(m.groups('op_undetected')),
+            'diameter': float(m.groups('op_diameter'))
+        })
     return data
 #?END def cmurphi() -> None
 
@@ -173,11 +181,11 @@ def cmurphi(f) -> dict:
 RUMUR_PATTERN = re.compile(r"""(?:.|\s)+
 (?P<completed>Status:
 
-	(?:(?P<no_error>No) error|(?P<errors>\d+) error\(s\)|(?P<deadlock>[Dd]eadlock)(?:\(s\))?) found.
+\s*(?:(?P<no_error>No) error|(?P<errors>\d+) error\(s\)|(?P<deadlock>[Dd]eadlock)(?:\(s\))?) found\.
 
 State Space Explored:
 
-	(?P<states>\d+) states, (?P<rules>\d+) rules fired in \d+s.
+\s*(?P<states>\d+) states, (?P<rules>\d+) rules fired in (?:\d+(?:.\d*)?)s.
 )?
 TIME_NS=(?P<time_ns>\d+)
 """)
