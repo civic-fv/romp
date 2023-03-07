@@ -388,7 +388,7 @@ CMURPHI_CONFIGS: ConfigGenerator = ConfigGenerator(CMURPHI, CXX, CXX_PARAMS, CMU
 
 RUMUR_CONFIGS = ConfigGenerator(RUMUR, CC, CC_PARAMS, RUMUR_PARAMS,
                                 [i for i in ALL_MODELS if not (
-                                    "dash.m" in i or "-flow.m" in i or "multi.m" in i)],
+                                    "dash.m" in str(i) or "-flow.m" in str(i) or "multi.m" in str(i))],
                                 "ru")
 
 def main(args) -> None:
