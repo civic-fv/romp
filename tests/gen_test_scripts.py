@@ -392,9 +392,15 @@ RUMUR_CONFIGS = ConfigGenerator(RUMUR, CC, CC_PARAMS, RUMUR_PARAMS,
                                 "ru")
 
 def main(args) -> None:
+    print("Generating romp tests...")
     gen_tests(ROMP_CONFIGS, SAVE_PATH)
+    print("[DONE] Generating romp tests")
+    print("Generating cmurphi tests...")
     gen_tests(CMURPHI_CONFIGS, SAVE_PATH)
+    print("[DONE] Generating cmurphi tests")
+    print("Generating rumur tests...")
     gen_tests(RUMUR_CONFIGS, SAVE_PATH)
+    print("[DONE] Generating rumur tests")
 
     print(f"Finished generating tests")
     print(f"  Time Taken: {(datetime.now()-INIT_TIME).total_seconds()!s:s}s")
