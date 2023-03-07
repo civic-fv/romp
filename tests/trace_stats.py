@@ -946,7 +946,6 @@ def fs_DFS(path, dirCallback=None, fileCallback=None) -> List[str]:
         raise Exception("Path does not exist!!")
     stack = []
     ret = []
-    files = []
     stack.append(path);
     while len(stack) > 0:
         tmp = stack.pop(len(stack) - 1)
@@ -961,7 +960,7 @@ def fs_DFS(path, dirCallback=None, fileCallback=None) -> List[str]:
             files.append(tmp)
             if fileCallback:
                 fileCallback(tmp)
-    return ret, files
+    return ret
 #? END def fs_DFS() -> List[str]
 
 def genTraceData(path:str) -> Un[TraceData,None]:

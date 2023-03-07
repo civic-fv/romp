@@ -4,6 +4,7 @@ from sys import argv
 import re
 import os
 import concurrent.futures as cf
+from multiprocessing import cpu_count
 from math import inf
 from trace_stats import ModelResult, ModelResults, fs_DFS, process_data as process_trace_dir
 from gen_test_scripts import ROMP_CONFIGS, CMURPHI_CONFIGS, RUMUR_CONFIGS
@@ -37,7 +38,7 @@ TIME_NS=(?P<time_ns>\d+)
 """)
 
 
-def romp(f) -> dict:
+def romp(f,data_dir) -> dict:
     filepath = os.path(f)
     tmp = str(filepath.stem).split('-')
     index, run = int(tmp[0]), int(tmp[1].split('__')[0])
@@ -62,7 +63,7 @@ def romp(f) -> dict:
         "States Generated": None,
         "Time": int(m.group('time_ns')) if m.group('time_ns') is not None else None,
         "Transitions": None,
-        "ModelChecker": 'romp',#TODO addition for analysis + Omission Probabilities ??
+        "ModelChecker": 'romp',
         "Cachegrind_data": None,
         "Misc_data": {
             'rules_fired': int(m.groups('total_rules')) if m.groups('total_rules') is not None else None,
@@ -79,12 +80,11 @@ def romp(f) -> dict:
                 'time_str': m.groups('bfs_time')
             })
     #NOTE: trace dir for this model should be the `run`th dir in the `./traces/{index}/` dir
-    trace_dir:str = os.listdir(ROMP_TRACE_DIR_TEMPLATE.format(id=index))[run]
+    trace_dir:str = os.listdir(f'{data_dir}/traces/{index}')[run]
     trace_results: ModelResults = process_trace_dir(trace_dir)
     if 0 <= len(trace_results) > 1:
         print("[ERROR] rumur trace data caught multiple romp instances")
-        df.append(data, ignore_index=True)
-        return
+        return data
     trace_data: ModelResult = trace_results.items()[0][1]
     data.update({
         "States Generated": trace_data.abs_unique_state_count + data['MiscData']['BFS_data']['states']),
@@ -241,11 +241,19 @@ def scrape_data(data_dir) -> pd.DataFrame:
     # df: pd.DataFrame = pd.DataFrame(columns=COLS)
     #created a pd dataframe with subcols each for flag + others 
     # call opening file function in loop
+    data_files = []
+    def file_callback(path) -> None:
+        if (path.endswith('.romp.txt') 
+                or path.endswith('.ru.txt') 
+                or path.endswith('.cm.txt')):
+            data_files.append(path)
     def thread_work(filepath) -> None:
         read_text_file(filepath,data_dir)
-    with cf.ThreadPoolExecutor() as executor:
+    fs_DFS(data_dir,fileCallback=file_callback)
+    max_threads = cpu_count() if 0 <= cpu_count() <= 3 else cpu_count()-2
+    with cf.ThreadPoolExecutor(max_workers=max_threads) as executor:
         return pd.DataFrame(
-                executor.map(thread_work, fs_DFS(data_dir)[1])
+                executor.map(thread_work, data_files)
                 columns=COLS
             )
 #?END def scrape_data() -> None
