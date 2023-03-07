@@ -179,7 +179,6 @@ def main():
                     + ' > "' + outfile + '.cache.txt"')
     if DEBUG:
         print('[' + str(JOB['index']) + "] FINISHED: `" + JOB['model'] + "` x" + str(TEST_RUNS))
-    pass
 
 if __name__ == "__main__":
     main()
