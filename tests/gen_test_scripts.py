@@ -69,10 +69,15 @@ ROMP = str(Path("../build/romp/romp").absolute())
 ROMP_PARAMS: Params_t = {"symmetry": [None, GCO('-s')],
                         #  "trace": [MCO(f'-t {SAVE_PATH}/romp/traces/{{id}}'), None],
                          "trace-comp": [GCO('--simple-trace-rep')],
-                         "seed": [MCO('-s "{seed}"'), MCO('-s "{seed}"'), MCO('-s scrappy'), MCO('-s 1234567890'), MCO(f'{INIT_TIME_STR}'), MCO(f'{randint(0,sys.maxsize):0X}'), MCO(str(randint(0,sys.maxsize)))],
-                         "walkers":[None,MCO("-w 512"),MCO("-w 1024"),MCO("-w 2048"),MCO("-w 4096"),MCO("-w 8192"), MCO("-w 16384")],
-                         "depth":[None,MCO("-d 512"),MCO("-d 1024"),MCO("-d 2048"),MCO("-d 4096"),MCO("-d 8192"), MCO("-d 16384"),MCO("-d 32768")],
-                         "bfs": [None,MCO("-bfs s 1"), MCO("-bfs s 16"), MCO("-bfs s 64"), MCO("-bfs s 256"),MCO("-bfs m 1"), MCO("-bfs m 16"), MCO("-bfs m 64"), MCO("-bfs m 256")],
+                         "seed": [MCO('-s "{seed}"'), MCO(f'-s "{INIT_TIME_STR}"'), MCO(f'-s "{randint(0,sys.maxsize):0X}"'), MCO(f'-s {randint(0,sys.maxsize)}')],
+                         "walkers+depth":[MCO("-w 512 -d 512"),MCO("-w 512 -d 1024"),MCO("-w 1024 -d 512"),
+                                          MCO("-w 1024 -d 1024"),MCO("-w 1024 -d 2048"),MCO("-w 2048 -d 1024"),
+                                          MCO("-w 4096 -d 4096"),MCO("-w 4096 -d 8192"),MCO("-w 8192 -d 4096"),
+                                          MCO("-w 16384 -d 16384"),MCO("-w 16384 -d 32768"),MCO("-w 32768 -d 16384")],
+                        #  "walkers":[MCO("-w 512"),MCO("-w 1024"),MCO("-w 2048"),MCO("-w 4096"),MCO("-w 8192"),MCO("-w 16384"),MCO("-w 32768")],
+                        #  "depth":[MCO("-d 512"),MCO("-d 1024"),MCO("-d 2048"),MCO("-d 4096"),MCO("-d 8192"),MCO("-d 16384"),MCO("-d 32768")],
+                         "bfs": [None,MCO("-bfs s 1"), MCO("-bfs s 16"), MCO("-bfs s 64"), MCO("-bfs s 256") ],# ,
+                                #  MCO("-bfs m 1"), MCO("-bfs m 16"), MCO("-bfs m 64"), MCO("-bfs m 256")]
                          "attempt-limit":[None,MCO("-ll"),MCO("-ll 4096")],
                          "launch":[MCO('-y')]}
 ROMP_TRACE_DIR_TEMPLATE: str = f'{SAVE_PATH}/romp/traces/{{id}}'
@@ -392,13 +397,13 @@ RUMUR_CONFIGS = ConfigGenerator(RUMUR, CC, CC_PARAMS, RUMUR_PARAMS,
                                 "ru")
 
 def main(args) -> None:
-    print("Generating romp tests...")
+    print(f"Generating romp tests... (n={len(ROMP_CONFIGS)})")
     gen_tests(ROMP_CONFIGS, SAVE_PATH)
     print("[DONE] Generating romp tests")
-    print("Generating cmurphi tests...")
+    print(f"Generating cmurphi tests... (n={len(CMURPHI_CONFIGS)})")
     gen_tests(CMURPHI_CONFIGS, SAVE_PATH)
     print("[DONE] Generating cmurphi tests")
-    print("Generating rumur tests...")
+    print(f"Generating rumur tests... (n={len(RUMUR_CONFIGS)})")
     gen_tests(RUMUR_CONFIGS, SAVE_PATH)
     print("[DONE] Generating rumur tests")
 
