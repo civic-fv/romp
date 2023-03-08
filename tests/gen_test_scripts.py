@@ -28,7 +28,7 @@ from random import randint
 import copy
 
 # turn on debug messages (also turns on debug messages in generated files)
-DEBUG = False
+DEBUG = True
 
 # should the tests include a run of valgrind's cachegrind tool (more than doubles run time of generated test scripts)
 ENABLE_CACHEGRIND = False
