@@ -44,7 +44,7 @@ class StatSummary(NamedTuple):
     median: Num
     min: Num
     max: Num
-#? END NamedTuple Statsummary
+#? END NamedTuple StatSummary
 
 TupleFactory: Type = Callable[[Any],Un[Tuple,NamedTuple]]
 SR_SS_FACTORY: Callable[[Any],Un[Tuple,NamedTuple]] = (
