@@ -277,7 +277,7 @@ class ConfigGenerator:
     def gen_cmd(self) -> str:
         if self._index is None:
             raise Exception("ConfigGenerator not in iterator mode!!")
-        base_model = f"{SAVE_PATH}/{self._exe_ext}/{self._models[self._i].stem}"
+        base_model = f"{SAVE_PATH}/{self._exe_ext}/{self.index-1}/{self._models[self._i].stem}"
         other_opts = ' '.join(
             [i.value for i in self._config.values() if isinstance(i, GeneratorConfigOption)])
         if self._modgen[-3::] == "/mu":
@@ -289,7 +289,7 @@ class ConfigGenerator:
     def comp_cmd(self) -> str:
         if self._index is None:
             raise Exception("ConfigGenerator not in iterator mode!!")
-        base_model = f"{SAVE_PATH}/{self._exe_ext}/{self._models[self._i].stem}"
+        base_model = f"{SAVE_PATH}/{self._exe_ext}/{self.index-1}/{self._models[self._i].stem}"
         other_opts = ' '.join(
             [i.value for i in self._config.values() if isinstance(i, CompilerConfigOption)])
         return f"{self._comp} {self._comp_params} {other_opts} -o '{base_model}.{self._index}.{self._exe_ext}' '{base_model}.{self._src_ext}'"
@@ -307,7 +307,7 @@ class ConfigGenerator:
     def launch_cmd(self) -> str:
         if self._index is None:
             raise Exception("ConfigGenerator not in iterator mode!!")
-        base_model = f"{SAVE_PATH}/{self._exe_ext}/{self._models[self._i].stem}"
+        base_model = f"{SAVE_PATH}/{self._exe_ext}/{self.index-1}/{self._models[self._i].stem}"
         launch_opts = ' '.join([i.value for i in self._config.values(
         ) if isinstance(i, ModelCheckerConfigOption)])
         return (f"{base_model}.{self._index}.{self._exe_ext} {launch_opts}")
@@ -316,9 +316,9 @@ class ConfigGenerator:
     def trace_cmd(self) -> str:
         if self._index is None:
             raise Exception("ConfigGenerator not in iterator mode!!")
-        if "romp" != self._exe_ext:
+        if self._exe_ext != "romp":
             return ""
-        base_model = f"{SAVE_PATH}/{self._exe_ext}/{self._models[self._i].stem}"
+        base_model = f"{SAVE_PATH}/{self._exe_ext}/{self.index-1}/{self._models[self._i].stem}"
         launch_opts = ' '.join([i.value for i in self._config.values(
         ) if isinstance(i, ModelCheckerConfigOption)])
         return (f"{base_model}.{self._index}.{self._exe_ext} -t {ROMP_TRACE_DIR_TEMPLATE.format(id=self._index)} {launch_opts}")
