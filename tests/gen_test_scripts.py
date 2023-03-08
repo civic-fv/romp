@@ -89,7 +89,7 @@ ROMP = str(Path("../build/romp/romp").absolute())
 ROMP_PARAMS: Params_t = {"symmetry": [None, GCO('-s')],
                         #  "trace": [MCO(f'-t {SAVE_PATH}/romp/traces/{{id}}'), None],
                          "trace-comp": [GCO('--simple-trace-rep')],
-                         "seed": [MCO('-s "{seed}"'), MCO(f'-s "{INIT_TIME_STR}"'), MCO(f'-s "{randint(0,sys.maxsize):0X}"'), MCO(f'-s {randint(0,sys.maxsize)}')],
+                         "seed": [MCO('-s \\"{seed}\\"'), MCO(f'-s \\"{INIT_TIME_STR}\\"'), MCO(f'-s \\"{randint(0,sys.maxsize):0X}\\"'), MCO(f'-s {randint(0,sys.maxsize)}')],
                          "walkers+depth":[MCO("-w 512 -d 512"),MCO("-w 512 -d 1024"),MCO("-w 1024 -d 512"),
                                           MCO("-w 1024 -d 1024"),MCO("-w 1024 -d 2048"),MCO("-w 2048 -d 1024"),
                                           MCO("-w 4096 -d 4096"),MCO("-w 4096 -d 8192"),MCO("-w 8192 -d 4096"),
