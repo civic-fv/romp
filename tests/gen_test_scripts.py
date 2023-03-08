@@ -105,7 +105,7 @@ ROMP_TRACE_DIR_TEMPLATE: str = f'{SAVE_PATH}/romp/traces/{{id}}'
 CMURPHI_DIR = str(Path("../../cmurphi").absolute())
 CMURPHI = str(Path(f"{CMURPHI_DIR}/src/mu").absolute())
 CMURPHI_PARAMS: Params_t = {"HashCompaction": [GCO("-c"), None], "BitCompaction": [GCO("-b"), None],
-                            "MemLimit":[MCO("-m16000")], "search-type": [MCO("-vbfs"), MCO("-vdfs")]
+                            "MemLimit":[MCO("-m16000")], "search-type": [MCO("-vbfs"), MCO("-vdfs")],
                             "build-include":[CCO(f"-I'{CMURPHI_DIR}/include'")]}  # TODO make this option match cmurphi man/help page
 
 RUMUR = str(Path("../../rumur/build/rumur/rumur").absolute())
