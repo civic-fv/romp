@@ -283,8 +283,9 @@ class ConfigGenerator:
         base_model = f"{SAVE_PATH}/{self._exe_ext}/{self.index-1}/{self._models[self._i].stem}"
         other_opts = ' '.join(
             [i.value for i in self._config.values() if isinstance(i, GeneratorConfigOption)])
-        if self._modgen[-3::] == "/mu":
-            return f"{self._modgen} {other_opts} '{self.model.absolute()}'"
+        if self.exe_ext == "cm":
+            return (f"cp '{self.model.absolute()}' '{base_model}.m'; "+
+                    f"{self._modgen} {other_opts} '{base_model}.m'")
         return f"{self._modgen} {other_opts} -o '{base_model}.{self._src_ext}' '{self.model.absolute()}'"
         # note CMurphy does not accept -o or any output config details (because its annoying and poorly made)
 
