@@ -76,7 +76,7 @@ MCO = ModelCheckerConfigOption
 CC = "gcc"
 CXX = "g++"
 
-CXX_PARAMS = "-std=c++17 -O3 -pthread -D"
+CXX_PARAMS = "-std=c++17 -O3 -pthread"
 CC_PARAMS = "-march=native -O3 -pthread"
 
 INIT_TIME:datetime = datetime.now() 
@@ -102,9 +102,11 @@ ROMP_PARAMS: Params_t = {"symmetry": [None, GCO('-s')],
                          "launch":[MCO('-y')]}
 ROMP_TRACE_DIR_TEMPLATE: str = f'{SAVE_PATH}/romp/traces/{{id}}'
 
-CMURPHI = str(Path("../../cmurphi/src/mu").absolute())
+CMURPHI_DIR = str(Path("../../cmurphi").absolute())
+CMURPHI = str(Path(f"{CMURPHI_DIR}/src/mu").absolute())
 CMURPHI_PARAMS: Params_t = {"HashCompaction": [GCO("-c"), None], "BitCompaction": [GCO("-b"), None],
-                            "MemLimit":[MCO("-m16000")], "search-type": [MCO("-vbfs"), MCO("-vdfs")]}  # TODO make this option match cmurphi man/help page
+                            "MemLimit":[MCO("-m16000")], "search-type": [MCO("-vbfs"), MCO("-vdfs")]
+                            "build-include":[CCO(f"-I'{CMURPHI_DIR}/include'")]}  # TODO make this option match cmurphi man/help page
 
 RUMUR = str(Path("../../rumur/build/rumur/rumur").absolute())
 RUMUR_PARAMS: Params_t = {"symmetry": [GCO("--symmetry-reduction="+i) for i in ["heuristic", "exhaustive", "off"]],
@@ -296,7 +298,7 @@ class ConfigGenerator:
         base_model = f"{SAVE_PATH}/{self._exe_ext}/{self.index-1}/{self._models[self._i].stem}"
         other_opts = ' '.join(
             [i.value for i in self._config.values() if isinstance(i, CompilerConfigOption)])
-        return f"{self._comp} {self._comp_params} {other_opts} -o '{base_model}.{self._index}.{self._exe_ext}' '{base_model}.{self._src_ext}'"
+        return f"{self._comp} {self._comp_params} {other_opts} -o '{base_model}.{self.exe_ext}' '{base_model}.{self._src_ext}'"
 
     # def sbatch_cmd(self, slurmOpts: str, outdir:str) -> str:
     #     if self._index is None:
