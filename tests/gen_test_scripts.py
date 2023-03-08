@@ -145,6 +145,7 @@ _EXT="{{ext}}"
 TEST_DIR="{SAVE_PATH}/$_EXT"
 TEST_RUNS={PASSES}
 
+module load gcc/11.2.0
 
 cd "$TEST_DIR"
 mkdir -p "$SLURM_ARRAY_TASK_ID"
