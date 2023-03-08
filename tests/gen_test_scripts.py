@@ -104,13 +104,14 @@ ROMP_TRACE_DIR_TEMPLATE: str = f'{SAVE_PATH}/romp/traces/{{id}}'
 
 CMURPHI = str(Path("../../cmurphi/src/mu").absolute())
 CMURPHI_PARAMS: Params_t = {"HashCompaction": [GCO("-c"), None], "BitCompaction": [GCO("-b"), None],
-                            "MemLimit":[MCO("-m16000")], "trace-DFS": [MCO("ON"), MCO("OFF")],
-                            "deadlock":[GCO("--deadlock-detection "+i) for i in ["off", "stuck", "stuttering"]]}  # TODO make this option match cmurphi man/help page
+                            "MemLimit":[MCO("-m16000")], "search-type": [MCO("-vbfs"), MCO("-vdfs")]}  # TODO make this option match cmurphi man/help page
 
 RUMUR = str(Path("../../rumur/build/rumur/rumur").absolute())
 RUMUR_PARAMS: Params_t = {"symmetry": [GCO("--symmetry-reduction="+i) for i in ["heuristic", "exhaustive", "off"]],
                           # TODO make this option match rumur man/help page
-                          "bound": [None,GCO("--bound=4096"),GCO("--bound=8192"),GCO("--bound=16384")]}  # TODO make this option match rumur man/help page
+                          "bound": [None,GCO("--bound=4096"),GCO("--bound=8192"),GCO("--bound=16384")],
+                          "color-out":[GCO('--colour=off')],
+                          "deadlock":[GCO("--deadlock-detection="+i) for i in ["off", "stuck", "stuttering"]]}  # TODO make this option match rumur man/help page
 
 
 PASSES: int = 8
