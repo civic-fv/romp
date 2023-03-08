@@ -114,12 +114,13 @@ RUMUR_PARAMS: Params_t = {"symmetry": [GCO("--symmetry-reduction="+i) for i in [
 
 
 PASSES: int = 8
+SLURM_MAX_WORKERS: int = 4
 
 SBATCH_PARMAS: str = f'''
 #SBATCH -M kingspeak
 #SBATCH --account=ganesh-kp
 #SBATCH --partition=soc-kp
-#SBATCH --nodes=4
+#SBATCH --nodes={SLURM_MAX_WORKERS}
 #SBATCH -C c28
 #.#SBATCH -c 16
 #SBATCH --mem=32G
@@ -404,7 +405,7 @@ def gen_tests(cg: ConfigGenerator, outputDir: Path) -> None:
     with open(str(outputDir)+"/job.py",'w') as py_file:
         py_file.write(PY_JOB_TEMPLATE.format(ext=cg.exe_ext, jobs=jobs))
     with open(str(outputDir)+f"/launch.{cg.exe_ext}.slurm",'w') as slurm_file:
-        slurm_file.write(SLURM_TEMPLATE.format(job_arr=f"0-{len(cg)-1}%1", ext=cg.exe_ext))
+        slurm_file.write(SLURM_TEMPLATE.format(job_arr=f"0-{len(cg)-1}%{SLURM_MAX_WORKERS}", ext=cg.exe_ext))
 #? END def gen_tests() -> None       
 
 ROMP_CONFIGS: ConfigGenerator = ConfigGenerator(ROMP, CXX, CXX_PARAMS, ROMP_PARAMS, ALL_MODELS, "romp")
