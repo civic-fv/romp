@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#!/usr/bin/env python3
 """*
  * @proj romp
  * @author Andrew Osterhout
@@ -7,7 +7,7 @@
  * @org Center for Parallel compute at Utah (CPU)
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
- * @file romp-rw.hpp
+ * @file trace_stats.py
  *
  * @brief A utility to extract romp model-checkers (random walkers) trace files
  *         and perform some statistics on the traces.

@@ -1,3 +1,23 @@
+#!/usr/bin/env python3
+"""*
+ * @proj romp
+ * @author Andrew Osterhout
+ * @author Ajantha Varadharaaj
+ * @org University of Utah (UofU) School of Computing (SoC)
+ * @org Center for Parallel compute at Utah (CPU)
+ * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
+ * @org Ganesh Gopalakrishnan's Research Group
+ * @file gen_test_scripts.py
+ *
+ * @brief A utility to generate tests scripts, 
+ *        meant to run on slurm based super computer clusters,
+ *        that will run romp and it's competitors to collect operational data.
+ *        Meant to be used in conjunction with scrape_test_data.py and other utils.
+ *
+ * @date 2022/11/11
+ * @version 0.2
+ *"""
+
 from os import system, makedirs, listdir
 from typing import List, Union as Un, Dict
 from pathlib import Path
@@ -112,7 +132,7 @@ ALL_MODELS: List[str] = [
     "./adash.m"
 ] if not DO_ALL_MODELS else [ Path(i) for i in listdir('./') if i[-2::] == '.m']
 
-SLURM_TEMPLATE:str = f"""#!/usr/bin/bash
+SLURM_TEMPLATE:str = f"""#!/usr/bin/env bash
 {SBATCH_PARMAS}
 #SBATCH --array={{job_arr}}
 
@@ -133,7 +153,7 @@ cd ..
 
 """
 
-PY_JOB_TEMPLATE:str = f"""#!/usr/bin/python3
+PY_JOB_TEMPLATE:str = f"""#!/usr/bin/env python3.9
 
 from os import system
 from sys import argv

@@ -1,4 +1,22 @@
-#using pandas then converting it into a csv ?
+#!/usr/bin/env python3.9
+"""*
+ * @proj romp
+ * @author Andrew Osterhout
+ * @author Ajantha Varadharaaj
+ * @org University of Utah (UofU) School of Computing (SoC)
+ * @org Center for Parallel compute at Utah (CPU)
+ * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
+ * @org Ganesh Gopalakrishnan's Research Group
+ * @file trace_stats.py
+ *
+ * @brief A utility to extract the test data from the resulting files form running a test
+ *        generated with the gen_test_scripts.py.
+ *        It produces a single tsv with all of the run data for easier Processing latter
+ *
+ * @date 2023/01/07
+ * @version 0.2
+ *"""
+
 import pandas as pd
 from sys import argv
 import re
