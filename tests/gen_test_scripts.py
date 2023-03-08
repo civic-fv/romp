@@ -99,14 +99,13 @@ ROMP_PARAMS: Params_t = {"symmetry": [None, GCO('-s')],
                          "bfs": [None,MCO("-bfs s 1"), MCO("-bfs s 16"), MCO("-bfs s 64"), MCO("-bfs s 256") ],# ,
                                 #  MCO("-bfs m 1"), MCO("-bfs m 16"), MCO("-bfs m 64"), MCO("-bfs m 256")]
                          "attempt-limit":[None,MCO("-ll"),MCO("-ll 4096")],
-                         "launch":[MCO('-y')],"comp-std":[CCO("-std=c++17")]}
+                         "launch":[MCO('-y')]}
 ROMP_TRACE_DIR_TEMPLATE: str = f'{SAVE_PATH}/romp/traces/{{id}}'
 
 CMURPHI_DIR = str(Path("../../cmurphi").absolute())
 CMURPHI = str(Path(f"{CMURPHI_DIR}/src/mu").absolute())
 CMURPHI_PARAMS: Params_t = {"HashCompaction": [GCO("-c"), None], "BitCompaction": [GCO("-b"), None],
-                            "MemLimit":[MCO("-m16000")], "search-type": [MCO("-vbfs"), MCO("-vdfs")],
-                            "build-include":[CCO(f"-std=c++11 -I'{CMURPHI_DIR}/include'")]}  # TODO make this option match cmurphi man/help page
+                            "MemLimit":[MCO("-m16000")], "search-type": [MCO("-vbfs"), MCO("-vdfs")]}  # TODO make this option match cmurphi man/help page
 
 RUMUR = str(Path("../../rumur/build/rumur/rumur").absolute())
 RUMUR_PARAMS: Params_t = {"symmetry": [GCO("--symmetry-reduction="+i) for i in ["heuristic", "exhaustive", "off"]],
@@ -415,9 +414,9 @@ def gen_tests(cg: ConfigGenerator, outputDir: Path) -> None:
         slurm_file.write(SLURM_TEMPLATE.format(job_arr=f"0-{len(cg)-1}%{SLURM_MAX_WORKERS}", ext=cg.exe_ext))
 #? END def gen_tests() -> None       
 
-ROMP_CONFIGS: ConfigGenerator = ConfigGenerator(ROMP, CXX, CXX_PARAMS, ROMP_PARAMS, ALL_MODELS, "romp")
+ROMP_CONFIGS: ConfigGenerator = ConfigGenerator(ROMP, CXX, "-std=c++17 "+CXX_PARAMS, ROMP_PARAMS, ALL_MODELS, "romp")
 
-CMURPHI_CONFIGS: ConfigGenerator = ConfigGenerator(CMURPHI, CXX, CXX_PARAMS, CMURPHI_PARAMS, ALL_MODELS, "cm")
+CMURPHI_CONFIGS: ConfigGenerator = ConfigGenerator(CMURPHI, CXX, f"-std=c++11 -I'{CMURPHI_DIR}/include' "+CXX_PARAMS, CMURPHI_PARAMS, ALL_MODELS, "cm")
 
 RUMUR_CONFIGS = ConfigGenerator(RUMUR, CC, CC_PARAMS, RUMUR_PARAMS,
                                 [i for i in ALL_MODELS if not (
