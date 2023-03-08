@@ -180,10 +180,12 @@ JOB: dict = JOBS[JOB_ID]
 def main():
     if DEBUG:
         print('[' + str(JOB['index']) + "] GENERATING: `" + JOB['model'] + '`')
-    system(JOB['gen'] + "" if DEBUG else " > /dev/null")
+    system(JOB['gen'])
+    # system(JOB['gen'] + "" if DEBUG else " > /dev/null")
     if DEBUG:
         print('[' + str(JOB['index']) + "] COMPILING: `" + JOB['model'] + '`')
-    system(JOB['comp'] + "" if DEBUG else " > /dev/null")
+    system(JOB['comp'])
+    # system(JOB['comp'] + "" if DEBUG else " > /dev/null")
     if DEBUG:
         print('[' + str(JOB['index']) + "] RUNNING: `" + JOB['model'] + "` x" + str(TEST_RUNS))
     for i in range(TEST_RUNS):
