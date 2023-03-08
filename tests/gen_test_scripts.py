@@ -121,7 +121,8 @@ SBATCH_PARMAS: str = f'''
 #SBATCH --partition=soc-kp
 #SBATCH --nodes=4
 #SBATCH -C c28
-#SBATCH -c 16
+#.#SBATCH -c 16
+#SBATCH --mem=32G
 #SBATCH --exclusive
 #SBATCH --time=12:00:00
 #SBATCH --mail-type=FAIL
@@ -142,13 +143,13 @@ TEST_RUNS={PASSES}
 
 
 cd "$TEST_DIR"
-mkdir -p "$SLURM_JOB_ID"
-cd "$SLURM_JOB_ID"
+mkdir -p "$SLURM_ARRAY_TASK_ID"
+cd "$SLURM_ARRAY_TASK_ID"
 
-python3.9 "../job.py" "$SLURM_JOB_ID" "$TEST_RUNS"
+python3.9 "../job.py" "$SLURM_ARRAY_TASK_ID" "$TEST_RUNS"
 
 cd ..
-rm -rf "$SLURM_JOB_ID"
+rm -rf "$SLURM_ARRAY_TASK_ID"
 cd ..
 
 """
@@ -403,7 +404,7 @@ def gen_tests(cg: ConfigGenerator, outputDir: Path) -> None:
     with open(str(outputDir)+"/job.py",'w') as py_file:
         py_file.write(PY_JOB_TEMPLATE.format(ext=cg.exe_ext, jobs=jobs))
     with open(str(outputDir)+f"/launch.{cg.exe_ext}.slurm",'w') as slurm_file:
-        slurm_file.write(SLURM_TEMPLATE.format(job_arr=f"0-{len(cg)-1}", ext=cg.exe_ext))
+        slurm_file.write(SLURM_TEMPLATE.format(job_arr=f"0-{len(cg)-1}%1", ext=cg.exe_ext))
 #? END def gen_tests() -> None       
 
 ROMP_CONFIGS: ConfigGenerator = ConfigGenerator(ROMP, CXX, CXX_PARAMS, ROMP_PARAMS, ALL_MODELS, "romp")
