@@ -114,7 +114,7 @@ RUMUR_PARAMS: Params_t = {"symmetry": [GCO("--symmetry-reduction="+i) for i in [
 
 
 PASSES: int = 8
-SLURM_MAX_WORKERS: int = 4
+SLURM_MAX_WORKERS: int = 1
 
 SBATCH_PARMAS: str = f'''
 #SBATCH -M kingspeak
