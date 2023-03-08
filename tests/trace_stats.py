@@ -28,6 +28,9 @@ import datetime
 import traceback
 import statistics as stats
 from multiset import FrozenMultiset
+import logging as log
+import concurrent.futures as cf
+from multiprocessing import cpu_count
 
 DEBUG: bool = True
 
@@ -969,13 +972,24 @@ def genTraceData(path:str) -> Un[TraceData,None]:
     try:
         return TraceData(dir_name,file_name)
     except RompTraceParseError as te:
-        print(f"{path:<16s} :parse-error: {te!s}")
+        log.error(f"{path:<16s} :parse-error: {te!s}")
     except Exception as ex:
-        print(f"{path:<16s} :exception: {ex!s}")
+        log.error(f"{path:<16s} :exception: {ex!s}")
     except:
-        print(f"{path:<16s} :???-error: ???")
+        log.error(f"{path:<16s} :???-error: ???")
     return None # error occurred return none
 #? END def genTraceData() -> Un[TraceData,None]
+
+def process_data_parallel(trace_dir:str,max_workers:int=None) -> ModelResults:
+    results = ModelResults()
+    trace_files: list = []
+    file_paths = fs_DFS(trace_dir,
+                        fileCallback=lambda p: trace_files.append(p) if p.endwith('.json') else None)
+    with cf.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        for td in executor.map(genTraceData,file_paths):
+            results.add(td)
+    return results
+#? END def process_data_parallel() -> ModelResults:
 
 def process_data(trace_dir:str) -> ModelResults:
     results = ModelResults()
@@ -1008,11 +1022,15 @@ def main() -> None:
         trace_dir = argv[1].strip()
         while trace_dir[-1] in '/\\':
             trace_dir = trace_dir[:len(trace_dir)-1]
-    results = process_data(trace_dir)
+    max_threads = None # cpu_count() if 0 <= cpu_count() >= 3 else cpu_count()-2
+    results = process_data_parallel(trace_dir,max_workers=max_threds)
     print_results(results)
 #? END def main() -> None
 
 if __name__ == "__main__":
+    log_format = "%(asctime)s: %(message)s"
+    log.basicConfig(format=log_format, level=log.INFO,
+                        datefmt="%H:%M:%S")
     if DEBUG:
         _t = StatRange()
         if _t is None:

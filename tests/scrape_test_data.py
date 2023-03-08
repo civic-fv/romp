@@ -6,8 +6,11 @@ import os
 import concurrent.futures as cf
 from multiprocessing import cpu_count
 from math import inf
-from trace_stats import ModelResult, ModelResults, fs_DFS, process_data as process_trace_dir
+from trace_stats import (ModelResult, ModelResults, TraceData, fs_DFS, 
+                         process_data as process_trace_dir, genTraceData as genRompTraceData,
+                         process_data_parallel as process_trace_dir_parallel)
 from gen_test_scripts import ROMP_CONFIGS, CMURPHI_CONFIGS, RUMUR_CONFIGS
+import logging as log
 
 COLS=["Model_name",
           "ModelChecker",
@@ -21,6 +24,8 @@ COLS=["Model_name",
           "Config_details",
           "Misc_data",
           "Cachegrind_data"]
+
+ENABLE_ROMP_SCRAPE_TRACE_PARALLEL: bool = True
 
 
 ROMP_PATTERN = re.compile(r"""(?:.|\s)+
@@ -81,7 +86,12 @@ def romp(f,data_dir) -> dict:
             })
     #NOTE: trace dir for this model should be the `run`th dir in the `./traces/{index}/` dir
     trace_dir:str = os.listdir(f'{data_dir}/traces/{index}')[run]
-    trace_results: ModelResults = process_trace_dir(trace_dir)
+    trace_results: ModelResults
+    if ENABLE_ROMP_SCRAPE_TRACE_PARALLEL:
+        max_threads = cpu_count() if 0 <= cpu_count() <= 3 else cpu_count()-2
+        trace_results = process_trace_dir_parallel(trace_dir,max_workers=max_threads)
+    else:
+        trace_results = process_trace_dir(trace_dir)
     if 0 <= len(trace_results) > 1:
         print("[ERROR] rumur trace data caught multiple romp instances")
         return data
@@ -258,7 +268,7 @@ def scrape_data(data_dir) -> pd.DataFrame:
     def thread_work(filepath) -> None:
         read_text_file(filepath,data_dir)
     fs_DFS(data_dir,fileCallback=file_callback)
-    max_threads = cpu_count() if 0 <= cpu_count() <= 3 else cpu_count()-2
+    max_threads = (cpu_count() if 0 <= cpu_count() >= 3 else cpu_count()-2) if ENABLE_ROMP_SCRAPE_TRACE_PARALLEL else None
     with cf.ThreadPoolExecutor(max_workers=max_threads) as executor:
         return pd.DataFrame(
                 executor.map(thread_work, data_files)
@@ -284,4 +294,7 @@ def main()->None:
 #?END def main() -> None:
 
 if __name__ == "__main__":
+    log_format = "%(asctime)s: %(message)s"
+    log.basicConfig(format=log_format, level=log.INFO,
+                        datefmt="%H:%M:%S")
     main()
