@@ -298,7 +298,7 @@ class ConfigGenerator:
         base_model = f"{SAVE_PATH}/{self._exe_ext}/{self.index-1}/{self._models[self._i].stem}"
         other_opts = ' '.join(
             [i.value for i in self._config.values() if isinstance(i, CompilerConfigOption)])
-        return f"{self._comp} {self._comp_params} {other_opts} -o '{base_model}.{self.exe_ext}' '{base_model}.{self._src_ext}'"
+        return f"{self._comp} {self._comp_params} {other_opts} -o '{base_model}.{self._index}.{self.exe_ext}' '{base_model}.{self._src_ext}'"
 
     # def sbatch_cmd(self, slurmOpts: str, outdir:str) -> str:
     #     if self._index is None:
