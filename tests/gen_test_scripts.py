@@ -21,6 +21,7 @@
 from os import system, makedirs, listdir
 from typing import List, Union as Un, Dict
 from pathlib import Path
+from math import ceil
 from dataclasses import dataclass
 import sys
 from datetime import datetime
@@ -117,6 +118,7 @@ RUMUR_PARAMS: Params_t = {"symmetry": [GCO("--symmetry-reduction="+i) for i in [
 
 PASSES: int = 8
 SLURM_MAX_WORKERS: int = 1
+SLURM_MAX_ARRAY_SIZE: int = 4_000
 
 SBATCH_PARMAS: str = f'''
 #SBATCH -M kingspeak
@@ -134,11 +136,11 @@ SBATCH_PARMAS: str = f'''
 
 ALL_MODELS: List[str] = [
     "./adash.m"
-] if not DO_ALL_MODELS else [ Path(i) for i in listdir('./') if i[-2::] == '.m']
+] if not DO_ALL_MODELS else [ Path(i) for i in listdir('./benchmarks') if i[-2::] == '.m']
 
 SLURM_TEMPLATE:str = f"""#!/usr/bin/env bash
 {SBATCH_PARMAS}
-#SBATCH --array={{job_arr}}
+#SBATCH --array=0-{{max_task_id}}:{{task_step}}%{SLURM_MAX_WORKERS}
 
 _EXT="{{ext}}"
 TEST_DIR="{SAVE_PATH}/$_EXT"
@@ -146,16 +148,24 @@ TEST_RUNS={PASSES}
 
 module load gcc/11.2.0
 
-cd "$TEST_DIR"
-mkdir -p "$SLURM_ARRAY_TASK_ID"
-cd "$SLURM_ARRAY_TASK_ID"
+TASK_MAX=$((SLURM_ARRAY_TASK_ID + {{task_step}}))
+if [ $TASK_MAX -gt $SLURM_ARRAY_TASK_MAX ]
+then
+TASK_MAX=$SLURM_ARRAY_TASK_MAX
+fi
 
-python3.9 "../job.py" "$SLURM_ARRAY_TASK_ID" "$TEST_RUNS"
+for (( j_id=SLURM_ARRAY_TASK_ID; j_id<=TASK_MAX; j_id++ ))
+do
+    cd "$TEST_DIR"
+    mkdir -p "$j_id"
+    cd "$SLURM_ARRAY_TASK_ID"
 
-cd ..
-rm -rf "$SLURM_ARRAY_TASK_ID"
-cd ..
+    python3.9 "../job.py" "$j_id" "$TEST_RUNS"
 
+    cd ..
+    rm -rf "$j_id"
+    cd "$TEST_DIR" 
+done
 """
 
 PY_JOB_TEMPLATE:str = f"""#!/usr/bin/env python3.9
@@ -315,7 +325,7 @@ class ConfigGenerator:
             raise Exception("ConfigGenerator not in iterator mode!!")
         base_model = f"{SAVE_PATH}/{self._exe_ext}/{self.index-1}/{self._models[self._i].stem}"
         launch_opts = ' '.join([i.value for i in self._config.values(
-        ) if isinstance(i, ModelCheckerConfigOption)])
+                                ) if isinstance(i, ModelCheckerConfigOption)])
         return (f"{base_model}.{self._index}.{self._exe_ext} {launch_opts}")
     
     @property 
@@ -324,10 +334,7 @@ class ConfigGenerator:
             raise Exception("ConfigGenerator not in iterator mode!!")
         if self._exe_ext != "romp":
             return ""
-        base_model = f"{SAVE_PATH}/{self._exe_ext}/{self.index-1}/{self._models[self._i].stem}"
-        launch_opts = ' '.join([i.value for i in self._config.values(
-        ) if isinstance(i, ModelCheckerConfigOption)])
-        return (f"{base_model}.{self._index}.{self._exe_ext} -t {ROMP_TRACE_DIR_TEMPLATE.format(id=self._index)} {launch_opts}")
+        return (f"{self.launch_cmd} -t {ROMP_TRACE_DIR_TEMPLATE.format(id=self._index)}")
     
     @property
     def cachegrind_cmd(self) -> str:
@@ -385,14 +392,13 @@ def gen_tests(cg: ConfigGenerator, outputDir: Path) -> None:
     outputDir = Path(str(outputDir.absolute()) + '/' + cg.exe_ext)
     try:
         makedirs(outputDir)
-    except Exception as ex:
+    except:
         print("ERROR : Failed to create new directory (could already exist)")
         return
     jobs: str = ""
     sep: str = ""
     for i in cg:
         jobs += sep
-
         jobs += ("{"
                  f"'index':{i.index},"
                  f"'model':\"{i.model.stem}\","
@@ -402,17 +408,18 @@ def gen_tests(cg: ConfigGenerator, outputDir: Path) -> None:
                  f"'cachegrind':\"{i.cachegrind_cmd}\","
                  f"'trace':\"{i.trace_cmd}\""
                  "}")
-                    # % i._index, i.model.stem, i.gen_cmd, i.comp_cmd, i.launch_cmd, i.cachegrind_cmd)
-        if DEBUG:
-            print("Writing :", i.index)
-            
         sep = ",\n    "
-        
+        if DEBUG:
+            print("Generating :", cg.exe_ext, '-', i.index)
+
     with open(str(outputDir)+"/job.py",'w') as py_file:
         py_file.write(PY_JOB_TEMPLATE.format(ext=cg.exe_ext, jobs=jobs))
+
     with open(str(outputDir)+f"/launch.{cg.exe_ext}.slurm",'w') as slurm_file:
-        slurm_file.write(SLURM_TEMPLATE.format(job_arr=f"0-{len(cg)-1}%{SLURM_MAX_WORKERS}", ext=cg.exe_ext))
-#? END def gen_tests() -> None       
+        slurm_file.write(SLURM_TEMPLATE.format(max_task_id=len(cg)-1,
+                                               task_step=ceil(len(cg)//SLURM_MAX_ARRAY_SIZE),
+                                               ext=cg.exe_ext))
+#? END def gen_tests() -> None  
 
 ROMP_CONFIGS: ConfigGenerator = ConfigGenerator(ROMP, CXX, "-std=c++17 "+CXX_PARAMS, ROMP_PARAMS, ALL_MODELS, "romp")
 
@@ -420,7 +427,7 @@ CMURPHI_CONFIGS: ConfigGenerator = ConfigGenerator(CMURPHI, CXX, f"-std=c++11 -I
 
 RUMUR_CONFIGS = ConfigGenerator(RUMUR, CC, CC_PARAMS, RUMUR_PARAMS,
                                 [i for i in ALL_MODELS if not (
-                                    "dash.m" in str(i) or "-flow.m" in str(i) or "multi.m" in str(i))],
+                                    "dash.m" in str(i) or "-flow.m" in str(i) or "multi.m" in str(i) or "MESI" in str(i))],
                                 "ru")
 
 def main(args) -> None:
