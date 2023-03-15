@@ -118,7 +118,7 @@ RUMUR_PARAMS: Params_t = {"symmetry": [GCO("--symmetry-reduction="+i) for i in [
 
 PASSES: int = 4
 SLURM_MAX_WORKERS: int = 2
-SLURM_MAX_ARRAY_SIZE: int = 1000
+SLURM_MAX_ARRAY_SIZE: int = 800
 
 SBATCH_PARMAS: str = f'''
 #SBATCH -M kingspeak
@@ -140,7 +140,7 @@ ALL_MODELS: List[str] = [
 
 SLURM_TEMPLATE:str = f"""#!/usr/bin/env bash
 {SBATCH_PARMAS}
-#SBATCH --array=0-{{max_task_id}}:{{task_step}}%{SLURM_MAX_WORKERS}
+#SBATCH --array=0-{{max_task_id}}:{{task_step}}
 
 _EXT="{{ext}}"
 TEST_DIR="{SAVE_PATH}/$_EXT"
