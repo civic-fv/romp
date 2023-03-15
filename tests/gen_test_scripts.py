@@ -116,9 +116,9 @@ RUMUR_PARAMS: Params_t = {"symmetry": [GCO("--symmetry-reduction="+i) for i in [
                           "deadlock":[GCO("--deadlock-detection="+i) for i in ["off", "stuck", "stuttering"]]}  # TODO make this option match rumur man/help page
 
 
-PASSES: int = 8
-SLURM_MAX_WORKERS: int = 1
-SLURM_MAX_ARRAY_SIZE: int = 4_000
+PASSES: int = 4
+SLURM_MAX_WORKERS: int = 2
+SLURM_MAX_ARRAY_SIZE: int = 1000
 
 SBATCH_PARMAS: str = f'''
 #SBATCH -M kingspeak
@@ -129,7 +129,7 @@ SBATCH_PARMAS: str = f'''
 #.#SBATCH -c 16
 #SBATCH --mem=32G
 #SBATCH --exclusive
-#SBATCH --time=12:00:00
+#SBATCH --time=18:00:00
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-user=ajanthav10@gmail.com '''
 # SBATCH_PARMAS: str = "-M kingspeak --account=ganesh --partition=kingspeak-shared --nodes=2 --ntasks=8 -C c16 -c 16 --exclusive --time=12:00:00 --mail-type=FAIL --mail-user=ajanthav10@gmail.com"
