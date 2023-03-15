@@ -417,7 +417,7 @@ def gen_tests(cg: ConfigGenerator, outputDir: Path) -> None:
 
     with open(str(outputDir)+f"/launch.{cg.exe_ext}.slurm",'w') as slurm_file:
         slurm_file.write(SLURM_TEMPLATE.format(max_task_id=len(cg)-1,
-                                               task_step=ceil(len(cg)//SLURM_MAX_ARRAY_SIZE),
+                                               task_step=ceil(len(cg)//SLURM_MAX_ARRAY_SIZE)+1,
                                                ext=cg.exe_ext))
 #? END def gen_tests() -> None  
 
