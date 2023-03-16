@@ -21,7 +21,7 @@
 from os import system, makedirs, listdir
 from typing import List, Union as Un, Dict
 from pathlib import Path
-from math import ceil
+from math import ceil, floor
 from dataclasses import dataclass
 import sys
 from datetime import datetime
@@ -29,17 +29,38 @@ from random import randint
 import copy
 
 # turn on debug messages (also turns on debug messages in generated files)
-DEBUG = False
+DEBUG: bool = False
 
 # should the tests include a run of valgrind's cachegrind tool (more than doubles run time of generated test scripts)
-ENABLE_CACHEGRIND = False
+ENABLE_CACHEGRIND: bool = False
 
 # set this to True if you want to just run all murphi models in the current directory
-DO_ALL_MODELS = True
+DO_ALL_MODELS: bool = True
 
 # this only changes file paths for debugging purposes and won't make a script that can run locally
-DO_SLURM = True
+DO_SLURM: bool = True
 
+# this let's you filter what checkers you want generate
+DO_CHECKERS: List[str] = [
+        'romp',
+        'cm',
+        'ru'
+    ]
+
+# set this to enable or disable doing romp traces
+DO_ROMP_TRACE_RUNS: bool = True
+
+# set the path to the benchmark folder where all of the models you want to run are stored
+BENCHMARK_DIR: str = "./benchmarks"
+
+# set the number of repeated runs per configuration to run
+PASSES: int = 4
+
+# set the max number of nodes to use when using slurm
+SLURM_MAX_WORKERS: int = 2
+
+# set the max number of tasks allowed in a slurm array
+SLURM_MAX_ARRAY_SIZE: int = 800
 
 
 @dataclass
@@ -116,10 +137,6 @@ RUMUR_PARAMS: Params_t = {"symmetry": [GCO("--symmetry-reduction="+i) for i in [
                           "deadlock":[GCO("--deadlock-detection="+i) for i in ["off", "stuck", "stuttering"]]}  # TODO make this option match rumur man/help page
 
 
-PASSES: int = 4
-SLURM_MAX_WORKERS: int = 2
-SLURM_MAX_ARRAY_SIZE: int = 800
-
 SBATCH_PARMAS: str = f'''
 #SBATCH -M kingspeak
 #SBATCH --account=ganesh-kp
@@ -136,29 +153,43 @@ SBATCH_PARMAS: str = f'''
 
 ALL_MODELS: List[str] = [
     "./adash.m"
-] if not DO_ALL_MODELS else [ Path(i) for i in listdir('./benchmarks') if i[-2::] == '.m']
+] if not DO_ALL_MODELS else [ Path(i) for i in listdir(BENCHMARK_DIR) if i[-2::] == '.m']
 
 SLURM_TEMPLATE:str = f"""#!/usr/bin/env bash
 {SBATCH_PARMAS}
-#SBATCH --array=0-{{max_task_id}}:{{task_step}}
+#SBATCH --array=0-{{max_task_id}}
+
+module load gcc/11.2.0
 
 _EXT="{{ext}}"
 TEST_DIR="{SAVE_PATH}/$_EXT"
 TEST_RUNS={PASSES}
 
-module load gcc/11.2.0
+_MAX_JOB={{max_job_id}}
+_JOB_SLICE={{job_slice_size}}
+_JOB_REMAINDER={{job_remainder}}
 
-TASK_MAX=$((SLURM_ARRAY_TASK_ID + {{task_step}}))
-if [ $TASK_MAX -gt $SLURM_ARRAY_TASK_MAX ]
+TASK_START=$((SLURM_ARRAY_TASK_ID * _JOB_SLICE))
+TASK_MAX=$(((SLURM_ARRAY_TASK_ID + 1) * _JOB_SLICE))
+if [[ $TASK_START -lt $_JOB_REMAINDER ]]
 then
-TASK_MAX=$SLURM_ARRAY_TASK_MAX
+    TASK_START=$((TASK_START + TASK_START))
+    TASK_MAX=$((TASK_MAX + TASK_START + 1))
+else
+    TASK_START=$((TASK_START + _JOB_REMAINDER))
+    TASK_MAX=$((TASK_MAX + _JOB_REMAINDER))
 fi
 
-for (( j_id=SLURM_ARRAY_TASK_ID; j_id<=TASK_MAX; j_id++ ))
+if [[ $TASK_MAX -gt $_MAX_JOB ]]
+then
+    TASK_MAX=$_MAX_JOB
+fi
+
+for (( j_id=TASK_START; j_id<=TASK_MAX; j_id++ ))
 do
     cd "$TEST_DIR"
     mkdir -p "$j_id"
-    cd "$SLURM_ARRAY_TASK_ID"
+    cd "$j_id"
 
     python3.9 "../job.py" "$j_id" "$TEST_RUNS"
 
@@ -177,6 +208,7 @@ from time import perf_counter_ns
 DEBUG: bool = {DEBUG!s}
 
 ENABLE_CACHEGRIND: bool = {ENABLE_CACHEGRIND!s}
+ENABLE_TRACE_RUNS: bool = {DO_ROMP_TRACE_RUNS!s}
 
 SLURM_JOB_ID: int = int(argv[1])
 TEST_RUNS: int = int(argv[2])
@@ -202,14 +234,14 @@ def main():
     if DEBUG:
         print('[' + str(JOB['index']) + "] RUNNING: `" + JOB['model'] + "` x" + str(TEST_RUNS))
     for i in range(TEST_RUNS):
-        outfile = (SAVE_LOC + '/' + str(JOB['index']) + '-' + str(i)
-                    + '__' + JOB['model'] + '.' + EXT)
+        outfile = (SAVE_LOC + 
+                    ('/%0{{fmax_len}}d-%02d__%s.%s' % (JOB['index'], i, JOB['model'], EXT)))
         start = perf_counter_ns()
         system(JOB['run'].format(seed=start) + ' > "' + outfile + '.txt"')
         time = perf_counter_ns() - start
         with open(outfile + '.txt','a') as file:
             file.write('\\nTIME_NS=' + str(time) + '\\n')
-        if JOB['trace'] is not None and JOB['trace'] != "":
+        if ENABLE_TRACE_RUNS and JOB['trace'] is not None and JOB['trace'] != "":
             system(JOB['trace'].format(seed=start))
         if ENABLE_CACHEGRIND and not JOB['trace']:
             system((JOB['cachegrind']).format(seed=start) 
@@ -413,11 +445,13 @@ def gen_tests(cg: ConfigGenerator, outputDir: Path) -> None:
             print("Generating :", cg.exe_ext, '-', i.index)
 
     with open(str(outputDir)+"/job.py",'w') as py_file:
-        py_file.write(PY_JOB_TEMPLATE.format(ext=cg.exe_ext, jobs=jobs))
+        py_file.write(PY_JOB_TEMPLATE.format(ext=cg.exe_ext, jobs=jobs, fmax_len=len(str(len(cg)))))
 
     with open(str(outputDir)+f"/launch.{cg.exe_ext}.slurm",'w') as slurm_file:
-        slurm_file.write(SLURM_TEMPLATE.format(max_task_id=len(cg)-1,
-                                               task_step=ceil(len(cg)//SLURM_MAX_ARRAY_SIZE)+1,
+        slurm_file.write(SLURM_TEMPLATE.format(max_task_id=(len(cg) if len(cg)<=SLURM_MAX_ARRAY_SIZE else SLURM_MAX_ARRAY_SIZE)-1,
+                                               max_job_id=len(cg)-1,
+                                               job_slice_size=floor(len(cg)/SLURM_MAX_ARRAY_SIZE),
+                                               job_remainder=len(cg)%SLURM_MAX_ARRAY_SIZE,
                                                ext=cg.exe_ext))
 #? END def gen_tests() -> None  
 
@@ -431,15 +465,18 @@ RUMUR_CONFIGS = ConfigGenerator(RUMUR, CC, CC_PARAMS, RUMUR_PARAMS,
                                 "ru")
 
 def main(args) -> None:
-    print(f"Generating romp tests... (n={len(ROMP_CONFIGS)})")
-    gen_tests(ROMP_CONFIGS, SAVE_PATH)
-    print("[DONE] Generating romp tests")
-    print(f"Generating cmurphi tests... (n={len(CMURPHI_CONFIGS)})")
-    gen_tests(CMURPHI_CONFIGS, SAVE_PATH)
-    print("[DONE] Generating cmurphi tests")
-    print(f"Generating rumur tests... (n={len(RUMUR_CONFIGS)})")
-    gen_tests(RUMUR_CONFIGS, SAVE_PATH)
-    print("[DONE] Generating rumur tests")
+    if 'romp' in DO_CHECKERS:
+        print(f"Generating romp tests... (n={len(ROMP_CONFIGS)})")
+        gen_tests(ROMP_CONFIGS, SAVE_PATH)
+        print("[DONE] Generating romp tests")
+    if 'cm' in DO_CHECKERS:
+        print(f"Generating cmurphi tests... (n={len(CMURPHI_CONFIGS)})")
+        gen_tests(CMURPHI_CONFIGS, SAVE_PATH)
+        print("[DONE] Generating cmurphi tests")
+    if 'ru' in DO_CHECKERS:
+        print(f"Generating rumur tests... (n={len(RUMUR_CONFIGS)})")
+        gen_tests(RUMUR_CONFIGS, SAVE_PATH)
+        print("[DONE] Generating rumur tests")
 
     print(f"Finished generating tests")
     print(f"  Time Taken: {(datetime.now()-INIT_TIME).total_seconds()!s:s}s")

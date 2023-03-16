@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: test_script.py",
+            "name": "Python: gen_test_scripts.py",
             "cwd": "${workspaceFolder}/tests",
             "type": "python",
             "request": "launch",
