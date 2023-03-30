@@ -153,7 +153,7 @@ SBATCH_PARMAS: str = f'''
 
 ALL_MODELS: List[str] = [
     "./adash.m"
-] if not DO_ALL_MODELS else [ Path(i) for i in listdir(BENCHMARK_DIR) if i[-2::] == '.m']
+] if not DO_ALL_MODELS else [ i for i in listdir(BENCHMARK_DIR) if i[-2::] == '.m']
 
 SLURM_TEMPLATE:str = f"""#!/usr/bin/env bash
 {SBATCH_PARMAS}
@@ -274,7 +274,8 @@ class ConfigGenerator:
         self._comp: str = comp
         self._comp_params: str = comp_params
         self._PARAMS: Params_t = dict(params)
-        self._models: List[Path] = [Path(i) for i in models]
+        self._models: List[Path] = [i for i in models]
+        self._models.sort()
         self._param_keys: List[str] = list(self._PARAMS.keys())
         self._param_keys.sort()  # might not need to sort these
         self._index: int = None
@@ -318,13 +319,13 @@ class ConfigGenerator:
     def model(self) -> Path:
         if self._index is None:
             raise Exception("ConfigGenerator not in iterator mode!!")
-        return self._models[self._i]
+        return Path(self._models[self._i])
 
     @property
     def gen_cmd(self) -> str:
         if self._index is None:
             raise Exception("ConfigGenerator not in iterator mode!!")
-        base_model = f"{SAVE_PATH}/{self._exe_ext}/{self.index-1}/{self._models[self._i].stem}"
+        base_model = f"{SAVE_PATH}/{self._exe_ext}/{self.index-1}/{self.model.stem}"
         other_opts = ' '.join(
             [i.value for i in self._config.values() if isinstance(i, GeneratorConfigOption)])
         if self.exe_ext == "cm":
@@ -337,7 +338,7 @@ class ConfigGenerator:
     def comp_cmd(self) -> str:
         if self._index is None:
             raise Exception("ConfigGenerator not in iterator mode!!")
-        base_model = f"{SAVE_PATH}/{self._exe_ext}/{self.index-1}/{self._models[self._i].stem}"
+        base_model = f"{SAVE_PATH}/{self._exe_ext}/{self.index-1}/{self.model.stem}"
         other_opts = ' '.join(
             [i.value for i in self._config.values() if isinstance(i, CompilerConfigOption)])
         return f"{self._comp} {self._comp_params} {other_opts} -o '{base_model}.{self._index}.{self.exe_ext}' '{base_model}.{self._src_ext}'"
@@ -345,7 +346,7 @@ class ConfigGenerator:
     # def sbatch_cmd(self, slurmOpts: str, outdir:str) -> str:
     #     if self._index is None:
     #         raise Exception("ConfigGenerator not in iterator mode!!")
-    #     base_model = f"{SAVE_PATH}/{self._exe_ext}/{self._models[self._i].stem}"
+    #     base_model = f"{SAVE_PATH}/{self._exe_ext}/{self.model.stem}"
     #     launch_opts = ' '.join([i.value for i in self._config.values(
     #     ) if isinstance(i, ModelCheckerConfigOption)])
     #     return (f"time {base_model.absolute()}.{self._index}.{self._exe_ext} {launch_opts} "
@@ -355,7 +356,7 @@ class ConfigGenerator:
     def launch_cmd(self) -> str:
         if self._index is None:
             raise Exception("ConfigGenerator not in iterator mode!!")
-        base_model = f"{SAVE_PATH}/{self._exe_ext}/{self.index-1}/{self._models[self._i].stem}"
+        base_model = f"{SAVE_PATH}/{self._exe_ext}/{self.index-1}/{self.model.stem}"
         launch_opts = ' '.join([i.value for i in self._config.values(
                                 ) if isinstance(i, ModelCheckerConfigOption)])
         return (f"{base_model}.{self._index}.{self._exe_ext} {launch_opts}")
@@ -382,7 +383,7 @@ class ConfigGenerator:
     def __len__(self) -> int:
         return self._len
 
-    def __item__(self, index):
+    def __getitem__(self, index):
         other = copy.deepcopy(self)
         other.__iter__()
         while other._index < index:

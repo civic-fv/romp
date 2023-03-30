@@ -1,0 +1,17 @@
+ganesh@ganesh-XPS-17-9710:~/romp/NEW/romp/tests$ make bug4.romp
+Generating bug4.romp.cpp with romp ...
+  ../build/romp/romp -s --do-measure --simple-trace-rep -o bug4.romp.cpp bug4.m
+Finished Generating: bug4.romp.cpp
+Building bug4.sym.romp ...
+  g++ -std=c++17 -O3 -pthread -D__romp__ENABLE_symmetry -o bug4.sym.romp bug4.romp.cpp
+bug4.romp.cpp: In member function ‘__model__::__romp__Model__::procT __model__::__romp__Model__::frontq(__model__::__romp__Model__::request_bufT)’:
+bug4.romp.cpp:3028:1: warning: control reaches end of non-void function [-Wreturn-type]
+ 3028 | }
+      | ^
+Finished Building: bug4.sym.romp
+cp: missing file operand
+Try 'cp --help' for more information.
+Making'' bug4.romp with  ...
+  cp -rf bug4.sym.romp bug4.romp
+Finished Making'': bug4.romp
+ganesh@ganesh-XPS-17-9710:~/romp/NEW/romp/tests$ history

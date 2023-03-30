@@ -2,6 +2,16 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: scrape_test_data.py (knight ~/Desktop/ru)",
+            "cwd": "${workspaceFolder}/tests",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/scrape_test_data.py",
+            "args": ["~/Desktop/ru"],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
             "name": "Python: gen_test_scripts.py",
             "cwd": "${workspaceFolder}/tests",
             "type": "python",
