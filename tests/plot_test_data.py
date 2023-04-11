@@ -1,16 +1,14 @@
 import argparse
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
 
+def violin_plot():
+    #TODO
 
-def box_plot(data,model,feature):
-    print("iamhereinside plot")
-    exit()
-    plt.boxplot(data, labels=["Cmurphi", "Rumur"])
-    plt.title("Box Plot of Model:",model)
-    plt.ylabel(feature)
-    plt.show()
-    
+def box_plot(df_selected, model, feature):
+    #TODO printing plots
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -28,12 +26,7 @@ def main():
     df =pd.concat([df1, df2], ignore_index=True)
     df = df.loc[df["Model_name"] == model]
     df_selected = df[["ModelChecker",feature]]
-    model_checker_groups = df_selected.groupby("ModelChecker")
-    data = []
-    for name, group in model_checker_groups:
-        feature_values = group[feature].tolist()
-        data.append([name, feature_values])
-    box_plot(data,model,feature)
-
+    box_plot(df_selected, model, feature)
+    
 if __name__ == "__main__":
     main()
