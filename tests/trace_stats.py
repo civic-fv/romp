@@ -960,7 +960,6 @@ def fs_DFS(path, dirCallback=None, fileCallback=None) -> List[str]:
                 dirCallback(tmp)
         elif(os.path.isfile(tmp)):
             ret.append(tmp)
-            files.append(tmp)
             if fileCallback:
                 fileCallback(tmp)
     return ret
