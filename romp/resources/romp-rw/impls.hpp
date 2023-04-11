@@ -953,6 +953,9 @@ void Options::parse_args(int argc, char **argv) {
                   << std::flush;
         exit(EXIT_FAILURE);
       }
+    } else {
+      std::cerr << "ignored argument : `" << argv[i] << "` is not recognised as a argument and will be ignored\n" 
+                << std::flush;
     }
   } // end for loop
     // modifying values to match complex default values
