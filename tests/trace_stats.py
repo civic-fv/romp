@@ -983,7 +983,7 @@ def process_data_parallel(trace_dir:str,max_workers:int=None) -> ModelResults:
     results = ModelResults()
     trace_files: list = []
     file_paths = fs_DFS(trace_dir,
-                        fileCallback=lambda p: trace_files.append(p) if p.endwith('.json') else None)
+                        fileCallback=lambda p: trace_files.append(p) if p.endswith('.json') else None)
     with cf.ThreadPoolExecutor(max_workers=max_workers) as executor:
         for td in executor.map(genTraceData,file_paths):
             results.add(td)
@@ -1022,7 +1022,8 @@ def main() -> None:
         while trace_dir[-1] in '/\\':
             trace_dir = trace_dir[:len(trace_dir)-1]
     max_threads = None # cpu_count() if 0 <= cpu_count() >= 3 else cpu_count()-2
-    results = process_data_parallel(trace_dir,max_workers=max_threds)
+    # results = process_data_parallel(trace_dir,max_workers=max_threads)
+    results = process_data(trace_dir)
     print_results(results)
 #? END def main() -> None
 

@@ -685,6 +685,17 @@
             "justMyCode": true
         },
         {
+            "name": "Python: Trace Stats (downloads)",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/trace_stats.py",
+            "args": [
+                "~/Downloads/traces"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
             "name": "Python: symmetry comparison active file",
             "type": "python",
             "request": "launch",
