@@ -7,7 +7,7 @@
  * @org Center for Parallel compute at Utah (CPU)
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
- * @file trace_stats.py
+ * @file trace_np.py
  *
  * @brief A utility to extract romp model-checkers (random walkers) trace files
  *         and perform some statistics on the traces.
@@ -31,6 +31,7 @@ from multiset import FrozenMultiset
 import logging as log
 import concurrent.futures as cf
 from multiprocessing import cpu_count
+import numpy as np
 
 DEBUG: bool = True
 
@@ -124,17 +125,13 @@ SR_DEFAULT_SUMMARY_FMT_STR: str = (
 SR_DEFAULT_SUMMARY_FACTORY: TupleFactory = SR_SS_FACTORY
 SR_DEFAULT_SUMMARY_LABEL_STR: str = (
     f"{'mean:':->12s}-{'stdev:':-^12s}-{'median:':->12s}-{'min:':->12s}-{'max:':->12s}")
-class StatRange(list):
+class StatRange(np.ndarray):
     DEFAULT_SUMMARY_FMT_STR: str = SR_DEFAULT_SUMMARY_FMT_STR
     DEFAULT_SUMMARY_LABEL_STR: str = SR_DEFAULT_SUMMARY_LABEL_STR
     DEFAULT_SUMMARY_FACTORY: TupleFactory = SR_DEFAULT_SUMMARY_FACTORY
     """A list that allows you to have easy access to statistical operations"""
-    def __init__(self, *args,
-                 summary_fmt_str: str = SR_DEFAULT_SUMMARY_FMT_STR,
-                 summary_label_str: str = SR_DEFAULT_SUMMARY_LABEL_STR,
-                 summary_factory: TupleFactory = SR_DEFAULT_SUMMARY_FACTORY,
-                 **kwargs) -> None:
-        list.__init__(self,*args,**kwargs)
+    def __init__(self, *args,**kwargs) -> None:
+        np.ndarray.__init__(self)
         self.min: int = inf
         self.max: int = -inf
         self.sum: int = 0
@@ -143,27 +140,33 @@ class StatRange(list):
         self.__median: Num = None
         self.__stdev: Num = None
         self.__mode: Num = None
-        self.__summary_fmt_str: str = summary_fmt_str
+        self.__summary_fmt_str: str = StatRange.DEFAULT_SUMMARY_FMT_STR
         # if 'summary_fmt_str' in kwargs:
         #     self.__summary_fmt_str = kwargs['summary_fmt_str']
-        self.__summary_label_str: str = summary_label_str
+        self.__summary_label_str: str = StatRange.DEFAULT_SUMMARY_LABEL_STR
         # if 'summary_label_str' in kwargs:
         #     self.__summary_label_str = kwargs['summary_label_str']
-        self.__summary_factory: TupleFactory = summary_factory
+        self.__summary_factory: TupleFactory = StatRange.DEFAULT_SUMMARY_FACTORY
         # if 'summary_factory' in kwargs:
         #     self.__summary_label_str = kwargs['summary_factory']
+    def setFmt(self, summary_fmt_str: str = SR_DEFAULT_SUMMARY_FMT_STR,
+                     summary_label_str: str = SR_DEFAULT_SUMMARY_LABEL_STR,
+                     summary_factory: TupleFactory = SR_DEFAULT_SUMMARY_FACTORY) -> None:
+        self.__summary_fmt_str: str = summary_fmt_str
+        self.__summary_label_str: str = summary_label_str
+        self.__summary_factory: TupleFactory = summary_factory
     def append(self, data) -> None:
         self.add_data(data)
     def add_data(self,data:Un[list,List,Num]) -> None:
         self.__median = None
         self.__stdev = None
         self.__mode = None
-        if isinstance(data,list):
+        if isinstance(data,list) or isinstance(data,np.ndarray):
             if len(data) <= 0:
                 if DEBUG:
                     log.warning("tried to add an empty list/StatRange to a StatRange!!")
                 return
-            list.extend(self,data)
+            np.append(self,data)
             self.max = max(max(data),self.max)
             self.min = min(min(data),self.min)
             self.n += len(data)
@@ -173,7 +176,7 @@ class StatRange(list):
         self.min = min(data,self.min)
         self.sum += data
         self.n += 1
-        list.append(self,data)
+        np.append(self,[data])
     @property
     def mean(self) -> Num:
         if self.n <= 0:
@@ -181,7 +184,7 @@ class StatRange(list):
         return self.sum / self.n
     def __calc_median(self) -> None:
         if self.__median is None:
-            self.__median = stats.median(self)
+            self.__median = np.median(self)
     @property
     def median(self) -> Num:
         if self.n <= 0: 
@@ -190,7 +193,7 @@ class StatRange(list):
         return self.__median # [len(self.__median)//2]
     def __calc_stdev(self) -> None:
         if self.__stdev is None:
-            self.__stdev = stats.stdev(self)
+            self.__stdev = np.stdev(self)
     @property
     def stdev(self) -> Num:
         if self.n <= 0: return NaN
@@ -198,7 +201,7 @@ class StatRange(list):
         return self.__stdev
     def __calc_mode(self) -> None:
         if self.__mode is None:
-            self.__mode = stats.mode(self)
+            self.__mode = np.mode(self)
     @property
     def mode(self) -> Num:
         if self.n <= 0: return NaN
@@ -340,12 +343,12 @@ class TraceData:
         self.id: TraceID = None
         self.romp_id: RompID = None
         self.seed: Un[str,int] = None
-        self.rule_miss_streak: StatRange = StatRange()
-        self.rule_hit_streak: StatRange = StatRange()
-        self.state_miss_streak: StatRange = StatRange()
-        self.state_hit_streak: StatRange = StatRange()
-        self.abs_state_miss_streak: StatRange = StatRange()
-        self.abs_state_hit_streak: StatRange = StatRange()
+        self.rule_miss_streak: StatRange = StatRange(shape=(64))
+        self.rule_hit_streak: StatRange = StatRange(shape=(64))
+        self.state_miss_streak: StatRange = StatRange(shape=(64))
+        self.state_hit_streak: StatRange = StatRange(shape=(64))
+        self.abs_state_miss_streak: StatRange = StatRange(shape=(64))
+        self.abs_state_hit_streak: StatRange = StatRange(shape=(64))
         self.depth: int = 0
         self.tries: int = 0
         self.is_valid: bool = None
@@ -664,45 +667,57 @@ class ModelResult:
     def __init__(self,_romp_id:RompID) -> None:
         self.id: RompID = _romp_id
         self.traces: Set[TraceID] = set()
-        # self.miss_streak: StatRange = StatRange()
-        self.rule_miss_streak: StatRange = StatRange()
-        self.rule_hit_streak: StatRange = StatRange()
-        self.state_miss_streak: StatRange = StatRange()
-        self.state_hit_streak: StatRange = StatRange()
-        self.abs_state_miss_streak: StatRange = StatRange()
-        self.abs_state_hit_streak: StatRange = StatRange()
-        self.depth: StatRange = StatRange()
-        self.missed_rules: StatRange = StatRange()
-        self.tries: StatRange = StatRange()
-        self.rule_hit_rate: StatRange = StatRange(**SR_PERCENT_FMT)
-        self.rule_miss_rate: StatRange = StatRange(**SR_PERCENT_FMT)
-        self.state_hit_rate: StatRange = StatRange(**SR_PERCENT_FMT)
-        self.state_miss_rate: StatRange = StatRange(**SR_PERCENT_FMT)
-        self.abs_state_hit_rate: StatRange = StatRange(**SR_PERCENT_FMT)
-        self.abs_state_miss_rate: StatRange = StatRange(**SR_PERCENT_FMT)
-        self.active_time: Un[StatRange,None] = StatRange()
-        self.total_time: Un[StatRange,None] = StatRange()
-        self.unique_state_count: StatRange = StatRange()
+        # self.miss_streak: StatRange = StatRange(shape=(64))
+        self.rule_miss_streak: StatRange = StatRange(shape=(64))
+        self.rule_hit_streak: StatRange = StatRange(shape=(64))
+        self.state_miss_streak: StatRange = StatRange(shape=(64))
+        self.state_hit_streak: StatRange = StatRange(shape=(64))
+        self.abs_state_miss_streak: StatRange = StatRange(shape=(64))
+        self.abs_state_hit_streak: StatRange = StatRange(shape=(64))
+        self.depth: StatRange = StatRange(shape=(64))
+        self.missed_rules: StatRange = StatRange(shape=(64))
+        self.tries: StatRange = StatRange(shape=(64))
+        self.rule_hit_rate: StatRange = StatRange(shape=(64))
+        self.rule_hit_rate.setFmt(**SR_PERCENT_FMT)
+        self.rule_miss_rate: StatRange = StatRange(shape=(64))
+        self.rule_miss_rate.setFmt(**SR_PERCENT_FMT)
+        self.state_hit_rate: StatRange = StatRange(shape=(64))
+        self.state_hit_rate.setFmt(**SR_PERCENT_FMT)
+        self.state_miss_rate: StatRange = StatRange(shape=(64))
+        self.state_miss_rate.setFmt(**SR_PERCENT_FMT)
+        self.abs_state_hit_rate: StatRange = StatRange(shape=(64))
+        self.abs_state_hit_rate.setFmt(**SR_PERCENT_FMT)
+        self.abs_state_miss_rate: StatRange = StatRange(shape=(64))
+        self.abs_state_miss_rate.setFmt(**SR_PERCENT_FMT)
+        self.active_time: Un[StatRange,None] = StatRange(shape=(64))
+        self.total_time: Un[StatRange,None] = StatRange(shape=(64))
+        self.unique_state_count: StatRange = StatRange(shape=(64))
         self.unique_states: Set[STATE_t] = set()
-        self.unique_rule_count: StatRange = StatRange()
+        self.unique_rule_count: StatRange = StatRange(shape=(64))
         self.unique_rules: Set[RULE_t] = set()
-        self.unique_applied_rule_count: StatRange = StatRange()
+        self.unique_applied_rule_count: StatRange = StatRange(shape=(64))
         self.unique_applied_rules: Set[str] = set()
-        self.avg_tried_but_never_applied_rule_count: StatRange = StatRange()
-        self.unique_transition_count: StatRange = StatRange()
-        # self.avg_tried_transition_coverage: StatRange = StatRange(**SR_PERCENT_FMT)
-        # self.avg_never_tried_transition_count: StatRange = StatRange(**SR_PERCENT_FMT)
+        self.avg_tried_but_never_applied_rule_count: StatRange = StatRange(shape=(64))
+        self.unique_transition_count: StatRange = StatRange(shape=(64))
+        # self.avg_tried_transition_coverage: StatRange = StatRange(shape=(64))
+        # self.avg_tried_transition_coverage.setFmt(**SR_PERCENT_FMT)
+        # self.avg_never_tried_transition_count: StatRange = StatRange(shape=(64))
+        # self.avg_never_tried_transition_count.setFmt(**SR_PERCENT_FMT)
         self.unique_transitions: Set[ModelTransition] = set()
-        self.unique_applied_transition_count: StatRange = StatRange()
+        self.unique_applied_transition_count: StatRange = StatRange(shape=(64))
         self.unique_applied_transitions: Set[str] = set()
-        self.avg_tried_but_never_applied_transition_count: StatRange = StatRange()
+        self.avg_tried_but_never_applied_transition_count: StatRange = StatRange(shape=(64))
         self.unique_startstates: Set[int] = set()
-        self.avg_never_tried_rule_count: StatRange = StatRange()
-        self.avg_tried_rule_coverage: StatRange = StatRange(**SR_PERCENT_FMT)
-        self.avg_tried_but_never_applied_rule_coverage: StatRange = StatRange(**SR_PERCENT_FMT)
-        self.avg_applied_rule_coverage: StatRange = StatRange(**SR_PERCENT_FMT)
-        self.avg_never_tried_rule_coverage: StatRange = StatRange(**SR_PERCENT_FMT)
-        self.avg_state_coverage: StatRange = StatRange()
+        self.avg_never_tried_rule_count: StatRange = StatRange(shape=(64))
+        self.avg_tried_rule_coverage: StatRange = StatRange(shape=(64))
+        self.avg_tried_rule_coverage.setFmt(**SR_PERCENT_FMT)
+        self.avg_tried_but_never_applied_rule_coverage: StatRange = StatRange(shape=(64))
+        self.avg_tried_but_never_applied_rule_coverage.setFmt(**SR_PERCENT_FMT)
+        self.avg_applied_rule_coverage: StatRange = StatRange(shape=(64))
+        self.avg_applied_rule_coverage.setFmt(**SR_PERCENT_FMT)
+        self.avg_never_tried_rule_coverage: StatRange = StatRange(shape=(64))
+        self.avg_never_tried_rule_coverage.setFmt(**SR_PERCENT_FMT)
+        self.avg_state_coverage: StatRange = StatRange(shape=(64))
         self.properties_violated: Set[Un[None,str]] = set()
         self.errors_found: int = 0
     #? END __init__()
@@ -1032,10 +1047,10 @@ if __name__ == "__main__":
     log.basicConfig(format=log_format, level=log.INFO,
                         datefmt="%H:%M:%S")
     if DEBUG:
-        _t = StatRange()
+        _t = StatRange(shape=(64))
         if _t is None:
             print("StatRange() returns None")
-        # print(repr(StatRange()))
+        # print(repr(StatRange(shape=(64))))
         # print(StatSummary(0,0,0,0,0))
     main()
 

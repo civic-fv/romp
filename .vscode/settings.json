@@ -380,6 +380,7 @@
         "multithreading",
         "Multivariable",
         "Murphi",
+        "ndarray",
         "nlohmann",
         "ojstream",
         "oster",

@@ -71,7 +71,7 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
     };
 
     int option_index = 0;
-    int c = getopt_long(argc, argv, "ho:r:sacliR:vSw:b:", options, &option_index);
+    int c = getopt_long(argc, argv, "ho:r:sacliR:vmSw:b:", options, &option_index);
 
     if (c == -1)
       break;

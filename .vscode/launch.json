@@ -679,7 +679,18 @@
             "request": "launch",
             "program": "${workspaceFolder}/tests/trace_stats.py",
             "args": [
-                "${workspaceFolder}/traces"
+                "${workspaceFolder}/tests/traces"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Trace Stats (numpy)",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/trace_stats_np.py",
+            "args": [
+                "${workspaceFolder}/tests/traces"
             ],
             "console": "integratedTerminal",
             "justMyCode": true
