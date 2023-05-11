@@ -76,10 +76,10 @@ $(1).nsym.romp: $(1).romp.cpp
 	@printf "  $$(CXX) -std=c++17 $$(CXXFLAGS) -o $$@ $(1).romp.cpp\n"
 	@$$(CXX) -std=c++17 $$(CXXFLAGS) -o $$@ $(1).romp.cpp
 	@printf "Finished Building: $$@\n"
-$(1).romp: $(1).sym.romp
+$(1).romp: $(1).nsym.romp
 	@printf "``Making'' $$@ with `cp` ...\n"
-	@printf "  $$(CP) $(1).sym.romp $(1).romp\n"
-	@$$(CP) $(1).sym.romp $(1).romp
+	@printf "  $$(CP) $(1).nsym.romp $(1).romp\n"
+	@$$(CP) $(1).nsym.romp $(1).romp
 	@printf "Finished ``Making'': $$@\n"
 endef
 $(foreach model,$(ROMP_MODELS),$(eval $(call __generate_romp_model_directive,$(model:%.m=%))))

@@ -39,7 +39,7 @@ Var
 
   ar_states	: Array [procT] of stateT;       
   hstates	: Array [procT] of hstateT;
-  pids          : Array [procT] of procT; -- stores pids that are SS ids    
+  pids      : Array [procT] of procT; -- stores pids that are SS ids    
 
 -------------------------------------------------------
 
