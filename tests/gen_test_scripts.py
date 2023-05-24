@@ -15,7 +15,7 @@
  *        Meant to be used in conjunction with scrape_test_data.py and other utils.
  *
  * @date 2022/11/11
- * @version 0.2
+ * @version 0.3
  *"""
 
 from os import system, makedirs, listdir

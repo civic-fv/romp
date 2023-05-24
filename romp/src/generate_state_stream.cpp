@@ -11,7 +11,7 @@
  * @brief generate the stream operators used to output the state to json files or the console
  * 
  * @date 2022/10/19
- * @version 0.2
+ * @version 0.3
  */
 
 #include "generate_state_stream.hpp"

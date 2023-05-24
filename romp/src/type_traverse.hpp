@@ -14,7 +14,7 @@
  *        with a configurable custom error message.
  * 
  * @date 2022/06/28
- * @version 0.2
+ * @version 0.3
  */
 
 #pragma once

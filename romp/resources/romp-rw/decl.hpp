@@ -11,7 +11,7 @@
  * @brief the General Declarations for the romp random walker generated model checker
  * 
  * @date 2022/10/05
- * @version 0.2
+ * @version 0.3
  */
 
 
@@ -102,6 +102,13 @@ namespace romp {
   
   typedef _ROMP_STATE_TYPE State_t;
   typedef unsigned int RandSeed_t;
+
+  const RandSeed_t INIT_SEED = ([]() -> RandSeed_t {
+                                  std::random_device rd;
+                                  std::mt19937 mt(rd());
+                                  std::uniform_real_distribution<double> dist(0,UINT32_MAX);
+                                  return dist(mt);
+                                })();
 
   struct file_position {
     size_t row;
@@ -284,6 +291,7 @@ namespace romp {
         RUNNING=0,
         UNKNOWN_CAUSE,
         ATTEMPT_LIMIT_REACHED,
+        DEADLOCK,
         MAX_DEPTH_REACHED,
         PROPERTY_VIOLATED,
 #ifdef __romp__ENABLE_cover_property
@@ -314,6 +322,8 @@ namespace romp {
     // { old.tripped = nullptr; old.inside = nullptr; }
     ~Result(); // { if (tripped != nullptr) delete tripped; if (inside != nullptr) delete inside; }
   };
+
+  // constexpr size_t MAX_RULESET_SIZE();
 
 } // namespace romp
 

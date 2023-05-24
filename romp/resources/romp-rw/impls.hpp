@@ -28,6 +28,16 @@
 
 namespace romp {
 
+constexpr size_t _ROMP_ATTEMPT_LIMIT_DEFAULT() {
+# if (_ROMP_RULE_SELECTION_ALGO == (1ul))
+    return ((_ROMP_MAX_RULESET_RULE_COUNT) * (_ROMP_RULESETS_LEN)); //TODO might cause compilation issues
+# elif (_ROMP_RULE_SELECTION_ALGO == (2ul))
+    return (_ROMP_RULE_COUNT);
+# else
+    return (INT16_MAX);
+# endif
+}
+
   template<size_t EID, size_t B, class... U_M>
   inline void __assign(EnumType<EID,B>& _this, const ScalarsetUnionType<U_M...>& other) { _this = other.__get_value(); }
   template<size_t EID, size_t B, class... U_M>
@@ -120,6 +130,9 @@ namespace romp {
     switch (res->cause) {
       case Result::ATTEMPT_LIMIT_REACHED:
         attempt_limits_reached.push_back(res);
+        break;
+      case Result::DEADLOCK:
+        deadlocks_reached.push_back(res);
         break;
       case Result::MAX_DEPTH_REACHED:
         max_depths_reached.push_back(res);
@@ -221,7 +234,7 @@ namespace romp {
       out.out << out._dedent() << std::endl;
     }
 #endif
-    if ((r.OPTIONS.attempt_limit != _ROMP_ATTEMPT_LIMIT_DEFAULT && r.OPTIONS.deadlock) 
+    if ((r.OPTIONS.attempt_limit != _ROMP_ATTEMPT_LIMIT_DEFAULT() && r.OPTIONS.deadlock) 
           && r.attempt_limits_reached.size() > 0) {
         out << out.indentation() << "\033[1;4mATTEMPT LIMIT(S) REACHED (n=" 
                 << r.attempt_limits_reached.size() << "):\033[0m\n";
@@ -230,6 +243,36 @@ namespace romp {
         for (const auto& _al : r.attempt_limits_reached) {
           if (i > _ROMP_HIST_LEN && not (r.OPTIONS.report_all)) { 
             out << out.indentation() << "-(..) ... " << r.attempt_limits_reached.size()-(i-1) << " more ...\n"; 
+            break;
+          }
+          out << out.indentation()
+              << "-(" << i << ") [w#" << _al->id << "] seed=" << _al->root_seed << " start-id=" << _al->start_id <<" depth=" << _al->depth;
+#ifdef __ROMP__DO_MEASURE
+          out << " t=" << _al->active_time << " (Δt=" << _al->total_time << ')';
+#endif
+          out << out.nl()
+              << "        last-rule=";
+          if (_al->inside != nullptr) {
+            out << '{' << _al->inside->get_type() << " \"" << _al->inside->label() << "\"";
+            if (not _al->inside->is_flat())
+              out << " quantifiers(" << _al->inside->quants() << ")";
+            out << "}\n";
+          } else {
+            out << "none\n";
+          }
+          ++i;
+        }
+      out.out << out._dedent() << std::endl;
+     }
+    if ((r.OPTIONS.deadlock) 
+          && r.deadlocks_reached.size() > 0) {
+        out << out.indentation() << "\033[1;4mDEADLOCK(S) REACHED (n=" 
+                << r.deadlocks_reached.size() << "):\033[0m\n";
+        out.indent();
+        i = 1;
+        for (const auto& _al : r.deadlocks_reached) {
+          if (i > _ROMP_HIST_LEN && not (r.OPTIONS.report_all)) { 
+            out << out.indentation() << "-(..) ... " << r.deadlocks_reached.size()-(i-1) << " more ...\n"; 
             break;
           }
           out << out.indentation()
@@ -427,7 +470,57 @@ void print_help() {
     "\n\n"
     "CLI USAGE:    <> - required  {} - optional  * - can have 0 or more\n"
     "   ./<this-file> {options}*\n"
-    "\n\n"
+    "\n"
+    "RULE SELECTION ALGO: \n"
+    "    note: change this using the --selection-algo/-s option in the romp tool\n"
+# if (_ROMP_RULE_SELECTION_ALGO == (0ul))
+    "  ---- 100% random everything [opt 0] ----\n"
+    "  (1) At every step CHOOSE a random rule.\n"
+    "  (2) CHOOSE the ruleset params at random.\n"
+    "  (3) CHECK the guard\n"
+    "      IF it returns true THEN GOTO step 4\n"
+    "        ELSE RETURN to step 1 for next simulation step.\n"
+    "  (4) APPLY the rule.\n"
+    "  (5) CHECK the global properties\n"
+    "  (6) RETURN to step 1 for the next simulation step\n"
+# elif (_ROMP_RULE_SELECTION_ALGO == (2ul))
+    "  ---- Random everything without replacement until successful [opt: 2] ----\n"
+    "  (1) CREATE a \"bag\" of all rules with all of their ruleset param options\n"
+    "  (2) CHOOSE a rule with its ruleset param(s) from the \"bag\" at random\n"
+    "      (IF bag empty, THEN end walk early -deadlock-)\n"
+    "  (3) CHECK the guard,\n"
+    "      IF it returns true THEN GOTO step 4,\n"
+    "        ELSE RETURN to step 2 for the next simulation step.\n"
+    "  (4) APPLY the rule.\n"
+    "  (5) CHECK the global properties (IF any fail THEN end the walk)\n"
+    "  (6) RETURN to step 1 for the next simulation step.\n"
+# elif (_ROMP_RULE_SELECTION_ALGO == (3ul))
+    "  ----  Heuristic Symmetry Reduction [opt: 3] ----\n"
+    "  (1) At every step CHOOSE a random rule\n"
+    "  (2) CHOOSE it's ruleset parameters by the using next combination in\n"
+    "       lexicographic order.\n"
+    "  (3) CHECK the guard,\n"
+    "      IF it returns true THEN GOTO step 4 ELSE GOTO step 5.\n"
+    "  (4) APPLY the rule.\n" 
+    "  (5) CHECK the global properties (IF any fail THEN end the walk)\n"
+    "  (6) regardless of the results of step 3\n"
+    "      RETURN to step 1 for the next simulation step.\n"
+# else // default
+    "  ---- Random Ruleset params without replacement [opt 1: DEFAULT] ----\n"
+    "  (1) CREATE a \"bag\" of all of the rules (not specifying ruleset params)\n"
+    "  (2) CHOOSE a rule at random from the \"bag\" of rules\n"
+    "      (IF rule \"bag\" empty THEN end walk early -deadlock-)\n"
+    "  (3) CREATE a \"bag\" of all possible ruleset param combinations possible\n"
+    "  (4) CHOOSE a set of ruleset params from the params \"bag\" at random\n"
+    "      (IF params bag empty, but params to fill THEN RETURN to step 2)\n"
+    "  (5) CHECK the guard,\n"
+    "      IF it returns true THEN GOTO step 6,\n"
+    "        ELSE RETURN to step 4 for the next simulation step.\n"
+    "  (6) APPLY the rule\n"
+    "  (7) CHECK the global properties (if any fail end the walk)\n"
+    "  (8) RETURN to step 1 for the next simulation step.\n"
+# endif
+    "\n"
     "NOTE:\n"
     "  Option flags and arguments are NOT POSIX compliant!\n"
     "  Please separate all options and their arguments with spaces,\n"
@@ -610,7 +703,7 @@ void Options::parse_args(int argc, char **argv) {
   bool start_provided = false;
   bool guard_provided = false;
 
-  for (int i = 0; i < argc; ++i) {
+  for (int i = 1; i < argc; ++i) {
 
     if ("-h" == std::string(argv[i]) || "--help" == std::string(argv[i])) { // to print help message and ( result of comparison
                                                   // against a string literal is unspecified)
@@ -1080,45 +1173,55 @@ const stream_void Options::write_config(ostream_p& out) const noexcept {
                                     : "randomly assigned \t(default)"));
   std::string deadlock_str = "";
   if (deadlock) {
-#ifdef __romp__ENABLE_liveness_property
-    if (liveness) {
-      deadlock_str += sep + "liveness property violations";
-      sep = ", ";
-    }
-#endif
+#   ifdef __romp__ENABLE_liveness_property
+      if (liveness) {
+        deadlock_str += sep + "liveness property violations";
+        sep = ", ";
+      }
+#   endif
     if (attempt_limit != defaults.attempt_limit) deadlock_str += sep + "attempt limit";
   } else deadlock_str = "NO DETECTION (" + std::string((deadlock == defaults.deadlock) ? " \t(default)" : "");
   sep = "";
   std::string report_str = "property violations | error statements reached";
   std::string pw_report_str = "";
   bool _compound = false;
-#ifdef __romp__ENABLE_assume_property
-  if (r_assume) {
-    _compound = true;
-    // report_str += " | " "assume property violated"; 
-    pw_report_str += "assume property violated";
-    sep = " | ";
-  }
-#endif
-#ifdef __romp__ENABLE_cover_property
-  // if (complete_on_cover) report_str += " | " "cover properties completed";
-  if (complete_on_cover && r_cover) {
-    _compound = true;
-    pw_report_str += sep + "cover properties completed";
-    sep = " | ";
-  }
+# ifdef __romp__ENABLE_assume_property
+    if (r_assume) {
+      _compound = true;
+      // report_str += " | " "assume property violated"; 
+      pw_report_str += "assume property violated";
+      sep = " | ";
+    }
+# endif
+# ifdef __romp__ENABLE_cover_property
+    // if (complete_on_cover) report_str += " | " "cover properties completed";
+    if (complete_on_cover && r_cover) {
+      _compound = true;
+      pw_report_str += sep + "cover properties completed";
+      sep = " | ";
+    }
+# endif
+# if (_ROMP_RULE_SELECTION_ALGO == (0ul)) // 100% radom
+    std::string selection_algo_str = "100% random with replacement [opt: 0] \t (config when generating with romp)";
+# elif (_ROMP_RULE_SELECTION_ALGO == (2ul)) // full no replacement
+    std::string selection_algo_str = "Expanded Rule Random replacement without replacement [opt: 2] \t(config when generating with romp)";
+# elif (_ROMP_RULE_SELECTION_ALGO == (3ul)) // heuristic symmetry reduction
+    std::string selection_algo_str = "Heuristic Symmetry Reduction [opt: 3] \t(config when generating with romp)";
+# else                                      // per rule no replacement [default]
+    std::string selection_algo_str = "Per Rule Random selection without replacement [opt: 1] \t(default : config when generating with romp)";
 #endif
   if (report_all) pw_report_str = "ALL WALKS"; 
   else if (report_error) pw_report_str += sep + "property violations | error statements reached"; 
   else if (not _compound) pw_report_str = "NONE \t(default)";
   out << out.indentation()
-      << "BASE LAUNCH CONFIG:"                                      << out.indent() << out.nl()
-      << "    threads: " << threads << ((threads==defaults.threads) ? " \t(default)" : "")<< out.nl()
-      << "      walks: " << walks << ((walks==defaults.walks) ? " \t(default)" : "")<< out.nl()
-      << "       seed: " << rand_seed << ((rand_seed==defaults.rand_seed) ? " \t(default:time)" : "")  << out.nl()
-      << " startstate: " << startstate_str                                          << out.nl()
-      << "  max depth: " << depth << ((depth==defaults.depth) ? " \t(default)" : "")  << out.nl()
-      << "   deadlock: " << deadlock_str                                            << out.nl()
+      << "BASE LAUNCH CONFIG:"                                                      << out.indent() << out.nl()
+      << " rule-selection-algo: " << selection_algo_str                                             << out.nl()
+      << "             threads: " << threads << ((threads==defaults.threads) ? " \t(default)" : "") << out.nl()
+      << "               walks: " << walks << ((walks==defaults.walks) ? " \t(default)" : "")       << out.nl()
+      << "                seed: " << rand_seed << ((rand_seed==defaults.rand_seed) ? " \t(default:C++defined)" : "")  << out.nl()
+      << "          startstate: " << startstate_str                                                 << out.nl()
+      << "           max depth: " << depth << ((depth==defaults.depth) ? " \t(default)" : "")       << out.nl()
+      << "            deadlock: " << deadlock_str                                                   << out.nl()
 #ifdef __romp__ENABLE_symmetry
       << "   symmetry: YES, heuristic \t(config when generating with romp)"
 #else
@@ -1226,8 +1329,8 @@ ojstream<O>& operator << (ojstream<O>& json, const Options& opts) noexcept {
             "\"bfs-coef\":" << ((opts.do_bfs) ? std::to_string(opts.bfs_coefficient) : "null") << ","
             "\"bfs-limit\":" << ((opts.do_bfs) ? std::to_string(opts.bfs_limit) : "null") << ","
             "\"max-depth\":" << opts.depth << ","
-            "\"abs-attempt-limit\":" << std::to_string(_ROMP_ATTEMPT_LIMIT_DEFAULT) << ","
-            "\"attempt-limit\":" << ((opts.attempt_limit != _ROMP_ATTEMPT_LIMIT_DEFAULT
+            "\"abs-attempt-limit\":" << std::to_string(_ROMP_ATTEMPT_LIMIT_DEFAULT()) << ","
+            "\"attempt-limit\":" << ((opts.attempt_limit != _ROMP_ATTEMPT_LIMIT_DEFAULT()
                                         && opts.deadlock) 
                                       ? std::to_string(opts.attempt_limit) 
                                       : "null") << ","
@@ -1239,9 +1342,21 @@ ojstream<O>& operator << (ojstream<O>& json, const Options& opts) noexcept {
             "\"single-start-id\":" << ((opts.start_id != _ROMP_START_ID_DEFAULT)
                                         ? std::to_string(opts.start_id)
                                         : "null") << ","
-#ifdef __romp__ENABLE_symmetry
+#if (_ROMP_RULE_SELECTION_ALGO == (0ul))
+            "\"rule-selection-algo-id\":0,"  
+            "\"rule-selection-algo-desc\":\"100% random\","  
+            "\"symmetry-reduction\":false,"
+#elif (_ROMP_RULE_SELECTION_ALGO == (2ul))
+            "\"rule-selection-algo-id\":2,"  
+            "\"rule-selection-algo-desc\":\"Rule Expanded Random without replacement\","  
+            "\"symmetry-reduction\":false,"
+#elif (_ROMP_RULE_SELECTION_ALGO == (3ul))
+            "\"rule-selection-algo-id\":3,"  
+            "\"rule-selection-algo-desc\":\"Heuristic Symmetry Reduction\","  
             "\"symmetry-reduction\":true,"
 #else
+            "\"rule-selection-algo-id\":1,"  
+            "\"rule-selection-algo-desc\":\"Per Rule Random without Replacement\","  
             "\"symmetry-reduction\":false,"
 #endif
 #ifdef __romp__ENABLE_assume_property

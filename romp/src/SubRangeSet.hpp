@@ -13,7 +13,7 @@
  *        (used in romp to handle the merged scalar enum value space)
  * 
  * @date 2022/10/16
- * @version 0.2
+ * @version 0.3
  */
 
 namespace romp {

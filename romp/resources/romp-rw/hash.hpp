@@ -11,7 +11,7 @@
  * @brief where the hashing objects for the murphi types are defined
  * 
  * @date 2023/01/10
- * @version 0.2
+ * @version 0.3
  */
 
 

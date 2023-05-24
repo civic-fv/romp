@@ -31,7 +31,7 @@ CP := cp -rf
 
 CFLAGS := -std=c11 -O3 -pthread -march=native
 CXXFLAGS := -std=c++17 -O3 -pthread
-ROMP_FLAGS := -s --do-measure --simple-trace-rep
+ROMP_FLAGS := -m
 CMURPHI_FLAGS := -c
 CMURPHI_INCLUDE_DIR := ../../../cmurphi/include
 RUMUR_FLAGS := --smt-path z3 --smt-arg=-smt2 --smt-arg=-in --smt-arg=-t:5000
@@ -46,11 +46,11 @@ CMURPHI_MODELS := $(wildcard *.m)
 RUMUR_MODELS := $(filter-out MESI%,$(ALL_MODELS))
 # RUMUR_MODELS := $(wildcard ru*.m)
 
-ROMP_MODEL_SOURCES := $(foreach model,$(ROMP_MODELS),$(model:%.m=%.romp.cpp))
+ROMP_MODEL_SOURCES := $(foreach model,$(ROMP_MODELS),$(model:%.m=%.ro.cpp))
 CMURPHI_MODEL_SOURCES := $(foreach model,$(CMURPHI_MODELS),$(model:%.m=%.cpp))
 RUMUR_MODEL_SOURCES := $(foreach model,$(RUMUR_MODELS),$(model:%.m=%.ru.c))
 
-ROMP_MODEL_EXE := $(foreach model,$(ROMP_MODELS),$(model:%.m=%.sym.romp)) $(foreach model,$(ROMP_MODELS),$(model:%.m=%.nsym.romp)) $(foreach model,$(ROMP_MODELS),$(model:%.m=%.romp))
+ROMP_MODEL_EXE := $(foreach model,$(ROMP_MODELS),$(model:%.m=%.romp))
 CMURPHI_MODEL_EXE := $(foreach model,$(CMURPHI_MODELS),$(model:%.m=%.cm))
 RUMUR_MODEL_EXE := $(foreach model,$(RUMUR_MODELS),$(model:%.m=%.ru))
 ALL_MODEL_EXE := $(ROMP_MODEL_EXE) $(CMURPHI_MODEL_EXE) $(RUMUR_MODEL_EXE)
@@ -61,25 +61,37 @@ ALL_MODEL_EXE := $(ROMP_MODEL_EXE) $(CMURPHI_MODEL_EXE) $(RUMUR_MODEL_EXE)
 # ======================
 #generate romp directives
 define __generate_romp_model_directive
-$(1).romp.cpp: $(1).m
+$(1).ro.cpp: $(1).m
 	@printf "Generating $$@ with romp ...\n"
 	@printf "  $$(ROMP) $$(ROMP_FLAGS) -o $$@ $(1).m\n"
 	@$$(ROMP) $$(ROMP_FLAGS) -o $$@ $(1).m
 	@printf "Finished Generating: $$@\n"
-$(1).sym.romp: $(1).romp.cpp
+$(1).ro0: $(1).ro.cpp
 	@printf "Building $$@ ...\n"
-	@printf "  $$(CXX) $$(CXXFLAGS) -D__romp__ENABLE_symmetry -o $$@ $(1).romp.cpp\n"
-	@$$(CXX) $$(CXXFLAGS) -D__romp__ENABLE_symmetry -o $$@ $(1).romp.cpp
+	@printf "  $$(CXX) -std=c++17 $$(CXXFLAGS) -D_ROMP_RULE_SELECTION_ALGO=0 -o $$@ $(1).ro.cpp\n"
+	@$$(CXX) -std=c++17 $$(CXXFLAGS) -D_ROMP_RULE_SELECTION_ALGO=0 -o $$@ $(1).ro.cpp
 	@printf "Finished Building: $$@\n"
-$(1).nsym.romp: $(1).romp.cpp
+$(1).ro1: $(1).ro.cpp
 	@printf "Building $$@ ...\n"
-	@printf "  $$(CXX) $$(CXXFLAGS) -o $$@ $(1).romp.cpp\n"
-	@$$(CXX) $$(CXXFLAGS) -o $$@ $(1).romp.cpp
+	@printf "  $$(CXX) -std=c++17 $$(CXXFLAGS) -D_ROMP_RULE_SELECTION_ALGO=1 -o $$@ $(1).ro.cpp\n"
+	@$$(CXX) -std=c++17 $$(CXXFLAGS) -D_ROMP_RULE_SELECTION_ALGO=1 -o $$@ $(1).ro.cpp
 	@printf "Finished Building: $$@\n"
-$(1).romp: $(1).sym.romp
+$(1).ro2: $(1).ro.cpp
+	@printf "Building $$@ ...\n"
+	@printf "  $$(CXX) -std=c++17 $$(CXXFLAGS) -D_ROMP_RULE_SELECTION_ALGO=2 -o $$@ $(1).ro.cpp\n"
+	@$$(CXX) -std=c++17 $$(CXXFLAGS) -D_ROMP_RULE_SELECTION_ALGO=2 -o $$@ $(1).ro.cpp
+	@printf "Finished Building: $$@\n"
+$(1).ro3: $(1).ro.cpp
+	@printf "Building $$@ ...\n"
+	@printf "  $$(CXX) -std=c++17 $$(CXXFLAGS) -D_ROMP_RULE_SELECTION_ALGO=3 -o $$@ $(1).ro.cpp\n"
+	@$$(CXX) -std=c++17 $$(CXXFLAGS) -D_ROMP_RULE_SELECTION_ALGO=3 -o $$@ $(1).ro.cpp
+	@printf "Finished Building: $$@\n"
+$(1).romp:  $(1).ro $(1).ro0 $(1).ro1 $(1).ro2 $(1).ro3 $(1).ro0
+	@printf "Making all romp varaints $$@ with `cp` ...\n"
+$(1).ro: $(1).ro1
 	@printf "``Making'' $$@ with `cp` ...\n"
-	@printf "  $$(CP) $(1).sym.romp $(1).romp\n"
-	@$$(CP) $(1).sym.romp $(1).romp
+	@printf "  $$(CP) $(1).ro1 $(1).ro\n"
+	@$$(CP) $(1).ro1 $(1).ro
 	@printf "Finished ``Making'': $$@\n"
 endef
 $(foreach model,$(ROMP_MODELS),$(eval $(call __generate_romp_model_directive,$(model:%.m=%))))
@@ -149,7 +161,8 @@ clean-inter:
 clean:
 	@$(RM) ./*.cpp
 	@$(RM) ./*.c
-	@$(RM) ./*.romp
+	@$(RM) ./*.ro?
+	@$(RM) ./*.ro
 	@$(RM) ./*.cm
 	@$(RM) ./*.ru
 	@$(RM) ./*.test

@@ -32,13 +32,16 @@ To build one specific model with a specific tool:
 ```bash
 make <model-name-no-extension>.<tool-extension>
 ```
-|     ext    |  description                                                         |
-|:----------:|:---------------------------------------------------------------------|
-|   `.romp`  | romp with heuristic symmetry reduction enables (same as `.sym.romp`) |
-| `.sym.romp`| romp with heuristic symmetry reduction enables (same as `.romp`)     |
-|`.nsym.romp`| romp with NO heuristic symmetry reduction enabled                    |
-|    `.cm`   | CMurphi derived model checker                                        |
-|    `.ru`   | rumur derived model checker                                          |
+|     ext    |  description                                                                    |
+|:----------:|:--------------------------------------------------------------------------------|
+|   `.ro`    | romp with the default rule selection algorithm                                  |
+|   `.ro0`   | romp with the 100% random rule selection algo                                   |
+|   `.ro1`   | romp with the _DEFAULT_ Random withotu replacemnt rule -> Random without replacement ruleset param selection algorithm  |
+|   `.ro2`   | romp with a ruleset expanded random without replacement algorithm               |
+|   `.ro3`   | romp with an experimental heuristic symmetry reduction rule selection algorithm |
+|  `.romp`   | just a makefile shortcut to build all of the above romp executables at once     |
+|    `.cm`   | CMurphi derived model checker                                                   |
+|    `.ru`   | rumur derived model checker                                                     |
 
 To build all models with all tools that are compatible with the model:
 ```bash
@@ -108,7 +111,7 @@ TODO description of what causes the bug
 ```bash
 make adash_bug                                    # build the model checkers
 ./adash_bug.romp -s 1234 -w 1024 -d 512 -y        # check with romp
-./adash_bug.nsym.romp -s 1234 -w 1024 -d 512 -y   # check with romp (no symmetry)
+./adash_bug.sym.romp -s 1234 -w 1024 -d 512 -y   # check with romp (no symmetry)
 ./adash_bug.ru                                    # verify with rumur
 ./adash_bug.cm -m1024                             # verify with CMurphi
 ```
@@ -120,7 +123,7 @@ make adash_bug                                    # build the model checkers
 
 |   Tool  |  t _(ms)_  | Bug(s) Found / Property(s) Violated                                        |
 |:-------:|-----------:|:---------------------------------------------------------------------------|
-|   romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
+| s-romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
 | ns-romp |  5,841.320 | "Explicit writeback for non dirty remote" (x510) & "WRD at home cluster" (x514) |
 | CMurphi |  1,55#.### | "Consistency of data"                                                      |
 |  rumur  |         -- | _-- Not compatible with rumur (contains union) --_                         |
@@ -137,7 +140,7 @@ Invariant checks if the token is lost by the processor holding it. When the toke
 ```bash
 make arbiter                                    # build the model checkers
 ./arbiter.romp -s 1234 -w 1024 -d 512 -y        # check with romp
-./arbiter.nsym.romp -s 1234 -w 1024 -d 512 -y   # check with romp (no symmetry)
+./arbiter.sym.romp -s 1234 -w 1024 -d 512 -y   # check with romp (no symmetry)
 ./arbiter.ru                                    # verify with rumur
 ./arbiter.cm -m1024                             # verify with CMurphi
 ```
@@ -149,7 +152,7 @@ make arbiter                                    # build the model checkers
 
 |   Tool  |  t _(ms)_  | Bug(s) Found / Property(s) Violated                                        |
 |:-------:|-----------:|:---------------------------------------------------------------------------|
-|   romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
+| s-romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
 | ns-romp |  5,841.320 | "Explicit writeback for non dirty remote" (x510) & "WRD at home cluster" (x514) |
 | CMurphi |  1,55#.### | "Consistency of data"                                                      |
 |  rumur  |         -- | _-- Not compatible with rumur (contains union) --_                         |
@@ -168,7 +171,7 @@ their right forks. All philosophers are waiting for the adjacent philosopher to 
 ```bash
 make dpnew                                    # build the model checkers
 ./dpnew.romp -s 1234 -w 1024 -d 512 -y        # check with romp
-./dpnew.nsym.romp -s 1234 -w 1024 -d 512 -y   # check with romp (no symmetry)
+./dpnew.sym.romp -s 1234 -w 1024 -d 512 -y   # check with romp (no symmetry)
 ./dpnew.ru                                    # verify with rumur
 ./dpnew.cm -m1024                             # verify with CMurphi
 ```
@@ -180,7 +183,7 @@ make dpnew                                    # build the model checkers
 
 |   Tool  |  t _(ms)_  | Bug(s) Found / Property(s) Violated                                        |
 |:-------:|-----------:|:---------------------------------------------------------------------------|
-|   romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
+| s-romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
 | ns-romp |  5,841.320 | "Explicit writeback for non dirty remote" (x510) & "WRD at home cluster" (x514) |
 | CMurphi |  1,55#.### | "Consistency of data"                                                      |
 |  rumur  |         -- | _-- Not compatible with rumur (contains union) --_   
@@ -198,7 +201,7 @@ Invariant checks if there exists atleast one pair of adjacent elements where the
 ```bash
 make sort5                                    # build the model checkers
 ./sort5.romp -s 1234 -w 1024 -d 512 -y        # check with romp
-./sort5.nsym.romp -s 1234 -w 1024 -d 512 -y   # check with romp (no symmetry)
+./sort5.sym.romp -s 1234 -w 1024 -d 512 -y   # check with romp (no symmetry)
 ./sort5.ru                                    # verify with rumur
 ./sort5.cm -m1024                             # verify with CMurphi
 ```
@@ -210,7 +213,7 @@ make sort5                                    # build the model checkers
 
 |   Tool  |  t _(ms)_  | Bug(s) Found / Property(s) Violated                                        |
 |:-------:|-----------:|:---------------------------------------------------------------------------|
-|   romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
+| s-romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
 | ns-romp |  5,841.320 | "Explicit writeback for non dirty remote" (x510) & "WRD at home cluster" (x514) |
 | CMurphi |  1,55#.### | "Consistency of data"                                                      |
 |  rumur  |         -- | _-- Not compatible with rumur (contains union) --_    
@@ -229,7 +232,7 @@ since the generated murphi model is unnecessarily complicated.
 ```bash
 make flash-flow                                    # build the model checkers
 ./flash-flow.romp -s 1234 -w 1024 -d 512 -y        # check with romp
-./flash-flow.nsym.romp -s 1234 -w 1024 -d 1024 -y  # check with romp (no symmetry)
+./flash-flow.sym.romp -s 1234 -w 1024 -d 1024 -y  # check with romp (no symmetry)
 ./flash-flow.cm -m2048                             # verify with CMurphi
 ```
 
@@ -240,7 +243,7 @@ make flash-flow                                    # build the model checkers
 
 |   Tool  |   t _(ms)_  | Bug(s) Found / Property(s) Violated                                       |
 |:-------:|------------:|:--------------------------------------------------------------------------|
-|   romp  |  31,607.### | invariant "safety" (x69)                                                  |
+| s-romp  |  31,607.### | invariant "safety" (x69)                                                  |
 | ns-romp |  28,189.### | invariant "safety" (x21)                                                  |
 | CMurphi | 178,55#.### | invariant "safety"                                                        |
 |  rumur  |          -- | _-- Not compatible with rumur (contains union) --_                        |
@@ -258,7 +261,7 @@ since the generated murphi model is unnecessarily complicated.
 ```bash
 make flash-flow                                    # build the model checkers
 ./flash-flow.romp -s 1234 -w 1024 -d 512 -y        # check with romp
-./flash-flow.nsym.romp -s 1234 -w 1024 -d 512 -y   # check with romp (no symmetry)
+./flash-flow.sym.romp -s 1234 -w 1024 -d 512 -y   # check with romp (no symmetry)
 ./flash-flow.cm -m2048                             # verify with CMurphi
 ```
 
@@ -269,7 +272,7 @@ make flash-flow                                    # build the model checkers
 
 |   Tool  |   t _(ms)_  | Bug(s) Found / Property(s) Violated                                       |
 |:-------:|------------:|:--------------------------------------------------------------------------|
-|   romp  |  28,133.### | invariant "CntrlPropl" (x4)                                               |
+| s-romp  |  28,133.### | invariant "CntrlPropl" (x4)                                               |
 | ns-romp |  27,375.### | invariant "CntrlPropl" (x6)                                               |
 | CMurphi |   3,42#.### | Deadlocked state found                                                    |
 |  rumur  |          -- | _-- Not compatible with rumur (contains union) --_                        |
@@ -300,7 +303,7 @@ Increasing the number of processors and making the substring to be equal to leng
 ```bash
 make n_peterson_bug                                    # build the model checkers
 ./n_peterson_bug.romp -s 1234 -w 1024 -d 512 -y        # check with romp
-./n_peterson_bug.nsym.romp -s 1234 -w 1024 -d 512 -y   # check with romp (no symmetry)
+./n_peterson_bug.sym.romp -s 1234 -w 1024 -d 512 -y   # check with romp (no symmetry)
 ./n_peterson_bug.ru                                    # verify with rumur
 ./n_peterson_bug.cm -m1024                             # verify with CMurphi
 ```
@@ -312,7 +315,7 @@ make n_peterson_bug                                    # build the model checker
 
 |   Tool  |  t _(ms)_  | Bug(s) Found / Property(s) Violated                                        |
 |:-------:|-----------:|:---------------------------------------------------------------------------|
-|   romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
+| s-romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
 | ns-romp |  5,841.320 | "Explicit writeback for non dirty remote" (x510) & "WRD at home cluster" (x514) |
 | CMurphi |  1,55#.### | "Consistency of data"                                                      |
 |  rumur  |         -- | _-- Not compatible with rumur (contains union) --_   
@@ -330,7 +333,7 @@ Increasing the number of processors and making the substring to be equal to leng
 ```bash
 make n_peterson_bug1                                    # build the model checkers
 ./n_peterson_bug1.romp -s 1234 -w 1024 -d 512 -y        # check with romp
-./n_peterson_bug1.nsym.romp -s 1234 -w 1024 -d 512 -y   # check with romp (no symmetry)
+./n_peterson_bug1.sym.romp -s 1234 -w 1024 -d 512 -y   # check with romp (no symmetry)
 ./n_peterson_bug1.ru                                    # verify with rumur
 ./n_peterson_bug1.cm -m1024                             # verify with CMurphi
 ```
@@ -342,7 +345,7 @@ make n_peterson_bug1                                    # build the model checke
 
 |   Tool  |  t _(ms)_  | Bug(s) Found / Property(s) Violated                                        |
 |:-------:|-----------:|:---------------------------------------------------------------------------|
-|   romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
+| s-romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
 | ns-romp |  5,841.320 | "Explicit writeback for non dirty remote" (x510) & "WRD at home cluster" (x514) |
 | CMurphi |  1,55#.### | "Consistency of data"                                                      |
 |  rumur  |         -- | _-- Not compatible with rumur (contains union) --_   
@@ -358,7 +361,7 @@ TODO description of what causes the bug
 ```bash
 make deepdense                                    # build the model checkers
 ./deepdense.romp -s 1234 -w 1024 -d 4096 -y       # check with romp
-./deepdense.nsym.romp -s 1234 -w 1024 -d 4096 -y  # check with romp (no symmetry)
+./deepdense.nym.romp -s 1234 -w 1024 -d 4096 -y  # check with romp (no symmetry)
 ./deepdense.ru                                    # verify with rumur
 ./deepdense.cm -m1024                             # verify with CMurphi
 ```
@@ -370,7 +373,7 @@ make deepdense                                    # build the model checkers
 
 |   Tool  |  t _(ms)_  | Bug(s) Found / Property(s) Violated                                        |
 |:-------:|-----------:|:---------------------------------------------------------------------------|
-|   romp  |  6,073.600 | invariant "sum" (x45)                                                      |
+| s-romp  |  6,073.600 | invariant "sum" (x45)                                                      |
 | ns-romp | 20,687.### | invariant "sum" (x2)                                                       |
 |  rumur  |  1,###.### | invariant "sum"                                                            |
 | CMurphi |  1,55#.### | invariant "sum"                                                            |
@@ -392,7 +395,7 @@ TODO description of what causes the bug
 ```bash
 make deepsparse                                    # build the model checkers
 ./deepsparse.romp -s 1234 -w 1024 -d 2048 -y       # check with romp
-./deepsparse.nsym.romp -s 1234 -w 1024 -d 4096 -y  # check with romp (no symmetry)
+./deepsparse.sym.romp -s 1234 -w 1024 -d 4096 -y  # check with romp (no symmetry)
 ./deepsparse.ru                                    # verify with rumur
 ./deepsparse.cm -m1024                             # verify with CMurphi
 ```
@@ -404,7 +407,7 @@ make deepsparse                                    # build the model checkers
 
 |   Tool  |  t _(ms)_  | Bug(s) Found / Property(s) Violated                                        |
 |:-------:|-----------:|:---------------------------------------------------------------------------|
-|   romp  |  5,871.763 | invariant "everyone_is_not_ideal" (x18)                                    |
+| s-romp  |  5,871.763 | invariant "everyone_is_not_ideal" (x18)                                    |
 | ns-romp | 11,802.### | invariant "everyone_is_not_ideal" (x2)                                     |
 |  rumur  |  2,###.### | invariant "everyone_is_not_ideal"                                          |
 | CMurphi |  6,76#.### | invariant "everyone_is_not_ideal"                                          |

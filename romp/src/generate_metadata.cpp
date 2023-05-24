@@ -11,7 +11,7 @@
  * @brief Output the metadata constructs for the model_checker
  * 
  * @date 2022/10/18
- * @version 0.2
+ * @version 0.3
  */
 
 #include "generate_metadata.hpp"

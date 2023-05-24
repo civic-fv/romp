@@ -11,7 +11,7 @@
  * @brief generates the C++ code for the model itself
  * 
  * @date 2022/10/14
- * @version 0.2
+ * @version 0.3
  */
 
 #pragma once

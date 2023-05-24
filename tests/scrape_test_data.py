@@ -14,7 +14,7 @@
  *        It produces a single tsv with all of the run data for easier Processing latter
  *
  * @date 2023/01/07
- * @version 0.2
+ * @version 0.3
  *"""
 
 import pandas as pd

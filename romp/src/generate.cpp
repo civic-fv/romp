@@ -61,6 +61,7 @@ void generate(const Model &m, const std::vector<Comment> &comments,
   gen << "\n#define __romp__GENERATED_CODE\n\n";
   gen << "\n#define _ROMP_STATE_TYPE " ROMP_STATE_TYPE "\n\n";
   gen << "\n#define _ROMP_HIST_LEN (" << gen.hist_len << "ul)\n\n";
+  gen << "\n#define " ROMP_RULE_SELECTION_ALGO_VAR " (" << gen.selection_algo << "ul)\n\n";
   gen << "\n#define _ROMP_THREAD_TO_RW_RATIO (" << gen.default_walk_multiplier << "ul)\n\n";
   gen << "\n#define _ROMP_BFS_COEF (" << gen.default_bfs_coefficient << "ul)\n\n";
   std::string file_path = gen.input_file_path.string();

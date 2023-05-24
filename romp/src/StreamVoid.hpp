@@ -11,7 +11,7 @@
  * @brief A util for cleaner code 
  * 
  * @date 2022/10/21
- * @version 0.2
+ * @version 0.3
  */
 
 #include <ostream>

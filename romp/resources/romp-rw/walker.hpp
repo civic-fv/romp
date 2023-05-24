@@ -11,7 +11,7 @@
  * @brief The primary simulation/random walk functions of romp-rw.
  *
  * @date 2022/05/11
- * @version 0.2
+ * @version 0.3
  */
 #include <thread>
 #include <mutex>
@@ -52,6 +52,67 @@ T rand_choice(RandSeed_t &seed, T min, T max) {
     return choice;
 }
 
+// constexpr size_t MAX_RULESET_SIZE() {
+//   size_t res = 0;
+//   for (size_t i=0; i<_ROMP_RULESETS_LEN; ++i)
+//     if (res < ::__caller__::RULESETS[i].rules.size())
+//       res = ::__caller__::RULESETS[i].rules.size();
+//   return res;
+// }
+
+ 
+#if _ROMP_RULE_SELECTION_ALGO == (1ul)
+# define _ROMP_RULE_CHOICE_BAG_SIZE (_ROMP_MAX_RULESET_RULE_COUNT)
+#else
+# define _ROMP_RULE_CHOICE_BAG_SIZE (_ROMP_RULE_COUNT)
+# endif
+
+#define _ROMP_ChoiceBag_t std::bitset<_ROMP_RULE_CHOICE_BAG_SIZE>
+typedef _ROMP_ChoiceBag_t ChoiceBag_t;
+
+template<size_t N>
+size_t choose_from_bag(std::bitset<N>& bag, RandSeed_t& seed, size_t M=N, size_t attempt_limit=N) {
+  size_t choice = ~(0ul);
+  do {
+    choice = rand_choice(seed,0ul,M);
+    if (bag[choice]) {
+      bag.reset(choice);
+      return choice;
+    }
+  } while ((--attempt_limit) > 0);
+  for (choice=0; choice<M; ++choice)
+    if (bag[choice]) {
+      bag.reset(choice);
+      return choice;
+    }
+  return 0ul; // might be a bad decision, but need to be smart with memory
+  // might replace this with just another rand_choice call
+}
+
+template<size_t N>
+void smart_set(std::bitset<N>& bag, const RuleSet& rs) {
+  bag.set();
+  bag >>= N-rs.rules.size(); // reset the unessisary bits
+  // if (rs.rules.size() > N/2) { // this ruleset has MORE THAN half that of the max
+  //   bag.set();
+  //   for (size_t i=rs.rules.size(); i<N; ++i)
+  //     bag[i] = false;
+  // } else {  // this ruleset has LESS THAN half that of the max
+  //   bag.reset();
+  //   for (size_t i=0; i<rs.rules.size(); ++i)
+  //     bag[i] = true;
+  // }
+}
+
+std::pair<size_t,size_t> get_rs_and_r_ids(size_t r_id) {
+  size_t rs_id;
+  for (rs_id=0; rs_id<_ROMP_RULESETS_LEN; ++rs_id) {
+    if (r_id < ::__caller__::RULESETS[rs_id].rules.size())
+      return std::make_pair(rs_id,r_id);
+    r_id -= ::__caller__::RULESETS[rs_id].rules.size();
+  }
+}
+
 class BFSWalker; // useful pre-definition
 
 class RandWalker : public ::romp::IRandWalker {
@@ -64,7 +125,7 @@ private:
   const RandSeed_t init_rand_seed;
   RandSeed_t rand_seed;
   size_t _fuel; // = OPTIONS.depth;
-  bool _valid = true;  // legacy 
+  bool _valid = true; 
   bool _is_error = false; // legacy
   Result::Cause status = Result::RUNNING;
   json_file_t* json = nullptr;
@@ -228,6 +289,11 @@ public:
 #if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
     for (int i=0; i<_ROMP_LIVENESS_PROP_COUNT; ++i) lcounts[i] = init_lcount;
 #endif
+#if (_ROMP_RULE_SELECTION_ALGO == (1ul))
+    ruleset_bag.set();
+#elif (_ROMP_RULE_SELECTION_ALGO == (2ul))
+    rule_bag.set();
+#endif
   }
 
   RandWalker(const BFSWalker& bfs, RandSeed_t rand_seed_, const Options& OPTIONS_); //defined in impls.hpp
@@ -297,26 +363,77 @@ private:
   //   return ::__caller__::RULESETS[rand_choice<size_t>(rand_seed,0ul,_ROMP_RULESETS_LEN)]; 
   // }
 
-#ifdef __romp__ENABLE_symmetry
-  // keeps track of what rule to call next for our heuristic symmetry reduction
-  id_t next_rule[_ROMP_RULESETS_LEN];
-#endif
-  /**
-   * @brief to pick a rule in random for simulation step
-   */
-  const Rule& get_rand_rule(){
+  
+
+  void progress(const Rule& r) {
+    --_fuel;
+    _attempt_limit = init_attempt_limit;
+    add_to_history(r);
+    _progress();
+  }
+  
+
+#if (_ROMP_RULE_SELECTION_ALGO == (0ul)) // 100% random
+  const Rule& choose_rule() {
     const size_t rs_id = rand_choice<size_t>(rand_seed,0ul,_ROMP_RULESETS_LEN);
     const RuleSet& rs = ::__caller__::RULESETS[rs_id];
-#ifdef __romp__ENABLE_symmetry
+    return rs.rules[rand_choice<size_t>(rand_seed,0ul,rs.rules.size())];
+  }
+  inline void _progress() {/* do nothing more */}
+
+#elif (_ROMP_RULE_SELECTION_ALGO == (2ul)) // random w/out replacement from all possibilities
+  _ROMP_ChoiceBag_t rule_bag;
+  const Rule& choose_rule() {
+    if (((_ROMP_ChoiceBag_t)rule_bag).none()) {
+      status = Result::DEADLOCK; _valid = false;
+      return ::__caller__::RULESETS[0].rules[0];
+    }
+    const size_t choice = choose_from_bag(rule_bag, rand_seed);
+    const auto p = get_rs_and_r_ids(choice);
+    return ::__caller__::RULESETS[p.first].rules[p.second];
+  }
+  inline void _progress() {
+    _valid = true;
+  }
+
+#elif (_ROMP_RULE_SELECTION_ALGO == (3ul)) // random everything without replacement
+  // keeps track of what rule to call next for our heuristic symmetry reduction
+  id_t next_rule[_ROMP_RULESETS_LEN];
+  const Rule& choose_rule() {
+    const size_t rs_id = rand_choice<size_t>(rand_seed,0ul,_ROMP_RULESETS_LEN);
+    const RuleSet& rs = ::__caller__::RULESETS[rs_id];
     id_t& r_id = next_rule[rs_id];  // this is a reference
     const Rule& r = rs.rules[r_id]; 
     if (++r_id >= rs.rules.size())
       r_id = 0;
-#else
-     const Rule& r = rs.rules[rand_choice<size_t>(rand_seed,0ul,rs.rules.size())];
-#endif
     return r;
   }
+  inline void _progress() {/* do nothing more */}
+
+#else // [DEFAULT] random rule -> random ruleset w/out replacement
+const RuleSet* _RS = nullptr;
+  std::bitset<_ROMP_RULESETS_LEN> ruleset_bag;
+  _ROMP_ChoiceBag_t rule_bag;
+  const Rule& choose_rule() {
+    if (_RS == nullptr || ((_ROMP_ChoiceBag_t)rule_bag).none()) { // perform per ruleset setup
+      if (ruleset_bag.none()) {
+        _valid = false; _RS = nullptr; status = Result::DEADLOCK;
+        return ::__caller__::RULESETS[0].rules[0];
+      }
+      const size_t rs_id = choose_from_bag(ruleset_bag, rand_seed);
+      _RS = &(::__caller__::RULESETS[rs_id]);
+      smart_set(rule_bag,*_RS);
+    }
+    const size_t r_id = choose_from_bag(rule_bag, rand_seed, (size_t)_RS->rules.size());
+    return _RS->rules[r_id];
+  }
+  inline void _progress() {
+    _RS = nullptr;
+    _valid = true;
+    ruleset_bag.set();
+  }
+#endif
+  
 
   void sim1Step_trace() noexcept {
 #ifdef __ROMP__DO_MEASURE
@@ -324,14 +441,13 @@ private:
 #endif
     // const RuleSet& rs = rand_ruleset();
     // const Rule& r = rand_rule(rs);
-    const Rule& r = get_rand_rule();
+    const Rule& r = choose_rule();
+    if (not _valid) return;
     bool pass = false;
     try {  
       if ((pass = r.guard(state)) == true) {
         r.action(state);
-        --_fuel;
-        _attempt_limit = init_attempt_limit;
-        add_to_history(r);
+        progress(r);
         *json << ",{\"$type\":\"rule-hit\",\"rule\":" << r << ","
                  "\"state\":" << state
               << "}";
@@ -380,14 +496,13 @@ private:
 #endif
     // const RuleSet& rs= rand_ruleset();
     // const Rule& r= rand_rule(rs);
-    const Rule& r = get_rand_rule();
+    const Rule& r = choose_rule();
+    if (not _valid) return;
     bool pass = false;
     try {  
       if ((pass = r.guard(state)) == true) {
         r.action(state);
-        --_fuel;
-        _attempt_limit = init_attempt_limit;
-        add_to_history(r);
+        progress(r);
       } else { --_attempt_limit; }
     } catch(IModelError& me) {
       __handle_exception/*<Rule,IModelError>*/(r,me);
@@ -672,6 +787,7 @@ class ResultTree {
 #endif
   std::vector<const Result*> unknown_causes;
   std::vector<const Result*> attempt_limits_reached;
+  std::vector<const Result*> deadlocks_reached;
   std::vector<const Result*> max_depths_reached;
   std::unordered_map<ModelPropertyError,std::vector<const Result*>> properties_violated;
   size_t n_properties_violated = 0;

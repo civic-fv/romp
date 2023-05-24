@@ -43,7 +43,6 @@ std::filesystem::path make_path(std::string p) {
 }
 
 void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
-  bool no_sym_provided = false;
   bool out_file_provided = false;
   // unsigned int hist_len = ROMP_HISTORY_SIZE_PREPROCESSOR_VAR_DEFAULT_VALUE;
   for (;;) {
@@ -52,7 +51,7 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
         { "help",               no_argument,        0,  'h' },
         { "output",             required_argument,  0,  'o' },
         { "rule-history-len",   required_argument,  0,  'r' },
-        { "no-symmetry",        no_argument,        0,  's' },
+        { "selection-algo",     required_argument,  0,  's' },
         { "enable-assume",      no_argument,        0,  'a' },
         { "enable-cover",       no_argument,        0,  'c' },
         { "enable-liveness",    no_argument,        0,  'l' },
@@ -71,7 +70,7 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
     };
 
     int option_index = 0;
-    int c = getopt_long(argc, argv, "ho:r:sacliR:vmSw:b:", options, &option_index);
+    int c = getopt_long(argc, argv, "ho:r:s:acliR:vmSw:b:", options, &option_index);
 
     if (c == -1)
       break;
@@ -113,8 +112,23 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
       }
       break;
 
-    case 's': // --no-symmetry
-      no_sym_provided = true;
+    case 's': // --selection-algo
+      try {
+        gen.selection_algo = std::stoul(optarg, nullptr, 0);
+      } catch (std::invalid_argument &ia) {
+        std::cerr << "invalid argument : provided selection algorithm value was not a number (NaN) !! (for -s/--selection-algo flag)\n"
+                  << std::flush;
+        exit(EXIT_FAILURE);
+      } catch (std::out_of_range &oor) {
+        std::cerr << "invalid argument : provided selection algorithm value was out of range !! (for -s/--selection-algo flag)\n"
+                  << std::flush;
+        exit(EXIT_FAILURE);
+      }
+      if (gen.selection_algo > ROMP_RULE_SELECTION_ALGO_LIMIT) {
+        std::cerr << "invalid argument : provided selection algorithm value was out of range !! [0," << ROMP_RULE_SELECTION_ALGO_LIMIT << "] (for -s/--selection-algo flag)\n"
+                  << std::flush;
+        exit(EXIT_FAILURE);
+      }
       break;
 
     case 'a': // --enable-assume
@@ -236,8 +250,6 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
     std::cerr << "WARNING : `0` is an invalid value for default walk multiplier, `1` will used instead !! (for -w/--default-wal-multiplier flag)\n" 
               << std::flush;
   }
-  if (not no_sym_provided)
-    gen.enable_preprocessor_option(ROMP_SYMMETRY_PREPROCESSOR_VAR);
   
 }
 

@@ -11,7 +11,7 @@
  * @brief the handler for the configuration of a random walk
  *
  * @date 2022/10/05
- * @version 0.2
+ * @version 0.3
  */
 
 #ifndef __romp__GENERATED_CODE
@@ -45,8 +45,7 @@ namespace romp {
         return __SYSTEM_THREAD_COUNT - 2;
       }
     }
-
-#define _ROMP_ATTEMPT_LIMIT_DEFAULT UINT16_MAX
+constexpr size_t _ROMP_ATTEMPT_LIMIT_DEFAULT();
 #define _ROMP_START_ID_DEFAULT ((unsigned)(~(0u)))
 struct Options {
   // size_t history_length = 4;
@@ -54,13 +53,13 @@ struct Options {
   unsigned int threads =  get_default_thread_count(); 
   size_t depth = 1024ul; // INT16_MAX;      
   unsigned int walks = threads*_ROMP_THREAD_TO_RW_RATIO; 
-  unsigned int rand_seed = ROMP_ID; 
-  std::string seed_str = std::to_string(ROMP_ID);
+  unsigned int rand_seed = INIT_SEED;
+  std::string seed_str = std::to_string(INIT_SEED);
   bool do_single = false;
   bool do_even_start = false;
   id_t start_id = _ROMP_START_ID_DEFAULT;
   bool skip_launch_prompt = false;
-  size_t attempt_limit = _ROMP_ATTEMPT_LIMIT_DEFAULT; // disabled if _ROMP_ATTEMPT_LIMIT_DEFAULT
+  size_t attempt_limit = _ROMP_ATTEMPT_LIMIT_DEFAULT(); // disabled if _ROMP_ATTEMPT_LIMIT_DEFAULT
   std::string trace_dir = "./traces/"; // path for the trace file to be created during each walk
   bool deadlock = true; // do deadlock protections
 #ifdef __romp__ENABLE_liveness_property

@@ -58,13 +58,63 @@ Without this option, the size of the history buffer defaults to 4.
 .RE
 .RE
 .PP
-\fB--no-symmetry\fR or \fB-s\fR
+\fB--selection-algo=<int>\fR or \fB-s<int>\fR
 .RS
-Disable the approximate/heuristic symmetry reduction, 
-and therefore choose the next rule to apply completely at random.
+Choose the rule selection algorithm to use options below:
+.RE
 .RS
-See the \fB Approximate Symmetry Reduction\fR subsection of the
-\fB FEATURE SUPPORT\fR section below for more details on what this is.
+\fB--selection-algo=0\fR or \fB-s0\fR: 100% random everything
+.RS
+\fB(1)\fR At every step CHOOSE a random rule.
+\fB(2)\fR CHOOSE the ruleset params at random.
+\fB(3)\fR CHECK the guard \fBif\fR it returns \fItrue\fR \fBthen\fR GOTO step 4 \fBelse\fR RETURN to step 1 for next simulation step
+\fB(4)\fR APPLY the rule
+\fB(5)\fR CHECK the global properties
+\fB(6)\fR RETURN to step 1 for the next simulation step
+.RE
+.RE
+.RS
+\fB--selection-algo=1\fR or \fB-s1\fR: \fI[DEFAULT]\fR Random Ruleset params without replacement
+.RS
+\fB(1)\fR CREATE a \fI"bag"\fR of all of the rules (not specifying ruleset params)
+\fB(2)\fR CHOOSE a rule at random from the bag of rules (\fBif\fR rule "bag" empty \fBthen\fR end walk early \fI-deadlock-\fR)
+\fB(3)\fR CREATE a \fI"bag"\fR of all possible ruleset param combinations possible 
+\fB(4)\fR CHOOSE a set of ruleset params from the params \fI"bag"\fR at random (\fBif\fR params bag empty, but params to fill RETURN to step 2)
+\fB(5)\fR CHECK the guard, \fBif\fR it returns true \fBthen\fR GOTO step 6, \fBelse\fR RETURN to step 4 for the next simulation step.
+\fB(6)\fR APPLY the rule
+\fB(7)\fR CHECK the global properties (if any fail end the walk)
+\fB(8)\fR RETURN to step 1 for the next simulation step.
+.RE
+.RE
+.RS
+\fB--selection-algo=2\fR or \fB-s2\fR: Random everything without replacement until successful
+.RS
+\fB(1)\fR CREATE a \fI"bag"\fR of all rules with all of their ruleset param options
+\fB(2)\fR CHOOSE a rule with its ruleset param(s) from the \fI"bag"\fR at random (\fBif\fR bag empty, \fBthen\fR end walk early \fI-deadlock-\fR)
+\fB(3)\fR CHECK the guard, \fBif\fR it returns true \fBthen\fR GOTO step 4, \fBelse\fR RETURN to step 2 for the next simulation step.
+\fB(4)\fR APPLY the rule
+\fB(5)\fR CHECK the global properties (if any fail end the walk)
+\fB(6)\fR RETURN to step 1 for the next simulation step.
+.RE
+.RE
+.\" .RS
+.\" \fB--selection-algo=3\fR or \fB-s3\fR: Random everything without replacment until rule covarage
+.\" .RS
+.\" \fB(1)\fR construct a \fI"bag"\fR of all rules with all of their ruleset param options
+.\" \fB(2)\fR choose a ruleset param from the \fI"bag"\fR at random (\fBif\fR the bag is empty \fBthen\fR goto step 1)
+.\" \fB(3)\fR check the guard, \fBif\fR it returns true \fBthen\fR goto step 4, \fBelse\fR return to step 2 for the next simulation step.
+.\" \fB(4)\fR apply the rule then check the global properties and return to step 2 for the next simulation step.
+.\" .RE
+.\" .RE
+.RS
+\fB--selection-algo=3\fR or \fB-s3\fR: Heuristic Symmetry Reduction 
+.RS
+\fB(1)\fR At every step CHOOSE a random rule
+\fB(2)\fR CHOOSE it's ruleset parameters by the using next combination in lexicographic order.
+\fB(3)\fR CHECK the guard \fBif\fR it returns true \fBthen\fR GOTO step 4 \fBelse\fR GOTO step 5.
+\fB(4)\fR APPLY the rule
+\fB(5)\fR CHECK the global properties (if any fail end the walk)
+\fB(6)\fR regardless of the results of step 3 RETURN to step 1 for the next simulation step.
 .RE
 .RE
 .PP
@@ -77,7 +127,7 @@ When reached and it's conditional evaluates to true, that walk will
 stop, but unless specified in the options of the generated model checker,
 this violation will not be reported.
 .RS
-\fI aka\fR this is just like \fIInvariant\fR/\fIAssert\fR but it 
+\fI aka\fR this is just like \fIInvariant/Assert\fR but it 
 suppresses report of the violation by default.
 .RE
 .RE
@@ -121,7 +171,7 @@ suppress generation errors about the existence of unsupported rumur properties
 in the model, when the appropriate enable options are not provided.
 .RE
 .PP
-\fB--range-type\fR \fI TYPE\fR or \fB-R\fR \fI TYPE\fR
+\fB--range-type=<C-type>\fR or \fB-R<C-type>\fR
 .RS
 Change the C/C++ type used to represent range values in the emitted code. 
 By default, \fI int\fR is used. 
@@ -131,7 +181,7 @@ but simply trusts that you have given something that will be
 available when you compile the generated code.
 .RE
 .PP
-\fB--scalar-type\fR \fI TYPE\fR
+\fB--scalar-type=<C-type>\fR
 .RS
 \fI(!! Not currently implemented !!)\fR
 Change the C/C++ type used to represent scalar & enum values in the emitted code. 
@@ -177,22 +227,24 @@ that you have identified as notable in a normal parallel launch.
 .RE
 .RE
 .PP
-\fB--default-walk-multiplie\fR or \fB-w\fR
+\fB--default-walk-multiplier=<uint>\fR or \fB-w<uint>\fR
 .RS
 This will change the default multiplier used to determine how many walks are performed bassed upon 
 the number of threads available on the device running the model.
 You can manualy set the number of walks from the model checker for each run,
 but sometimes it's nice to set a default multiplier bassed upon your models needs,
 so you don't have to add another flag to a run of a generated model checker.
+\fI[DEFAULT: 64]\fR
 .RE
 .PP
-\fB--default-bfs-coefficient\fR or \fB-b\fR
+\fB--default-bfs-coefficient=<uint>\fR or \fB-b<uint>\fR
 .RS
 This will change the default coefficient used to determine how many unique states
 the initial BFS will gernate (when enabled) before launching the random walkers with them. 
 You can manualy set this number from the model checker for each run,
 but sometimes it's nice to set a default coefficient bassed upon your models needs,
 so you don't have to add another flag to a run of a generated model checker.
+\fI[DEFAULT: 16]\fR
 .RE
 .PP
 .PP

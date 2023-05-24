@@ -11,7 +11,7 @@
  *        and other details in the romp codegen tool.
  * 
  * @date 2022/05/11
- * @version 0.2
+ * @version 0.3
  */
 
 #ifndef _romp_src_romp_def_hpp
@@ -25,7 +25,7 @@
 #   endif
 # endif
 
-#define ROMP_VERSION "0.0.1"
+#define ROMP_VERSION "0.0.3"
 
 #define ROMP_UTIL_NAMESPACE_NAME "romp"
 
@@ -80,7 +80,9 @@
 #define ROMP_BFS_COEFFICIENT_PREPROCESSOR_VAR "_ROMP_BFS_COEF"
 #define ROMP_MEASURE_PREPROCESSOR_VAR "__ROMP__DO_MEASURE"
 #define ROMP_SIMPLE_TRACE_PREPROCESSOR_VAR "__ROMP__SIMPLE_TRACE"
-#define ROMP_SYMMETRY_PREPROCESSOR_VAR "__romp__ENABLE_symmetry"
+#define ROMP_RULE_SELECTION_ALGO_VAR "__ROMP__SELECTION_ALGO"
+#define ROMP_RULE_SELECTION_ALGO_LIMIT 3
+// #define ROMP_SYMMETRY_PREPROCESSOR_VAR "__romp__ENABLE_symmetry"
 #define ROMP_ASSUME_PREPROCESSOR_VAR "__romp__ENABLE_assume_property"
 #define ROMP_COVER_PREPROCESSOR_VAR "__romp__ENABLE_cover_property"
 #define ROMP_LIVENESS_PREPROCESSOR_VAR "__romp__ENABLE_liveness_property"
