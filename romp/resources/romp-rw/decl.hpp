@@ -104,6 +104,14 @@ namespace romp {
   typedef unsigned int RandSeed_t;
 
   const RandSeed_t INIT_SEED = ([]() -> RandSeed_t {
+                                  // struct timeval tp; // from mimicing cmurphi random
+                                  // struct timezone tzp;
+                                  // // select a "random" seed
+                                  // gettimeofday(&tp, &tzp);
+                                  // size_t value = ((unsigned long) (tp.tv_sec ^ tp.tv_usec) * 2654435769ul) >> 1;
+                                  // if (value == 0)
+                                  //   value = 46831694;
+                                  // return value;
                                   std::random_device rd;
                                   std::mt19937 mt(rd());
                                   std::uniform_real_distribution<double> dist(0,UINT32_MAX);

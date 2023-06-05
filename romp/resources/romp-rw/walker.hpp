@@ -46,9 +46,14 @@ using time_mr_t = std::chrono::time_point<std::chrono::high_resolution_clock,std
  */
 template<typename T>
 T rand_choice(RandSeed_t &seed, T min, T max) {
-    //not done fully
+    // long g;    // from mimicing cmurphi random
+    // g = 16807 * (seed % 127773) - 2836 * (seed / 127773);
+    // seed = (g > 0) ? g : g + 2147483647;
+    // T choice =  seed % (max-min) + min;
+    // return choice;
+    // not done fully
     seed = (((seed ^ (seed >> 3)) >> 12) & 0xffff) | ((seed & 0x7fff) << 16); // modifies the seed
-    int choice = seed % (max-min) + min;  // generates the random number
+    T choice = seed % (max-min) + min;  // generates the random number
     return choice;
 }
 
@@ -73,19 +78,33 @@ typedef _ROMP_ChoiceBag_t ChoiceBag_t;
 template<size_t N>
 size_t choose_from_bag(std::bitset<N>& bag, RandSeed_t& seed, size_t M=N, size_t attempt_limit=N) {
   size_t choice = ~(0ul);
-  do {
-    choice = rand_choice(seed,0ul,M);
-    if (bag[choice]) {
-      bag.reset(choice);
-      return choice;
+  choice = rand_choice(seed,0ul,bag.count());
+  size_t i = 0; size_t r = 0;
+  while (true) {
+    if (bag[i] && r == choice) {
+      bag.set(i, false);
+      return (unsigned) i;
+    } else if (bag[i]) {
+      i++;
+      r++;
+    } else {
+      i++;
     }
-  } while ((--attempt_limit) > 0);
-  for (choice=0; choice<M; ++choice)
-    if (bag[choice]) {
-      bag.reset(choice);
-      return choice;
-    }
-  return 0ul; // might be a bad decision, but need to be smart with memory
+  }
+  // size_t choice = ~(0ul);
+  // do {
+  //   choice = rand_choice(seed,0ul,M);
+  //   if (bag[choice]) {
+  //     bag.reset(choice);
+  //     return choice;
+  //   }
+  // } while ((--attempt_limit) > 0);
+  // for (choice=0; choice<M; ++choice)
+  //   if (bag[choice]) {
+  //     bag.reset(choice);
+  //     return choice;
+  //   }
+  // return 0ul; // might be a bad decision, but need to be smart with memory
   // might replace this with just another rand_choice call
 }
 
@@ -394,6 +413,7 @@ private:
   }
   inline void _progress() {
     _valid = true;
+    rule_bag.set();
   }
 
 #elif (_ROMP_RULE_SELECTION_ALGO == (3ul)) // random everything without replacement
@@ -818,6 +838,8 @@ public:
  * @param root_seed the parent seed for generating the random seeds.
  */
 RandSeed_t gen_random_seed(RandSeed_t &root_seed) {
+  // RandSeed_t value = ((unsigned long) (rand_choice(root_seed, 1u, UINT32_MAX)) * 2654435769ul) >> 1; // from mimicing cmurphi random
+  // return value;
   return rand_choice(root_seed, 1u, UINT32_MAX);
 }
 
