@@ -3,6 +3,7 @@
 #include "location.hh"
 #include <climits>
 #include <cstddef>
+#include <cstdint>
 #include <iostream>
 
 #ifndef MURPHI_API_WITH_RTTI
