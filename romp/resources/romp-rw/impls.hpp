@@ -571,8 +571,9 @@ void print_help() {
     " instead just rerunning the same config with traces enabled if you need more\n"
     " detailed information, it may be slower but it will work.\n"
     "  --bfs {single|multi} {int}  Enables an initial Breadth First Search of the\n"
-    "    | -bfs {s|m} {int}          statespace, that is either single threaded or\n"
-    "                                multithreaded (defaults to single).\n"
+    "    | -bfs {s|m} {int}          statespace, that is either (s) single threaded\n"
+    "                                or (m) multithreaded.\n"
+    "                                (defaults to " << (default_opts.bfs_single ? "single threaded" : "multithreaded") << ").\n"
     "                                The BFS will terminate and a swarm of random\n"
     "                                walkers will start when there are enough\n"
     "                                unique states in the BFS queue to have the\n"
@@ -583,6 +584,21 @@ void print_help() {
     "  --bfs-limit <int>           Sets a limit on how long the initial BFS can go\n"
     "    | -bfsl <int>               on for.  This is measured in number of rules\n"
     "                                applied. (<int> defaults to " << default_opts.bfs_limit << ")\n"
+    "\n"
+    "(DEV) RULE PROBABILITY GENERATOR\n"
+    "This will generate a tsv file giving you the probabilities of a rule becoming\n"
+    " enabled after another rule fires.  This process is accomplished using a\n"
+    " classic BFS model checking approach and will not stop if a bug is detected\n"
+    " only if either the rule/mem limit is reached or all states are exhausted.\n"
+    "  --prob {s|m} {int} {tsvFile} Enables an Probability table gen BFS mode of the\n"
+    "                                 that is either (s) single threaded or\n"
+    "                                 (m) multithreaded.\n"
+    "                                 (mode defaults to " << (default_opts.prob_bfs_single ? "single threaded" : "multithreaded") << ").\n"
+    "                                The process will terminate after {int} rules\n"
+    "                                 have been applied.\n"
+    "                                 ({int} defaults to " << default_opts.prob_bfs_limit << ").\n"
+    "                                The results will be written to a tsv file.\n"
+    "                                 (defaults to: \"" << default_opts.prob_bfs_out_tsv_file << "\")\n"
     "\n"
     "PROPERTY CONFIGURATIONS:\n"
     "  --no-deadlock           Disable Deadlock detection.\n"
@@ -709,6 +725,36 @@ void Options::parse_args(int argc, char **argv) {
                                                   // against a string literal is unspecified)
       print_help();
       exit(EXIT_SUCCESS);
+    } else if ("-prob" == std::string(argv[i]) || "--prob" == std::string(argv[i])) {
+      //WARNING: this option is coded VERY differently from the rest don't copy it
+      i++;
+      if (i < argc && argv[i][0] != '-') {
+        if (argv[i][0] == 'M' || argv[i][0] == 'm') {
+          prob_bfs_single = false;
+          i++;
+        }
+        while (true) {
+          try {
+            prob_bfs_limit = std::stoul(argv[i], nullptr, 0);
+            i++;
+            break;
+          } catch (std::invalid_argument &ia) { 
+            break; // this is probably the file path not the limit so jump forward to that part
+          } catch (std::out_of_range &oor) {
+            std::cerr << "invalid argument : provided limit was out of range (for --prob flag) must be "
+                         "greater than 0 to be a valid limit!\n"
+                      << std::flush;
+            exit(EXIT_FAILURE);
+          }
+        }
+        if (i<argc && argv[i][0] != '-') {
+          prob_bfs_out_tsv_file = argv[i];
+          i++;
+        }
+      }
+      if (i<argc)
+        std::cerr << "ignored arguments : all other arguments are ignored when using the `--prob` argument/mode!\n" << std::flush;
+      return;
     } else if ("-l" == std::string(argv[i]) || "-y" == std::string(argv[i])) {
       skip_launch_prompt = true;
     } else if ("-es" == std::string(argv[i]) || "--even-start" == std::string(argv[i])) {
@@ -716,8 +762,7 @@ void Options::parse_args(int argc, char **argv) {
     } else if ("-ls" == std::string(argv[i]) || "--list-starts" == std::string(argv[i])) {
       list_starts();
       exit(EXIT_SUCCESS);
-    }
-     else if ("-sid" == std::string(argv[i]) || "--start-id" == std::string(argv[i])) {
+    } else if ("-sid" == std::string(argv[i]) || "--start-id" == std::string(argv[i])) {
       start_provided = true;
       if (i + 1 < argc && '-' != argv[i + 1][0]) { 
         ++i;

@@ -201,7 +201,7 @@
 
 #define ROMP_MAKE_RULESET_STRUCT_HEADER(_info_id) "{" ROMP_INFO_RULESETS_VAR"[" <<(_info_id)<<"]" ",std::vector<" ROMP_CALLER_RULE_TYPE ">{" 
 #define ROMP_MAKE_RULESET_STRUCT_FOOTER(...) "}}" 
-#define ROMP_MAKE_RULE_STRUCT(_guard, _action, _info_id, _json, _str) ROMP_CALLER_RULE_TYPE "{" << (_guard) << "," << (_action) << "," ROMP_INFO_RULESETS_VAR "[" <<(_info_id)<<"],\"" << nEscape(_json) << "\",\"" << nEscape(_str) << "\"}"
+#define ROMP_MAKE_RULE_STRUCT(_guard, _action, _r_id, _info_id, _json, _str) ROMP_CALLER_RULE_TYPE "{" << (_guard) << "," << (_action) << "," << (_r_id) << "ul," ROMP_INFO_RULESETS_VAR "[" <<(_info_id)<<"],\"" << nEscape(_json) << "\",\"" << nEscape(_str) << "\"}"
 #define ROMP_MAKE_PROPERTY_STRUCT(_check, _info_id, _json, _str) "{" << (_check) << "," ROMP_INFO_PROPERTIES_VAR "[" <<(_info_id)<<"],\"" << nEscape(_json) << "\",\"" << nEscape(_str) << "\"}"
 #define ROMP_MAKE_STARTSTATE_STRUCT(_init, _id, _info_id, _json, _str) "{" << (_init) << "," ROMP_INFO_STARTSTATES_VAR "[" <<(_info_id)<<"]," << (_id) << ",\"" << nEscape(_json) << "\",\"" << nEscape(_str) << "\"}"
 

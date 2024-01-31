@@ -44,7 +44,7 @@ endif()
 
 add_custom_command(
   OUTPUT murphi-get-version.h
-  COMMAND src/make-version.py ${CMAKE_CURRENT_BINARY_DIR}/murphi-get-version.h
+  COMMAND ${Python3_EXECUTABLE} src/make-version.py ${CMAKE_CURRENT_BINARY_DIR}/murphi-get-version.h
   MAIN_DEPENDENCY src/make-version.py
   DEPENDS always_run
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})

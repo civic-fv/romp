@@ -70,7 +70,7 @@ void generate_ruleset_callers(romp::CodeGenerator& gen, const murphi::Model& m) 
       SigPerm sigs(rule);
       if (max_count < sigs.size())
           max_count = sigs.size();
-      rule_count += sigs.size();
+      // rule_count += sigs.size();
       std::stringstream _sig_str;
       std::string r_sep = "";
       for (const Sig& sig : sigs) {
@@ -78,7 +78,8 @@ void generate_ruleset_callers(romp::CodeGenerator& gen, const murphi::Model& m) 
         // std::string sig_str(_sig_str.str()); sig_str += " ";
         std::string _guard = ROMP_RULE_GUARD_PREFIX + rule.name + "__" + std::to_string(sig.index);  // int_to_hex(sig.index);
         std::string _action = ROMP_RULE_ACTION_PREFIX + rule.name + "__" + std::to_string(sig.index); // int_to_hex(sig.index);
-        ruleset_array << r_sep << ROMP_MAKE_RULE_STRUCT(_guard,_action,info_id,sig.to_json(),sig.to_string());
+        ruleset_array << r_sep << ROMP_MAKE_RULE_STRUCT(_guard,_action,rule_count,info_id,sig.to_json(),sig.to_string());
+        rule_count++;
         gen   << gen.indentation()
               << gen.M_RULE_GUARD__FUNC_ATTRS
               << " bool "

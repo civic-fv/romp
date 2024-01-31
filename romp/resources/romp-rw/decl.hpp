@@ -185,6 +185,7 @@ namespace romp {
     bool (*guard)(const State_t&) ;
     void (*action)(State_t&) ;
     const RuleInfo& info;
+    const size_t rID;
     const std::string quant_json;
     const std::string quant_str;
     IModelError* make_error() const;

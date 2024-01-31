@@ -165,6 +165,27 @@ namespace romp {
   // inline ostream_p& ostream_p::operator << <stream_void>(const stream_void val) { return *this; }
   // template <>
   // inline ostream_p& ostream_p::operator << <bool>(const bool val) { return (*this << ((val) ? "YES" : "NO")); }
+
+
+// << ================================== TSV Format Writer ===================================== >> 
+
+  class ostream_tsv {
+  public:
+    std::ostream& out;
+  protected:
+  public:
+    ostream_tsv(std::ostream& out_)
+      : out(out_)
+    {}
+    inline const stream_void new_line() { out << '\n'; out.out.flush(); return S_VOID; }
+    inline const stream_void nl() { out << '\n'; out.out.flush(); return S_VOID; }
+  };
+  template <typename T>
+  ostream_tsv& operator << (ostream_p& out, const T& val) { out.out << val; return out; }  
+  template <>
+  ostream_tsv& operator << <stream_void>(ostream_p& out, const stream_void& val) { return out; }
+  template <>
+  ostream_tsv& operator << <bool>(ostream_p& out, const bool& val) { (out.out << ((val) ? "YES" : "NO")); return out; }
   
 
 
@@ -313,7 +334,7 @@ namespace romp {
   template<class O>
   ojstream<O>& operator << (ojstream<O>& json, const location& loc) { 
     return (json << "{\"$type\":\"location\","
-            << "\"file\":\"" __model__filename "\","
+            // << "\"file\":\"" __model__filename "\","
             // << (loc.model_obj != "") ? "\"inside\":\""+loc.model_obj+"\"," : EMPTY_STR
             << "start" << ':' << loc.start << ',' 
             << "\"end\":" << loc.end

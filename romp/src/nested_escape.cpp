@@ -21,24 +21,29 @@
 #include <ctype.h>
 
 static std::string _octal_esc(char c) {
-  char buffer[sizeof("\\000")];
-  std::snprintf(buffer, sizeof(buffer), "\\%03o", c);
+  char buffer[10ul] = {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'};
+  std::snprintf(buffer, 6ul, "\\%03o", c);
   return buffer;
 }
 
 std::string nEscape(const std::string &s) {
   std::string out;
   for (size_t i=0; i<s.size(); ++i) {
-    if (s[i] == '\\') {
-      out += '\\';
-      out += '\\';
-    } else if (s[i] == '\"') {
-      out += '\\';
-      out += '"';
-    // } else if (iscntrl(s[i])) {
-    //   out += _octal_esc(s[i]);
-    } else {
-      out += s[i];
+    switch (s[i]) {
+      case '\\':
+        out += '\\';
+        out += '\\';
+      break;
+      case '"':
+        out += '\\';
+        out += '"';
+        break;
+      case '\t':
+      case '\r':
+      case '\n':
+        out += _octal_esc(s[i]);
+      default:
+        out += s[i];
     }
   }
   return out;

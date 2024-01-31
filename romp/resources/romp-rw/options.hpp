@@ -51,7 +51,7 @@ struct Options {
   // size_t history_length = 4;
   bool do_trace = false;
   unsigned int threads =  get_default_thread_count(); 
-  size_t depth = 1024ul; // INT16_MAX;      
+  size_t depth = 1ul<<12u; // INT16_MAX;      
   unsigned int walks = threads*_ROMP_THREAD_TO_RW_RATIO; 
   unsigned int rand_seed = INIT_SEED;
   std::string seed_str = std::to_string(INIT_SEED);
@@ -85,17 +85,22 @@ struct Options {
   bool bfs_single = true;
   size_t bfs_coefficient = _ROMP_BFS_COEF;
   size_t bfs_limit = INT16_MAX; // max number of states to explore before giving up
+  // prob-bfs options ---
+  bool do_prob_bfs = false;
+  bool prob_bfs_single = true;
+  std::string prob_bfs_out_tsv_file = "./" __model__filename_stem ".rP.tsv";
+  size_t prob_bfs_limit = UINT16_MAX; // max number of states to explore before giving up
 
   const std::string get_trace_dir() const noexcept {
     if (do_single) return trace_dir;
     std::stringstream buf; buf << INIT_TIME_STAMP;
-    return trace_dir + "/" __model__filename "_" + buf.str();
+    return trace_dir + "/" __model__filename_stem "_" + buf.str();
   }
   const std::string get_trace_file_path(id_t rw_id) const noexcept {
     if (not do_single)
       return get_trace_dir() + "/" + std::to_string(rw_id) + ".trace.json";
     std::stringstream buf; buf << INIT_TIME_STAMP;
-    return trace_dir + "/" + __model__filename + "_" + buf.str() + ".trace.json"; 
+    return trace_dir + "/" + __model__filename_stem + "_" + buf.str() + ".trace.json"; 
   }
   bool report_any() const {
     return (report_all || do_single || report_error || r_assume || r_cover);

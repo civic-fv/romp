@@ -69,8 +69,9 @@ namespace __model__ {
 }
 
 
-#define __model__filepath "./<model-file>"
-#define __model__filename "<model-file>"
+#define __model__filepath "./<model-file>.m"
+#define __model__filename "<model-file>.m"
+#define __model__filename_stem "<model-file>"
 #define __model__filename_contains_space false
 
 namespace romp {

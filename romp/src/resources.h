@@ -48,6 +48,11 @@ extern const size_t resources_romp_rw_walker_hpp_len;
 // ../resources/romp-rw/bfs.hpp
 extern const unsigned char resources_romp_rw_bfs_hpp[];
 extern const size_t resources_romp_rw_bfs_hpp_len;
+extern const size_t resources_romp_rw_walker_hpp_len;
+
+// ../resources/romp-rw/bfs.hpp
+extern const unsigned char resources_romp_rw_prob_hpp[];
+extern const size_t resources_romp_rw_prob_hpp_len;
 
 // ../resources/romp-rw/impls.hpp
 extern const unsigned char resources_romp_rw_impls_hpp[];

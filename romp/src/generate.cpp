@@ -69,8 +69,8 @@ void generate(const Model &m, const std::vector<Comment> &comments,
   int _count = std::count(file_path.begin(), file_path.end(), ' ');
   gen << "\n#define __model__filepath_contains_space (" 
       << ((_count > 0) ? "true" : "false") << ")\n\n";
-  std::string file_name = gen.input_file_path.filename().string();
-  gen << "\n#define __model__filename \"" << nEscape(file_name) << "\"\n";
+  gen << "\n#define __model__filename \"" << nEscape(gen.input_file_path.filename().string()) << "\"\n";
+  gen << "\n#define __model__filename_stem \"" << nEscape(gen.input_file_path.stem().string()) << "\"\n";
   _count = std::count(file_name.begin(), file_name.end(), ' ');
   gen << "\n#define __model__filename_contains_space (" 
       << ((_count > 0) ? "true" : "false") << ")\n\n";
@@ -219,11 +219,14 @@ void generate(const Model &m, const std::vector<Comment> &comments,
     gen << '\n';
     gen << "#include \"" << _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/bfs.hpp\"\n";
     gen << '\n';
+    gen << "#include \"" << _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/prob.hpp\"\n";
+    gen << '\n';
     gen << "#include \"" << _ROMP_DEV_DEBUG_INCLUDE_DIR << "/romp-rw/impls.hpp\"\n";
     gen << '\n';
 # else
     gen.output_embedded_code_file(resources_romp_rw_walker_hpp, resources_romp_rw_walker_hpp_len);
     gen.output_embedded_code_file(resources_romp_rw_bfs_hpp, resources_romp_rw_bfs_hpp_len);
+    gen.output_embedded_code_file(resources_romp_rw_prob_hpp, resources_romp_rw_prob_hpp_len);
     gen.output_embedded_code_file(resources_romp_rw_impls_hpp, resources_romp_rw_impls_hpp_len);
 # endif
   gen << "\n#pragma endregion romp_postfix\n\n" << /*std::*/gen.flush();
