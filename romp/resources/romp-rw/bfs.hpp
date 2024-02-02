@@ -35,6 +35,7 @@ namespace std {
 namespace romp {
 
   class BFSWalker : public IRandWalker {
+  protected:
     const Options& OPTIONS;
     id_t _start_id;
     size_t _depth = 0ul;

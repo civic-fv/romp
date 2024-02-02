@@ -708,11 +708,11 @@
             "justMyCode": true
         },
         {
-            "name": "(gdb) Launch Current C++ File",
+            "name": "(gdb) Launch german prob test",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${fileDirname}/${fileBasenameNoExtension}",
-            "args": [],
+            "program": "${workspaceFolder}/tests/german.ro2",
+            "args": ["--prob", "1024"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
@@ -729,8 +729,7 @@
                     "text": "-gdb-set disassembly-flavor intel",
                     "ignoreFailures": true
                 }
-            ],
-            "preLaunchTask": "C/C++: clang++ build active file"
+            ]
         },
     ]
 }

@@ -727,12 +727,13 @@ void Options::parse_args(int argc, char **argv) {
       exit(EXIT_SUCCESS);
     } else if ("-prob" == std::string(argv[i]) || "--prob" == std::string(argv[i])) {
       //WARNING: this option is coded VERY differently from the rest don't copy it
+      do_prob_bfs = true;
       i++;
       if (i < argc && argv[i][0] != '-') {
         if (argv[i][0] == 'M' || argv[i][0] == 'm') {
           prob_bfs_single = false;
           i++;
-        }
+        } else if (argv[i][0] == 'S' || argv[i][0] == 's') i++; 
         while (true) {
           try {
             prob_bfs_limit = std::stoul(argv[i], nullptr, 0);
@@ -746,12 +747,14 @@ void Options::parse_args(int argc, char **argv) {
                       << std::flush;
             exit(EXIT_FAILURE);
           }
+          break;
         }
         if (i<argc && argv[i][0] != '-') {
           prob_bfs_out_tsv_file = argv[i];
           i++;
         }
       }
+      std::cout << "\n\n!! running romp in probability generating mode, this can take a long time to run !!\n\n" << std::flush;
       if (i<argc)
         std::cerr << "ignored arguments : all other arguments are ignored when using the `--prob` argument/mode!\n" << std::flush;
       return;

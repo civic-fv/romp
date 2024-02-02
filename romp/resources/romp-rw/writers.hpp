@@ -171,21 +171,19 @@ namespace romp {
 
   class ostream_tsv {
   public:
-    std::ostream& out;
+    ::std::ostream& out;
   protected:
   public:
     ostream_tsv(std::ostream& out_)
       : out(out_)
     {}
-    inline const stream_void new_line() { out << '\n'; out.out.flush(); return S_VOID; }
-    inline const stream_void nl() { out << '\n'; out.out.flush(); return S_VOID; }
+    inline const stream_void new_line() { out << '\n'; out.flush(); return S_VOID; }
+    inline const stream_void nl() { out << '\n'; out.flush(); return S_VOID; }
   };
   template <typename T>
-  ostream_tsv& operator << (ostream_p& out, const T& val) { out.out << val; return out; }  
+  ostream_tsv& operator << (ostream_tsv& out, const T& val) { out.out << val; return out; }  
   template <>
-  ostream_tsv& operator << <stream_void>(ostream_p& out, const stream_void& val) { return out; }
-  template <>
-  ostream_tsv& operator << <bool>(ostream_p& out, const bool& val) { (out.out << ((val) ? "YES" : "NO")); return out; }
+  ostream_tsv& operator << <stream_void>(ostream_tsv& out, const stream_void& val) { return out; }
   
 
 

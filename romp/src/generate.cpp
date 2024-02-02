@@ -69,7 +69,8 @@ void generate(const Model &m, const std::vector<Comment> &comments,
   int _count = std::count(file_path.begin(), file_path.end(), ' ');
   gen << "\n#define __model__filepath_contains_space (" 
       << ((_count > 0) ? "true" : "false") << ")\n\n";
-  gen << "\n#define __model__filename \"" << nEscape(gen.input_file_path.filename().string()) << "\"\n";
+  std::string file_name = nEscape(gen.input_file_path.filename().string());
+  gen << "\n#define __model__filename \"" << file_name << "\"\n";
   gen << "\n#define __model__filename_stem \"" << nEscape(gen.input_file_path.stem().string()) << "\"\n";
   _count = std::count(file_name.begin(), file_name.end(), ' ');
   gen << "\n#define __model__filename_contains_space (" 

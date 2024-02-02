@@ -62,6 +62,12 @@ int main(int argc, char **argv) {
   ::romp::Options OPTIONS;
   OPTIONS.parse_args(argc, argv);
 
+  if (OPTIONS.do_prob_bfs) {
+    ::romp::ProbBFSHandler(OPTIONS).launch();
+    std::cout << "\nprobability table written to: `" << OPTIONS.prob_bfs_out_tsv_file << "`\n" << std::flush;
+    return 0;
+  }
+
   if (not (OPTIONS.skip_launch_prompt))
     ::romp::launch_prompt(OPTIONS);
 

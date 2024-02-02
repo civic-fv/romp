@@ -23,340 +23,50 @@
 #include "options.hpp" // LANGUAGE SERVER SUPPORT ONLY !!
 #endif
 
-namespace std {
-  template<>
-  struct hash<::romp::State_t> {
-    inline size_t operator () (const ::romp::State_t& state) const { 
-      return state.__romp__model_hash();
-    }
-  };
-
-} //namespace std
-
 namespace romp {
 
-//   class BFSWalker : public IRandWalker {
-//     const Options& OPTIONS;
-//     id_t _start_id;
-//     size_t _depth = 0ul;
-//     Result::Cause status = Result::NO_CAUSE;
-//     IModelError* tripped = nullptr;
-//     IModelError* tripped_inside = nullptr;
-//     size_t history_level = 0ul;
-//     constexpr size_t history_size() const { return _ROMP_HIST_LEN*2+1; }
-//     RandWalker::History history[_ROMP_HIST_LEN*2+1];
-//     size_t history_start = 0ul;
-//     /**
-//      * @brief call if rule is applied to store what rule made the change in the
-//      * history circular buffer.
-//      * @param r reference to the rule that was applied
-//      */
-//     void add_to_history(const Rule& r) {
-//       history[history_level%history_size()] = RandWalker::History{&r};
-//       ++history_level;
-//       if (history_level > history_size())
-//         ++history_start;
-//     }
-// #   ifdef __ROMP__DO_MEASURE
-//       time_mr_t start_time;
-//       duration_mr_t active_time = duration_mr_t(0l);
-// #   endif
 
-//     template<typename R, typename E>
-//     void __handle_exception(const R& r, const E& er) noexcept {
-//       tripped_inside = r.make_error();
-//     }
-  
-//   public:
-
-//     BFSWalker(const Options OPTIONS_, id_t start_id_)
-//       : OPTIONS(OPTIONS_), 
-// #       if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
-//           enable_liveness(OPTIONS_.liveness),
-// #       endif
-//         _start_id(start_id_)
-//     {
-//       state.__rw__ = this;
-//     }
-
-//     ~BFSWalker() {
-//       if (tripped != nullptr) delete tripped;
-//       if (tripped_inside != nullptr) delete tripped_inside;
-//     }
-
-//   void init_state() noexcept {    
-//     const StartState& startstate = ::__caller__::STARTSTATES[_start_id];
-// #   ifdef __ROMP__DO_MEASURE
-//       start_time = time_mr();
-// #   endif
-//     try {
-//       startstate.initialize(state);
-//     } catch (const IModelError& me) {
-//        __handle_exception(startstate,me);
-//     } catch (const std::exception& ex) {
-//       status = Result::UNKNOWN_CAUSE;
-//       __handle_exception(startstate,ex); 
-//     } catch (...) {
-//       status = Result::UNKNOWN_CAUSE;
-//       tripped_inside = new ModelStartStateError(startstate);
-//     }
-//     for (const auto& prop : ::__caller__::PROPERTIES)
-//       try {
-//         if (prop.check(state)) { // if tripped
-//           tripped = new ModelPropertyError(prop);
-//           tripped_inside = new ModelStartStateError(startstate);
-//           break;
-//         }
-//       } catch(IModelError& me) {
-//         __handle_exception(prop,me);
-//       } catch (std::exception& ex) {
-//         __handle_exception(prop,ex);
-//         status = Result::UNKNOWN_CAUSE;
-//       } catch (...) {
-//         status = Result::UNKNOWN_CAUSE;
-//       }
-// #   ifdef __ROMP__DO_MEASURE
-//       active_time += time_mr() - start_time;
-// #   endif
-//     }
-
-//   inline void finalize() noexcept {
-//     if (status == Result::UNKNOWN_CAUSE) {
-//     } else if (_depth >= OPTIONS.depth) {
-//       status = Result::MAX_DEPTH_REACHED;
-//     }
-//   }
-
-//   const Result* get_result() noexcept {
-//     Result* result = new Result{
-//                   0ul, 0ul,
-//                   _start_id, status, _depth,
-//                   tripped, tripped_inside
-// #ifdef __ROMP__DO_MEASURE
-//                   ,active_time, duration_mr_t(0ul)
-// #endif
-//                   };
-//     tripped = nullptr;
-//     tripped_inside = nullptr;
-//     return result;
-//   }
-
-//     bool is_done() const { return status != Result::RUNNING || _depth >= OPTIONS.depth; }
-
-//     bool pass = false;
-
-//     void sim1Step_no_trace(const Rule& r) noexcept {
-// #     ifdef __ROMP__DO_MEASURE
-//         start_time = time_mr();
-// #     endif
-//       pass = false;
-//       try {  
-//         if ((pass = r.guard(state)) == true) {
-//           r.action(state);
-//           ++_depth;
-//           add_to_history(r);
-//         }
-//       } catch(IModelError& me) {
-//         __handle_exception(r,me);
-//         pass = false;
-//       } catch (std::exception& ex) {
-//         __handle_exception(r,ex);
-//         pass = false;
-//         status = Result::UNKNOWN_CAUSE;
-//       } catch (...) {
-//         pass = false;
-//         status = Result::UNKNOWN_CAUSE;
-//       }
-//       if (pass)
-//         for (const auto& prop : ::__caller__::PROPERTIES)
-//           try {
-//             if (prop.check(state)) { // if tripped
-//               tripped = new ModelPropertyError(prop);
-//               tripped_inside = new ModelRuleError(r);
-//               break;
-//             }
-//           } catch(IModelError& me) {
-//             __handle_exception(prop,me);
-//           } catch (std::exception& ex) {
-//             __handle_exception(prop,ex);
-//             status = Result::UNKNOWN_CAUSE;
-//           } catch (...) {
-//             status = Result::UNKNOWN_CAUSE;
-//           }
-// #     ifdef __ROMP__DO_MEASURE
-//         active_time += time_mr() - start_time;
-// #     endif             
-//     }
-
-
-//     std::vector<std::pair<std::function<void(ostream_p&)>,location>> put_msgs;
-//     void put_handler(const std::function<void(ostream_p&)>& put_action, const location& loc) {
-//       put_msgs.push_back(std::make_pair(put_action,loc));
-//     }
-
-//     bool error_handler(id_t error_id) {
-//       tripped = new ModelMErrorError(error_id);
-//       status = Result::MERROR_REACHED;
-//       return true;
-//     }
-
-//     bool assertion_handler(bool expr, id_t prop_id) {
-//       if (expr) return false;
-//       tripped = new ModelPropertyError(prop_id);
-//       status = Result::PROPERTY_VIOLATED;
-//       return true;
-//     }
-//     bool invariant_handler(bool expr, id_t prop_id) {
-//       if (expr) return false;
-//       // no need to store exception in tripped if a property rule the catch will give us a better error dump
-//       // invar_handler is only called from a property rule
-//       status = Result::PROPERTY_VIOLATED;
-//       return true;
-//     }
-// # ifdef __romp__ENABLE_assume_property
-//     bool assumption_handler(bool expr, id_t prop_id) {
-//       if (expr) return false;
-//       tripped = new ModelPropertyError(prop_id);
-//       status = Result::ASSUMPTION_VIOLATED;
-//       return true;
-//     }
-// # else
-//     bool assumption_handler(bool expr, id_t prop_id) {
-//       return false;  // don't do anything if the assume property is not enabled
-//     }
-// # endif
-//     bool cover_handler(bool expr, id_t cover_id, id_t prop_id) {
-//       return false;  // BFS does not currently implement liveness
-//     }
-// # if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
-//   private:
-//     const bool enable_liveness; // = OPTIONS.liveness;
-//   public:
-//     bool is_live[_ROMP_LIVENESS_PROP_COUNT];
-//     bool liveness_handler(bool expr, id_t liveness_id, id_t prop_id) {
-//       if (not enable_liveness) return false;
-//       if (expr) {
-//         is_live[liveness_id] = true;
-//         return false;
-//       }
-//       if (--lcounts[liveness_id] > 0) return false;
-//       tripped = new ModelPropertyError(prop_id);
-//       return true;  // [?]TODO actually handle this as described in the help page
-//     }
-//     void reset_liveness() {
-//       for (size_t i=0; i<_ROMP_LIVENESS_PROP_COUNT; ++i)
-//         is_live[i] = false;
-//     }
-//     void merge_liveness(bool *liveness) {
-//       for (size_t i=0; i<_ROMP_LIVENESS_PROP_COUNT; ++i) {
-//         liveness[i] |= is_live[i];
-//         is_live[i] = false;
-//       }
-//     }
-//     void set_liveness_violation(id_t liveness_id) {
-//       tripped = new ModelPropertyError(*::__info__::LIVENESS_INFOS[liveness_id]);
-//       status = Result::PROPERTY_VIOLATED;
-//     }
-// # else
-//     bool liveness_handler(bool expr, id_t liveness_id, id_t prop_id) {
-//       return false;  // BFS does not currently implement liveness
-//     }
-// # endif
-
-//     // called when trying to print the results of the BFS walker when it finishes (will finish up trace file if necessary too)
-//     //  the calling context should ensure that the BFSWalker is not being used else where & safe output to the ostream 
-//     friend ostream_p& operator << (ostream_p& out, const BFSWalker& rw) {
-//       std::string res_color = get_color(rw.status);
-//       out << out.nl()
-//           << "======== BEGIN :: Report of BFS ERROR ========"                         << out.nl()
-//           << "BASIC INFO: "                                                           << out.indent() << out.nl()
-//           << "      Depth: " << rw._depth                                             << out.nl()
-//           << "   Start ID: " << rw._start_id                                          << out.nl()
-//           << " StartState: " << ::__caller__::STARTSTATES[rw._start_id]               << out.nl()
-//           << "     Result: " << res_color << std::to_string(rw.status) << "\033[0m"   << out.nl()
-//           << out.dedent()                                                             << out.nl()
-//           << "TRACE LITE:"                                            << out.indent() << out.nl();
-//       if (rw.OPTIONS.do_trace) 
-//         out << "NOTE - BFS does not currently support rich json traces" << out.nl();
-//       out << "History: ["                             << out.indent() << out.indent() << out.nl()
-//           << "-(0) " << ::__caller__::STARTSTATES[rw._start_id] << '\n';
-//         if (rw.history_start > 0)
-//           out << out.indentation() << "-(..) ... forgotten past ...\n";
-//         for (size_t i=rw.history_start; i<rw.history_level; ++i)
-//           out << out.indentation() << "-(" << i+1 <<") " << *(rw.history[i%rw.history_size()].rule) << "\n";
-//       out << out.dedent() << out.indentation() << ']' << out.dedent() << out.dedent();
-//       if (rw.OPTIONS.report_emit_state)
-//         out                                                                           << out.nl()
-//             << "  State: " <<  out.indent() << out.indent() << rw.state << out.dedent() << out.dedent();
-//       if (rw.tripped != nullptr || rw.tripped_inside != nullptr) {
-//         out                                                                           << out.nl()
-//             << "ISSUE REPORT:"                                        << out.indent() << out.nl();
-//         if (rw.tripped != nullptr) {
-//           out << "Tripped: \033[31m" << *rw.tripped << "\033[0m"                      << out.nl();
-//           if (rw.tripped_inside != nullptr)
-//             out << "  Trace: "                                        << out.indent() << out.nl()
-//                 << *rw.tripped_inside                                 << out.dedent() << out.nl();
-//                 // << '}'                                                               << out.nl();
-//         }
-//       }
-//       if (rw.put_msgs.size() > 0) {
-//         out << "Put Statements: \"\"\""               << out.indent() << out.indent() << out.nl();
-//         for (auto msg : rw.put_msgs) {
-//           try {
-//             msg.first(out);
-//           } catch (std::exception& ex) {
-//             out << out.indent() << out.nl() << msg.second << " :: error occurred while evaluating put statement" 
-//                 << out.nl() << ex << out.dedent() << out.nl();
-//           }
-//         }
-//         out << out.dedent() << out.nl() << "\"\"\"" << out.dedent() << out.nl();
-//       }
-          
-// #     ifdef __ROMP__DO_MEASURE
-//         out << out.dedent()                                                         << out.nl()
-//             << "TIME REPORT:"                                       << out.indent() << out.nl()
-//             << "Active Time: " << rw.active_time                                    << out.nl();
-// #     endif
-//       out << out.dedent()                                                           << out.nl()
-//           << "======== END :: Report of BFS ERROR ========"                         << out.nl();
-//       out.out.flush();
-
-//       return out;
-//     }
-//     // called when trying to print the results of the BFS walker when it finishes (will finish up trace file if necessary too)
-//     //  the calling context should ensure that the BFSWalker is not being used else where & safe output to the ostream 
-//     friend std::ostream& operator << (std::ostream& out, const BFSWalker& rw) 
-//     { ostream_p _out(out,rw.OPTIONS,0); _out << rw; return out; }
-
-//     State_t state;
-//     friend RandWalker;
-//   };
-
-#define _ROMP_RULE_COUNT_ALIGNED (_ROMP_RULE_COUNT+(ROMP_RULE_COUNT%4ul))
 struct ProbEntry {
   uint32_t cond_count=0;
-  Rule& rule;
-  uint16_t event_count[_ROMP_RULE_COUNT_ALIGNED];
-  ProbEntry() { std::memset(event_count, 0u, sizeof(uint16_t)*_ROMP_RULE_COUNT_ALIGNED); }
+  const Rule& rule;
+  uint16_t event_count[_ROMP_RULE_COUNT];
+  ProbEntry() = delete;
+  ProbEntry(const Rule& rule_) 
+    : rule(rule_)
+  { 
+    std::memset(event_count, 0u, sizeof(uint16_t)*_ROMP_RULE_COUNT); 
+  }
   friend ostream_tsv& operator << (ostream_tsv& out, const ProbEntry& d) {
     out << d.rule.rID << '\t' 
         << '"' << d.rule << '"';
     for (size_t i=0ul; i<_ROMP_RULE_COUNT; ++i)
-        out << '\t' << d.event_count[i];  //TODO fix this so it is the probabilities that come out not the counts (look up prob equations)
+        out << '\t' << d.event_count[i] / d.cond_count;  
     out << '\n';
     out.out.flush();
     return out;
   }
 };
 
+#define _ROMP_RULE_COUNT_INC (_ROMP_RULE_COUNT+_ROMP_STARTSTATES_LEN)
 struct ProbTable {
   size_t ap_count=0;
-  ProbEntry events[_ROMP_RULE_COUNT_ALIGNED];
-  inline void increment_cond(Rule cond) {
-    events[cond.rID].cond_count++;
+  ProbEntry* events[_ROMP_RULE_COUNT_INC];
+  
+  ProbTable() {
+    size_t rs=0; size_t r=0;
+    for (size_t i=0; i<_ROMP_RULE_COUNT; ++i) {
+      if (r >= ::__caller__::RULESETS[rs].rules.size()) {
+        rs++; r=0;
+      }
+      this->events[i] = new ProbEntry(::__caller__::RULESETS[rs].rules[r]);
+    }
   }
-  inline void increment_event(Rule cond, Rule event) {
-    events[cond.rID].event_count[event.rID]++;
+
+  inline void increment_cond(const size_t cond) {
+    events[cond]->cond_count++;
+  }
+  inline void increment_event(const Rule& cond, const Rule& event) {
+    events[cond.rID]->event_count[event.rID]++;
   }
   friend ostream_tsv& operator << (ostream_tsv& out, const ProbTable& t) {
     out << "RULE\tID";
@@ -365,11 +75,23 @@ struct ProbTable {
     out << out.nl()
         << "ID\tLABEL";
     for (size_t i=0; i<_ROMP_RULE_COUNT; ++i)
-      out << '\t' << events[i].rule;
+      out << '\t' << t.events[i]->rule;
     out << out.nl();
     for (size_t i=0; i<_ROMP_RULE_COUNT; ++i)
-      out << events;  
+      out << *(t.events);  
     return out;
+  }
+};
+
+class ProbWalker : public BFSWalker {
+public:
+  ProbWalker(const Options& O_, size_t& val)
+    : BFSWalker(O_,val)
+  {}
+  const Rule* last_rule() const {
+    if (history_size() == 0)
+      return nullptr; // last rule was a startstate
+    return history[(history_level-1)%history_size()].rule;
   }
 };
 
@@ -378,21 +100,23 @@ struct ProbTable {
 struct ProbBFSHandler {
   std::ofstream _tsv_file;
 protected:
+  typedef std::bitset<_ROMP_RULE_COUNT> RBitset;
   const Options& OPTIONS;
-  std::deque<BFSWalker*> q;
+  std::deque<std::pair<ProbWalker*,RBitset*>> q;
   std::unordered_set<State_t> states;
   size_t rules_applied = 0ul;
-  const size_t TARGET;
+  const size_t LIMIT;
   time_ms_t start_time;
   ostream_p out;
   ostream_tsv tsv;
+  ProbTable prob_table;
 
 
 public:
 
   ProbBFSHandler(const Options& OPTIONS_) 
     : OPTIONS(OPTIONS_),
-      TARGET(OPTIONS_.walks / OPTIONS_.prob_bfs_coefficient),
+      LIMIT(OPTIONS_.prob_bfs_limit),
       out(std::cout,OPTIONS_,0),
       _tsv_file(OPTIONS_.prob_bfs_out_tsv_file),
       tsv(_tsv_file)
@@ -400,7 +124,10 @@ public:
 
   ~ProbBFSHandler() {
     _tsv_file.close();
-    for (BFSWalker* w : q) if (w != nullptr) delete w;
+    for (auto [w, s] : q) {
+      if (w != nullptr) delete w;
+      if (s != nullptr) delete s;
+    }
   }
 
   /**
@@ -414,14 +141,16 @@ public:
 
     // - run through the startstates and add them to the queue ---- 
     for (size_t i=0; i<_ROMP_STARTSTATES_LEN; ++i) {
-      auto walker = new BFSWalker(OPTIONS,i);
+      auto walker = new ProbWalker(OPTIONS,i);
+      auto r_e = new RBitset();
+      r_e->reset();
       walker->init_state();
       ++rules_applied;
       if (walker->is_done()) {  // discover error during 
         end_bfs_report_error(walker);
         return;
       } else if (insert_state(walker->state))
-        q.push_back(walker);
+        q.push_back(std::make_pair(walker, r_e));
     }
 
     if (OPTIONS.bfs_single) single_bfs();
@@ -440,16 +169,18 @@ protected:
       const bool enable_liveness = OPTIONS.liveness;
       bool liveness[_ROMP_LIVENESS_PROP_COUNT];
 #   endif
-    while (not q.empty() && q.size()<TARGET && rules_applied < OPTIONS.prob_bfs_limit) {
-      auto b_w = q.front();
+    while (not q.empty() && rules_applied<LIMIT && rules_applied < OPTIONS.prob_bfs_limit) {
+      auto[b_w, r_e] = q.front();
       q.pop_front();
 #     if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
         if (enable_liveness) std::memset(liveness,0u,sizeof(bool)*_ROMP_LIVENESS_PROP_COUNT);
 #     endif
-      for (size_t i=0; q.size()<TARGET && i<_ROMP_RULESETS_LEN; ++i)
+      size_t rID = 0;
+      std::deque<ProbWalker*> qBuff;
+      for (size_t i=0; rules_applied<LIMIT && i<_ROMP_RULESETS_LEN; ++i)
         for (auto rule : ::__caller__::RULESETS[i].rules) {
-          BFSWalker* walker = (BFSWalker*) std::malloc(sizeof(BFSWalker));
-          std::memcpy(walker,b_w,sizeof(BFSWalker)); // copy base walker
+          ProbWalker* walker = (ProbWalker*) std::malloc(sizeof(ProbWalker));
+          std::memcpy(walker,b_w,sizeof(ProbWalker)); // copy base walker
           // walker->sim1step(rule);
           walker->sim1Step_no_trace(rule); 
           if (walker->is_done()) {
@@ -461,13 +192,21 @@ protected:
 #         endif
           if (walker->pass) {
             ++rules_applied; //TODO insert code for keeping probability tables up to date
-
-          }
+            prob_table.increment_cond(rID); // count this as a time when the rule ran
+            if (not (*r_e)[rID]) {    //the rule that made b_w made a change to allow this rule to run
+              const Rule* lastR = b_w->last_rule();
+              if (lastR != nullptr) // the rule that ran before was not a start state
+                prob_table.increment_event(*lastR, rule);
+            }
+            (*r_e)[rID] = true;
+          } else 
+            (*r_e)[rID] = false;
           if (insert_state(walker->state)) {
-              q.push_back(walker);
-            if (q.size() >= TARGET)
+              qBuff.push_back(walker);
+            if (q.size() >= LIMIT)
               break;
           } else delete walker;
+          rID++;
         }
 #     if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
         // end if liveness property violated
@@ -477,14 +216,22 @@ protected:
           return;
         }
 #     endif
-      delete b_w;
+      while (not qBuff.empty()) {
+        RBitset* _r_e = (RBitset*) std::malloc(sizeof(RBitset));
+        std::memcpy(_r_e, r_e, sizeof(RBitset));
+        q.push_back(std::make_pair(qBuff.front(),_r_e));
+        qBuff.pop_front();
+      }
+      delete b_w, r_e;
     }
 
     if (not q.empty()) {
       end_bfs();
-      this->launch_threads();
+      // this->launch_threads();
     } else
       end_bfs_solved();
+    tsv << prob_table << tsv.nl();
+    _tsv_file.close();
   }
 
 
@@ -493,8 +240,10 @@ protected:
    *        NOTE: must be called after processing start states
    */
   void multithreaded_bfs() {
-    std::mutex mut_in, mut_out;
-    BFSWalker* bad = nullptr;
+    std::cerr << "\nNYI : multithreaded probability table generation is not yet implemented\n" << std::flush;
+    exit(EXIT_FAILURE);
+    /* std::mutex mut_in, mut_out;
+    ProbWalker* bad = nullptr;
     std::vector<std::thread> threads;
     size_t cycle = 0ul;
 
@@ -506,14 +255,14 @@ protected:
       const size_t update_coef = 1<<4;
 #   endif
 
-    std::function<void(BFSWalker*)> end_bfs_with_error_mt = [&] (BFSWalker* w) -> void {
+    std::function<void(ProbWalker*)> end_bfs_with_error_mt = [&] (ProbWalker* w) -> void {
       mut_out.lock();
       bad = w;
       mut_out.unlock();
     };
 
     std::function<void()> lambda_bfs = [&]() -> void {
-      std::vector<BFSWalker*> buffer;
+      std::vector<ProbWalker*> buffer;
       const size_t bfs_limit = OPTIONS.prob_bfs_limit;
 #     if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
         const bool enable_liveness = OPTIONS.liveness;
@@ -521,7 +270,7 @@ protected:
 #     endif
       mut_in.lock();
       mut_out.lock();
-      while (not q.empty() && q.size()<TARGET && rules_applied < bfs_limit && bad == nullptr) {
+      while (not q.empty() && q.size()<LIMIT && rules_applied < bfs_limit && bad == nullptr) {
         mut_out.unlock();
         auto b_w = q.front();
         q.pop_front();
@@ -529,10 +278,10 @@ protected:
 #       if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
           if (enable_liveness) std::memset(liveness,0u,sizeof(bool)*_ROMP_LIVENESS_PROP_COUNT);
 #       endif
-        for (size_t i=0; /*q.size()<TARGET &&*/ i<_ROMP_RULESETS_LEN; ++i)
+        for (size_t i=0; i<_ROMP_RULESETS_LEN; ++i)
           for (auto rule : ::__caller__::RULESETS[i].rules) {
-            BFSWalker* walker = (BFSWalker*) std::malloc(sizeof(BFSWalker));
-            std::memcpy(walker,b_w,sizeof(BFSWalker)); // copy base walker
+            ProbWalker* walker = (ProbWalker*) std::malloc(sizeof(ProbWalker));
+            std::memcpy(walker,b_w,sizeof(ProbWalker)); // copy base walker
             // walker->sim1step(rule);
             walker->sim1Step_no_trace(rule);
             if (walker->is_done()) {
@@ -545,7 +294,7 @@ protected:
             buffer.push_back(walker);
             // if (insert_state(walker->state)) {
             //   // ++rules_applied;
-            //   // if (q.size() >= TARGET) break;
+            //   // if (q.size() >= LIMIT) break;
             // }
           }
 #       if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
@@ -560,7 +309,7 @@ protected:
         if (bad != nullptr) return; // end early if another thread found an error
         mut_out.unlock();
         mut_in.lock();
-        for (BFSWalker* w : buffer) {
+        for (ProbWalker* w : buffer) {
           if (w->pass) ++rules_applied; //TODO insert code for keeping probability tables up to date
           if (insert_state(w->state)) {
             q.push_back(w);
@@ -588,7 +337,7 @@ protected:
 
     mut_in.lock();
     mut_out.lock();
-    while (not q.empty() && q.size()<TARGET && rules_applied < OPTIONS.prob_bfs_limit && bad == nullptr) {
+    while (not q.empty() && q.size()<LIMIT && rules_applied < OPTIONS.prob_bfs_limit && bad == nullptr) {
       mut_out.unlock();
       mut_in.unlock();
       
@@ -617,123 +366,123 @@ protected:
              "\033[0m\n\n";
       out.out.flush();
       end_bfs();
-      this->launch_threads();
+      // this->launch_threads(); // not needed for prob search
     } else
       end_bfs_solved();
-    /* Ideas
-        - short term store new states in vector per threads then lock to add new states in bulk 
+    // Ideas
+    //     - short term store new states in vector per threads then lock to add new states in bulk 
     */
   }
 
-  /**
-   * @brief Launch threads with a collection of states to start with
-   */
-  void launch_threads() {
-    states.clear(); // clear states to free up memory
-    // RandWalker::reset_ids();
-    auto tmp_seeds = gen_random_seeds(OPTIONS,OPTIONS.rand_seed);
-    std::vector<BFSWalker*> l(q.begin(),q.end()); // transfer contents for speed later
-    std::queue<RandSeed_t> in_seeds(std::deque<RandSeed_t>(tmp_seeds.begin(),tmp_seeds.end()));
-    // std::queue<RandWalkers*> parallel_rws; // probs threads
-    std::queue<RandWalker*> out_rws;
-    size_t walks_done = 0;
-    std::mutex in_queue;
-    std::mutex out_queue;
-    size_t progress = 0ul;
-    // std::mutex _in_queue_mutex;
-    // std::mutex _out_queue_mutex;
+  // /**
+  //  * @brief Launch threads with a collection of states to start with
+  //  */
+//   void launch_threads() {
+//     states.clear(); // clear states to free up memory
+//     // RandWalker::reset_ids();
+//     auto tmp_seeds = gen_random_seeds(OPTIONS,OPTIONS.rand_seed);
+//     std::vector<ProbWalker*> l(q.begin(),q.end()); // transfer contents for speed later
+//     std::queue<RandSeed_t> in_seeds(std::deque<RandSeed_t>(tmp_seeds.begin(),tmp_seeds.end()));
+//     // std::queue<RandWalkers*> parallel_rws; // probs threads
+//     std::queue<RandWalker*> out_rws;
+//     size_t walks_done = 0;
+//     std::mutex in_queue;
+//     std::mutex out_queue;
+//     size_t progress = 0ul;
+//     // std::mutex _in_queue_mutex;
+//     // std::mutex _out_queue_mutex;
 
-#   ifdef DEBUG
-      const auto pause_delay = std::chrono::milliseconds(250); //DEBUG SLOW ME DOWN
-      const size_t update_coef = 1<<6;
-#   else
-      const auto pause_delay = std::chrono::milliseconds(20);
-      const size_t update_coef = 1<<8;
-#   endif
+// #   ifdef DEBUG
+//       const auto pause_delay = std::chrono::milliseconds(250); //DEBUG SLOW ME DOWN
+//       const size_t update_coef = 1<<6;
+// #   else
+//       const auto pause_delay = std::chrono::milliseconds(20);
+//       const size_t update_coef = 1<<8;
+// #   endif
 
-    auto lambda = [&]() { // code the threads run
-      in_queue.lock();
-      while (in_seeds.size() > 0) { 
-        RandWalker *rw = new RandWalker(*l[in_seeds.size()%OPTIONS.prob_bfs_coefficient%l.size()],
-                                        in_seeds.front(),OPTIONS);
-        in_seeds.pop(); 
-        in_queue.unlock();
+//     auto lambda = [&]() { // code the threads run
+//       in_queue.lock();
+//       while (in_seeds.size() > 0) { 
+//         RandWalker *rw = new RandWalker(*l[in_seeds.size()%OPTIONS.prob_bfs_coefficient%l.size()],
+//                                         in_seeds.front(),OPTIONS);
+//         in_seeds.pop(); 
+//         in_queue.unlock();
 
-        // rw->init(); // no need to init when starting from bfs
-        while (not rw->is_done())
-          rw->sim1Step();
-        rw->finalize();
+//         // rw->init(); // no need to init when starting from bfs
+//         while (not rw->is_done())
+//           rw->sim1Step();
+//         rw->finalize();
 
-        out_queue.lock();
-        out_rws.push(rw);
-        ++walks_done;
-        out_queue.unlock();
+//         out_queue.lock();
+//         out_rws.push(rw);
+//         ++walks_done;
+//         out_queue.unlock();
 
-        in_queue.lock();
-      }
-      in_queue.unlock();
-    };
+//         in_queue.lock();
+//       }
+//       in_queue.unlock();
+//     };
 
-    ostream_p out(std::cout,OPTIONS,0);
-    std::vector<std::thread> threads;
-    ResultTree summary(OPTIONS);
-    // std::vector<std::thread> threads(OPTIONS.threads);
-    for (size_t i=0; i<OPTIONS.threads; ++i) {
-      threads.push_back(std::thread(lambda));
-    }
-    // std::lock_guard<std::mutex> in_queue(_in_queue_mutex);
-    // std::lock_guard<std::mutex> out_queue(_out_queue_mutex);
+//     ostream_p out(std::cout,OPTIONS,0);
+//     std::vector<std::thread> threads;
+//     ResultTree summary(OPTIONS);
+//     // std::vector<std::thread> threads(OPTIONS.threads);
+//     for (size_t i=0; i<OPTIONS.threads; ++i) {
+//       threads.push_back(std::thread(lambda));
+//     }
+//     // std::lock_guard<std::mutex> in_queue(_in_queue_mutex);
+//     // std::lock_guard<std::mutex> out_queue(_out_queue_mutex);
 
-    out << "\n\033[34;1m"
-          "==================================\n"
-          "   PARALLEL RANDOM WALK STATUS:   \n"
-          "==================================\n"
-          "\033[0m\n\n";
-    out.out.flush();
+//     out << "\n\033[34;1m"
+//           "==================================\n"
+//           "   PARALLEL RANDOM WALK STATUS:   \n"
+//           "==================================\n"
+//           "\033[0m\n\n";
+//     out.out.flush();
     
-    std::this_thread::sleep_for(pause_delay*2);
-    while (true) {
-      while (true) {  // handel outputs
-        std::this_thread::sleep_for(pause_delay);
-        out_queue.lock();
-        if (not (out_rws.size() > 0)) {
-          out_queue.unlock();
-          break;
-        }
-        RandWalker* rw = out_rws.front();
-        out_rws.pop();
-        out_queue.unlock();
-        if (rw != nullptr) {
-          ++progress;
-          if (rw->do_report())
-            std::cout << *rw << std::endl;
-          // todo get the results
-          summary.insert(rw->get_result());
-          delete rw;
-        }
-      }
+//     std::this_thread::sleep_for(pause_delay*2);
+//     while (true) {
+//       while (true) {  // handel outputs
+//         std::this_thread::sleep_for(pause_delay);
+//         out_queue.lock();
+//         if (not (out_rws.size() > 0)) {
+//           out_queue.unlock();
+//           break;
+//         }
+//         RandWalker* rw = out_rws.front();
+//         out_rws.pop();
+//         out_queue.unlock();
+//         if (rw != nullptr) {
+//           ++progress;
+//           if (rw->do_report())
+//             std::cout << *rw << std::endl;
+//           // todo get the results
+//           summary.insert(rw->get_result());
+//           delete rw;
+//         }
+//       }
       
-      std::this_thread::sleep_for(pause_delay); 
-      out_queue.lock();
-      if (not (walks_done < OPTIONS.walks)) {
-        out_queue.unlock();
-        break;
-      }
-      out_queue.unlock();
-    }
-    // we might need to do this one more time for the last one
+//       std::this_thread::sleep_for(pause_delay); 
+//       out_queue.lock();
+//       if (not (walks_done < OPTIONS.walks)) {
+//         out_queue.unlock();
+//         break;
+//       }
+//       out_queue.unlock();
+//     }
+//     // we might need to do this one more time for the last one
 
-    summary.stop_timer();
+//     summary.stop_timer();
 
-    for (size_t i=0; i<OPTIONS.threads; ++i) // join threads
-      threads[i].join();
+//     for (size_t i=0; i<OPTIONS.threads; ++i) // join threads
+//       threads[i].join();
 
-    print_romp_results_summary(summary);
-    out.indent();
-    out << out.nl() << "Actual Runtime: " << (time_ms()-start_time) << "\n\n";
-    out.dedent();
-    out.out.flush();
-  }
+//     print_romp_results_summary(summary);
+//     out.indent();
+//     out << out.nl() << "Actual Runtime: " << (time_ms()-start_time) << "\n\n";
+//     out.dedent();
+//     out.out.flush();
+//   }
 
 
   /**
@@ -758,7 +507,7 @@ protected:
    *        NOTE: will delete walker
    * @param walker the walker that finished its run (will be deleted during call)
    */
-  inline void end_bfs_report_error(BFSWalker* walker) {
+  inline void end_bfs_report_error(ProbWalker* walker) {
     auto t = time_ms() - start_time;
     walker->finalize();
     std::string color = "\033[30;1;4m";
