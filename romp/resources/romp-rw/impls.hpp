@@ -755,6 +755,7 @@ void Options::parse_args(int argc, char **argv) {
         }
       }
       std::cout << "\n\n!! running romp in probability generating mode, this can take a long time to run !!\n\n" << std::flush;
+      depth = prob_bfs_limit;
       if (i<argc)
         std::cerr << "ignored arguments : all other arguments are ignored when using the `--prob` argument/mode!\n" << std::flush;
       return;

@@ -708,13 +708,13 @@
             "justMyCode": true
         },
         {
-            "name": "(gdb) Launch german prob test",
+            "name": "(gdb) Launch flip prob test",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/tests/german.ro2",
-            "args": ["--prob", "1024"],
+            "program": "${workspaceFolder}/tests/flip.ro2",
+            "args": ["--prob", "1024", "./flip.rP.tsv"],
             "stopAtEntry": false,
-            "cwd": "${fileDirname}",
+            "cwd": "${workspaceFolder}/tests",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",

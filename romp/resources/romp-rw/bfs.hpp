@@ -77,12 +77,20 @@ namespace romp {
         _start_id(start_id_)
     {
       state.__rw__ = this;
+      // std::memset(history, 0u, sizeof(RandWalker::History)*history_size());
     }
 
     ~BFSWalker() {
-      if (tripped != nullptr) delete tripped;
-      if (tripped_inside != nullptr) delete tripped_inside;
+      // if (tripped != nullptr) delete tripped;
+      // if (tripped_inside != nullptr) delete tripped_inside;
     }
+
+  static BFSWalker* copy(const BFSWalker* b_w) {
+    BFSWalker* walker = (BFSWalker*) std::malloc(sizeof(BFSWalker));
+    std::memcpy(walker,b_w,sizeof(BFSWalker));
+    walker->state.__rw__ = walker;
+    return walker;
+  }
 
   void init_state() noexcept {    
     const StartState& startstate = ::__caller__::STARTSTATES[_start_id];
@@ -269,7 +277,7 @@ namespace romp {
       std::string res_color = get_color(rw.status);
       out << out.nl()
           << "======== BEGIN :: Report of BFS ERROR ========"                         << out.nl()
-          << "BASIC INFO: "                                                           << out.indent() << out.nl()
+          << " BASIC INFO: "                                                          << out.indent() << out.nl()
           << "      Depth: " << rw._depth                                             << out.nl()
           << "   Start ID: " << rw._start_id                                          << out.nl()
           << " StartState: " << ::__caller__::STARTSTATES[rw._start_id]               << out.nl()
@@ -402,8 +410,7 @@ protected:
 #     endif
       for (size_t i=0; q.size()<TARGET && i<_ROMP_RULESETS_LEN; ++i)
         for (auto rule : ::__caller__::RULESETS[i].rules) {
-          BFSWalker* walker = (BFSWalker*) std::malloc(sizeof(BFSWalker));
-          std::memcpy(walker,b_w,sizeof(BFSWalker)); // copy base walker
+          BFSWalker* walker = BFSWalker::copy(b_w); // copy base walker
           // walker->sim1step(rule);
           walker->sim1Step_no_trace(rule);
           if (walker->is_done()) {
@@ -482,8 +489,7 @@ protected:
 #       endif
         for (size_t i=0; /*q.size()<TARGET &&*/ i<_ROMP_RULESETS_LEN; ++i)
           for (auto rule : ::__caller__::RULESETS[i].rules) {
-            BFSWalker* walker = (BFSWalker*) std::malloc(sizeof(BFSWalker));
-            std::memcpy(walker,b_w,sizeof(BFSWalker)); // copy base walker
+            BFSWalker* walker = BFSWalker::copy(b_w);
             // walker->sim1step(rule);
             walker->sim1Step_no_trace(rule);
             if (walker->is_done()) {

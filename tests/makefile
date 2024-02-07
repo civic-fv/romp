@@ -24,8 +24,8 @@ ROMP := ../build/romp/romp
 CMURPHI := ../../cmurphi/src/mu
 RUMUR := ../../rumur/build/rumur/rumur
 
-CFLAGS := -std=c11 -O3 -g -pthread -march=native
-CXXFLAGS := -O3 -pthread
+CFLAGS := -std=c11 -O3 -pthread -march=native
+CXXFLAGS := -O3 -pthread -g
 ROMP_FLAGS := -m
 CMURPHI_FLAGS := 
 # $(info CMURPHI_FLAGS = $(CMURPHI_FLAGS))

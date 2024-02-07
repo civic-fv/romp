@@ -1,0 +1,19 @@
+RULE	ID	0	1	2	3	4	5	6	7	8	9	10	11	12	13	14	15
+ID	LABEL	'rule "do_a_flip_"  Quantifiers(i:=0; j:=0) @(flip.m:22,5-38,12)'	'rule "do_a_flip_"  Quantifiers(i:=0; j:=1) @(flip.m:22,5-38,12)'	'rule "do_a_flip_"  Quantifiers(i:=0; j:=2) @(flip.m:22,5-38,12)'	'rule "do_a_flip_"  Quantifiers(i:=0; j:=3) @(flip.m:22,5-38,12)'	'rule "do_a_flip_"  Quantifiers(i:=1; j:=0) @(flip.m:22,5-38,12)'	'rule "do_a_flip_"  Quantifiers(i:=1; j:=1) @(flip.m:22,5-38,12)'	'rule "do_a_flip_"  Quantifiers(i:=1; j:=2) @(flip.m:22,5-38,12)'	'rule "do_a_flip_"  Quantifiers(i:=1; j:=3) @(flip.m:22,5-38,12)'	'rule "do_a_flip_"  Quantifiers(i:=2; j:=0) @(flip.m:22,5-38,12)'	'rule "do_a_flip_"  Quantifiers(i:=2; j:=1) @(flip.m:22,5-38,12)'	'rule "do_a_flip_"  Quantifiers(i:=2; j:=2) @(flip.m:22,5-38,12)'	'rule "do_a_flip_"  Quantifiers(i:=2; j:=3) @(flip.m:22,5-38,12)'	'rule "do_a_flip_"  Quantifiers(i:=3; j:=0) @(flip.m:22,5-38,12)'	'rule "do_a_flip_"  Quantifiers(i:=3; j:=1) @(flip.m:22,5-38,12)'	'rule "do_a_flip_"  Quantifiers(i:=3; j:=2) @(flip.m:22,5-38,12)'	'rule "do_a_flip_"  Quantifiers(i:=3; j:=3) @(flip.m:22,5-38,12)'
+0	'rule "do_a_flip_"  Quantifiers(i:=0; j:=0) @(flip.m:22,5-38,12)'	0.1375	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+1	'rule "do_a_flip_"  Quantifiers(i:=`0; j:=1) @(flip.m:22,5-38,12)'	0	0.142857143	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+2	'rule "do_a_flip_"  Quantifiers(i:=0; j:=2) @(flip.m:22,5-38,12)'	0	0	0.0859375	0	0	0	0	0	0	0	0	0	0	0	0	0
+3	'rule "do_a_flip_"  Quantifiers(i:=0; j:=3) @(flip.m:22,5-38,12)'	0	0	0	0.16	0	0	0	0	0	0	0	0	0	0	0	0
+4	'rule "do_a_flip_"  Quantifiers(i:=1; j:=0) @(flip.m:22,5-38,12)'	0	0	0	0	0.224299065	0	0	0	0	0	0	0	0	0	0	0
+5	'rule "do_a_flip_"  Quantifiers(i:=1; j:=1) @(flip.m:22,5-38,12)'	0	0	0	0	0	0.204081633	0	0	0	0	0	0	0	0	0	0
+6	'rule "do_a_flip_"  Quantifiers(i:=1; j:=2) @(flip.m:22,5-38,12)'	0	0	0	0	0	0	0.21875	0	0	0	0	0	0	0	0	0
+7	'rule "do_a_flip_"  Quantifiers(i:=1; j:=3) @(flip.m:22,5-38,12)'	0	0	0	0	0	0	0	0.201492537	0	0	0	0	0	0	0	0
+8	'rule "do_a_flip_"  Quantifiers(i:=2; j:=0) @(flip.m:22,5-38,12)'	0	0	0	0	0	0	0	0	0.316239316	0	0	0	0	0	0	0
+9	'rule "do_a_flip_"  Quantifiers(i:=2; j:=1) @(flip.m:22,5-38,12)'	0	0	0	0	0	0	0	0	0	0.259259259	0	0	0	0	0	0
+10	'rule "do_a_flip_"  Quantifiers(i:=2; j:=2) @(flip.m:22,5-38,12)'	0	0	0	0	0	0	0	0	0	0	0.377777778	0	0	0	0	0
+11	'rule "do_a_flip_"  Quantifiers(i:=2; j:=3) @(flip.m:22,5-38,12)'	0	0	0	0	0	0	0	0	0	0	0	0.177142857	0	0	0	0
+12	'rule "do_a_flip_"  Quantifiers(i:=3; j:=0) @(flip.m:22,5-38,12)'	0	0	0	0	0	0	0	0	0	0	0	0	0.557142857	0	0	0
+13	'rule "do_a_flip_"  Quantifiers(i:=3; j:=1) @(flip.m:22,5-38,12)'	0	0	0	0	0	0	0	0	0	0	0	0	0	0.523076923	0	0
+14	'rule "do_a_flip_"  Quantifiers(i:=3; j:=2) @(flip.m:22,5-38,12)'	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0.186440678	0
+15	'rule "do_a_flip_"  Quantifiers(i:=3; j:=3) @(flip.m:22,5-38,12)'	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0.699115044
+

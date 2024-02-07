@@ -36,15 +36,14 @@ struct ProbEntry {
   { 
     std::memset(event_count, 0u, sizeof(uint16_t)*_ROMP_RULE_COUNT); 
   }
-  friend ostream_tsv& operator << (ostream_tsv& out, const ProbEntry& d) {
-    out << d.rule.rID << '\t' 
-        << '"' << d.rule << '"';
-    for (size_t i=0ul; i<_ROMP_RULE_COUNT; ++i)
-        out << '\t' << d.event_count[i] / d.cond_count;  
-    out << '\n';
-    out.out.flush();
-    return out;
-  }
+  // friend ostream_tsv& operator << (ostream_tsv& out, const ProbEntry& d) {
+  //   out << d.rule.rID << '\t' 
+  //       << '"' << d.rule << '"';
+  //   for (size_t i=0ul; i<_ROMP_RULE_COUNT; ++i)
+  //       out << '\t' << d.event_count[i] / d.cond_count;  
+  //   out << out.nl();
+  //   return out;
+  // }
 };
 
 #define _ROMP_RULE_COUNT_INC (_ROMP_RULE_COUNT+_ROMP_STARTSTATES_LEN)
@@ -59,6 +58,7 @@ struct ProbTable {
         rs++; r=0;
       }
       this->events[i] = new ProbEntry(::__caller__::RULESETS[rs].rules[r]);
+      r++;
     }
   }
 
@@ -68,6 +68,9 @@ struct ProbTable {
   inline void increment_event(const Rule& cond, const Rule& event) {
     events[cond.rID]->event_count[event.rID]++;
   }
+protected:
+  const ProbEntry& getE(size_t i) const { return *(events[i]); }
+public:
   friend ostream_tsv& operator << (ostream_tsv& out, const ProbTable& t) {
     out << "RULE\tID";
     for (size_t i=0; i<_ROMP_RULE_COUNT; ++i)
@@ -75,10 +78,23 @@ struct ProbTable {
     out << out.nl()
         << "ID\tLABEL";
     for (size_t i=0; i<_ROMP_RULE_COUNT; ++i)
-      out << '\t' << t.events[i]->rule;
+      out << '\t' << '\'' << t.events[i]->rule << '\'';
     out << out.nl();
-    for (size_t i=0; i<_ROMP_RULE_COUNT; ++i)
-      out << *(t.events);  
+    for (size_t i=0; i<_ROMP_RULE_COUNT; ++i) {
+      // out << t.getE(i);
+      const auto& d = t.getE(i);
+      out << d.rule.rID << '\t' 
+          << '\'' << d.rule << '\'';
+      for (size_t i=0ul; i<_ROMP_RULE_COUNT; ++i) {
+        out << '\t';
+        if (d.cond_count > 0) {
+          double tmp = (double)(((double)d.event_count[i]) / ((double)d.cond_count));
+          out.out << std::setprecision(9) << tmp;
+        } else 
+          out << "'n/a'";
+      }
+      out << out.nl();
+    }
     return out;
   }
 };
@@ -89,10 +105,11 @@ public:
     : BFSWalker(O_,val)
   {}
   const Rule* last_rule() const {
-    if (history_size() == 0)
+    if (history_level <= 1)
       return nullptr; // last rule was a startstate
-    return history[(history_level-1)%history_size()].rule;
+    return history[(history_level-2)%history_size()].rule;
   }
+  static ProbWalker* copy(const ProbWalker* b_w) { return (ProbWalker*)BFSWalker::copy(b_w); }
 };
 
 
@@ -118,12 +135,12 @@ public:
     : OPTIONS(OPTIONS_),
       LIMIT(OPTIONS_.prob_bfs_limit),
       out(std::cout,OPTIONS_,0),
-      _tsv_file(OPTIONS_.prob_bfs_out_tsv_file),
+      _tsv_file(OPTIONS_.prob_bfs_out_tsv_file/* ,std::ios_base::openmode::_S_out */),
       tsv(_tsv_file)
   {}
 
   ~ProbBFSHandler() {
-    _tsv_file.close();
+    // _tsv_file.close();
     for (auto [w, s] : q) {
       if (w != nullptr) delete w;
       if (s != nullptr) delete s;
@@ -179,34 +196,37 @@ protected:
       std::deque<ProbWalker*> qBuff;
       for (size_t i=0; rules_applied<LIMIT && i<_ROMP_RULESETS_LEN; ++i)
         for (auto rule : ::__caller__::RULESETS[i].rules) {
-          ProbWalker* walker = (ProbWalker*) std::malloc(sizeof(ProbWalker));
-          std::memcpy(walker,b_w,sizeof(ProbWalker)); // copy base walker
-          // walker->sim1step(rule);
-          walker->sim1Step_no_trace(rule); 
-          if (walker->is_done()) {
-            end_bfs_report_error(walker);
-            return;
-          }
+          
+          ProbWalker* walker = ProbWalker::copy(b_w); // copy base walker
+          walker->sim1Step_no_trace(rule);
+          bool continue_state = not walker->is_done();
+
 #         if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
-            if (enable_liveness) walker->merge_liveness(liveness);
+            if (continue_state && enable_liveness) walker->merge_liveness(liveness);
 #         endif
+
           if (walker->pass) {
-            ++rules_applied; //TODO insert code for keeping probability tables up to date
-            prob_table.increment_cond(rID); // count this as a time when the rule ran
-            if (not (*r_e)[rID]) {    //the rule that made b_w made a change to allow this rule to run
+            ++rules_applied;
+            if (continue_state) // only count if this state should run again
+              prob_table.increment_cond(rule.rID); // count this as a time when the rule ran
+            if (not r_e->test(rule.rID)) {    //the rule that made b_w made a change to allow this rule to run
               const Rule* lastR = b_w->last_rule();
-              if (lastR != nullptr) // the rule that ran before was not a start state
+              if (lastR != nullptr) { // the rule that ran before was not a start state
                 prob_table.increment_event(*lastR, rule);
+                if (lastR->rID != rule.rID)
+                  std::cerr << '`' << *lastR << "` enabled `" << rule << "`\n" << std::flush;
+              }
             }
-            (*r_e)[rID] = true;
+            r_e->set(rule.rID, true);
           } else 
-            (*r_e)[rID] = false;
-          if (insert_state(walker->state)) {
+            r_e->set(rule.rID, false);
+
+          if (continue_state && insert_state(walker->state)) {
               qBuff.push_back(walker);
             if (q.size() >= LIMIT)
               break;
-          } else delete walker;
-          rID++;
+          } else 
+            delete walker;
         }
 #     if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
         // end if liveness property violated
@@ -225,12 +245,12 @@ protected:
       delete b_w, r_e;
     }
 
-    if (not q.empty()) {
-      end_bfs();
-      // this->launch_threads();
-    } else
-      end_bfs_solved();
-    tsv << prob_table << tsv.nl();
+    // if (not q.empty()) {
+    //   end_bfs();
+    //   // this->launch_threads();
+    // } else
+    //   end_bfs_solved();
+    tsv << prob_table << tsv.nl(); 
     _tsv_file.close();
   }
 
@@ -512,7 +532,7 @@ protected:
     walker->finalize();
     std::string color = "\033[30;1;4m";
     out << '\n' << out.nl() 
-        << "Error found during initial BFS"
+        << "Error found during probability BFS"
         << out.nl() << *walker << '\n'
         << out.nl() << "\033[1;4mBFS SUMMARY:\033[0m" << out.indent()
         << out.nl() << "Error found see above for details"
@@ -520,7 +540,7 @@ protected:
         << out.nl() << "   Rules Applied: " << rules_applied
         << out.nl() << "  Actual Runtime: " << t
         << "\n\n";
-    delete walker;
+    // delete walker;
     out.out << std::flush;
   }
   
