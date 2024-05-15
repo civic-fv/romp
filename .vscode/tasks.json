@@ -167,6 +167,7 @@
                 "-fdiagnostics-color=always",
                 "-g",
                 "-pthread",
+                "-D_ROMP_RULE_SELECTION_ALGO=2",
                 "${file}.test.cpp",
                 "-o",
                 "${file}.test"
@@ -296,12 +297,13 @@
         },
         {
             "type": "cppbuild",
-            "label": "C/C++: g++ build active C++ file",
+            "label": "C/C++: g++ build active C++ file [algo:2]",
             "command": "/usr/bin/g++",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
                 "-pthread",
+                "-D_ROMP_RULE_SELECTION_ALGO=2",
                 "${file}",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"

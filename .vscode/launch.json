@@ -491,7 +491,7 @@
                 "1234567890",
                 "-a",
                 "-d",
-                "256",
+                "4096",
                 "-ll",
                 "64",
                 "-y"
@@ -513,7 +513,7 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "C/C++: g++ build active C++ file",
+            "preLaunchTask": "C/C++: g++ build active C++ file [algo:2]",
             "miDebuggerPath": "/bin/gdb"
         },
         {

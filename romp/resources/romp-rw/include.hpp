@@ -44,6 +44,7 @@
 #include <ctime>
 #include <bitset>
 #include <random>
+#include <cassert>
 // #include <sys/time.h>  // from mimicing cmurphi random
 
 #ifndef __romp__GENERATED_CODE

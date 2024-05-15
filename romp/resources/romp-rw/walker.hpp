@@ -46,15 +46,15 @@ using time_mr_t = std::chrono::time_point<std::chrono::high_resolution_clock,std
  */
 template<typename T>
 T rand_choice(RandSeed_t &seed, T min, T max) {
-    // long g;    // from mimicing cmurphi random
-    // g = 16807 * (seed % 127773) - 2836 * (seed / 127773);
-    // seed = (g > 0) ? g : g + 2147483647;
-    // T choice =  seed % (max-min) + min;
-    // return choice;
-    // not done fully
-    seed = (((seed ^ (seed >> 3)) >> 12) & 0xffff) | ((seed & 0x7fff) << 16); // modifies the seed
-    T choice = seed % (max-min) + min;  // generates the random number
+    long g;    // from mimicing cmurphi random
+    g = 16807 * (seed % 127773) - 2836 * (seed / 127773);
+    seed = (g > 0) ? g : g + 2147483647;
+    T choice = (seed % (max-min)) + min;
     return choice;
+    // not done fully
+    // seed = (((seed ^ (seed >> 3)) >> 12) & 0xffff) | ((seed & 0x7fff) << 16); // modifies the seed
+    // T choice = seed % (max-min) + min;  // generates the random number
+    // return choice;
 }
 
 // constexpr size_t MAX_RULESET_SIZE() {
@@ -77,20 +77,20 @@ typedef _ROMP_ChoiceBag_t ChoiceBag_t;
 
 template<size_t N>
 size_t choose_from_bag(std::bitset<N>& bag, RandSeed_t& seed, size_t M=N, size_t attempt_limit=N) {
-  size_t choice = ~(0ul);
-  choice = rand_choice(seed,0ul,bag.count());
-  size_t i = 0; size_t r = 0;
-  while (true) {
-    if (bag[i] && r == choice) {
-      bag.set(i, false);
-      return (unsigned) i;
-    } else if (bag[i]) {
-      i++;
-      r++;
-    } else {
-      i++;
+  // ??POSSIBLY BAD CHOICE SELECTION ALGO?? It might imposes a preference for elements with lower index values 
+  const size_t AVAILABLE_RULES = bag.count();
+  assert(AVAILABLE_RULES > 0ul && "bag has something to choose");
+  const size_t choice = rand_choice<size_t>(seed,0ul,AVAILABLE_RULES);
+  size_t r = 0ul;
+  for (size_t i=0ul; i<N; ++i)
+    if (bag[i]) {  //if rule with ID i is available to choose form 
+      if (r == choice) { //and it's the r^th rule available in the bag that matches our random choice
+        bag[i] = false; //mark rule with ID i as unavailable
+        return (unsigned) i; // return the rule ID
+      }
+      r++; // increment count of available rules found
     }
-  }
+  //!!BAD CHOICE SELECTION ALGO!! It can spin for a long time and still result in no good return value
   // size_t choice = ~(0ul);
   // do {
   //   choice = rand_choice(seed,0ul,M);
@@ -416,7 +416,7 @@ private:
     rule_bag.set();
   }
 
-#elif (_ROMP_RULE_SELECTION_ALGO == (3ul)) // random everything without replacement
+#elif (_ROMP_RULE_SELECTION_ALGO == (3ul)) // random everything without replacement (symmetry reduction heuristic)
   // keeps track of what rule to call next for our heuristic symmetry reduction
   id_t next_rule[_ROMP_RULESETS_LEN];
   const Rule& choose_rule() {
@@ -431,7 +431,7 @@ private:
   inline void _progress() {/* do nothing more */}
 
 #else // [DEFAULT] random rule -> random ruleset w/out replacement
-const RuleSet* _RS = nullptr;
+  const RuleSet* _RS = nullptr;
   std::bitset<_ROMP_RULESETS_LEN> ruleset_bag;
   _ROMP_ChoiceBag_t rule_bag;
   const Rule& choose_rule() {
