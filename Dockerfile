@@ -30,7 +30,7 @@ RUN python3 -m pip install multiset
 RUN useradd -ms $(which zsh) romp
 
 # ========================================== Build Romp ========================================== #
-RUN mkdir -p /home/romp/romp
+RUN mkdir -p /home/romp/romp ; chown romp:romp /home/romp/romp
 COPY --chown=romp:romp --chmod=r-xr-xr-x ./romp /home/romp/romp/romp
 COPY --chown=romp:romp --chmod=r-xr-xr-x ./libmurphi /home/romp/romp/libmurphi
 COPY --chown=romp:romp --chmod=r-xr-xr-x ./misc /home/romp/romp/misc
