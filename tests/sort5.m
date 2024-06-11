@@ -99,3 +99,5 @@ End;
 
 Invariant
 	Exists i : 0..N-2 Do a[i] > a[i+1] End;
+	-- Exists i : 0..N-2 Do a[i] < a[i+1] End; --changed for debugging
+	

@@ -819,7 +819,7 @@ void Options::parse_args(int argc, char **argv) {
       }
     } else if ("-s" == std::string(argv[i]) || "--seed" == std::string(argv[i])) {
       if (i + 1 < argc && '-' != argv[i + 1][0]) {
-        seed_str = argv[i + 1];
+        seed_str = argv[i];
         try {
           rand_seed = std::stoul(argv[i + 1], nullptr, 0);
         } catch (std::invalid_argument &ia) {
@@ -830,6 +830,7 @@ void Options::parse_args(int argc, char **argv) {
                     << std::flush;
           exit(EXIT_FAILURE);
         }
+        i++;
       } else { // rand_seed = std::time(NULL); // no need
         std::cerr << "invalid argument : -s/--seed requires you to provide a seed after the flag\n"
                      "                   else exclude it to use default value: (current_system_time)\n"

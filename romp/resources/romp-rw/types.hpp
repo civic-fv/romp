@@ -292,7 +292,9 @@ namespace romp {
     friend inline range_t operator ^ (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() ^ r.__get_value(); }
 
     template<range_t RLB, range_t RUB, range_t RST>
-    friend inline bool operator < (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return r.get() < r.__get_value(); }
+    friend inline bool operator < (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() < r.__get_value(); }
+    // friend inline bool operator < (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return r.get() < r.__get_value(); }
+    //                           here was our issue comparing it to itself instead of the other (l) ^ 
     template<range_t RLB, range_t RUB, range_t RST>
     friend inline bool operator <= (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() <= r.__get_value(); }
     template<range_t RLB, range_t RUB, range_t RST>

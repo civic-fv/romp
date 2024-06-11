@@ -412,12 +412,17 @@ protected:
 #         if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
             if (enable_liveness) walker->merge_liveness(liveness);
 #         endif
-          if (walker->pass) ++rules_applied;
-          if (insert_state(walker->state)) {
-              q.push_back(walker);
-            if (q.size() >= TARGET)
-              break;
-          } else delete walker;
+          if (walker->pass) { // guard passed
+            ++rules_applied;
+            if (insert_state(walker->state)) { // state is novel (yet unseen)
+                q.push_back(walker);
+              if (q.size() >= TARGET)
+                break;
+            } else delete walker;
+          } else { 
+            delete walker; 
+            continue; 
+          }
         }
 #     if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
         // end if liveness property violated
