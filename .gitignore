@@ -48,6 +48,13 @@ CMakeFiles/**
 *.ru.c
 *.ru
 *.cm
+*.ro
+*.ro0
+*.ro1
+*.ro2
+*.ro3
+*.ro4
+*.ro5
 tests/*.cpp
 tests/*.out
 tests/**/*.cpp

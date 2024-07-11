@@ -840,7 +840,7 @@ public:
 RandSeed_t gen_random_seed(RandSeed_t &root_seed) {
   // RandSeed_t value = ((unsigned long) (rand_choice(root_seed, 1u, UINT32_MAX)) * 2654435769ul) >> 1; // from mimicing cmurphi random
   // return value;
-  return rand_choice(root_seed, 1u, UINT64_MAX);
+  return rand_choice(root_seed, 1ul, UINT64_MAX);
 }
 
 /**

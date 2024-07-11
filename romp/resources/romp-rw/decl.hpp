@@ -114,7 +114,7 @@ namespace romp {
                                   // return value;
                                   std::random_device rd;
                                   std::mt19937 mt(rd());
-                                  std::uniform_real_distribution<double> dist(0,UINT32_MAX);
+                                  std::uniform_real_distribution<double> dist(0,UINT32_MAX); //TODO examine this for issues in randomness
                                   return dist(mt);
                                 })();
 
