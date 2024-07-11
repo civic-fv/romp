@@ -97,7 +97,7 @@ def main(n):
     walk_count = 0
 
     for json_file in json_files:
-        walk_Count += 1
+        walk_count += 1
         rule_sequence, rule_hits, rule_misses, hits, misses, n_rules = _do_process(json_file)
         all_rule_sequences.append(rule_sequence)
 
