@@ -130,7 +130,7 @@
         "editor.tabSize": 2,
         "editor.useTabStops": true,
         // "editor.detectIndentation": false,
-        "editor.wordBasedSuggestions": true,
+        "editor.wordBasedSuggestions": "matchingDocuments",
         "editor.suggest.insertMode": "replace",
         "editor.semanticHighlighting.enabled": true
     },
@@ -140,7 +140,7 @@
         "editor.tabSize": 2,
         "editor.useTabStops": true,
         // "editor.detectIndentation": false,
-        "editor.wordBasedSuggestions": true,
+        "editor.wordBasedSuggestions": "matchingDocuments",
         "editor.suggest.insertMode": "replace",
         "editor.semanticHighlighting.enabled": true
     },
