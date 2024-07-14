@@ -138,7 +138,7 @@ add_custom_target(man-romp
   DEPENDS romp.1.gz)
 add_custom_command(
   OUTPUT romp.1.gz
-  COMMAND gzip -9 --no-name --to-stdout doc/romp.1 >"${CMAKE_CURRENT_BINARY_DIR}/romp.1.gz"
+  COMMAND gzip -9 --no-name --to-stdout doc/romp.1 >${CMAKE_CURRENT_BINARY_DIR}/romp.1.gz
   MAIN_DEPENDENCY doc/romp.1
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
