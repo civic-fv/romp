@@ -51,9 +51,9 @@ namespace __model__ { struct __romp__Model__; } // helpful pre-definition
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file romp-rw/include.hpp
- * 
+ *
  * @brief the includes needed for the generated model checker
- * 
+ *
  * @date 2022/10/05
  * @version 0.2
  */
@@ -105,9 +105,9 @@ using nullptr_t=std::nullptr_t;
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file decl.hpp
- * 
+ *
  * @brief the General Declarations for the romp random walker generated model checker
- * 
+ *
  * @date 2022/10/05
  * @version 0.2
  */
@@ -120,7 +120,7 @@ using nullptr_t=std::nullptr_t;
 #ifndef __romp__GENERATED_CODE  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
 #pragma once  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
 #include "pregen-fix.hpp"  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
-#include "include.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
+#include "include.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
 #endif  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
 
 
@@ -137,7 +137,7 @@ using nullptr_t=std::nullptr_t;
 #define VALUE_C(v) ((romp::range_t)(v))
 #define SCALAR_C(v) ((romp::scalar_t)(v))
 
-// << =================================== Useful Pre-decls ===================================== >> 
+// << =================================== Useful Pre-decls ===================================== >>
 namespace romp {
   struct TypeInfo; struct RuleInfo; struct PropertyInfo; struct StartStateInfo; struct MErrorInfo; struct FunctInfo;
   struct RuleSet; struct StartState; struct Property;
@@ -161,15 +161,15 @@ namespace __info__ {
   extern const std::string RECORD_FIELD_LABELS[];
   // extern const ::romp::TypeInfo TYPE_INFOS[];
   extern const ::romp::RuleInfo RULE_SET_INFOS[];
-  extern const ::romp::PropertyInfo PROPERTY_INFOS[]; 
-  extern const ::romp::StartStateInfo STARTSTATE_INFOS[]; 
-  extern const ::romp::MErrorInfo ERROR_INFOS[]; 
-  extern const ::romp::FunctInfo FUNCT_INFOS[]; 
+  extern const ::romp::PropertyInfo PROPERTY_INFOS[];
+  extern const ::romp::StartStateInfo STARTSTATE_INFOS[];
+  extern const ::romp::MErrorInfo ERROR_INFOS[];
+  extern const ::romp::FunctInfo FUNCT_INFOS[];
 } // namespace __info__
 
-// << ========================================================================================== >> 
-// <<                                           DECL                                             >> 
-// << ========================================================================================== >> 
+// << ========================================================================================== >>
+// <<                                           DECL                                             >>
+// << ========================================================================================== >>
 
 namespace romp {
 
@@ -197,7 +197,7 @@ namespace romp {
   const auto INIT_TIME = *std::localtime(&ROMP_ID);
   const auto INIT_TIME_STAMP = std::put_time(&INIT_TIME, "%F_%T");
 
-  
+
   typedef _ROMP_STATE_TYPE State_t;
   typedef unsigned int RandSeed_t;
 
@@ -255,7 +255,7 @@ namespace romp {
     const std::string quant_str;
     IModelError* make_error() const;
   };
-  
+
 
   struct RuleInfo {
     std::string label;
@@ -277,9 +277,9 @@ namespace romp {
     const RuleInfo& info;
     std::vector<Rule> rules;
     IModelError* make_error() const;
-  }; 
+  };
 
-  
+
   struct StartStateInfo {
     const std::string label;
     const location loc;
@@ -311,10 +311,10 @@ namespace romp {
     const std::string json;
     const std::string signature;
   };
-  
+
 
   /**
-   * @brief Abstract parent of The Random Walker that the model will hold a reference to 
+   * @brief Abstract parent of The Random Walker that the model will hold a reference to
    *        in order to bea ble to call it for various handlers
    */
   struct IRandWalker {
@@ -396,7 +396,7 @@ namespace romp {
     id_t root_seed; // the root seed of the RW
     id_t start_id; // id of start state
     Cause cause;  // the kind of cause that stoped the Rand Walker
-    size_t depth; // depth reached 
+    size_t depth; // depth reached
     const IModelError* tripped;  // what was tripped (promised not nested)
     const IModelError* inside;  // where it was tripped (could be nested w/ root cause)
 #ifdef __ROMP__DO_MEASURE
@@ -405,9 +405,9 @@ namespace romp {
     duration_mr_t active_time;
     duration_ms_t total_time;
 #endif
-    // Result(Result& old) 
+    // Result(Result& old)
     //   : id(old.id), root_seed(old.root_seed), start_id(old.start_id),
-    //     cause(old.cause), depth(old.depth), 
+    //     cause(old.cause), depth(old.depth),
     //     tripped(old.tripped), inside(old.inside)
     // { old.tripped = nullptr; old.inside = nullptr; }
     ~Result(); // { if (tripped != nullptr) delete tripped; if (inside != nullptr) delete inside; }
@@ -418,7 +418,7 @@ namespace romp {
 namespace std {
   template<>
   struct hash<romp::location> {
-    size_t operator () (const romp::location& loc) const { 
+    size_t operator () (const romp::location& loc) const {
       return (loc.start.row + loc.start.col + loc.end.row + loc.end.col) % UINT64_MAX;
     }
   };
@@ -449,10 +449,10 @@ namespace std {
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file romp-rw/writers.hpp
- * 
- * @brief The definitions for the writer objects 
+ *
+ * @brief The definitions for the writer objects
  *        used for outputting to trace files and the console.
- * 
+ *
  * @date 2022/10/05
  * @version 0.2
  */
@@ -466,7 +466,7 @@ namespace std {
 
 namespace romp {
 
-  // << =========================== Helpful String Manipulation Utils ============================ >> 
+  // << =========================== Helpful String Manipulation Utils ============================ >>
 
   static std::string octal(char c) {
     char buffer[sizeof("\\000")];
@@ -492,15 +492,15 @@ namespace romp {
     return out;
   }
 
-// << ========================================================================================== >> 
-// <<                                    WRITER DECLARATIONS                                     >> 
-// << ========================================================================================== >> 
+// << ========================================================================================== >>
+// <<                                    WRITER DECLARATIONS                                     >>
+// << ========================================================================================== >>
 
  // useful pre-decls
   template<class O> void __jprint_exception(ojstream<O>& json, const std::exception& ex) noexcept;
   template<class O> void __jprint_exception(ojstream<O>& json, const IModelError& ex) noexcept;
 
-// << ====================================== Json Writer ======================================= >> 
+// << ====================================== Json Writer ======================================= >>
 
   template <class O>
   struct ojstream {
@@ -510,9 +510,9 @@ namespace romp {
     // int ex_level = 0;
   public:
     ~ojstream() { out << std::flush; out.close(); } // probs move this to random walker
-    template<typename... Args> ojstream(Args &&...args) 
+    template<typename... Args> ojstream(Args &&...args)
       : out(O(std::forward<Args>(args)...)) {}
-    // template<typename T> 
+    // template<typename T>
     // friend ojstream<O>& operator << (ojstream<O>& json, const T& val);
     template <typename T>
     ojstream<O>& operator << (const T* ptr) { if (ptr != nullptr) *this << *ptr; else out << "null"; return *this; }
@@ -532,16 +532,16 @@ namespace romp {
     ojstream<O>& operator << (const bool val) { out << ((val) ? "true" : "false"); return *this; }
     ojstream<O>& operator << (const stream_void& me) noexcept { return *this; };
     ojstream<O>& operator << (const IModelError& me) noexcept;
-    ojstream<O>& operator << (const std::exception& ex) noexcept { 
+    ojstream<O>& operator << (const std::exception& ex) noexcept {
       // if (ex_level++ == 0) out << "],\"error-trace\":["
       out << "{\"$type\":\"exception\","
               "\"what\":\"" << escape_str(ex.what()) << "\"}";
       __jprint_exception(*this,ex);
       // if (--ex_level == 0) out << "],";
-      return *this; 
+      return *this;
     }
-    std::string str() { 
-      if (std::is_base_of<std::stringstream, O>::value) return out.str(); 
+    std::string str() {
+      if (std::is_base_of<std::stringstream, O>::value) return out.str();
       else return "Not Allowed for non stringstream base (json_str_t) !!\t[dev-error]";
     }
   };
@@ -552,7 +552,7 @@ namespace romp {
   typedef ojstream<std::stringstream> json_str_t;
 
 
-// << ================================= Pretty Format Writer =================================== >> 
+// << ================================= Pretty Format Writer =================================== >>
 
   class ostream_p {
   public:
@@ -592,30 +592,30 @@ namespace romp {
     // ostream_p& operator << (const stream_void& me) noexcept { return *this; };
   };
   template <typename T>
-  ostream_p& operator << (ostream_p& out, const T& val) { out.out << val; return out; }  
+  ostream_p& operator << (ostream_p& out, const T& val) { out.out << val; return out; }
   // template <>
-  // inline ostream_p& operator << <std::_Setw>(ostream_p& out, const std::_Setw val) { _width = val._M_n; return *this; } 
+  // inline ostream_p& operator << <std::_Setw>(ostream_p& out, const std::_Setw val) { _width = val._M_n; return *this; }
   template <>
   ostream_p& operator << <stream_void>(ostream_p& out, const stream_void& val) { return out; }
   template <>
   ostream_p& operator << <bool>(ostream_p& out, const bool& val) { (out.out << ((val) ? "YES" : "NO")); return out; }
   // template <typename T>
-  // inline ostream_p& ostream_p::operator << (const T val) { out << val; return *this; }  
+  // inline ostream_p& ostream_p::operator << (const T val) { out << val; return *this; }
   // // template <>
-  // // inline ostream_p& ostream_p::operator << <std::_Setw>(const std::_Setw val) { out._width = val._M_n; return out; } 
+  // // inline ostream_p& ostream_p::operator << <std::_Setw>(const std::_Setw val) { out._width = val._M_n; return out; }
   // template <>
   // inline ostream_p& ostream_p::operator << <stream_void>(const stream_void val) { return *this; }
   // template <>
   // inline ostream_p& ostream_p::operator << <bool>(const bool val) { return (*this << ((val) ? "YES" : "NO")); }
-  
 
 
-// << ========================================================================================== >> 
-// <<                          WRITER STREAM OPERATOR IMPLEMENTATIONS                            >> 
-// << ========================================================================================== >> 
+
+// << ========================================================================================== >>
+// <<                          WRITER STREAM OPERATOR IMPLEMENTATIONS                            >>
+// << ========================================================================================== >>
 
 
-// << =================================== Fancy Time Writer ==================================== >> 
+// << =================================== Fancy Time Writer ==================================== >>
 
   template<typename ratio1, typename ratio2>
   struct CompareStdRatios {
@@ -624,7 +624,7 @@ namespace romp {
     static constexpr long double dif() { return (ratio1::num/ratio1::den) - (ratio2::num/ratio2::den); };
   };
 
-  template<typename T, class R> 
+  template<typename T, class R>
   const std::string _pre0(const std::chrono::duration<T,R> dur) { return ((dur.count()<10) ? "0" : ""); }
   template<typename T, class R>
   ostream_p& operator << (ostream_p& out, const std::chrono::duration<T,R> _dur) noexcept {
@@ -662,7 +662,7 @@ namespace romp {
       if (msu > _s || dur >= seconds(10)) {
         s = duration_cast<seconds>(dur);
         dur -= s; msu = ((msu > _s) ? msu : _s);
-      } 
+      }
       if (msu > _ms || dur >= microseconds(1)) {
         ms = duration_cast<milliseconds>(dur);
       } else msu = __ms;  // case: measured essentially 0 time ms
@@ -678,14 +678,14 @@ namespace romp {
           msu = _ns;
         } else                            // case: "smallest"/"too small to care about"/femto time "format"
           msu = _fs;
-      // } else                              // case: "not needed "   
+      // } else                              // case: "not needed "
       //   msu = __ms;
       }
     }
-    
+
     switch (msu) {
       case _d:
-        return (out << d.count() << "d " 
+        return (out << d.count() << "d "
                     << _pre0(h) << h.count() << ':'
                     << _pre0(m) << m.count() << ':'
                     << _pre0(s) << s.count() << '.'
@@ -727,11 +727,11 @@ namespace romp {
     return out;
   }
 
-// << =================================== Metadata Writers ===================================== >> 
+// << =================================== Metadata Writers ===================================== >>
 
-  // std::ostream& operator << (std::ostream& out, const TypeType& val) { 
-  //   switch (val) { 
-  //     case TypeType::BOOLEAN: return out << "Boolean"; 
+  // std::ostream& operator << (std::ostream& out, const TypeType& val) {
+  //   switch (val) {
+  //     case TypeType::BOOLEAN: return out << "Boolean";
   //     case TypeType::RANGE: return out << "Range";
   //     case TypeType::ENUM: return out << "Enum";
   //     case TypeType::SCALARSET: return out << "Scalarset";
@@ -745,23 +745,23 @@ namespace romp {
 
 
   template<class O>
-  ojstream<O>& operator << (ojstream<O>& json, const file_position& fp) { 
-    return (json << '[' << fp.row << ',' << fp.col << ']'); 
+  ojstream<O>& operator << (ojstream<O>& json, const file_position& fp) {
+    return (json << '[' << fp.row << ',' << fp.col << ']');
   }
-  std::ostream& operator << (std::ostream& out, const file_position& fp) { 
-    return (out << fp.row << ',' << fp.col); 
+  std::ostream& operator << (std::ostream& out, const file_position& fp) {
+    return (out << fp.row << ',' << fp.col);
   }
 
   template<class O>
-  ojstream<O>& operator << (ojstream<O>& json, const location& loc) { 
+  ojstream<O>& operator << (ojstream<O>& json, const location& loc) {
     return (json << "{\"$type\":\"location\","
             << "\"file\":\"" __model__filename "\","
             // << (loc.model_obj != "") ? "\"inside\":\""+loc.model_obj+"\"," : EMPTY_STR
-            << "start" << ':' << loc.start << ',' 
+            << "start" << ':' << loc.start << ','
             << "\"end\":" << loc.end
-            << '}'); 
+            << '}');
   }
-  std::ostream& operator << (std::ostream& out, const location& loc) { 
+  std::ostream& operator << (std::ostream& out, const location& loc) {
     out << ((__model__filename_contains_space) ? "\"" __model__filename "\":" : __model__filename ":");
     if (loc.start.row == loc.end.row) {
       out << loc.start.row << ',' << loc.start.col;
@@ -771,13 +771,13 @@ namespace romp {
       out << loc.start << '-' << loc.end;
     // if (loc.model_obj != "")
     //   out << " in ``" << loc.model_obj << "``";
-    return out; 
+    return out;
   }
 
 
-  std::ostream& operator << (std::ostream& out, const PropertyType& val) { 
-    switch (val) { 
-      case PropertyType::ASSERTION: return out << "assert"; 
+  std::ostream& operator << (std::ostream& out, const PropertyType& val) {
+    switch (val) {
+      case PropertyType::ASSERTION: return out << "assert";
       case PropertyType::ASSUMPTION: return out << "assume";
       case PropertyType::COVER: return out << "cover";
       case PropertyType::LIVENESS: return out << "liveness";
@@ -786,18 +786,18 @@ namespace romp {
   }
   template<class O> ojstream<O>& operator << (ojstream<O>& json, const PropertyType& val) { json.out << val; return json; }
 
-  std::ostream& operator << (std::ostream& out, const PropertyInfo& pi) noexcept { 
-    return (out << pi.type << " \"" << pi.label << "\" " /* << pi.expr */ << " @(" << pi.loc << ")"); 
+  std::ostream& operator << (std::ostream& out, const PropertyInfo& pi) noexcept {
+    return (out << pi.type << " \"" << pi.label << "\" " /* << pi.expr */ << " @(" << pi.loc << ")");
   }
   template<class O> ojstream<O>& operator << (ojstream<O>& json, const PropertyInfo& pi) noexcept {
     return (json << pi.json_h << '}');
   }
 
-  std::ostream& operator << (std::ostream& out, const Property& p) noexcept { 
+  std::ostream& operator << (std::ostream& out, const Property& p) noexcept {
     out << p.info.type << " \"" << p.info.label << "\" ";
     if (p.quant_str.size() > 0)
       out << " Quantifiers(" << p.quant_str << ") ";
-    return (out << "@(" << p.info.loc << ')'); 
+    return (out << "@(" << p.info.loc << ')');
   }
   template<class O> ojstream<O>& operator << (ojstream<O>& json, const Property& p) noexcept {
     return (json << p.info.json_h << ",\"quantifiers\":" << p.quant_json << '}');
@@ -806,7 +806,7 @@ namespace romp {
 
   template<class O> ojstream<O>& operator << (ojstream<O>& json, const RuleInfo& ri) noexcept {
 #ifdef __ROMP__SIMPLE_TRACE
-    json.out << "\"rule \\\""<< ri.label << "\\\"" 
+    json.out << "\"rule \\\""<< ri.label << "\\\""
                 // " @(" << ri.loc << ")\"";
              << '"';
 #else
@@ -814,8 +814,8 @@ namespace romp {
 #endif
     return json;
   }
-  std::ostream& operator << (std::ostream& out, const RuleInfo& ri) noexcept { 
-    return (out << "rule \""<< ri.label << "\" @(" << ri.loc << ")"); 
+  std::ostream& operator << (std::ostream& out, const RuleInfo& ri) noexcept {
+    return (out << "rule \""<< ri.label << "\" @(" << ri.loc << ")");
   }
 
   template<class O> ojstream<O>& operator << (ojstream<O>& json, const Rule& r) noexcept {
@@ -830,31 +830,31 @@ namespace romp {
 #endif
     return json;
   }
-  std::ostream& operator << (std::ostream& out, const Rule& r) noexcept { 
+  std::ostream& operator << (std::ostream& out, const Rule& r) noexcept {
     out << "rule \"" << r.info.label << "\" ";
     if (r.quant_str.size() > 0)
       out << " Quantifiers(" << r.quant_str << ") ";
     return (out << "@(" << r.info.loc << ')');
   }
 
-  template<class O> ojstream<O>& operator << (ojstream<O>& json, const RuleSet& rs) noexcept { 
-    return (json << rs.info); 
+  template<class O> ojstream<O>& operator << (ojstream<O>& json, const RuleSet& rs) noexcept {
+    return (json << rs.info);
   }
-  std::ostream& operator << (std::ostream& out, const RuleSet& rs) noexcept { 
+  std::ostream& operator << (std::ostream& out, const RuleSet& rs) noexcept {
     return (out << rs.info);
   }
 
 
-  
+
   template<class O> ojstream<O>& operator << (ojstream<O>& json, const StartStateInfo& si) noexcept {
     return (json << si.json_h << '}');
   }
-  std::ostream& operator << (std::ostream& out, const StartStateInfo& si) noexcept { 
-    return (out << "startstate \""<< si.label << "\" @(" << si.loc << ")"); 
+  std::ostream& operator << (std::ostream& out, const StartStateInfo& si) noexcept {
+    return (out << "startstate \""<< si.label << "\" @(" << si.loc << ")");
   }
 
   template<class O> ojstream<O>& operator << (ojstream<O>& json, const StartState& s) noexcept {
-    json << s.info.json_h 
+    json << s.info.json_h
          << ",\"id\":" << s.id
          << ",\"quantifiers\":" << s.quant_json << '}';
     return json;
@@ -862,25 +862,25 @@ namespace romp {
   std::ostream& operator << (std::ostream& out, const StartState& s) noexcept {
     out << "startstate \"" << s.info.label << "\" ";
     if (s.quant_str.size() > 0)
-      out << "-- id: " << s.id 
+      out << "-- id: " << s.id
           << " -- Quantifiers(" << s.quant_str << ") ";
     return (out << "@(" << s.info.loc << ')');
   }
 
 
-  template<class O> ojstream<O>& operator << (ojstream<O>& json, const MErrorInfo& ei) noexcept { 
-    return (json << ei.json); 
+  template<class O> ojstream<O>& operator << (ojstream<O>& json, const MErrorInfo& ei) noexcept {
+    return (json << ei.json);
   }
-  std::ostream& operator << (std::ostream& out, const MErrorInfo& ei) noexcept { 
-    return (out << "error \""<< ei.label << "\" @(" << ei.loc << ")"); 
+  std::ostream& operator << (std::ostream& out, const MErrorInfo& ei) noexcept {
+    return (out << "error \""<< ei.label << "\" @(" << ei.loc << ")");
   }
 
 
-  template<class O> ojstream<O>& operator << (ojstream<O>& json, const FunctInfo& fi) noexcept { 
-    return (json << fi.json); 
+  template<class O> ojstream<O>& operator << (ojstream<O>& json, const FunctInfo& fi) noexcept {
+    return (json << fi.json);
   }
-  std::ostream& operator << (std::ostream& out, const FunctInfo& fi) noexcept { 
-    return (out << fi.signature << " @(" << fi.loc << ")"); 
+  std::ostream& operator << (std::ostream& out, const FunctInfo& fi) noexcept {
+    return (out << fi.signature << " @(" << fi.loc << ")");
   }
 
 
@@ -944,7 +944,7 @@ namespace std {
 #pragma region scalar_enums__generated_code
 namespace __model__ {
 
-  enum __romp__SCALAR_ENUM_t__ { 
+  enum __romp__SCALAR_ENUM_t__ {
     _UNDEFINED_ = 0,
     /* procT: scalarset(Nprocs) */
       _romp_procT_6_1,
@@ -1014,7 +1014,7 @@ namespace romp {
     unsigned int get_default_thread_count() {
       switch (__SYSTEM_THREAD_COUNT) {
       case 0: return 0;
-      case 1: 
+      case 1:
       case 2:
         return 1;
       default:
@@ -1027,10 +1027,10 @@ namespace romp {
 struct Options {
   // size_t history_length = 4;
   bool do_trace = false;
-  unsigned int threads =  get_default_thread_count(); 
-  size_t depth = 1024ul; // INT16_MAX;      
-  unsigned int walks = threads*_ROMP_THREAD_TO_RW_RATIO; 
-  unsigned int rand_seed = ROMP_ID; 
+  unsigned int threads =  get_default_thread_count();
+  size_t depth = 1024ul; // INT16_MAX;
+  unsigned int walks = threads*_ROMP_THREAD_TO_RW_RATIO;
+  unsigned int rand_seed = ROMP_ID;
   std::string seed_str = std::to_string(ROMP_ID);
   bool do_single = false;
   bool do_even_start = false;
@@ -1045,7 +1045,7 @@ struct Options {
 #endif
 #ifdef __romp__ENABLE_cover_property
   bool complete_on_cover = false;
-  id_t cover_count = INT16_MAX; 
+  id_t cover_count = INT16_MAX;
 #endif
   bool r_cover = false;
 // #ifdef __romp__ENABLE_assume_property
@@ -1072,7 +1072,7 @@ struct Options {
     if (not do_single)
       return get_trace_dir() + "/" + std::to_string(rw_id) + ".trace.json";
     std::stringstream buf; buf << INIT_TIME_STAMP;
-    return trace_dir + "/" + __model__filename + "_" + buf.str() + ".trace.json"; 
+    return trace_dir + "/" + __model__filename + "_" + buf.str() + ".trace.json";
   }
   bool report_any() const {
     return (report_all || do_single || report_error || r_assume || r_cover);
@@ -1103,10 +1103,10 @@ struct Options {
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file error.hpp
- * 
- * @brief The definitions for the Error handling system used to interact with 
+ *
+ * @brief The definitions for the Error handling system used to interact with
  *        the generated model.
- * 
+ *
  * @date 2022/10/05
  * @version 0.2
  */
@@ -1114,17 +1114,17 @@ struct Options {
 #ifndef __romp__GENERATED_CODE
 #pragma once
 #include "pregen-fix.hpp"  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
-#include "include.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-#include "decl.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-#include "writers.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
+#include "include.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+#include "decl.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+#include "writers.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
 #endif
 
 namespace romp {
 
 
-// << ========================================================================================== >> 
-// <<                                ABSTRACT ERROR PARENT DECL                                  >> 
-// << ========================================================================================== >> 
+// << ========================================================================================== >>
+// <<                                ABSTRACT ERROR PARENT DECL                                  >>
+// << ========================================================================================== >>
 
 const std::exception_ptr __get_root_except(const std::exception_ptr& ex) {
   try { std::rethrow_if_nested(ex);
@@ -1139,7 +1139,7 @@ const std::exception_ptr __get_root_except(const std::exception_ptr& ex) {
 }
 
 struct IModelError : public std::nested_exception {
-  IModelError() 
+  IModelError()
     : std::nested_exception() {}
   virtual ~IModelError() = default;
   const char* what() const noexcept {
@@ -1156,33 +1156,33 @@ struct IModelError : public std::nested_exception {
   virtual bool is_generic() const noexcept = 0;
   virtual std::string get_type() const noexcept = 0;
   bool is_flat() const { return (quants() == ""); }
-  const std::exception_ptr get_root_except() const { 
-    if (this->nested_ptr() == nullptr) 
+  const std::exception_ptr get_root_except() const {
+    if (this->nested_ptr() == nullptr)
       try { throw this;
       } catch (...) { return std::current_exception(); }
-    return __get_root_except(this->nested_ptr()); 
+    return __get_root_except(this->nested_ptr());
   }
-  void write_root_excpt_what(std::ostream& out) const { 
+  void write_root_excpt_what(std::ostream& out) const {
     try { throw this->get_root_except();
-    } catch (const std::exception& ex) { out << ex.what(); } 
+    } catch (const std::exception& ex) { out << ex.what(); }
   }
   friend bool operator == (const IModelError& l, const IModelError& r) { return (l.hash() == r.hash()); }
 };
 
 template<class O>
-ojstream<O>& ojstream<O>::operator << (const IModelError& me) noexcept { 
+ojstream<O>& ojstream<O>::operator << (const IModelError& me) noexcept {
   me.to_json(*this);
   if (me.nested_ptr() != nullptr)
     __jprint_exception(*this,me);
-  return *this; 
+  return *this;
 }
 
-// << ========================================================================================== >> 
-// <<                              DERIVED MODEL ERROR CLASS DECLS                               >> 
-// << ========================================================================================== >> 
+// << ========================================================================================== >>
+// <<                              DERIVED MODEL ERROR CLASS DECLS                               >>
+// << ========================================================================================== >>
 
 
-// << ================================= Model Property Error =================================== >> 
+// << ================================= Model Property Error =================================== >>
 
 struct ModelPropertyError : public IModelError {
     ModelPropertyError(const Property& prop_) : isProp(true) { data.prop = &prop_; }
@@ -1197,7 +1197,7 @@ struct ModelPropertyError : public IModelError {
     union {const Property* prop; const PropertyInfo* info;} data;
     const bool isProp;
     template<class O>
-    void _to_json(ojstream<O>& json) const noexcept { 
+    void _to_json(ojstream<O>& json) const noexcept {
       json << "{\"$type\":\"model-error\","
                "\"type\":\"property\","
               //  "\"what\":\""<< escape_str(what()) << "\","
@@ -1210,7 +1210,7 @@ struct ModelPropertyError : public IModelError {
     const std::string& label() const noexcept { return ((isProp) ? data.prop->info.label : data.info->label); }
     const std::string& quants() const noexcept { return ((isProp) ? data.prop->quant_str : EMPTY_STR); }
     bool is_generic() const noexcept { return not isProp; }
-    std::string get_type() const noexcept { 
+    std::string get_type() const noexcept {
       std::stringstream tmp;
       tmp << info().type;
       return tmp.str();
@@ -1221,8 +1221,8 @@ struct ModelPropertyError : public IModelError {
   IModelError* Property::make_error() const { return new ModelPropertyError(*this); }
 
 
-  // << ================================== Model Rule Error(s) =================================== >> 
-  
+  // << ================================== Model Rule Error(s) =================================== >>
+
   struct ModelRuleError : public IModelError {
     enum Where {UNKNOWN,GUARD,ACTION};
     ModelRuleError(const Rule& rule_) : isRule(true), where(UNKNOWN) { data.rule = &rule_; }
@@ -1240,13 +1240,13 @@ struct ModelPropertyError : public IModelError {
     const bool isRule;
     const Where where;
     template<class O>
-    void _to_json(ojstream<O>& json) const noexcept { 
+    void _to_json(ojstream<O>& json) const noexcept {
       json << "{\"$type\":\"model-error\","
                "\"type\":\"rule" << ((where==UNKNOWN) ? "" : ((where==GUARD) ? "-guard" : "-action")) << "\","
               //  "\"what\":\""<< escape_str(what()) << "\","
                "\"inside\":";
       if (isRule) json << *data.rule; else json << *data.info;
-      json << '}'; 
+      json << '}';
     }
   public:
     size_t hash() const noexcept { return reinterpret_cast<size_t>(&(info())); }
@@ -1262,7 +1262,7 @@ struct ModelPropertyError : public IModelError {
 
 
 
-  // << =============================== Model StartState Error(s) ================================ >> 
+  // << =============================== Model StartState Error(s) ================================ >>
 
   struct ModelStartStateError : public IModelError {
     ModelStartStateError(const StartState& rule_) : isStartState(true) { data.rule = &rule_; }
@@ -1277,13 +1277,13 @@ struct ModelPropertyError : public IModelError {
     union {const StartState* rule; const StartStateInfo* info;} data;
     const bool isStartState;
     template<class O>
-    void _to_json(ojstream<O>& json) const noexcept { 
+    void _to_json(ojstream<O>& json) const noexcept {
       json << "{\"$type\":\"model-error\","
                "\"type\":\"startstate\","
               //  "\"what\":\""<< escape_str(what()) << "\","
                "\"inside\":";
       if (isStartState) json << *data.rule; else json << *data.info;
-      json << '}'; 
+      json << '}';
     }
   public:
     size_t hash() const noexcept { return reinterpret_cast<size_t>((isStartState) ? &(data.rule->info) : data.info); }
@@ -1297,7 +1297,7 @@ struct ModelPropertyError : public IModelError {
   IModelError* StartState::make_error() const { return new ModelStartStateError(*this); }
 
 
-  // << ================================= Model Error Error(s) =================================== >> 
+  // << ================================= Model Error Error(s) =================================== >>
 
   struct ModelMErrorError : public IModelError {
     ModelMErrorError(const MErrorInfo& info_) : _info(info_) {}
@@ -1310,11 +1310,11 @@ struct ModelPropertyError : public IModelError {
   private:
     const MErrorInfo& _info;
     template<class O>
-    void _to_json(ojstream<O>& json) const noexcept { 
+    void _to_json(ojstream<O>& json) const noexcept {
       json << "{\"$type\":\"model-error\","
                "\"type\":\"error-statement\","
               //  "\"what\":\"" << escape_str(what()) << "\","
-               "\"inside\":" << _info << '}'; 
+               "\"inside\":" << _info << '}';
     }
   public:
     size_t hash() const noexcept { return reinterpret_cast<size_t>(&_info); }
@@ -1325,7 +1325,7 @@ struct ModelPropertyError : public IModelError {
   };
 
 
-  // << ================================ Model Function Error(s) ================================= >> 
+  // << ================================ Model Function Error(s) ================================= >>
 
   struct ModelFunctError : public IModelError {
     ModelFunctError(const FunctInfo& info_) : _info(info_) {}
@@ -1338,7 +1338,7 @@ struct ModelPropertyError : public IModelError {
   private:
     const FunctInfo& _info;
     template<class O>
-    void _to_json(ojstream<O>& json) const noexcept { 
+    void _to_json(ojstream<O>& json) const noexcept {
       json << "{\"$type\":\"model-error\","
                "\"type\":\"function\","
               //  "\"what\":\"" << escape_str(what()) << "\","
@@ -1353,14 +1353,14 @@ struct ModelPropertyError : public IModelError {
   };
 
 
-  // << =================================== Model Type Errors ==================================== >> 
+  // << =================================== Model Type Errors ==================================== >>
 
   struct ModelTypeError : public IModelError {
-    std::string msg; 
+    std::string msg;
     location loc;
     ModelTypeError(const std::string& msg_, const location& loc_) : msg(msg_), loc(loc_) {}
     ~ModelTypeError() = default;
-    void what(std::ostream& out) const noexcept { 
+    void what(std::ostream& out) const noexcept {
       out << loc << " :: " << msg;
     }
     void to_json(json_file_t& json) const noexcept { _to_json(json); }
@@ -1372,7 +1372,7 @@ struct ModelPropertyError : public IModelError {
     virtual std::string get_type() const noexcept { return "type"; }
   private:
     template<class O>
-    void _to_json(ojstream<O>& json) const noexcept { 
+    void _to_json(ojstream<O>& json) const noexcept {
       json << "{\"$type\":\"model-type-error\","
                "\"location\":" << loc << ","
                "\"what\":\"" << escape_str(msg) << "\"}";
@@ -1380,11 +1380,11 @@ struct ModelPropertyError : public IModelError {
   };
 
 
-// << ========================================================================================== >> 
-// <<                              NESTED EXCEPTION/ERROR WRITERS                                >> 
-// << ========================================================================================== >> 
+// << ========================================================================================== >>
+// <<                              NESTED EXCEPTION/ERROR WRITERS                                >>
+// << ========================================================================================== >>
 
-  // << ========================== Json Nested Error/Exception Writers =========================== >> 
+  // << ========================== Json Nested Error/Exception Writers =========================== >>
 
   template<class O> void __jprint_exception(ojstream<O>& json, const std::exception& ex) noexcept {
     try {
@@ -1412,7 +1412,7 @@ struct ModelPropertyError : public IModelError {
   }
 
 
-  // << ====================== Pretty Print Nested Error/Exception Writers ======================= >> 
+  // << ====================== Pretty Print Nested Error/Exception Writers ======================= >>
 
   void __fprint_exception(ostream_p& out, const std::exception& ex) noexcept;
   void __fprint_exception(ostream_p& out, const IModelError& ex) noexcept;
@@ -1503,9 +1503,9 @@ namespace std {
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file romp-rw/types.hpp
- * 
+ *
  * @brief The Template Type decls used to represent Murphi Types.
- * 
+ *
  * @date 2022/10/05
  * @version 0.2
  */
@@ -1513,23 +1513,23 @@ namespace std {
 #ifndef __romp__GENERATED_CODE  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
 #pragma once                // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
 #include "pregen-fix.hpp"  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
-#include "include.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-#include "decl.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-#include "writers.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-namespace __model__ { // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-  enum SCALAR {_UNDEFINED_=0}; // useful pre-decl // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-} // namespace __model__  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-namespace __info__ { // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-  const std::string SCALAR_IDS[1] {"<UNDEFINED>"}; // useful pre-decl // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-} // namespace __model__  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-namespace romp { // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-  typedef ::__model__::SCALAR SCALAR_ENUM_t;  // typemask for the enum type holding all scalar and enum values // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-} // namespace __model__  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
+#include "include.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+#include "decl.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+#include "writers.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+namespace __model__ { // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+  enum SCALAR {_UNDEFINED_=0}; // useful pre-decl // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+} // namespace __model__  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+namespace __info__ { // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+  const std::string SCALAR_IDS[1] {"<UNDEFINED>"}; // useful pre-decl // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+} // namespace __model__  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+namespace romp { // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+  typedef ::__model__::SCALAR SCALAR_ENUM_t;  // typemask for the enum type holding all scalar and enum values // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+} // namespace __model__  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
 #endif
 
 namespace romp {
 
-  // << ================================== Scalar Enum Helpers =================================== >> 
+  // << ================================== Scalar Enum Helpers =================================== >>
   template<typename T>
   inline SCALAR_ENUM_t make_SCALAR_ENUM_t(T val) { return static_cast<SCALAR_ENUM_t>(val); }
   inline std::string to_str(const SCALAR_ENUM_t& scalar) { return ::__info__::SCALAR_IDS[static_cast<size_t>(scalar)]; }
@@ -1546,7 +1546,7 @@ namespace romp {
   }
 
 
-  // << ====================================== Base Types ======================================== >> 
+  // << ====================================== Base Types ======================================== >>
 
   // template<typename T>
   // inline void Assignment(T& container, const T& value, const location& loc) {
@@ -1585,7 +1585,7 @@ namespace romp {
     bool is_defined;
   public: // NOTE: I was lazy and just made this section public instead of protected
     inline T get() const {
-      if (not is_defined) 
+      if (not is_defined)
         throw std::logic_error("value was undefined");
       return value;
     }
@@ -1609,30 +1609,30 @@ namespace romp {
 
     explicit inline operator T () { return value; }
 
-    // friend ostream_p& operator << (ostream_p& out, const BaseUndefinableType& val) { 
-    friend std::ostream& operator << (std::ostream& out, const BaseUndefinableType& val) { 
+    // friend ostream_p& operator << (ostream_p& out, const BaseUndefinableType& val) {
+    friend std::ostream& operator << (std::ostream& out, const BaseUndefinableType& val) {
       if (val.IsUndefined())
         return (out << SCALAR_ENUM_t::_UNDEFINED_);
-      return (out << val.get()); 
+      return (out << val.get());
     }
     static inline const std::string __json_type() { return "null"; }
     template<class O>
     friend ojstream<O>& operator << (ojstream<O>& json, const BaseUndefinableType& val) {
 #     ifdef __ROMP__SIMPLE_TRACE
-        if (val.IsUndefined()) return (json << "null"); 
+        if (val.IsUndefined()) return (json << "null");
         return (json << val.get());
 #     else
         json << "{\"$type\":\"undefinable-value\",\"type-id\":null,\"value\":";
         if (val.IsUndefined())
           return (json << "null}");
         return (json << val.get() << '}');
-#     endif 
+#     endif
     }
     friend class std::hash<BaseUndefinableType>;
   };
 
 
-  // << ===================================== Type ID Mask ======================================= >> 
+  // << ===================================== Type ID Mask ======================================= >>
 
   template<size_t TID, class T>
   class TypeIdType : public T {
@@ -1652,11 +1652,11 @@ namespace romp {
     }
     static inline constexpr const std::string __p_type() { return __id(); }
     template<template<size_t,class>class TId_t>
-    friend 
+    friend
     typename std::enable_if<std::is_base_of<TypeIdType<TID,T>,
                                             TId_t<TID,T>>::value,
-                            ostream_p>::type& operator << (ostream_p& out, TId_t<TID,T> val) { 
-      return (out << *((T*)&val)); 
+                            ostream_p>::type& operator << (ostream_p& out, TId_t<TID,T> val) {
+      return (out << *((T*)&val));
     }
   };
 
@@ -1675,8 +1675,8 @@ namespace romp {
     inline BooleanType operator = (bool val) { return ((BooleanType&)set(val)); }
 
     // static inline constexpr const TypeInfo& __INFO() { return ::__info__::TYPE_INFOS[0]; }
-    // static inline constexpr BooleanType __LB() { return false; } 
-    // static inline constexpr BooleanType __UB() { return true; } 
+    // static inline constexpr BooleanType __LB() { return false; }
+    // static inline constexpr BooleanType __UB() { return true; }
     // BooleanType& __step() { set(true); return *this; }
     static inline constexpr size_t __COUNT() { return 2u; }
 
@@ -1724,7 +1724,7 @@ namespace romp {
       }
       throw std::out_of_range("value (`" +
                               std::to_string(value_) +
-                              "`) is out of range (`"+ 
+                              "`) is out of range (`"+
                               std::to_string(LB) +
                               ".."+
                               std::to_string(UB) +
@@ -1741,12 +1741,12 @@ namespace romp {
     inline range_t __unsafe_get() const { return unsafe_get(); }
     void Clear() { set(LB); }
     inline operator range_t () { return get(); }
-    inline RangeType& operator = (range_t other) { 
+    inline RangeType& operator = (range_t other) {
       _check(other);
       return ((RangeType&)set(other));
     }
     template<range_t N_LB, range_t N_UB, range_t N_STEP>
-    inline RangeType& operator = (const RangeType<N_LB,N_UB,N_STEP>& other) { 
+    inline RangeType& operator = (const RangeType<N_LB,N_UB,N_STEP>& other) {
       if (other.IsUndefined()) {
         Undefine();
         return *this;
@@ -1755,13 +1755,13 @@ namespace romp {
     }
     size_t __get_index_val() const { return static_cast<size_t>(get() - LB); }
     static constexpr RangeType __LB() { return RangeType(LB); }
-    static constexpr RangeType __UB() { RangeType tmp(UB); tmp.set(UB+STEP); return tmp; } 
+    static constexpr RangeType __UB() { RangeType tmp(UB); tmp.set(UB+STEP); return tmp; }
     static constexpr size_t __COUNT() { return (((UB-LB)+1)/STEP); }
     RangeType& __step() {
       // step needs to account for uneven ranges or modifying values in model between steps
       range_t val = get() + STEP;
       if (LB<=UB) { // compiler should optimize this top level if-else out
-        set((val <= UB) ? val : UB+STEP); 
+        set((val <= UB) ? val : UB+STEP);
       } else {
         set((val >= UB) ? val : UB+STEP);
       }
@@ -1799,7 +1799,7 @@ namespace romp {
     friend inline bool operator >= (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.unsafe_get() >= r.__get_value(); }
     template<range_t RLB, range_t RUB, range_t RST>
     friend inline bool operator > (const RangeType& l, const RangeType<RLB,RUB,RST>& r) { return l.get() > r.__get_value(); }
-    
+
     friend inline range_t operator + (const RangeType& l, const range_t& r) { return l.get() + r; }
     friend inline range_t operator - (const RangeType& l, const range_t& r) { return l.get() - r; }
     friend inline range_t operator * (const RangeType& l, const range_t& r) { return l.get() * r; }
@@ -1830,15 +1830,15 @@ namespace romp {
     friend inline bool operator > (const range_t& l, const RangeType& r) { return l > r.get(); }
 
 
-    static constexpr const std::string __p_type() { 
+    static constexpr const std::string __p_type() {
       if (-1 <= STEP && STEP <= 1) // compiler should optimize this out
         return std::to_string(LB) + ".." + std::to_string(UB);
       return std::to_string(LB) + " to " + std::to_string(UB) + " by " + std::to_string(STEP);
     }
-    // friend ostream_p& operator << (ostream_p& out, RangeType& val) { 
+    // friend ostream_p& operator << (ostream_p& out, RangeType& val) {
     //   return (out << get());
     // }
-    static constexpr const std::string __json_type() { 
+    static constexpr const std::string __json_type() {
       return "{\"$type\":\"range-type\","
                 "\"bounds\":["+std::to_string(LB)+","+std::to_string(UB)+"]}";
     }
@@ -1856,7 +1856,7 @@ namespace romp {
 
 
 
-  // << =================================== Scalar/Enum Types ==================================== >> 
+  // << =================================== Scalar/Enum Types ==================================== >>
 
   // useful pre-decls
   template<size_t ENUM_ID, size_t BOUND> class EnumType;
@@ -1879,13 +1879,13 @@ namespace romp {
     inline bool IsUndefined() const { return value == SCALAR_ENUM_t::_UNDEFINED_; }
     inline void Undefine() { value = SCALAR_ENUM_t::_UNDEFINED_; }
     inline void Clear() { value = make_SCALAR_ENUM_t(ENUM_ID); }
-    
+
     static inline bool IsMember(const SCALAR_ENUM_t& v) {
       //NOTE: IsMember does not recognise Undefined as a Member of this type
-      return (((make_SCALAR_ENUM_t(ENUM_ID) <= v) 
+      return (((make_SCALAR_ENUM_t(ENUM_ID) <= v)
                     && (v <= make_SCALAR_ENUM_t(ENUM_ID+BOUND))));
     }
-    
+
     static constexpr size_t __ENUM_ID() { return ENUM_ID; }
     static constexpr size_t __BOUND() { return BOUND; }
     static constexpr EnumType __LB() { return make_SCALAR_ENUM_t(ENUM_ID); }
@@ -1901,7 +1901,7 @@ namespace romp {
     inline size_t __get_index_val() const {
       if (IsUndefined())
         throw std::logic_error("value was undefined");
-      return static_cast<size_t>(value)-ENUM_ID; 
+      return static_cast<size_t>(value)-ENUM_ID;
     }
     const SCALAR_ENUM_t& __get_scalar_value() const { return value; }
 
@@ -1923,14 +1923,14 @@ namespace romp {
     friend ScalarsetUnionType<U_M...> __convert(const EnumType& _this);
 
     template<size_t R_EID, size_t R_B>
-    friend inline bool operator == (const EnumType& l, const EnumType<R_EID,R_B> r) { 
+    friend inline bool operator == (const EnumType& l, const EnumType<R_EID,R_B> r) {
       return l.value == r.value;
     }
     template<size_t R_EID, size_t R_B>
     friend inline bool operator != (const EnumType& l, const EnumType<R_EID,R_B> r) {
       return l.value != r.value;
     }
-    friend inline bool operator == (const EnumType& l, const SCALAR_ENUM_t& r) { 
+    friend inline bool operator == (const EnumType& l, const SCALAR_ENUM_t& r) {
       return l.value == r;
     }
     friend inline bool operator != (const EnumType& l, const SCALAR_ENUM_t& r) {
@@ -1946,8 +1946,8 @@ namespace romp {
     /* this IsMember is the one associated with the IsMember() Murphi language operator */
     template<typename T, class... U_M>
     friend inline bool IsMember(const ScalarsetUnionType<U_M...> u);
-    
-    static constexpr const std::string __p_type() { 
+
+    static constexpr const std::string __p_type() {
       std::string res = "enum {";
       std::string sep;
       for (auto i=__LB(); i!=__UB(); i.__step()) {
@@ -1958,7 +1958,7 @@ namespace romp {
     }
     // friend ostream_p& operator << (ostream_p& out, const EnumType& val) { return (out << val.value); }
     friend std::ostream& operator << (std::ostream& out, const EnumType& val) { return (out << val.value); }
-    static inline constexpr const std::string __json_type() { 
+    static inline constexpr const std::string __json_type() {
       return "{\"$type\":\"enum-type\",\"first-member\":\""+to_str(make_SCALAR_ENUM_t(ENUM_ID))+"\",""\"member-count\":"+std::to_string(BOUND)+'}';
     }
     template<class O>
@@ -1970,7 +1970,7 @@ namespace romp {
         // if (val.IsUndefined())
         //   return (out << "null}");
         return (out << val.value << '}');
-#     endif 
+#     endif
     }
   };
 
@@ -1987,7 +1987,7 @@ namespace romp {
     ScalarsetType(const ScalarsetUnionType<UM...>& union_) : ScalarsetType(union_.__get_scalar_value()) {}
     // static inline const std::string __id() { return ::__info__::TYPE_INFOS[TID].label; }
 
-    
+
     static constexpr ScalarsetType __LB() { return make_SCALAR_ENUM_t(ENUM_ID); }
     static constexpr ScalarsetType __UB() { return make_SCALAR_ENUM_t(ENUM_ID+BOUND); }
     ScalarsetType& __step() { EnumType<ENUM_ID,BOUND>::__step(); return *this; }
@@ -2021,7 +2021,7 @@ namespace romp {
         // if (val.IsUndefined())
         //   return (out << "null}");
         return (out << val.value << '}');
-#     endif 
+#     endif
     }
   };
 
@@ -2033,7 +2033,7 @@ namespace romp {
     // static const size_t MEMBER_COUNT;
     static const size_t ENUM_IDS[sizeof...(UNION_MEMBERS)+1];
     static const size_t BOUNDS[sizeof...(UNION_MEMBERS)+1];
-    
+
     template<size_t E_ID, size_t B>
     static constexpr bool ContainsMember() {
 #     if __cplusplus >= 201703L
@@ -2064,7 +2064,7 @@ namespace romp {
         throw std::out_of_range("`"+ to_str(value) +"` is not a member of the union (scalarset union)");
     }
     template<size_t E_ID, size_t B>
-    ScalarsetUnionType(const EnumType<E_ID,B>& value_) { 
+    ScalarsetUnionType(const EnumType<E_ID,B>& value_) {
       if (not ContainsMember<E_ID,B>()) // this is evaluate-able at compile time (if c++17)
         throw std::out_of_range("`"+ to_str(value) +"` is not a member of the union (scalarset union)");
       value = value_.__get_scalar_value();
@@ -2076,7 +2076,7 @@ namespace romp {
     inline bool IsUndefined() const { return (value == SCALAR_ENUM_t::_UNDEFINED_); }
     inline void Undefine() { value = SCALAR_ENUM_t::_UNDEFINED_; }
     inline void Clear() { value = (((sizeof...(UNION_MEMBERS))<=0) ? SCALAR_ENUM_t::_UNDEFINED_ : make_SCALAR_ENUM_t(ENUM_IDS[1]) ); }
-    
+
     // get index value
     inline const size_t __get_index_val() const {
       if (IsUndefined())
@@ -2084,7 +2084,7 @@ namespace romp {
       size_t offset = 0ul;
       size_t i;
       for (i=0ul; i<(sizeof...(UNION_MEMBERS)+1); ++i) {
-        if (ENUM_IDS[i] <= value && value <= (ENUM_IDS[i]+BOUNDS[i]-1)) 
+        if (ENUM_IDS[i] <= value && value <= (ENUM_IDS[i]+BOUNDS[i]-1))
           return offset + static_cast<size_t>(value) - ENUM_IDS[i] -1; // modified for dbg
         offset += BOUNDS[i];
       }
@@ -2094,7 +2094,7 @@ namespace romp {
 
     template<size_t EID, size_t B>
     explicit inline operator EnumType<EID,B> () {
-      static_assert(ScalarsetUnionType::ContainsMember<EID,B>(), 
+      static_assert(ScalarsetUnionType::ContainsMember<EID,B>(),
                     "union must contain enum member type to cast to it!");
       return EnumType<EID,B>(value);
     }
@@ -2106,7 +2106,7 @@ namespace romp {
     }
     template<size_t EID, size_t B>
     explicit inline operator ScalarsetType<EID,B> () {
-      static_assert(ScalarsetUnionType::ContainsMember<EID,B>(), 
+      static_assert(ScalarsetUnionType::ContainsMember<EID,B>(),
                     "union must contain scalarset member type to cast to it!");
       return ScalarsetType<EID,B>(value);
     }
@@ -2124,7 +2124,7 @@ namespace romp {
         throw std::out_of_range("`"+ to_str(value) +"` is not a member of the union (scalarset union)");
       value = val;
     }
-    
+
     template<class... R_M>
     friend inline bool operator == (const ScalarsetUnionType& l, const ScalarsetUnionType<R_M...> r) {
       return l.value == r.value;
@@ -2157,7 +2157,7 @@ namespace romp {
       size_t i;
       size_t j;
     public:
-      iterator(size_t i_, size_t j_) 
+      iterator(size_t i_, size_t j_)
         : i(i_), j(j_)
         {
           if (i>sizeof...(UNION_MEMBERS)) {
@@ -2171,7 +2171,7 @@ namespace romp {
         // if (i>=sizeof...(UNION_MEMBERS)+1) {
         //   j = 0; u.value = SCALAR_ENUM_t::_UNDEFINED_;
         //   return *this;
-        // } 
+        // }
         if (++j < ScalarsetUnionType::BOUNDS[i]) {
           u.value = make_SCALAR_ENUM_t(static_cast<size_t>(u.value)+1);
           return *this;
@@ -2210,10 +2210,10 @@ namespace romp {
       friend std::ostream& operator << (std::ostream& out, const iterator& val) { return (out << val.u); }
     };
 
-    ScalarsetUnionType(const iterator& it_) 
+    ScalarsetUnionType(const iterator& it_)
       : ScalarsetUnionType(it_.__get_scalar_value()) {}
     template<class... UM>
-    ScalarsetUnionType(const typename ScalarsetUnionType<UM...>::iterator& it_) 
+    ScalarsetUnionType(const typename ScalarsetUnionType<UM...>::iterator& it_)
       : ScalarsetUnionType(it_.__get_scalar_value()) {}
 
     static constexpr iterator __LB() { return iterator(1, 0); }
@@ -2225,8 +2225,8 @@ namespace romp {
         return ((UNION_MEMBERS::__COUNT()) + ...); // [[requires C++17]]
 #     else
         size_t counts[sizeof...(UNION_MEMBERS)] = {(UNION_MEMBERS::__COUNT())...};
-        size_t res=0; 
-        for (size_t i=0; i<sizeof...(UNION_MEMBERS); ++i) 
+        size_t res=0;
+        for (size_t i=0; i<sizeof...(UNION_MEMBERS); ++i)
           res += counts[i];
         return res;
 #     endif
@@ -2235,7 +2235,7 @@ namespace romp {
     static constexpr bool __IS_RECORD() { return false; }
     static constexpr bool __IS_TYPEID() { return false; }
     static constexpr bool __DO_P_SEP() { return false; }
-    
+
     static constexpr const std::string __p_type() {
 #     if __cplusplus >= 201703L
         return "union {" + ((UNION_MEMBERS::__p_type()) + ...) + "}"; // [[requires C++17]]
@@ -2252,7 +2252,7 @@ namespace romp {
     }
     // friend ostream_p& operator << (ostream_p& out, const ScalarsetUnionType& val) { return (out << val.value); }
     friend std::ostream& operator << (std::ostream& out, const ScalarsetUnionType& val) { return (out << val.value); }
-    static constexpr const std::string __json_type() { 
+    static constexpr const std::string __json_type() {
       return "{\"$type\":\"scalarset-union-type\","
                 "\"member-count\":"+std::to_string(sizeof...(UNION_MEMBERS))+","
                 "\"\"bound\":"+ std::to_string(__COUNT()) +'}';
@@ -2266,10 +2266,10 @@ namespace romp {
         // if (val.IsUndefined())
         //   return (out << "null}");
         return (out << val.value << '}');
-#     endif 
+#     endif
     }
   };
-  
+
   template<class... UNION_MEMBERS>
   const size_t ScalarsetUnionType<UNION_MEMBERS...>::ENUM_IDS[sizeof...(UNION_MEMBERS)+1] = {0,UNION_MEMBERS::__ENUM_ID()...};
 
@@ -2284,7 +2284,7 @@ namespace romp {
   }
 
 
-  // << ===================================== Complex Types ====================================== >> 
+  // << ===================================== Complex Types ====================================== >>
   template<typename INDEX_t, typename ELEMENT_t>
   class ArrayType;
 
@@ -2306,7 +2306,7 @@ namespace romp {
     // ELEMENT_t operator [] (const size_t i) {
     //   if ((0 > i) || (i >= INDEX_t::__COUNT()))
     //     throw std::out_of_range("`"+std::to_string(i)+"` is out of bounds of the array");
-    //   return data[i]; 
+    //   return data[i];
     // }
     // friend inline ELEMENT_t& Element(ArrayType& array, const INDEX_t& index, const location& loc) {
     //   try {
@@ -2318,11 +2318,11 @@ namespace romp {
 
     bool IsUndefined() const {
       for (size_t i=0; i<INDEX_t::__COUNT(); ++i)
-        if (not data[i].IsUndefined()) 
+        if (not data[i].IsUndefined())
           return false;
       return true;
     }
-    void Undefine() { std::memset(&data, 0u, sizeof(data)); } // for now design still allows for setting all to 0 to undefine 
+    void Undefine() { std::memset(&data, 0u, sizeof(data)); } // for now design still allows for setting all to 0 to undefine
     void Clear() {
       for (size_t i=0; i<INDEX_t::__COUNT(); ++i)
         data[i].Clear();
@@ -2331,12 +2331,12 @@ namespace romp {
     static constexpr bool __IS_SIMPLE() { return false; }
     static constexpr bool __IS_RECORD() { return false; }
     static constexpr bool __IS_TYPEID() { return false; }
-    static constexpr bool __DO_P_SEP() { 
-      return ((ELEMENT_t::__DO_P_SEP()) || ((INDEX_t::__COUNT()>4)) 
+    static constexpr bool __DO_P_SEP() {
+      return ((ELEMENT_t::__DO_P_SEP()) || ((INDEX_t::__COUNT()>4))
               || (sizeof(ELEMENT_t)>(sizeof(BooleanType)*((ELEMENT_t::__IS_RECORD()) ? 2 : 3))));
     }
- 
-    template<typename RI, typename RE> 
+
+    template<typename RI, typename RE>
     friend bool operator == (const ArrayType& l, const ArrayType<RI,RE>& r) {
       if (INDEX_t::__COUNT() != RI::__COUNT()) return false; // evaluate-able at compile time
       for (size_t i=0; i<INDEX_t::__COUNT(); ++i)
@@ -2344,7 +2344,7 @@ namespace romp {
           return false;
       return true;
     }
-    template<typename RI, typename RE> 
+    template<typename RI, typename RE>
     friend bool operator != (const ArrayType& l, const ArrayType<RI,RE>& r) {
       if (INDEX_t::__COUNT() != RI::__COUNT()) return true; // evaluate-able at compile time
       for (size_t i=0; i<INDEX_t::__COUNT(); ++i)
@@ -2371,13 +2371,13 @@ namespace romp {
       }
     }
   public:
-    static constexpr const std::string __p_type() { 
-      return "Array["+INDEX_t::__p_type()+"] of " + ELEMENT_t::__p_type(); 
+    static constexpr const std::string __p_type() {
+      return "Array["+INDEX_t::__p_type()+"] of " + ELEMENT_t::__p_type();
     }
     // template<typename It, typename Et>
     // friend inline ostream_p& operator << (ostream_p& out, const ArrayType& val) {
     template<template<typename,typename>class Arr_t>
-    friend 
+    friend
     typename std::enable_if<std::is_base_of<ArrayType<INDEX_t,ELEMENT_t>,
                                             Arr_t<INDEX_t,ELEMENT_t>>::value,
                             ostream_p>::type& operator << (ostream_p& out, const Arr_t<INDEX_t,ELEMENT_t>& val) {
@@ -2390,7 +2390,7 @@ namespace romp {
         val._pWrite_simp(out);
       return (out << ']');
     }
-    static constexpr const std::string __json_type() { 
+    static constexpr const std::string __json_type() {
       return "{\"$type\":\"array-type\",\"size\":"+ std::to_string(INDEX_t::__COUNT())+'}';
     }
     template<class O>
@@ -2433,7 +2433,7 @@ namespace romp {
       throw ModelTypeError("error durring array element access", loc);
     }
   }
- 
+
 
 
   template<size_t MAX, typename ELEMENT_t> class MultisetType;
@@ -2454,15 +2454,15 @@ namespace romp {
     MultisetType() { Undefine(); }
 
     bool IsUndefined() const { return ((not is_defined) && (occupancy == 0)); }
-    void Undefine() { std::memset(&data, 0u, sizeof(data)); occupancy = 0; is_defined = false; } // for now design still allows for setting all to 0 to undefine 
+    void Undefine() { std::memset(&data, 0u, sizeof(data)); occupancy = 0; is_defined = false; } // for now design still allows for setting all to 0 to undefine
     // Do nothing, should never be called, just here for record & array templates
     void Clear() { Undefine(); is_defined = true; }
 
     static constexpr bool __IS_SIMPLE() { return false; }
     static constexpr bool __IS_RECORD() { return false; }
     static constexpr bool __IS_TYPEID() { return false; }
-    static constexpr bool __DO_P_SEP() { 
-      return ((ELEMENT_t::__DO_P_SEP()) || (MAX>3) 
+    static constexpr bool __DO_P_SEP() {
+      return ((ELEMENT_t::__DO_P_SEP()) || (MAX>3)
              || (sizeof(ELEMENT_t)>(sizeof(BooleanType)*((ELEMENT_t::__IS_RECORD()) ? 2 : 3))));
     }
 
@@ -2473,7 +2473,7 @@ namespace romp {
       return count;
     }
     void MultisetAdd(const ELEMENT_t& val) {
-      if (occupancy >= MAX || val.IsUndefined()) 
+      if (occupancy >= MAX || val.IsUndefined())
         return;
       is_defined = true;
       data[occupancy++] = val;
@@ -2500,7 +2500,7 @@ namespace romp {
     // friend inline const ELEMENT_t& MultisetElement(const MultisetType& ms, const size_t i, const location& loc);
     const ELEMENT_t& operator [] (size_t index) const { return data[index]; }
 
-    template<size_t RM, typename RE>  
+    template<size_t RM, typename RE>
     friend bool operator == (const MultisetType& l, const MultisetType<RM,RE>& r) {
       if (l.occupancy != r.occupancy) return false; // makes multiplicity matter
       bool res = true;
@@ -2525,7 +2525,7 @@ namespace romp {
           return false;
       return true; */
     }
-    template< size_t RM, typename RE> 
+    template< size_t RM, typename RE>
     friend bool operator != (const MultisetType& l, const MultisetType<RM,RE>& r) {
       return not (l == r);
       /* // rewriting to make multiplicity matter and order not matter
@@ -2538,7 +2538,7 @@ namespace romp {
     }
 
   protected:
-    // write split line if there is a lot of info in data structure 
+    // write split line if there is a lot of info in data structure
     inline void _pWrite_comp(ostream_p& out) const {
       std::string sep;
       out.indent();
@@ -2555,12 +2555,12 @@ namespace romp {
       }
     }
   public:
-    static constexpr const std::string __p_type() { 
+    static constexpr const std::string __p_type() {
       return "Multiset["+std::to_string(MAX)+"] of " + ELEMENT_t::__p_type();
     }
     // friend inline ostream_p& operator << (ostream_p& out, const MultisetType& val) {
     template<template<size_t,typename>class MS_t>
-    friend 
+    friend
     typename std::enable_if<std::is_base_of<MultisetType<MAX,ELEMENT_t>,
                                             MS_t<MAX,ELEMENT_t>>::value,
                             ostream_p>::type& operator << (ostream_p& out, const MS_t<MAX,ELEMENT_t>& val) {
@@ -2575,7 +2575,7 @@ namespace romp {
     }
     // template<>
     // friend inline ostream_p& operator << <MultisetType>(ostream_p& out, const MultisetType& val); // {
-    static constexpr const std::string __json_type() { 
+    static constexpr const std::string __json_type() {
       return "{\"$type\":\"multiset-type\",\"max\":"+std::to_string(MAX)+'}';
     }
     template<class O>
@@ -2661,7 +2661,7 @@ namespace romp {
 // #     if __cplusplus >= 201703L
 //         return ((sizeof...(FIELDS)>3) || (FIELDS::__DO_P_SEP() || ...)); // [[requires C++17]]
 // #     else
-        bool f_p_seps[] = {FIELDS::__DO_P_SEP()...}; 
+        bool f_p_seps[] = {FIELDS::__DO_P_SEP()...};
         bool res = false;
         for (size_t i=0; i<(sizeof...(FIELDS)); ++i)
           res |= f_p_seps[i];
@@ -2670,20 +2670,20 @@ namespace romp {
     }
 
     template<size_t I>
-    typename std::enable_if<(I>=sizeof...(FIELDS)),void>::type& get() { 
-      throw std::out_of_range("field does not exist in record"); 
+    typename std::enable_if<(I>=sizeof...(FIELDS)),void>::type& get() {
+      throw std::out_of_range("field does not exist in record");
     }
     template<size_t I>
-    typename std::enable_if<(I<sizeof...(FIELDS)),typename std::tuple_element<I,std::tuple<FIELDS...>>::type>::type& get() { 
-      return std::get<I>(data); 
+    typename std::enable_if<(I<sizeof...(FIELDS)),typename std::tuple_element<I,std::tuple<FIELDS...>>::type>::type& get() {
+      return std::get<I>(data);
     }
     template<size_t I>
-    const typename std::enable_if<(I>=sizeof...(FIELDS)),void>::type& get() const { 
-      throw std::out_of_range("field does not exist in record"); 
+    const typename std::enable_if<(I>=sizeof...(FIELDS)),void>::type& get() const {
+      throw std::out_of_range("field does not exist in record");
     }
     template<size_t I>
-    const typename std::enable_if<(I<sizeof...(FIELDS)),typename std::tuple_element<I,std::tuple<FIELDS...>>::type>::type& get() const { 
-      return std::get<I>(data); 
+    const typename std::enable_if<(I<sizeof...(FIELDS)),typename std::tuple_element<I,std::tuple<FIELDS...>>::type>::type& get() const {
+      return std::get<I>(data);
     }
 
     // template<size_t O_FID>
@@ -2736,7 +2736,7 @@ namespace romp {
     static constexpr const std::string __p_type() { return "Record"; }
     // friend ostream_p& operator << (ostream_p& out, const RecordType& val) {
     template<template<size_t,typename...>class Rec_t>
-    friend 
+    friend
     typename std::enable_if<std::is_base_of<RecordType<FID_START,FIELDS...>,
                                             Rec_t<FID_START,FIELDS...>>::value,
                             ostream_p>::type& operator << (ostream_p& out, const Rec_t<FID_START,FIELDS...>& val) {
@@ -2760,7 +2760,7 @@ namespace romp {
     template<class O>
     friend inline ojstream<O>& operator << (ojstream<O>& json, const RecordType& val) {
 #     ifdef __ROMP__SIMPLE_TRACE
-        // json << '['; 
+        // json << '[';
         val._jWrite<O,0>(json);
         return (json /* << ']' */);
 #     else
@@ -2797,9 +2797,9 @@ namespace __model__ {
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file hash.hpp
- * 
+ *
  * @brief where the hashing objects for the murphi types are defined
- * 
+ *
  * @date 2023/01/10
  * @version 0.2
  */
@@ -2945,7 +2945,7 @@ protected:
 /* // defined in bfs.hpp for orderings sake
 template<>
 struct hash<::romp::State_t> {
-  inline size_t operator () (const ::romp::State_t& state) const { 
+  inline size_t operator () (const ::romp::State_t& state) const {
     return state.__romp__model_hash();
   }
 };
@@ -2967,10 +2967,10 @@ struct __romp__Model__ {
   ::romp::IRandWalker* __rw__; // pointer to associated romp rand walker
 
   //---------------------------------------------------------------------------
-  // Murphi code for the locking protocol                                    
-  // Author : Ganesh Gopalakrishnan, written circa year 2000 
-  // Derived from Dilip Khandekar and John Carter's work     
-  // Compare against Promela model studied in Asg3, CS 6110, Spring 2022     
+  // Murphi code for the locking protocol
+  // Author : Ganesh Gopalakrishnan, written circa year 2000
+  // Derived from Dilip Khandekar and John Carter's work
+  // Compare against Promela model studied in Asg3, CS 6110, Spring 2022
   //---------------------------------------------------------------------------
   // begin of locking.m --
   const ::romp::range_t Nprocs = ((::romp::range_t)(6)); // >= 2 reqd to satisfy request_bufT type declaration.
@@ -2982,8 +2982,8 @@ struct __romp__Model__ {
 
   // legal range is 0..Nprocs-2
   // -1 acts as empty indicator
-  /* With Nprocs=1, we get 0..-1 which makes sense 
-   mathematically (empty) but perhaps not in Murphi. 
+  /* With Nprocs=1, we get 0..-1 which makes sense
+   mathematically (empty) but perhaps not in Murphi.
    So, avoid Nprocs <= 1. Similar caveats apply for
    all array declarations of the form 0..N-2. */
   typedef ::romp::TypeIdType<2,::romp::EnumType<(/*ENTER*/7),(5)>> stateT;
@@ -3004,7 +3004,7 @@ struct __romp__Model__ {
   ::romp::ArrayType<procT,hstateT> hstates;
 
   //-----------------------------------------------------
-  
+
   void initq(request_bufT& queue)  {
     try {
       // queue of Array range 0..Nprocs-2
@@ -3018,7 +3018,7 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelFunctError(0); }
 }
 
-  
+
   procT frontq(const request_bufT queue)  {
     try {
       // queue of Array range 0..Nprocs-2
@@ -3032,14 +3032,14 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelFunctError(1); }
 }
 
-  
+
   boolean nonemptyq(const request_bufT queue) const  {
     try {
       return ((((queue).get</*Count*/1>()) >= ((::romp::range_t)(0))));
     } catch (...) { throw ::romp::ModelFunctError(2); }
 }
 
-  
+
   boolean emptyq(const request_bufT queue)  {
     try {
       if (((queue).get</*Count*/1>()) < (-((::romp::range_t)(1)))) {
@@ -3052,7 +3052,7 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelFunctError(3); }
 }
 
-  
+
   void dequeue(request_bufT& queue)  {
     try {
       // queue of Array range 0..Nprocs-2
@@ -3079,7 +3079,7 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelFunctError(4); }
 }
 
-  
+
   void enqueue(request_bufT& queue, const procT pid)  {
     try {
       // queue of Array range 0..Nprocs-2
@@ -3097,14 +3097,14 @@ struct __romp__Model__ {
 }
 
   //-----------------------------------------------------
-  
+
   void place_request(const procT prob_owner, const procT p)  {
     try {
       enqueue((::romp::Element<procT,request_bufT>((request_bufs), (prob_owner), ::romp::location{{106,10},{106,34}})), (p));
     } catch (...) { throw ::romp::ModelFunctError(6); }
 }
 
-  
+
   void copytail(request_bufT& source_queue, request_bufT& destination_queue)  {
     try {
       /* Called only when source_queue is non_empty, i.e. source_queue.Count >= 0.
@@ -3141,7 +3141,7 @@ struct __romp__Model__ {
 }
 
   //-----------------------------------------------------
-  
+
   bool __romp__Rule_guard__Try_acquiring_the_lock(const procT p) const {
     try {
 #define request_buf() (::romp::Element<procT,request_bufT>((request_bufs), (p), ::romp::location{{137,25},{137,40}}))
@@ -3160,7 +3160,7 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelRuleError(0,::romp::ModelRuleError::GUARD); }
   }
 
-  
+
   void __romp__Rule_action__Try_acquiring_the_lock(const procT p) {
     try {
 #define request_buf() (::romp::Element<procT,request_bufT>((request_bufs), (p), ::romp::location{{137,25},{137,40}}))
@@ -3182,7 +3182,7 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelRuleError(0,::romp::ModelRuleError::ACTION); }
   }
 
-  
+
   bool __romp__Rule_guard__If_the_lock_is_around__grab_it(const procT p) const {
     try {
 #define request_buf() (::romp::Element<procT,request_bufT>((request_bufs), (p), ::romp::location{{137,25},{137,40}}))
@@ -3201,7 +3201,7 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelRuleError(1,::romp::ModelRuleError::GUARD); }
   }
 
-  
+
   void __romp__Rule_action__If_the_lock_is_around__grab_it(const procT p) {
     try {
 #define request_buf() (::romp::Element<procT,request_bufT>((request_bufs), (p), ::romp::location{{137,25},{137,40}}))
@@ -3224,7 +3224,7 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelRuleError(1,::romp::ModelRuleError::ACTION); }
   }
 
-  
+
   bool __romp__Rule_guard__If_the_lock_isn_t_around__send_request_out(const procT p) const {
     try {
 #define request_buf() (::romp::Element<procT,request_bufT>((request_bufs), (p), ::romp::location{{137,25},{137,40}}))
@@ -3243,7 +3243,7 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelRuleError(2,::romp::ModelRuleError::GUARD); }
   }
 
-  
+
   void __romp__Rule_action__If_the_lock_isn_t_around__send_request_out(const procT p) {
     try {
 #define request_buf() (::romp::Element<procT,request_bufT>((request_bufs), (p), ::romp::location{{137,25},{137,40}}))
@@ -3267,7 +3267,7 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelRuleError(2,::romp::ModelRuleError::ACTION); }
   }
 
-  
+
   bool __romp__Rule_guard__Locked____Enter_if_no_waiters(const procT p) const {
     try {
 #define request_buf() (::romp::Element<procT,request_bufT>((request_bufs), (p), ::romp::location{{137,25},{137,40}}))
@@ -3286,7 +3286,7 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelRuleError(3,::romp::ModelRuleError::GUARD); }
   }
 
-  
+
   void __romp__Rule_action__Locked____Enter_if_no_waiters(const procT p) {
     try {
 #define request_buf() (::romp::Element<procT,request_bufT>((request_bufs), (p), ::romp::location{{137,25},{137,40}}))
@@ -3307,7 +3307,7 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelRuleError(3,::romp::ModelRuleError::ACTION); }
   }
 
-  
+
   bool __romp__Rule_guard__When_unlocking_if_waiter_queue_isn_t_empty__go_to_EXITING_state(const procT p) const {
     try {
 #define request_buf() (::romp::Element<procT,request_bufT>((request_bufs), (p), ::romp::location{{137,25},{137,40}}))
@@ -3326,7 +3326,7 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelRuleError(4,::romp::ModelRuleError::GUARD); }
   }
 
-  
+
   void __romp__Rule_action__When_unlocking_if_waiter_queue_isn_t_empty__go_to_EXITING_state(const procT p) {
     try {
 #define request_buf() (::romp::Element<procT,request_bufT>((request_bufs), (p), ::romp::location{{137,25},{137,40}}))
@@ -3349,7 +3349,7 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelRuleError(4,::romp::ModelRuleError::ACTION); }
   }
 
-  
+
   bool __romp__Rule_guard__In_EXITING_state__pass_hd_waiter_and_tail_of_waiters_along_(const procT p) const {
     try {
 #define request_buf() (::romp::Element<procT,request_bufT>((request_bufs), (p), ::romp::location{{137,25},{137,40}}))
@@ -3368,7 +3368,7 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelRuleError(5,::romp::ModelRuleError::GUARD); }
   }
 
-  
+
   void __romp__Rule_action__In_EXITING_state__pass_hd_waiter_and_tail_of_waiters_along_(const procT p) {
     try {
 #define request_buf() (::romp::Element<procT,request_bufT>((request_bufs), (p), ::romp::location{{137,25},{137,40}}))
@@ -3378,7 +3378,7 @@ struct __romp__Model__ {
 #define hstate() (::romp::Element<procT,hstateT>((hstates), (p), ::romp::location{{141,23},{141,33}}))
 #define mutex() (::romp::Element<procT,boolean>((mutexes), (p), ::romp::location{{142,22},{142,32}}))
       //-----------------------------------------------------
-      // added emptyq check for waiter 
+      // added emptyq check for waiter
       // mutex := false;
       ::romp::Assignment<boolean>((mutex()), (false), ::romp::location{{182,10},{182,24}});
       // set the PO variable at node frontq(waiters) and
@@ -3404,7 +3404,7 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelRuleError(5,::romp::ModelRuleError::ACTION); }
   }
 
-  
+
   bool __romp__Rule_guard__In_state_HANDLE__if_there_is_a_waiting_request__goto_TRYGRANT(const procT p) const {
     try {
 #define request_buf() (::romp::Element<procT,request_bufT>((request_bufs), (p), ::romp::location{{137,25},{137,40}}))
@@ -3423,7 +3423,7 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelRuleError(6,::romp::ModelRuleError::GUARD); }
   }
 
-  
+
   void __romp__Rule_action__In_state_HANDLE__if_there_is_a_waiting_request__goto_TRYGRANT(const procT p) {
     try {
 #define request_buf() (::romp::Element<procT,request_bufT>((request_bufs), (p), ::romp::location{{137,25},{137,40}}))
@@ -3437,7 +3437,7 @@ struct __romp__Model__ {
       // added this new rule which will get fired when there are no waiters in the queue
       // Rule "In EXITING state, release the lock if no waiters."
       //        ((state = EXITING) & emptyq(waiter) & mutex)
-      //                ==>   
+      //                ==>
       //                    state := ENTER;
       //                    mutex := false;
       // Endrule;
@@ -3455,7 +3455,7 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelRuleError(6,::romp::ModelRuleError::ACTION); }
   }
 
-  
+
   bool __romp__Rule_guard__In_state_TRYGRANT__if_lock_is_free__grant_it_(const procT p) const {
     try {
 #define request_buf() (::romp::Element<procT,request_bufT>((request_bufs), (p), ::romp::location{{137,25},{137,40}}))
@@ -3474,7 +3474,7 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelRuleError(7,::romp::ModelRuleError::GUARD); }
   }
 
-  
+
   void __romp__Rule_action__In_state_TRYGRANT__if_lock_is_free__grant_it_(const procT p) {
     try {
 #define request_buf() (::romp::Element<procT,request_bufT>((request_bufs), (p), ::romp::location{{137,25},{137,40}}))
@@ -3515,7 +3515,7 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelRuleError(7,::romp::ModelRuleError::ACTION); }
   }
 
-  
+
   bool __romp__Rule_guard__If_lock_not_around__pass_buck_along_to_who_we_think_is_PO(const procT p) const {
     try {
 #define request_buf() (::romp::Element<procT,request_bufT>((request_bufs), (p), ::romp::location{{137,25},{137,40}}))
@@ -3534,7 +3534,7 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelRuleError(8,::romp::ModelRuleError::GUARD); }
   }
 
-  
+
   void __romp__Rule_action__If_lock_not_around__pass_buck_along_to_who_we_think_is_PO(const procT p) {
     try {
 #define request_buf() (::romp::Element<procT,request_bufT>((request_bufs), (p), ::romp::location{{137,25},{137,40}}))
@@ -3559,7 +3559,7 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelRuleError(8,::romp::ModelRuleError::ACTION); }
   }
 
-  
+
   bool __romp__Rule_guard__If_lock_around_but_busy__enqueue_request(const procT p) const {
     try {
 #define request_buf() (::romp::Element<procT,request_bufT>((request_bufs), (p), ::romp::location{{137,25},{137,40}}))
@@ -3578,7 +3578,7 @@ struct __romp__Model__ {
     } catch (...) { throw ::romp::ModelRuleError(9,::romp::ModelRuleError::GUARD); }
   }
 
-  
+
   void __romp__Rule_action__If_lock_around_but_busy__enqueue_request(const procT p) {
     try {
 #define request_buf() (::romp::Element<procT,request_bufT>((request_bufs), (p), ::romp::location{{137,25},{137,40}}))
@@ -3626,7 +3626,7 @@ struct __romp__Model__ {
 
   //-----------------------------------------------------
   // Due to symmetry, we key-off "n"
-  
+
   bool __romp__Property__property9(void) const {
     try {
       return this->__rw__->invariant_handler(({ bool res_ = false; for (auto n=procT::__LB(); n!=procT::__UB(); n.__step()) { res_ |= (!((::romp::Element<procT,stateT>((ar_states), (n), ::romp::location{{295,4},{295,16}})) == (LOCKED)) || ({bool res_ = true; for (auto p=procT::__LB(); p!=procT::__UB(); p.__step()) { res_ &= (((p) == (n)) || ((::romp::Element<procT,stateT>((ar_states), (p), ::romp::location{{297,14},{297,26}})) != (LOCKED))); } res_; })); } res_; }),0u);
@@ -3663,11 +3663,11 @@ struct __romp__Model__ {
   }
 
   friend inline bool operator == (const ::__model__::__romp__Model__& l, const ::__model__::__romp__Model__& r) {
-    return (    l.request_bufs == r.request_bufs && 
-    l.prob_owners == r.prob_owners && 
-    l.waiters == r.waiters && 
-    l.mutexes == r.mutexes && 
-    l.ar_states == r.ar_states && 
+    return (    l.request_bufs == r.request_bufs &&
+    l.prob_owners == r.prob_owners &&
+    l.waiters == r.waiters &&
+    l.mutexes == r.mutexes &&
+    l.ar_states == r.ar_states &&
     l.hstates == r.hstates);
   }
 
@@ -3714,7 +3714,7 @@ namespace __info__ {
 
 namespace __caller__ {
 
-// << ==================================== Rule Expansions ===================================== >> 
+// << ==================================== Rule Expansions ===================================== >>
 
 /* --- Rules Generated by: `Try_acquiring_the_lock` (RuleSet expansions) --- */
  bool __romp__Rule_guard__Try_acquiring_the_lock__0(const ::__model__::__romp__Model__& s) { using namespace __model__; return s.__romp__Rule_guard__Try_acquiring_the_lock(_romp_procT_6_1); }
@@ -3863,7 +3863,7 @@ const ::romp::RuleSet RULESETS[] = {
 		{::__info__::RULE_SET_INFOS[9],std::vector<::romp::Rule>{::romp::Rule{__romp__Rule_guard__If_lock_around_but_busy__enqueue_request__0,__romp__Rule_action__If_lock_around_but_busy__enqueue_request__0,::__info__::RULE_SET_INFOS[9],"[{\"$type\":\"kv-pair\",\"key\":\"p\",\"value\":{\"$type\":\"quantifier\",\"id\":\"p\",\"type\":\"scalarset-quantifier\",\"index\":0,\"value\":{\"$type\":\"value\",\"display-type\":\"procT\",\"value\":\"_romp_procT_6_1\"}}}]","p:=procT_1"}, ::romp::Rule{__romp__Rule_guard__If_lock_around_but_busy__enqueue_request__1,__romp__Rule_action__If_lock_around_but_busy__enqueue_request__1,::__info__::RULE_SET_INFOS[9],"[{\"$type\":\"kv-pair\",\"key\":\"p\",\"value\":{\"$type\":\"quantifier\",\"id\":\"p\",\"type\":\"scalarset-quantifier\",\"index\":1,\"value\":{\"$type\":\"value\",\"display-type\":\"procT\",\"value\":\"_romp_procT_6_2\"}}}]","p:=procT_2"}, ::romp::Rule{__romp__Rule_guard__If_lock_around_but_busy__enqueue_request__2,__romp__Rule_action__If_lock_around_but_busy__enqueue_request__2,::__info__::RULE_SET_INFOS[9],"[{\"$type\":\"kv-pair\",\"key\":\"p\",\"value\":{\"$type\":\"quantifier\",\"id\":\"p\",\"type\":\"scalarset-quantifier\",\"index\":2,\"value\":{\"$type\":\"value\",\"display-type\":\"procT\",\"value\":\"_romp_procT_6_3\"}}}]","p:=procT_3"}, ::romp::Rule{__romp__Rule_guard__If_lock_around_but_busy__enqueue_request__3,__romp__Rule_action__If_lock_around_but_busy__enqueue_request__3,::__info__::RULE_SET_INFOS[9],"[{\"$type\":\"kv-pair\",\"key\":\"p\",\"value\":{\"$type\":\"quantifier\",\"id\":\"p\",\"type\":\"scalarset-quantifier\",\"index\":3,\"value\":{\"$type\":\"value\",\"display-type\":\"procT\",\"value\":\"_romp_procT_6_4\"}}}]","p:=procT_4"}, ::romp::Rule{__romp__Rule_guard__If_lock_around_but_busy__enqueue_request__4,__romp__Rule_action__If_lock_around_but_busy__enqueue_request__4,::__info__::RULE_SET_INFOS[9],"[{\"$type\":\"kv-pair\",\"key\":\"p\",\"value\":{\"$type\":\"quantifier\",\"id\":\"p\",\"type\":\"scalarset-quantifier\",\"index\":4,\"value\":{\"$type\":\"value\",\"display-type\":\"procT\",\"value\":\"_romp_procT_6_5\"}}}]","p:=procT_5"}, ::romp::Rule{__romp__Rule_guard__If_lock_around_but_busy__enqueue_request__5,__romp__Rule_action__If_lock_around_but_busy__enqueue_request__5,::__info__::RULE_SET_INFOS[9],"[{\"$type\":\"kv-pair\",\"key\":\"p\",\"value\":{\"$type\":\"quantifier\",\"id\":\"p\",\"type\":\"scalarset-quantifier\",\"index\":5,\"value\":{\"$type\":\"value\",\"display-type\":\"procT\",\"value\":\"_romp_procT_6_6\"}}}]","p:=procT_6"}	}}};
 
 
-// << =============================== Property Rule Expansions ================================= >> 
+// << =============================== Property Rule Expansions ================================= >>
 
 /* --- Property Rule(s) generated by: `property9` (RuleSet expansions) --- */
  bool __romp__Property__property9__0(const ::__model__::__romp__Model__& s) { using namespace __model__; return s.__romp__Property__property9(); }
@@ -3893,7 +3893,7 @@ const ::romp::Property PROPERTIES[] = {
 };
 
 
-// << ================================= Startstate Expansions ================================== >> 
+// << ================================= Startstate Expansions ================================== >>
 
 /* --- StartState Rule(s) generated by: `startstate8` (RuleSet expansions) --- */
  void __romp__StartState__startstate8__0(::__model__::__romp__Model__& s) { using namespace __model__; s.__romp__StartState__startstate8(_romp_procT_6_1); }
@@ -3960,8 +3960,8 @@ using duration_mr_t = std::chrono::duration<long long,std::chrono::high_resoluti
 using time_mr_t = std::chrono::time_point<std::chrono::high_resolution_clock,std::chrono::duration<long long,std::chrono::high_resolution_clock::period>>;
 
 /**
- * @brief helper function rand_choice 
- * 
+ * @brief helper function rand_choice
+ *
  */
 template<typename T>
 T rand_choice(RandSeed_t &seed, T min, T max) {
@@ -3978,12 +3978,12 @@ private:
   static id_t next_id;
   const id_t id;
   const Options& OPTIONS;
-  const bool IS_BFS; 
+  const bool IS_BFS;
   id_t start_id;
   const RandSeed_t init_rand_seed;
   RandSeed_t rand_seed;
   size_t _fuel; // = OPTIONS.depth;
-  bool _valid = true;  // legacy 
+  bool _valid = true;  // legacy
   bool _is_error = false; // legacy
   Result::Cause status = Result::RUNNING;
   json_file_t* json = nullptr;
@@ -4018,8 +4018,8 @@ private:
   duration_mr_t active_time = duration_mr_t(0l);
   duration_ms_t total_time = duration_ms_t(0l);
 #endif
-  
-  void init_state() noexcept {    
+
+  void init_state() noexcept {
     const StartState& startstate = ::__caller__::STARTSTATES[start_id];
 #ifdef __ROMP__DO_MEASURE
     start_time = time_mr();
@@ -4032,7 +4032,7 @@ private:
        __handle_exception/*<StartState,IModelError>*/(startstate,me);
     } catch (const std::exception& ex) {
       status = Result::UNKNOWN_CAUSE;
-      __handle_exception/*<StartState,std::exception>*/(startstate,ex); 
+      __handle_exception/*<StartState,std::exception>*/(startstate,ex);
     } catch (...) {
       status = Result::UNKNOWN_CAUSE;
       tripped_inside = new ModelStartStateError(startstate);
@@ -4085,8 +4085,8 @@ protected:
 //   RandWalker(const Options& OPTIONS_)
 //     : id(RandWalker::next_id++),
 //       OPTIONS(OPTIONS_),
-//       sim1Step(((OPTIONS.do_trace) 
-//                   ? std::function<void()>([this](){sim1Step_trace();}) 
+//       sim1Step(((OPTIONS.do_trace)
+//                   ? std::function<void()>([this](){sim1Step_trace();})
 //                   : std::function<void()>([this](){sim1Step_no_trace();}))),
 // #     ifdef __romp__ENABLE_cover_property
 //         enable_cover(OPTIONS_.complete_on_cover), goal_cover_count(OPTIONS_.cover_count),
@@ -4110,14 +4110,14 @@ protected:
 //     }
 
 public:
-  RandWalker(RandSeed_t rand_seed_, const Options& OPTIONS_) 
+  RandWalker(RandSeed_t rand_seed_, const Options& OPTIONS_)
     : // RandWalker(OPTIONS_),
       rand_seed(rand_seed_), init_rand_seed(rand_seed_),
       _fuel(OPTIONS_.depth), IS_BFS(false),
       id(RandWalker::next_id++),
       OPTIONS(OPTIONS_),
-      sim1Step(((OPTIONS.do_trace) 
-                  ? std::function<void()>([this](){sim1Step_trace();}) 
+      sim1Step(((OPTIONS.do_trace)
+                  ? std::function<void()>([this](){sim1Step_trace();})
                   : std::function<void()>([this](){sim1Step_no_trace();}))),
 #     ifdef __romp__ENABLE_cover_property
         enable_cover(OPTIONS_.complete_on_cover), goal_cover_count(OPTIONS_.cover_count),
@@ -4126,7 +4126,7 @@ public:
         enable_liveness(OPTIONS_.liveness), init_lcount(OPTIONS.lcount),
 #     endif
       _attempt_limit(OPTIONS_.attempt_limit), init_attempt_limit(OPTIONS_.attempt_limit)
-  { 
+  {
     if (OPTIONS.start_id != ~0u) {
       rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN); // burn one rand operation for consistency
       start_id = OPTIONS.start_id;
@@ -4135,7 +4135,7 @@ public:
       start_id = id % _ROMP_STARTSTATES_LEN;
     } else
       start_id = rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN);
-    state.__rw__ = this; /* provide a semi-hidden reference to this random walker for calling the property handlers */ 
+    state.__rw__ = this; /* provide a semi-hidden reference to this random walker for calling the property handlers */
     if (OPTIONS.do_trace) init_trace();
     for (int i=0; i<history_size(); ++i) this->history[i] = History{nullptr};
 #ifdef __romp__ENABLE_symmetry
@@ -4152,11 +4152,11 @@ public:
   RandWalker(const BFSWalker& bfs, RandSeed_t rand_seed_, const Options& OPTIONS_); //defined in impls.hpp
 
 
-  ~RandWalker() { 
-    if (json != nullptr) delete json; 
+  ~RandWalker() {
+    if (json != nullptr) delete json;
     if (tripped != nullptr) delete tripped;
     if (tripped_inside != nullptr) delete tripped_inside;
-    // if (history != nullptr) delete[] history; 
+    // if (history != nullptr) delete[] history;
   }
 
   inline void init() noexcept {
@@ -4180,7 +4180,7 @@ public:
     } else if (_fuel <= 0) {
       status = Result::MAX_DEPTH_REACHED;
 #ifdef __romp__ENABLE_cover_property
-    } else if (complete_cover()) { 
+    } else if (complete_cover()) {
       status = Result::COVER_COMPLETE;
       tripped_inside = new ModelRuleError(*history[(history_level-1)%history_size()].rule);
 #endif
@@ -4213,7 +4213,7 @@ private:
    * @brief to pick a rule in random for simulation step
    */
   // const RuleSet& rand_ruleset(){
-  //   return ::__caller__::RULESETS[rand_choice<size_t>(rand_seed,0ul,_ROMP_RULESETS_LEN)]; 
+  //   return ::__caller__::RULESETS[rand_choice<size_t>(rand_seed,0ul,_ROMP_RULESETS_LEN)];
   // }
 
 #ifdef __romp__ENABLE_symmetry
@@ -4228,7 +4228,7 @@ private:
     const RuleSet& rs = ::__caller__::RULESETS[rs_id];
 #ifdef __romp__ENABLE_symmetry
     id_t& r_id = next_rule[rs_id];  // this is a reference
-    const Rule& r = rs.rules[r_id]; 
+    const Rule& r = rs.rules[r_id];
     if (++r_id >= rs.rules.size())
       r_id = 0;
 #else
@@ -4245,7 +4245,7 @@ private:
     // const Rule& r = rand_rule(rs);
     const Rule& r = get_rand_rule();
     bool pass = false;
-    try {  
+    try {
       if ((pass = r.guard(state)) == true) {
         r.action(state);
         --_fuel;
@@ -4257,7 +4257,7 @@ private:
       } else {
         *json << ",{\"$type\":\"rule-miss\",\"rule\":" << r << "}";
         --_attempt_limit;
-      }      
+      }
     } catch(IModelError& me) {
       __handle_exception/*<Rule,IModelError>*/(r,me);
       pass = false;
@@ -4301,7 +4301,7 @@ private:
     // const Rule& r= rand_rule(rs);
     const Rule& r = get_rand_rule();
     bool pass = false;
-    try {  
+    try {
       if ((pass = r.guard(state)) == true) {
         r.action(state);
         --_fuel;
@@ -4337,7 +4337,7 @@ private:
         }
 #ifdef __ROMP__DO_MEASURE
     active_time += time_mr() - start_time;
-#endif             
+#endif
   }
 
   void init_trace() {
@@ -4347,9 +4347,9 @@ private:
     *json << "romp-simple-trace";
 #else
     *json << "romp-trace";
-#endif 
+#endif
     *json << "\",\"$version\":\"" _ROMP_TRACE_JSON_VERSION "\"";
-    *json << ",\"trace-id\":" << id 
+    *json << ",\"trace-id\":" << id
           << ",\"seed\":" << init_rand_seed
           << ",\"start-id\":" << start_id
           << ",\"metadata\":" << OPTIONS // .write_metadata_json(json->out)
@@ -4361,16 +4361,16 @@ private:
   void trace_result_out() const {
     using namespace std::chrono;
     *json << "]"; // close trace
-    // if (_valid && tripped == nullptr) // if it didn't end in an error we need to: 
-    if (tripped_inside == nullptr) // if it didn't end in an error we need to: 
+    // if (_valid && tripped == nullptr) // if it didn't end in an error we need to:
+    if (tripped_inside == nullptr) // if it didn't end in an error we need to:
       *json << ",\"error-trace\":[]"; // output empty error-trace
     *json << ",\"results\":{\"depth\":"<< OPTIONS.depth-_fuel <<",\"valid\":null,\"is-error\":null"
-          << ",\"result\":\"" << std::to_string(status) << "\"" 
+          << ",\"result\":\"" << std::to_string(status) << "\""
 #ifdef __ROMP__DO_MEASURE
-                                << ",\"active-time\":" << (duration_cast<duration_msf_t>(active_time).count()) 
+                                << ",\"active-time\":" << (duration_cast<duration_msf_t>(active_time).count())
                                 << ",\"total-time\":" << (duration_cast<duration_msf_t>(total_time).count())
 #else
-                                << ",\"active-time\":null,\"total-time\":null" 
+                                << ",\"active-time\":null,\"total-time\":null"
 #endif
             << ",\"property-violated\":" << tripped
             << ",\"tripped-inside\":" << tripped_inside
@@ -4402,7 +4402,7 @@ public:
   }
 
   // called when trying to print the results of the random walker when it finishes (will finish up trace file if necessary too)
-  //  the calling context should ensure that the RandWalker is not being used else where & safe output to the ostream 
+  //  the calling context should ensure that the RandWalker is not being used else where & safe output to the ostream
   friend ostream_p& operator << (ostream_p& out, const RandWalker& rw) {
     std::string res_color = get_color(rw.status);
     out << out.nl()
@@ -4416,8 +4416,8 @@ public:
         << "     Result: " << res_color << std::to_string(rw.status) << "\033[0m"   << out.nl()
         << out.dedent()                                                             << out.nl()
         << "TRACE LITE:"                                            << out.indent() << out.nl()
-        << "NOTE - " << ((rw.OPTIONS.do_trace) 
-                          ? "see \"" + rw.OPTIONS.trace_dir + std::to_string(rw.init_rand_seed) + ".json\" for full trace." 
+        << "NOTE - " << ((rw.OPTIONS.do_trace)
+                          ? "see \"" + rw.OPTIONS.trace_dir + std::to_string(rw.init_rand_seed) + ".json\" for full trace."
                           : "use the --trace/-t option to generate a full & detailed trace." ) << out.nl()
         << "History: ["                             << out.indent() << out.indent() << out.nl()
         << "-(0) " << ::__caller__::STARTSTATES[rw.start_id] << '\n';
@@ -4446,17 +4446,17 @@ public:
         try {
           msg.first(out);
         } catch (std::exception& ex) {
-          out << out.indent() << out.nl() << msg.second << " :: error occurred while evaluating put statement" 
+          out << out.indent() << out.nl() << msg.second << " :: error occurred while evaluating put statement"
               << out.nl() << ex << out.dedent() << out.nl();
         }
       }
       out << out.dedent() << out.nl() << "\"\"\"" << out.dedent() << out.nl();
     }
-        
+
 #ifdef __ROMP__DO_MEASURE
     out << out.dedent()                                                             << out.nl()
         << "TIME REPORT:"                                           << out.indent() << out.nl()
-        << "Active Time: " << rw.active_time                                        << out.nl()           
+        << "Active Time: " << rw.active_time                                        << out.nl()
         << " Total Time: " << rw.total_time                                         ;// << out.nl();
 #endif
     out << out.dedent()                                                             << out.nl()
@@ -4466,8 +4466,8 @@ public:
     return out;
   }
   // called when trying to print the results of the random walker when it finishes (will finish up trace file if necessary too)
-  //  the calling context should ensure that the RandWalker is not being used else where & safe output to the ostream 
-  friend std::ostream& operator << (std::ostream& out, const RandWalker& rw) 
+  //  the calling context should ensure that the RandWalker is not being used else where & safe output to the ostream
+  friend std::ostream& operator << (std::ostream& out, const RandWalker& rw)
   { ostream_p _out(out,rw.OPTIONS,0); _out << rw; return out; }
 
   // NOTE: currently not supporting choose rules
@@ -4532,7 +4532,7 @@ public:
   bool complete_cover() const {
     if (not enable_cover) return false;
     bool res = true;
-    for (int i=0; i<_ROMP_COVER_PROP_COUNT; ++i) 
+    for (int i=0; i<_ROMP_COVER_PROP_COUNT; ++i)
       res &= (cover_counts[i] >= goal_cover_count);
     return res;
   }
@@ -4553,7 +4553,7 @@ public:
       lcounts[liveness_id] = init_lcount;
       return false;
     }
-    if (--lcounts[liveness_id] > 0) return false; 
+    if (--lcounts[liveness_id] > 0) return false;
     _valid = false;
     _is_error = true;
     tripped = new ModelPropertyError(prop_id);
@@ -4576,7 +4576,7 @@ id_t RandWalker::next_id = 0u;
 
 /**
  * @brief A class that indexes and groups the various results a RandWalker can produce,
- *        and provides a helpful operator for writing a nice summary of the results 
+ *        and provides a helpful operator for writing a nice summary of the results
  *        to a \c std::ostream as well.
  */
 class ResultTree {
@@ -4617,7 +4617,7 @@ public:
 
 /**
  * @brief to generate random seeds for the no of random-walkers
- * rand is generated using UNIX timestamp 
+ * rand is generated using UNIX timestamp
  * @param root_seed the parent seed for generating the random seeds.
  */
 RandSeed_t gen_random_seed(RandSeed_t &root_seed) {
@@ -4626,7 +4626,7 @@ RandSeed_t gen_random_seed(RandSeed_t &root_seed) {
 
 /**
  * @brief generate all the random seeds for the various rand walkers
- * 
+ *
  */
 std::unordered_set<RandSeed_t> gen_random_seeds(const Options& OPTIONS, RandSeed_t root_seed)   {
   std::unordered_set<RandSeed_t> seeds;
@@ -4655,7 +4655,7 @@ void print_romp_results_summary(const ResultTree& summary) {
 
 
 /**
- * @brief implementing \c rw_count parallel \c RandWalker "simulations" which has the threads 
+ * @brief implementing \c rw_count parallel \c RandWalker "simulations" which has the threads
  *        and no of random-walkers specified by the user options .
  * @param rw_count the number of \c RandWalker 's to use.
  * @param rand_seed the starting random seed that will generate all other random seeds
@@ -4663,8 +4663,8 @@ void print_romp_results_summary(const ResultTree& summary) {
  * @param thread_count the max number of threads to use to accomplish all said random walks.
  */
 void launch_OpenMP(RandSeed_t root_seed) {
-  std::cout << "\n\t!! NOT YET IMPLEMENTED !!\n" << std::endl; return; //!! temp, remove when finished !! 
-  
+  std::cout << "\n\t!! NOT YET IMPLEMENTED !!\n" << std::endl; return; //!! temp, remove when finished !!
+
   // std::vector<RandWalker> rws;
   // try {
   //   rws = gen_random_walkers(rw_count, root_seed, fuel);
@@ -4676,7 +4676,7 @@ void launch_OpenMP(RandSeed_t root_seed) {
 }
 
 /**
- * @brief implementing \c rw_count parallel \c RandWalker "simulations" which has the threads 
+ * @brief implementing \c rw_count parallel \c RandWalker "simulations" which has the threads
  *        and no of random-walkers specified by the user options .
  * @param rw_count the number of \c RandWalker 's to use.
  * @param rand_seed the starting random seed that will generate all other random seeds
@@ -4704,10 +4704,10 @@ void launch_threads(const Options& OPTIONS) {
     // std::lock_guard<std::mutex> in_queue(_in_queue_mutex);
     // std::lock_guard<std::mutex> out_queue(_out_queue_mutex);
     in_queue.lock();
-    while (in_seeds.size() > 0) { 
+    while (in_seeds.size() > 0) {
 
       in_seeds.front(); RandWalker *rw = new RandWalker(in_seeds.front(),OPTIONS);
-      in_seeds.pop(); 
+      in_seeds.pop();
       in_queue.unlock();
 
       rw->init();
@@ -4762,7 +4762,7 @@ void launch_threads(const Options& OPTIONS) {
         delete rw;
       }
     }
-    std::this_thread::sleep_for(pause_delay); 
+    std::this_thread::sleep_for(pause_delay);
     out_queue.lock();
     if (not (walks_done < OPTIONS.walks)) {
       out_queue.unlock();
@@ -4779,11 +4779,11 @@ void launch_threads(const Options& OPTIONS) {
 
   print_romp_results_summary(summary);
 }
-  
+
 
 /**
  * @brief (NOT YET IMPLEMENTED) \n
- *        Implementing \c rw_count parallel \c RandWalker "simulations" which has the threads 
+ *        Implementing \c rw_count parallel \c RandWalker "simulations" which has the threads
  *        and no of random-walkers specified by the user options .
  * @param root_seed the starting random seed that will generate all other random seeds
  * @param fuel the max number of rules any \c RandWalker will try to apply.
@@ -4793,7 +4793,7 @@ void launch_CUDA(RandSeed_t root_seed);
 
 /**
  * @brief (NOT YET IMPLEMENTED) \n
- *        Implementing \c rw_count parallel \c RandWalker "simulations" which has the threads 
+ *        Implementing \c rw_count parallel \c RandWalker "simulations" which has the threads
  *        and no of random-walkers specified by the user options .
  * @param root_seed the starting random seed that will generate all other random seeds
  * @param fuel the max number of rules any \c RandWalker will try to apply.
@@ -4803,7 +4803,7 @@ void launch_SYCL(RandSeed_t root_seed);
 
 /**
  * @brief (NOT YET IMPLEMENTED) \n
- *        Implementing \c rw_count parallel \c RandWalker "simulations" which has the threads 
+ *        Implementing \c rw_count parallel \c RandWalker "simulations" which has the threads
  *        and no of random-walkers specified by the user options .
  * @param root_seed the starting random seed that will generate all other random seeds
  * @param fuel the max number of rules any \c RandWalker will try to apply.
@@ -4823,7 +4823,7 @@ void launch_single(const Options& OPTIONS) {
   while( not rw->is_done() )
     rw->sim1Step();
   rw->finalize();
-  std::cout << "SINGLE ROMP RESULT:\n\t" 
+  std::cout << "SINGLE ROMP RESULT:\n\t"
             << *rw << '\n' << std::endl;
   summary.stop_timer();
   summary.insert(rw->get_result());
@@ -4842,9 +4842,9 @@ void launch_single(const Options& OPTIONS) {
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file bfs.hpp
- * 
+ *
  * @brief code for the preemptive bfs before romp launch
- * 
+ *
  * @date 2023/01/10
  * @version 0.2
  */
@@ -4860,7 +4860,7 @@ void launch_single(const Options& OPTIONS) {
 namespace std {
   template<>
   struct hash<::romp::State_t> {
-    inline size_t operator () (const ::romp::State_t& state) const { 
+    inline size_t operator () (const ::romp::State_t& state) const {
       return state.__romp__model_hash();
     }
   };
@@ -4900,11 +4900,11 @@ namespace romp {
     void __handle_exception(const R& r, const E& er) noexcept {
       tripped_inside = r.make_error();
     }
-  
+
   public:
 
     BFSWalker(const Options OPTIONS_, id_t start_id_)
-      : OPTIONS(OPTIONS_), 
+      : OPTIONS(OPTIONS_),
 #       if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
           enable_liveness(OPTIONS_.liveness),
 #       endif
@@ -4918,7 +4918,7 @@ namespace romp {
       if (tripped_inside != nullptr) delete tripped_inside;
     }
 
-  void init_state() noexcept {    
+  void init_state() noexcept {
     const StartState& startstate = ::__caller__::STARTSTATES[_start_id];
 #   ifdef __ROMP__DO_MEASURE
       start_time = time_mr();
@@ -4929,7 +4929,7 @@ namespace romp {
        __handle_exception(startstate,me);
     } catch (const std::exception& ex) {
       status = Result::UNKNOWN_CAUSE;
-      __handle_exception(startstate,ex); 
+      __handle_exception(startstate,ex);
     } catch (...) {
       status = Result::UNKNOWN_CAUSE;
       tripped_inside = new ModelStartStateError(startstate);
@@ -4984,7 +4984,7 @@ namespace romp {
         start_time = time_mr();
 #     endif
       pass = false;
-      try {  
+      try {
         if ((pass = r.guard(state)) == true) {
           r.action(state);
           ++_depth;
@@ -5019,7 +5019,7 @@ namespace romp {
           }
 #     ifdef __ROMP__DO_MEASURE
         active_time += time_mr() - start_time;
-#     endif             
+#     endif
     }
 
 
@@ -5098,7 +5098,7 @@ namespace romp {
 # endif
 
     // called when trying to print the results of the BFS walker when it finishes (will finish up trace file if necessary too)
-    //  the calling context should ensure that the BFSWalker is not being used else where & safe output to the ostream 
+    //  the calling context should ensure that the BFSWalker is not being used else where & safe output to the ostream
     friend ostream_p& operator << (ostream_p& out, const BFSWalker& rw) {
       std::string res_color = get_color(rw.status);
       out << out.nl()
@@ -5110,7 +5110,7 @@ namespace romp {
           << "     Result: " << res_color << std::to_string(rw.status) << "\033[0m"   << out.nl()
           << out.dedent()                                                             << out.nl()
           << "TRACE LITE:"                                            << out.indent() << out.nl();
-      if (rw.OPTIONS.do_trace) 
+      if (rw.OPTIONS.do_trace)
         out << "NOTE - BFS does not currently support rich json traces" << out.nl();
       out << "History: ["                             << out.indent() << out.indent() << out.nl()
           << "-(0) " << ::__caller__::STARTSTATES[rw._start_id] << '\n';
@@ -5139,13 +5139,13 @@ namespace romp {
           try {
             msg.first(out);
           } catch (std::exception& ex) {
-            out << out.indent() << out.nl() << msg.second << " :: error occurred while evaluating put statement" 
+            out << out.indent() << out.nl() << msg.second << " :: error occurred while evaluating put statement"
                 << out.nl() << ex << out.dedent() << out.nl();
           }
         }
         out << out.dedent() << out.nl() << "\"\"\"" << out.dedent() << out.nl();
       }
-          
+
 #     ifdef __ROMP__DO_MEASURE
         out << out.dedent()                                                         << out.nl()
             << "TIME REPORT:"                                       << out.indent() << out.nl()
@@ -5158,8 +5158,8 @@ namespace romp {
       return out;
     }
     // called when trying to print the results of the BFS walker when it finishes (will finish up trace file if necessary too)
-    //  the calling context should ensure that the BFSWalker is not being used else where & safe output to the ostream 
-    friend std::ostream& operator << (std::ostream& out, const BFSWalker& rw) 
+    //  the calling context should ensure that the BFSWalker is not being used else where & safe output to the ostream
+    friend std::ostream& operator << (std::ostream& out, const BFSWalker& rw)
     { ostream_p _out(out,rw.OPTIONS,0); _out << rw; return out; }
 
     State_t state;
@@ -5181,7 +5181,7 @@ protected:
 
 public:
 
-  BFSHandler(const Options& OPTIONS_) 
+  BFSHandler(const Options& OPTIONS_)
     : OPTIONS(OPTIONS_),
       TARGET(OPTIONS_.walks / OPTIONS_.bfs_coefficient),
       out(std::cout,OPTIONS_,0)
@@ -5192,7 +5192,7 @@ public:
   }
 
   /**
-   * @brief Launch a romp run where we first do a single threaded BFS before 
+   * @brief Launch a romp run where we first do a single threaded BFS before
    *        launching the swarm of random walkers.
    * @param OPTIONS the options object defining how the romp run should work.
    *                (required that bfs and do_even start be true)
@@ -5200,12 +5200,12 @@ public:
   void launch() {
     start_time = time_ms();
 
-    // - run through the startstates and add them to the queue ---- 
+    // - run through the startstates and add them to the queue ----
     for (size_t i=0; i<_ROMP_STARTSTATES_LEN; ++i) {
       auto walker = new BFSWalker(OPTIONS,i);
       walker->init_state();
       ++rules_applied;
-      if (walker->is_done()) {  // discover error during 
+      if (walker->is_done()) {  // discover error during
         end_bfs_report_error(walker);
         return;
       } else if (insert_state(walker->state))
@@ -5377,15 +5377,15 @@ protected:
     while (not q.empty() && q.size()<TARGET && rules_applied < OPTIONS.bfs_limit && bad == nullptr) {
       mut_out.unlock();
       // if (cycle % update_coef == 0) {
-      //   out << out.indentation() 
-      //       << '[' << (time_mr() - start_time) << "] " 
+      //   out << out.indentation()
+      //       << '[' << (time_mr() - start_time) << "] "
       //         "States found: " << states.size() << "; "
       //         "Rules Applied: " << rules_applied << "; "
       //         "BFS Progress: " << ((long long)((q.size()*100)/(TARGET*100)))
       //       << " (" << q.size() << '/' << TARGET << ");\n";
       //   mut_in.unlock();
       //   out.out.flush();
-      // } else 
+      // } else
         mut_in.unlock();
       // ++cycle;
       std::this_thread::sleep_for(pause_delay);
@@ -5417,7 +5417,7 @@ protected:
     } else
       end_bfs_solved();
     /* Ideas
-        - short term store new states in vector per threads then lock to add new states in bulk 
+        - short term store new states in vector per threads then lock to add new states in bulk
     */
   }
 
@@ -5450,10 +5450,10 @@ protected:
 
     auto lambda = [&]() { // code the threads run
       in_queue.lock();
-      while (in_seeds.size() > 0) { 
+      while (in_seeds.size() > 0) {
         in_seeds.front(); RandWalker *rw = new RandWalker(*l[in_seeds.size()%OPTIONS.bfs_coefficient%l.size()],
                                                           in_seeds.front(),OPTIONS);
-        in_seeds.pop(); 
+        in_seeds.pop();
         in_queue.unlock();
 
         // rw->init(); // no need to init when starting from bfs
@@ -5487,13 +5487,13 @@ protected:
           "==================================\n"
           "\033[0m\n\n";
     out.out.flush();
-    
+
     std::this_thread::sleep_for(pause_delay*2);
     while (true) {
       while (true) {  // handel outputs
         // if (cycles % update_coef == 0) { // this really slows things down
         //   out.indent();
-        //   out << '[' << (time_ms() - start_time) << "] " 
+        //   out << '[' << (time_ms() - start_time) << "] "
         //       << progress << '/' << OPTIONS.walks
         //       << " walks complete" << out.nl();
         //   out.dedent();
@@ -5518,8 +5518,8 @@ protected:
           delete rw;
         }
       }
-      
-      std::this_thread::sleep_for(pause_delay); 
+
+      std::this_thread::sleep_for(pause_delay);
       out_queue.lock();
       if (not (walks_done < OPTIONS.walks)) {
         out_queue.unlock();
@@ -5568,7 +5568,7 @@ protected:
     auto t = time_ms() - start_time;
     walker->finalize();
     std::string color = "\033[30;1;4m";
-    out << '\n' << out.nl() 
+    out << '\n' << out.nl()
         << "Error found during initial BFS"
         << out.nl() << *walker << '\n'
         << out.nl() << "\033[1;4mBFS SUMMARY:\033[0m" << out.indent()
@@ -5580,7 +5580,7 @@ protected:
     delete walker;
     out.out << std::flush;
   }
-  
+
   /**
    * @brief call when bfs ends with no new items in the queue
    */
@@ -5601,9 +5601,9 @@ protected:
     auto t = time_ms() - start_time;
     out << out.nl()
         << "NO ERRORS found during initial BFS\n"
-        << out.nl() 
-          << ((rules_applied >= OPTIONS.bfs_limit) 
-                ? "WARNING : BFS limit was reached, statespace might not have been sufficiently explored before launching the walkers !!\n" 
+        << out.nl()
+          << ((rules_applied >= OPTIONS.bfs_limit)
+                ? "WARNING : BFS limit was reached, statespace might not have been sufficiently explored before launching the walkers !!\n"
                 : std::string(""))
         << out.nl() << "\033[1;4mBFS SUMMARY:\033[0m" << out.indent()
         << out.nl() << "    States Found: " << states.size()
@@ -5626,10 +5626,10 @@ protected:
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file impls.cpp
- * 
+ *
  * @brief implementations of functions that could not be put where they were declared,
  *        because they required something pre-decl'ed to be fully declared first.
- * 
+ *
  * @date 2022/10/05
  * @version 0.1
  */
@@ -5637,12 +5637,12 @@ protected:
 #ifndef __romp__GENERATED_CODE
 #pragma once
 #include "pregen-fix.hpp"  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
-#include "include.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-#include "decl.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-#include "writers.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-#include "types.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-#include "error.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-// #include "walker.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
+#include "include.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+#include "decl.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+#include "writers.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+#include "types.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+#include "error.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+// #include "walker.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
 #endif
 
 namespace romp {
@@ -5655,14 +5655,14 @@ namespace romp {
   Result::~Result() { if (tripped != nullptr) delete tripped; if (inside != nullptr) delete inside; }
 
   // template<size_t L_ID, size_t L_B, size_t R_ID, size_t R_B>
-  // inline bool operator == (const EnumType<L_ID,L_B>& l, const EnumType<R_ID,R_B> r) { 
-  //   return ((L_ID == R_ID) // this static expr should help the compiler optimize this per type definition. 
-  //           && (l.value == r.value)); 
+  // inline bool operator == (const EnumType<L_ID,L_B>& l, const EnumType<R_ID,R_B> r) {
+  //   return ((L_ID == R_ID) // this static expr should help the compiler optimize this per type definition.
+  //           && (l.value == r.value));
   // }
   // template<size_t L_ID, size_t L_B, size_t R_ID, size_t R_B>
-  // inline bool operator != (const EnumType<L_ID,L_B>& l, const EnumType<R_ID,R_B> r) { 
-  //   return ((L_ID != R_ID) // this should help the compiler optimize this per type definition. 
-  //           || (l.value != r.value)); 
+  // inline bool operator != (const EnumType<L_ID,L_B>& l, const EnumType<R_ID,R_B> r) {
+  //   return ((L_ID != R_ID) // this should help the compiler optimize this per type definition.
+  //           || (l.value != r.value));
   // }
 
   // template<class... L_M, class... R_M>
@@ -5703,33 +5703,33 @@ namespace romp {
   //   return EnumType<EID,B>::IsMember(u.value);
   // }
 
-  // << ------------------------------------------------------------------------------------------ >> 
+  // << ------------------------------------------------------------------------------------------ >>
 
-  ostream_p::ostream_p(std::ostream& out_, const Options& OPTIONS_, unsigned int level_) 
+  ostream_p::ostream_p(std::ostream& out_, const Options& OPTIONS_, unsigned int level_)
     : out(out_), _width(level_*OPTIONS_.tab_size), OPTIONS(OPTIONS_)
     { _indentation = std::string(_width,OPTIONS_.tab_char); }
-  inline const stream_void ostream_p::dedent() { 
+  inline const stream_void ostream_p::dedent() {
     if (((signed)_width)-((signed)OPTIONS.tab_size) >= 0)
       _width-=OPTIONS.tab_size;
-    _indentation = std::string(_width,OPTIONS.tab_char); 
+    _indentation = std::string(_width,OPTIONS.tab_char);
     return S_VOID;
   }
   inline const stream_void ostream_p::indent() { _indentation = std::string((_width+=OPTIONS.tab_size),OPTIONS.tab_char); return S_VOID; }
 
-  // << ------------------------------------------------------------------------------------------ >> 
+  // << ------------------------------------------------------------------------------------------ >>
 
   ResultTree::~ResultTree() {
     for (auto p : unknown_causes) if (p!=nullptr) delete p;
     for (auto p : attempt_limits_reached) if (p!=nullptr) delete p;
     for (auto p : max_depths_reached) if (p!=nullptr) delete p;
-#ifdef __romp__ENABLE_cover_property  
+#ifdef __romp__ENABLE_cover_property
     for (auto p : completed_covers) if (p!=nullptr) delete p;
 #endif
     for (auto _p : properties_violated)
       for (auto p : _p.second) if (p!=nullptr) delete p;
     for (auto _p : merrors_reached)
       for (auto p : _p.second) if (p!=nullptr) delete p;
-#ifdef __romp__ENABLE_assume_property  
+#ifdef __romp__ENABLE_assume_property
     for (auto _p : assumptions_violated)
       for (auto p : _p.second) if (p!=nullptr) delete p;
 #endif
@@ -5803,14 +5803,14 @@ namespace romp {
     if (r.OPTIONS.r_assume && r.n_assumptions_violated > 0) {
       issues += r.assumptions_violated.size();
       abs_issues += r.n_assumptions_violated;
-      out << out.indentation() << "\033[1;4mASSUMPTION(S) VIOLATED (n="<< r.assumptions_violated.size() 
+      out << out.indentation() << "\033[1;4mASSUMPTION(S) VIOLATED (n="<< r.assumptions_violated.size()
           << " |n|=" << r.n_assumptions_violated << "):\033[0m\n";
       out.indent(); i = 1;
       for (const auto& _a : r.assumptions_violated) {
-        if (i > _ROMP_HIST_LEN && not (r.OPTIONS.report_all || r.OPTIONS.report_error)) { 
-          out << out.indentation() << "-(..) ... " << _a.second.size()-(i-1) << " more ...\n"; 
+        if (i > _ROMP_HIST_LEN && not (r.OPTIONS.report_all || r.OPTIONS.report_error)) {
+          out << out.indentation() << "-(..) ... " << _a.second.size()-(i-1) << " more ...\n";
           break;
-        } 
+        }
         out << out.indentation()
             << "\033[1m-(" << (i++) << ") assume \"" << _a.first.label() << "\":\033[0m\n";
         out.indent();
@@ -5823,7 +5823,7 @@ namespace romp {
           if (not a->tripped->is_flat())
             out << out.nl()
                 << "        quantifiers(" << a->tripped->quants() << ")\n";
-          out << out.indentation() 
+          out << out.indentation()
               << ((a->tripped->is_generic())
                   ? "        inside"
                   : "        last-rule")
@@ -5840,15 +5840,15 @@ namespace romp {
       out.out << out._dedent() << std::endl;
     }
 #endif
-    if ((r.OPTIONS.attempt_limit != _ROMP_ATTEMPT_LIMIT_DEFAULT && r.OPTIONS.deadlock) 
+    if ((r.OPTIONS.attempt_limit != _ROMP_ATTEMPT_LIMIT_DEFAULT && r.OPTIONS.deadlock)
           && r.attempt_limits_reached.size() > 0) {
-        out << out.indentation() << "\033[1;4mATTEMPT LIMIT(S) REACHED (n=" 
+        out << out.indentation() << "\033[1;4mATTEMPT LIMIT(S) REACHED (n="
                 << r.attempt_limits_reached.size() << "):\033[0m\n";
         out.indent();
         i = 1;
         for (const auto& _al : r.attempt_limits_reached) {
-          if (i > _ROMP_HIST_LEN && not (r.OPTIONS.report_all)) { 
-            out << out.indentation() << "-(..) ... " << r.attempt_limits_reached.size()-(i-1) << " more ...\n"; 
+          if (i > _ROMP_HIST_LEN && not (r.OPTIONS.report_all)) {
+            out << out.indentation() << "-(..) ... " << r.attempt_limits_reached.size()-(i-1) << " more ...\n";
             break;
           }
           out << out.indentation()
@@ -5872,13 +5872,13 @@ namespace romp {
      }
 #ifdef __romp__ENABLE_cover_property
      if (r.OPTIONS.r_cover && r.completed_covers.size() > 0) {
-      out << out.indentation() << "\033[1;4mCOVER(S) COMPLETED (n=" 
+      out << out.indentation() << "\033[1;4mCOVER(S) COMPLETED (n="
                 << r.completed_covers.size() << "):\033[0m\n";
         out.indent();
         i = 1;
         for (const auto& _c : r.completed_covers) {
-          if (i > _ROMP_HIST_LEN+1 && not (r.OPTIONS.report_all)) { 
-            out << out.indentation() << "-[..] ... " << r.completed_covers.size()-(i-1) << " more ...\n"; 
+          if (i > _ROMP_HIST_LEN+1 && not (r.OPTIONS.report_all)) {
+            out << out.indentation() << "-[..] ... " << r.completed_covers.size()-(i-1) << " more ...\n";
             break;
           }
           out << out.indentation()
@@ -5891,19 +5891,19 @@ namespace romp {
               if (not _c->inside->is_flat())
                 out << " quantifiers(" << _c->inside->quants() << ")";
           out << "}\n";
-          ++i; 
+          ++i;
         }
       out.out << out._dedent() << std::endl;
      }
 #endif
     if (r.OPTIONS.report_all && r.max_depths_reached.size() > 0) {
-      out << out.indentation() << "\033[1;4mMAX DEPTH(S) REACHED (n=" 
+      out << out.indentation() << "\033[1;4mMAX DEPTH(S) REACHED (n="
                 << r.max_depths_reached.size() << "):\033[0m";
         out.indent();
         i = 1;
         for (const auto& _r : r.max_depths_reached) {
-          if (i > _ROMP_HIST_LEN && not (r.OPTIONS.report_all)) { 
-            out << out.indentation() << "-(..) ... " << r.max_depths_reached.size()-(i-1) << " more ...\n"; 
+          if (i > _ROMP_HIST_LEN && not (r.OPTIONS.report_all)) {
+            out << out.indentation() << "-(..) ... " << r.max_depths_reached.size()-(i-1) << " more ...\n";
             break;
           }
             out << out.nl()
@@ -5917,7 +5917,7 @@ namespace romp {
     if (r.n_merrors_reached > 0) {
       issues += r.merrors_reached.size();
       abs_issues += r.n_merrors_reached;
-      out << out.indentation() << "\033[1;4mERROR STATEMENT(S) REACHED (n="<< r.merrors_reached.size() 
+      out << out.indentation() << "\033[1;4mERROR STATEMENT(S) REACHED (n="<< r.merrors_reached.size()
           << " |n|=" << r.n_merrors_reached << "):\033[0m\n";
       out.indent(); i = 1;
       for (const auto& _a : r.merrors_reached) {
@@ -5926,8 +5926,8 @@ namespace romp {
         out.indent();
         int j = 0;
         for (const auto& a : _a.second) {
-          if (j > _ROMP_HIST_LEN && not (r.OPTIONS.report_all || r.OPTIONS.report_error)) { 
-            out << out.indentation() << "-[..] ... " << _a.second.size()-j << " more ...\n"; 
+          if (j > _ROMP_HIST_LEN && not (r.OPTIONS.report_all || r.OPTIONS.report_error)) {
+            out << out.indentation() << "-[..] ... " << _a.second.size()-j << " more ...\n";
             break;
           }
           out << out.indentation()
@@ -5950,7 +5950,7 @@ namespace romp {
     if (r.n_properties_violated > 0) {
       issues += r.properties_violated.size();
       abs_issues += r.n_properties_violated;
-      out << out.indentation() << "\033[1;4mPROPERTY(S) VIOLATED (n="<< r.properties_violated.size() 
+      out << out.indentation() << "\033[1;4mPROPERTY(S) VIOLATED (n="<< r.properties_violated.size()
           << " |n|=" << r.n_properties_violated << "):\033[0m\n";
       out.indent(); i = 1;
       for (const auto& _a : r.properties_violated) {
@@ -5961,8 +5961,8 @@ namespace romp {
         out.indent();
         int j = 0;
         for (const auto& a : _a.second) {
-          if (j > 2 && not (r.OPTIONS.report_all || r.OPTIONS.report_error)) { 
-            out << out.indentation() << "-[..] ... " << _a.second.size()-j << " more ...\n"; 
+          if (j > 2 && not (r.OPTIONS.report_all || r.OPTIONS.report_error)) {
+            out << out.indentation() << "-[..] ... " << _a.second.size()-j << " more ...\n";
             break;
           }
           out << out.indentation()
@@ -5993,7 +5993,7 @@ namespace romp {
     if (r.OPTIONS.report_all && r.unknown_causes.size() > 0) {
       issues += r.unknown_causes.size();
       abs_issues += r.unknown_causes.size();
-      out << out.indentation() << "\033[41;37;1;4mUNKNOWN ERROR(S) (n=" 
+      out << out.indentation() << "\033[41;37;1;4mUNKNOWN ERROR(S) (n="
                 << r.unknown_causes.size() << "):\033[21;24m\n";
         out.indent();
         i = 1;
@@ -6026,9 +6026,9 @@ namespace romp {
         << out.nl() << "            runtime: " << r.get_time();
 #else
         << out.nl() << "    total walk time: t=" << r.total_walk_active_time << " "
-                                          "(Δt=" << r.total_walk_time << ")" 
+                                          "(Δt=" << r.total_walk_time << ")"
         << out.nl() << "     mean walk time: mean(t)=" << (r.total_walk_active_time/r.size) << " "
-                                           "(mean(Δt)=" << (r.total_walk_time/r.size) << ')' 
+                                           "(mean(Δt)=" << (r.total_walk_time/r.size) << ')'
         << out.nl() << "         RW runtime: " << r.get_time();
 #endif
     out.out << "\n\n" << std::flush;
@@ -6040,7 +6040,7 @@ void print_help() {
   using namespace std;
   Options default_opts;
   // clang-format off
-  std::cout << 
+  std::cout <<
     "This is a murphi model checker generated from the romp random walker tool.\n"
     "   generated from: " __model__filename "\n"
     "\n\n"
@@ -6077,7 +6077,7 @@ void print_help() {
     "    | -s <str/int>    default: current system time\n"
     "  --even-start      Determine startstate for even distribution\n"
     "    | -es             rather than random choice (default behavior).\n"
-    "  --start-id <id>   Set a single startstate to use (For all walks).\n"  
+    "  --start-id <id>   Set a single startstate to use (For all walks).\n"
     "    | -sid <id>       <id> is an int determined by a startstate's\n"
     "                      position in the file after ruleset expansion.\n"
     "                      Valid <id> values are integers between:\n"
@@ -6245,7 +6245,7 @@ void Options::parse_args(int argc, char **argv) {
     }
      else if ("-sid" == std::string(argv[i]) || "--start-id" == std::string(argv[i])) {
       start_provided = true;
-      if (i + 1 < argc && '-' != argv[i + 1][0]) { 
+      if (i + 1 < argc && '-' != argv[i + 1][0]) {
         ++i;
         try {
           start_id = std::stoul(argv[i], nullptr, 0);
@@ -6408,7 +6408,7 @@ void Options::parse_args(int argc, char **argv) {
     } else if ("-rc" == std::string(argv[i]) || "--r-cover" == std::string(argv[i]) || "--report-cover" == std::string(argv[i])) {
       r_cover = true;
 #endif
-    } else if ("-ag" == std::string(argv[i]) || "-ll" == std::string(argv[i]) || "-al" == std::string(argv[i]) 
+    } else if ("-ag" == std::string(argv[i]) || "-ll" == std::string(argv[i]) || "-al" == std::string(argv[i])
                 || "--attempt-guard" == std::string(argv[i]) || "--loop-limit" == std::string(argv[i]) || "--attempt-limit" == std::string(argv[i])) {
       // do_attempt_guard = true;  // just check to make sure this value is not 0
       guard_provided = true;
@@ -6591,7 +6591,7 @@ void Options::parse_args(int argc, char **argv) {
         exit(EXIT_FAILURE);
       }
     }
-    
+
     // check for inconsistent or contradictory options here
     //[X]TODO (OPTIONAL) check OPTIONS to make sure config is valid and output
     // if (history_length == 0) {
@@ -6711,7 +6711,7 @@ const stream_void Options::write_config(ostream_p& out) const noexcept {
 #ifdef __romp__ENABLE_assume_property
   if (r_assume) {
     _compound = true;
-    // report_str += " | " "assume property violated"; 
+    // report_str += " | " "assume property violated";
     pw_report_str += "assume property violated";
     sep = " | ";
   }
@@ -6724,8 +6724,8 @@ const stream_void Options::write_config(ostream_p& out) const noexcept {
     sep = " | ";
   }
 #endif
-  if (report_all) pw_report_str = "ALL WALKS"; 
-  else if (report_error) pw_report_str += sep + "property violations | error statements reached"; 
+  if (report_all) pw_report_str = "ALL WALKS";
+  else if (report_error) pw_report_str += sep + "property violations | error statements reached";
   else if (not _compound) pw_report_str = "NONE \t(default)";
   out << out.indentation()
       << "BASE LAUNCH CONFIG:"                                      << out.indent() << out.nl()
@@ -6763,11 +6763,11 @@ const stream_void Options::write_config(ostream_p& out) const noexcept {
   out << "ENABLED SPECIAL/RUMUR PROPERTIES:"                        << out.indent()
 #ifdef __romp__ENABLE_assume_property
                                                                                     << out.nl()
-      << "      assume: YES, " << (r_assume ? "reporting" : "non-reporting \t(default)")  
+      << "      assume: YES, " << (r_assume ? "reporting" : "non-reporting \t(default)")
 #endif
 #ifdef __romp__ENABLE_cover_property
                                                                                     << out.nl()
-      << "       cover: " << ((complete_on_cover) 
+      << "       cover: " << ((complete_on_cover)
                               ? "YES, " + std::string((r_cover) ? "reporting" : "non-reporting")
                               : "NO \t(default)" )                                    << out.nl()
       << " cover-count: " << ((complete_on_cover)
@@ -6788,12 +6788,12 @@ const stream_void Options::write_config(ostream_p& out) const noexcept {
       << "history len: " << _ROMP_HIST_LEN << " \t(config when generating with romp)"<< out.nl()
       << "print state: " << ((report_emit_state)
                              ? ("YES"
-                                + std::string((report_show_type) 
+                                + std::string((report_show_type)
                                                 ? ", w/ type info"
                                                 : "")
-                                + std::string((report_emit_state==defaults.report_emit_state 
-                                                && report_show_type==defaults.report_show_type) 
-                                              ? " \t(default)" 
+                                + std::string((report_emit_state==defaults.report_emit_state
+                                                && report_show_type==defaults.report_show_type)
+                                              ? " \t(default)"
                                               : ""))
                              : ("NO"
                                 + std::string((report_emit_state==defaults.report_emit_state)
@@ -6815,8 +6815,8 @@ const stream_void Options::write_config(ostream_p& out) const noexcept {
     out << " - max depth reached"                                                   << out.nl()
         << " - attempt limit reached"
             << ((attempt_limit == defaults.attempt_limit)
-                ? (" \t(`built-in`" 
-                    + std::string((deadlock) 
+                ? (" \t(`built-in`"
+                    + std::string((deadlock)
                                   ? ")"
                                   : "; ignores -nd/--no-deadlock)"))
                 : ((deadlock)
@@ -6844,8 +6844,8 @@ ojstream<O>& operator << (ojstream<O>& json, const Options& opts) noexcept {
             "\"max-depth\":" << opts.depth << ","
             "\"abs-attempt-limit\":" << std::to_string(_ROMP_ATTEMPT_LIMIT_DEFAULT) << ","
             "\"attempt-limit\":" << ((opts.attempt_limit != _ROMP_ATTEMPT_LIMIT_DEFAULT
-                                        && opts.deadlock) 
-                                      ? std::to_string(opts.attempt_limit) 
+                                        && opts.deadlock)
+                                      ? std::to_string(opts.attempt_limit)
                                       : "null") << ","
             "\"start-mode\":" << ((opts.start_id != _ROMP_START_ID_DEFAULT)
                                   ? ("\"single\"")
@@ -6867,8 +6867,8 @@ ojstream<O>& operator << (ojstream<O>& json, const Options& opts) noexcept {
 #endif
 #ifdef __romp__ENABLE_cover_property
             "\"enable-cover\":" << opts.complete_on_cover << ","
-            "\"cover-count\":" << ((opts.complete_on_cover) 
-                                    ? std::to_string(opts.cover_count) 
+            "\"cover-count\":" << ((opts.complete_on_cover)
+                                    ? std::to_string(opts.cover_count)
                                     : "null") << ","
 #else
             "\"enable-cover\":false,"
@@ -6876,8 +6876,8 @@ ojstream<O>& operator << (ojstream<O>& json, const Options& opts) noexcept {
 #endif
 #ifdef __romp__ENABLE_liveness_property
             "\"enable-liveness\":" << opts.liveness << ","
-            "\"liveness-limit\":" << ((opts.liveness) 
-                                      ? std::to_string(opts.lcount) 
+            "\"liveness-limit\":" << ((opts.liveness)
+                                      ? std::to_string(opts.lcount)
                                       : "null") << ","
 #else
             "\"enable-liveness\":false,"
@@ -6914,8 +6914,8 @@ ostream_p& operator << (ostream_p& out, const Options& opts) noexcept { opts.wri
       put_msgs(bfs.put_msgs),
       id(RandWalker::next_id++),
       OPTIONS(OPTIONS_),
-      sim1Step(((OPTIONS.do_trace) 
-                  ? std::function<void()>([this](){sim1Step_trace();}) 
+      sim1Step(((OPTIONS.do_trace)
+                  ? std::function<void()>([this](){sim1Step_trace();})
                   : std::function<void()>([this](){sim1Step_no_trace();}))),
 #     ifdef __romp__ENABLE_cover_property
         enable_cover(OPTIONS_.complete_on_cover), goal_cover_count(OPTIONS_.cover_count),
@@ -6940,9 +6940,9 @@ ostream_p& operator << (ostream_p& out, const Options& opts) noexcept { opts.wri
       bfs_trace(bfs);
     }
     // transfer history from bfs
-    for (size_t i=bfs.history_start; i<bfs.history_level; ++i) 
+    for (size_t i=bfs.history_start; i<bfs.history_level; ++i)
       history[i%history_size()] = bfs.history[i%bfs.history_size()];
-    //NOTE: this is lazy and overwrites previous data while transferring data 
+    //NOTE: this is lazy and overwrites previous data while transferring data
     //     since the history buffer on a BFS Walker is always larger than a random walker
   }
 
@@ -6955,7 +6955,7 @@ ostream_p& operator << (ostream_p& out, const Options& opts) noexcept { opts.wri
     for (size_t i=bfs.history_start; i<bfs.history_level; ++i) {
       *json << sep << *bfs.history[i%bfs.history_size()].rule;
     }
-    *json << "],"  
+    *json << "],"
             "\"state\":" << bfs.state << '}';
   }
 
@@ -6976,9 +6976,9 @@ ostream_p& operator << (ostream_p& out, const Options& opts) noexcept { opts.wri
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file romp-rw-main.hpp
- * 
- * @brief 
- * 
+ *
+ * @brief
+ *
  * @date 2022/07/12
  * @version 0.2
  */
@@ -6991,17 +6991,17 @@ ostream_p& operator << (ostream_p& out, const Options& opts) noexcept { opts.wri
 #endif
 
 // #include <unistd.h>
-namespace romp { 
+namespace romp {
   void init_trace_dir(const Options& OPTIONS) {
     std::string args = "mkdir -p \"" + OPTIONS.get_trace_dir() + "\"";
     int err = system(args.c_str());
     if (err) {
-      std::cerr << "\nERROR :: trace directory ``" << OPTIONS.get_trace_dir() << "`` does not exists and could not be created !!\n\n" 
+      std::cerr << "\nERROR :: trace directory ``" << OPTIONS.get_trace_dir() << "`` does not exists and could not be created !!\n\n"
                 << std::flush;
       exit(EXIT_FAILURE);
     }
   }
-  
+
   void launch_prompt(const Options& OPTIONS) {
     ostream_p out(std::cout,OPTIONS,0);
     std::cout << '\n';
@@ -7013,13 +7013,13 @@ namespace romp {
       std::cin >> _val;
       if (_val.size()>0) val = std::tolower(_val[0]);
       switch (val) {
-        case 'y': 
-        case 'l': 
+        case 'y':
+        case 'l':
           return;
         case 'n':
-        case 'e': 
+        case 'e':
           exit(EXIT_SUCCESS); break;
-        default: 
+        default:
           break;
       }
       std::cout << "COULDN'T RECOGNISE RESPONSE; TRY AGAIN\n";

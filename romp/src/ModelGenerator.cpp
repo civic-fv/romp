@@ -19,7 +19,7 @@ namespace romp {
 using namespace murphi;
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::set_params(const std::unordered_map<std::string,size_t> &enum_ids_,
                                 const std::vector<murphi::Comment> &comments_)
@@ -29,7 +29,7 @@ void ModelGenerator::set_params(const std::unordered_map<std::string,size_t> &en
   emitted.resize(comments_.size(), false);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_add(const Add &n) {
   *this << "(" << *n.lhs << " + " << *n.rhs << ")";
@@ -38,7 +38,7 @@ void ModelGenerator::visit_add(const Add &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_aliasdecl(const AliasDecl &n) {
   *this << "#define " << n.name << "() " << *n.value;
@@ -49,7 +49,7 @@ void ModelGenerator::visit_aliasdecl(const AliasDecl &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_aliasrule(const AliasRule &) {
   // this is unreachable because generate_c is only ever called with a Model
@@ -61,7 +61,7 @@ void ModelGenerator::visit_aliasrule(const AliasRule &) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_aliasstmt(const AliasStmt &n) {
   for (const Ptr<AliasDecl> &a : n.aliases) {
@@ -82,7 +82,7 @@ void ModelGenerator::visit_aliasstmt(const AliasStmt &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_and(const And &n) {
   *this << "(" << *n.lhs << " && " << *n.rhs << ")";
@@ -91,28 +91,28 @@ void ModelGenerator::visit_and(const And &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_array(const Array &n) {
   //[X] TODO: update ModelGenerator::visit_array to new standards
-  *this << ROMP_TYPE_ARRAY "<" << *n.index_type << ',' 
-                               << *n.element_type << '>'; 
+  *this << ROMP_TYPE_ARRAY "<" << *n.index_type << ','
+                               << *n.element_type << '>';
 # ifdef DEBUG
     *this << flush();
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_assignment(const Assignment &n) {
   //[X]TODO: add assignment error handling
   *this << indentation() << "// " << n.lhs->to_string() << " := " << n.rhs->to_string() << ';';
   emit_trailing_comments(n);
-  *this << '\n' 
+  *this << '\n'
         << indentation() << ROMP_UTIL_NAMESPACE "::Assignment<" << *n.lhs->type() << // ','
                                                                 // << *n.rhs->type() <<
-                                                              ">(" << *n.lhs << ", " 
-                                                                << *n.rhs << ", " 
+                                                              ">(" << *n.lhs << ", "
+                                                                << *n.rhs << ", "
                                                                   ROMP_MAKE_LOCATION_STRUCT(n.loc)
                                                               << ");\n";
 # ifdef DEBUG
@@ -120,7 +120,7 @@ void ModelGenerator::visit_assignment(const Assignment &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_band(const Band &n) {
   *this << "(" << *n.lhs << " & " << *n.rhs << ")";
@@ -129,7 +129,7 @@ void ModelGenerator::visit_band(const Band &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_bnot(const Bnot &n) {
   *this << "(~" << *n.rhs << ")";
@@ -138,7 +138,7 @@ void ModelGenerator::visit_bnot(const Bnot &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_bor(const Bor &n) {
   *this << "(" << *n.lhs << " | " << *n.rhs << ")";
@@ -147,7 +147,7 @@ void ModelGenerator::visit_bor(const Bor &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_chooserule(const ChooseRule &n) {
   // this is unreachable because generate_c is only ever called with a Model
@@ -159,7 +159,7 @@ void ModelGenerator::visit_chooserule(const ChooseRule &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_clear(const Clear &n) {
   //[X]TODO: update ModelGenerator::visit_clear to new standards
@@ -171,7 +171,7 @@ void ModelGenerator::visit_clear(const Clear &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_constdecl(const ConstDecl &n) {
   //[X]TODO: update ModelGenerator::visit_constdecl to new standards
@@ -195,7 +195,7 @@ void ModelGenerator::visit_constdecl(const ConstDecl &n) {
 }
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_div(const Div &n) {
   *this << "(" << *n.lhs << " / " << *n.rhs << ")";
@@ -204,7 +204,7 @@ void ModelGenerator::visit_div(const Div &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_element(const Element &n) {
   //[X]TODO: update ModelGenerator::visit_element to new standards
@@ -212,16 +212,16 @@ void ModelGenerator::visit_element(const Element &n) {
   if (const auto a = dynamic_cast<const Array*>(_a.get())) {
   *this << "(" ROMP_UTIL_NAMESPACE "::Element<"<< *a->index_type << ','
                                                << *a->element_type
-                                            << ">(" << *n.array << ", " 
-                                                    << *n.index << ", " 
-                                                    ROMP_MAKE_LOCATION_STRUCT(n.loc) "))"; 
+                                            << ">(" << *n.array << ", "
+                                                    << *n.index << ", "
+                                                    ROMP_MAKE_LOCATION_STRUCT(n.loc) "))";
   } else assert(!"unreachable");
 # ifdef DEBUG
     *this << flush();
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_enum(const Enum &n) {
   //[X]TODO: update ModelGenerator::visit_enum to new standards
@@ -234,7 +234,7 @@ void ModelGenerator::visit_enum(const Enum &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_eq(const Eq &n) {
   //[X]TODO: update ModelGenerator::visit_eq to new standards
@@ -244,7 +244,7 @@ void ModelGenerator::visit_eq(const Eq &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_errorstmt(const ErrorStmt &n) {
   //[X]TODO: update ModelGenerator::visit_errorstmt to new standards
@@ -263,7 +263,7 @@ void ModelGenerator::visit_errorstmt(const ErrorStmt &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_exists(const Exists &n) {
   *this << "({ bool res_ = false; " << n.quantifier << " { res_ |= " << *n.expr
@@ -273,7 +273,7 @@ void ModelGenerator::visit_exists(const Exists &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_exprid(const ExprID &n) {
   *this << "(";
@@ -292,7 +292,7 @@ void ModelGenerator::visit_exprid(const ExprID &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_field(const Field &n) {
   //[X]TODO: update ModelGenerator::visit_field to new standards
@@ -309,7 +309,7 @@ void ModelGenerator::visit_field(const Field &n) {
   // throw Error("expected a record type", n.record->loc);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_for(const For &n) {
   //[X]TODO: update ModelGenerator::visit_for to new standards
@@ -329,7 +329,7 @@ void ModelGenerator::visit_for(const For &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_forall(const Forall &n) {
   //[X]TODO: update ModelGenerator::visit_forall to new standards
@@ -341,7 +341,7 @@ void ModelGenerator::visit_forall(const Forall &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_function(const Function &n) {
   //[X]TODO: update ModelGenerator::visit_function to new standards
@@ -377,9 +377,9 @@ void ModelGenerator::visit_function(const Function &n) {
   *this << " " /* "throw (" ROMP_MODEL_EXCEPTION_TYPE ")" */  "{\n";
   indent();
   // *this << indentation() << "using namespace ::" ROMP_TYPE_NAMESPACE ";\n";
-  
+
   *this << indentation() << "try {\n";
-  indent(); 
+  indent();
 
   for (const Ptr<Decl> &d : n.decls) {
     emit_leading_comments(*d);
@@ -391,9 +391,9 @@ void ModelGenerator::visit_function(const Function &n) {
   }
 
   dedent();
-  // *this << indentation() << "} catch (...) { ::std::throw_with_nested( " 
+  // *this << indentation() << "} catch (...) { ::std::throw_with_nested( "
   //                       ROMP_MAKE_MODEL_ERROR_FUNCT(n,id) " ); }\n";
-  *this << indentation() << "} catch (...) { throw " 
+  *this << indentation() << "} catch (...) { throw "
                         ROMP_MAKE_MODEL_ERROR_FUNCT(n,id) "; }\n";
 
   dedent();
@@ -406,7 +406,7 @@ void ModelGenerator::visit_function(const Function &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_functioncall(const FunctionCall &n) {
   *this << n.name << "(";
@@ -430,7 +430,7 @@ void ModelGenerator::visit_functioncall(const FunctionCall &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_geq(const Geq &n) {
   *this << "(" << *n.lhs << " >= " << *n.rhs << ")";
@@ -439,7 +439,7 @@ void ModelGenerator::visit_geq(const Geq &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_gt(const Gt &n) {
   *this << "(" << *n.lhs << " > " << *n.rhs << ")";
@@ -448,7 +448,7 @@ void ModelGenerator::visit_gt(const Gt &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_if(const If &n) {
   bool first = true;
@@ -468,7 +468,7 @@ void ModelGenerator::visit_if(const If &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_ifclause(const IfClause &n) {
   if (n.condition != nullptr) {
@@ -498,7 +498,7 @@ void ModelGenerator::visit_ifclause(const IfClause &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_implication(const Implication &n) {
   *this << "(!" << *n.lhs << " || " << *n.rhs << ")";
@@ -507,7 +507,7 @@ void ModelGenerator::visit_implication(const Implication &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_ismember(const IsMember& n) {
   //[X]TODO: update ModelGenerator::visit_ismember to new standards
@@ -517,7 +517,7 @@ void ModelGenerator::visit_ismember(const IsMember& n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_isundefined(const IsUndefined &n) {
   //[X]TODO: update ModelGenerator::visit_isundefined to new standards
@@ -527,7 +527,7 @@ void ModelGenerator::visit_isundefined(const IsUndefined &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_leq(const Leq &n) {
   *this << "(" << *n.lhs << " <= " << *n.rhs << ")";
@@ -536,7 +536,7 @@ void ModelGenerator::visit_leq(const Leq &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_lsh(const Lsh &n) {
   *this << "(" << *n.lhs << " << " << *n.rhs << ")";
@@ -545,7 +545,7 @@ void ModelGenerator::visit_lsh(const Lsh &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_lt(const Lt &n) {
   *this << "(" << *n.lhs << " < " << *n.rhs << ")";
@@ -554,7 +554,7 @@ void ModelGenerator::visit_lt(const Lt &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_mod(const Mod &n) {
   *this << "(" << *n.lhs << " % " << *n.rhs << ")";
@@ -563,7 +563,7 @@ void ModelGenerator::visit_mod(const Mod &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_model(const Model &n) {
 
@@ -602,7 +602,7 @@ void ModelGenerator::visit_model(const Model &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_mul(const Mul &n) {
   *this << "(" << *n.lhs << " * " << *n.rhs << ")";
@@ -611,7 +611,7 @@ void ModelGenerator::visit_mul(const Mul &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_multiset(const Multiset &n) {
   //[X]TODO: update ModelGenerator::visit_multiset to new standards
@@ -622,7 +622,7 @@ void ModelGenerator::visit_multiset(const Multiset &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_multisetadd(const MultisetAdd &n) {
   //[X]TODO: update ModelGenerator::visit_multisetadd to new standards
@@ -634,18 +634,18 @@ void ModelGenerator::visit_multisetadd(const MultisetAdd &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_multisetcount(const MultisetCount &n) {
   //[X]TODO: update ModelGenerator::visit_multisetcount to new standards
-  *this << "((" << *n.ms_quantifier.multiset << ").MultisetCount([&](size_t " << n.ms_quantifier.name << ") -> bool { " 
+  *this << "((" << *n.ms_quantifier.multiset << ").MultisetCount([&](size_t " << n.ms_quantifier.name << ") -> bool { "
                                                   "return ("<< *n.condition <<"); }))";
 # ifdef DEBUG
     *this << flush();
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_multisetelement(const MultisetElement &n) {
   //[X]TODO: update ModelGenerator::visit_multisetelement to new standards
@@ -658,7 +658,7 @@ void ModelGenerator::visit_multisetelement(const MultisetElement &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_multisetremove(const MultisetRemove &n) {
   //[X]TODO: update ModelGenerator::visit_multisetremove to new standards
@@ -673,11 +673,11 @@ void ModelGenerator::visit_multisetremove(const MultisetRemove &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_multisetremovepred(const MultisetRemovePred &n) {
   //[X]TODO: update ModelGenerator::visit_multisetremovepred to new standards
-  *this << indentation() << "(" 
+  *this << indentation() << "("
           << *n.ms_quantifier.multiset << ").MultisetRemovePred([&](size_t " << n.ms_quantifier.name << ") -> bool { "
                                                                   "return (" << *n.pred << "); });";
   emit_trailing_comments(n);
@@ -687,7 +687,7 @@ void ModelGenerator::visit_multisetremovepred(const MultisetRemovePred &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_multisetquantifier(const MultisetQuantifier &n) {
   //[X]TODO: update ModelGenerator::visit_multisetquantifier to new standards
@@ -700,7 +700,7 @@ void ModelGenerator::visit_multisetquantifier(const MultisetQuantifier &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_negative(const Negative &n) {
   *this << "(-" << *n.rhs << ")";
@@ -709,7 +709,7 @@ void ModelGenerator::visit_negative(const Negative &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_neq(const Neq &n) {
   //[X]TODO: update ModelGenerator::visit_neq to new standards
@@ -719,11 +719,11 @@ void ModelGenerator::visit_neq(const Neq &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_not(const Not &n) { *this << "(!" << *n.rhs << ")"; }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_number(const Number &n) {
   *this << "((" ROMP_UTIL_NAMESPACE "::range_t)(" << n.value/*.get_str()*/ << "))";
@@ -732,7 +732,7 @@ void ModelGenerator::visit_number(const Number &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_or(const Or &n) {
   *this << "(" << *n.lhs << " || " << *n.rhs << ")";
@@ -741,7 +741,7 @@ void ModelGenerator::visit_or(const Or &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_procedurecall(const ProcedureCall &n) {
   *this << indentation() << n.call << ";";
@@ -752,7 +752,7 @@ void ModelGenerator::visit_procedurecall(const ProcedureCall &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_property(const Property &) {
   // this is unreachable because generate_c is only ever called with a Model
@@ -764,7 +764,7 @@ void ModelGenerator::visit_property(const Property &) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_propertyrule(const PropertyRule &n) {
   //[X]TODO: update ModelGenerator::visit_propertyrule to new standards
@@ -798,9 +798,9 @@ void ModelGenerator::visit_propertyrule(const PropertyRule &n) {
   *this << ") const "  /* " throw (" ROMP_MODEL_EXCEPTION_TYPE ")" */  "{\n";
   indent();
   // *this << indentation() << "using namespace ::" ROMP_TYPE_NAMESPACE ";\n";
-  
+
   *this << indentation() << "try {\n";
-  indent(); 
+  indent();
 
   // any aliases this property uses
   for (const Ptr<AliasDecl> &a : n.aliases) {
@@ -855,9 +855,9 @@ void ModelGenerator::visit_propertyrule(const PropertyRule &n) {
   }
 
   dedent();
-  // *this << indentation() << "} catch (...) { ::std::throw_with_nested( " 
+  // *this << indentation() << "} catch (...) { ::std::throw_with_nested( "
   //                       ROMP_MAKE_MODEL_ERROR_PROPERTY(n,prop_id) " ); }\n";
-  *this << indentation() << "} catch (...) { throw " 
+  *this << indentation() << "} catch (...) { throw "
                         ROMP_MAKE_MODEL_ERROR_PROPERTY(n,prop_id) "; }\n";
 
   dedent();
@@ -870,7 +870,7 @@ void ModelGenerator::visit_propertyrule(const PropertyRule &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_propertystmt(const PropertyStmt &n) {
   //[X]TODO: update ModelGenerator::visit_propertystmt to new romp standards
@@ -934,7 +934,7 @@ void ModelGenerator::visit_propertystmt(const PropertyStmt &n) {
 }
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_put(const Put &n) {
   //[X]TODO: update ModelGenerator::visit_put to new standards (aka actually supported)
@@ -943,7 +943,7 @@ void ModelGenerator::visit_put(const Put &n) {
   *this << _ROMP_PUT_HANDLER << "([=](" ROMP_OUT_STREAM_TYPE "& _romp_out) -> void { _romp_out";
   // is this a put of a literal string?
   if (n.expr == nullptr) {
-    size_t pos; 
+    size_t pos;
     std::string s = n.value;
     std::string token;
     while ((pos = s.find("\n")) != std::string::npos) {
@@ -965,7 +965,7 @@ void ModelGenerator::visit_put(const Put &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_quantifier(const Quantifier &n) {
   //[X]TODO: update ModelGenerator::visit_quantifier to new standards
@@ -1001,7 +1001,7 @@ void ModelGenerator::visit_quantifier(const Quantifier &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_range(const Range &n) {
   //[X]TODO: update ModelGenerator::visit_range to new standards
@@ -1012,7 +1012,7 @@ void ModelGenerator::visit_range(const Range &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_record(const Record &n) {
   //[X]TODO: update ModelGenerator::visit_record to new standards
@@ -1026,7 +1026,7 @@ void ModelGenerator::visit_record(const Record &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_return(const Return &n) {
   *this << indentation() << "return";
@@ -1041,7 +1041,7 @@ void ModelGenerator::visit_return(const Return &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_rsh(const Rsh &n) {
   *this << "(" << *n.lhs << " >> " << *n.rhs << ")";
@@ -1050,7 +1050,7 @@ void ModelGenerator::visit_rsh(const Rsh &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_ruleset(const Ruleset &) {
   // this is unreachable because generate_c is only ever called with a Model
@@ -1062,7 +1062,7 @@ void ModelGenerator::visit_ruleset(const Ruleset &) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_scalarset(const Scalarset &n) {
   //[X]TODO: update ModelGenerator::visit_scalarset to new standards
@@ -1076,9 +1076,9 @@ void ModelGenerator::visit_scalarset(const Scalarset &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
-void ModelGenerator::visit_scalarsetunion(const ScalarsetUnion &n) { 
+void ModelGenerator::visit_scalarsetunion(const ScalarsetUnion &n) {
   //[X]TODO: update ModelGenerator::visit_scalarsetunion to new standards
   *this << ROMP_TYPE_SCALAR_UNION "<";
   std::string sep;
@@ -1093,7 +1093,7 @@ void ModelGenerator::visit_scalarsetunion(const ScalarsetUnion &n) {
 }
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_simplerule(const SimpleRule &n) {
   //[X]TODO: update ModelGenerator::visit_simplerule to new standards
@@ -1125,9 +1125,9 @@ void ModelGenerator::visit_simplerule(const SimpleRule &n) {
   *this << ") const "  /* " throw (" ROMP_MODEL_EXCEPTION_TYPE ")" */  "{\n";
   indent();
   // *this << indentation() << "using namespace ::" ROMP_TYPE_NAMESPACE ";\n";
-  
+
   *this << indentation() << "try {\n";
-  indent(); 
+  indent();
 
   // any aliases that are defined in an outer scope
   for (const Ptr<AliasDecl> &a : n.aliases) {
@@ -1194,9 +1194,9 @@ void ModelGenerator::visit_simplerule(const SimpleRule &n) {
   *this << ") " /* " throw (" ROMP_MODEL_EXCEPTION_TYPE ")" */ "{\n";
   indent();
   // *this << indentation() << "using namespace ::" ROMP_TYPE_NAMESPACE ";\n";
-  
+
   *this << indentation() << "try {\n";
-  indent(); 
+  indent();
 
   // aliases, variables, local types, etc.
   for (const Ptr<AliasDecl> &a : n.aliases) {
@@ -1225,9 +1225,9 @@ void ModelGenerator::visit_simplerule(const SimpleRule &n) {
   }
 
   dedent();
-  // *this << indentation() << "} catch (...) { ::std::throw_with_nested( " 
+  // *this << indentation() << "} catch (...) { ::std::throw_with_nested( "
   //                       ROMP_MAKE_MODEL_ERROR_RULE_ACTION(n,id) " ); }\n";
-  *this << indentation() << "} catch (...) { throw " 
+  *this << indentation() << "} catch (...) { throw "
                         ROMP_MAKE_MODEL_ERROR_RULE_ACTION(n,id) "; }\n";
 
   dedent();
@@ -1242,13 +1242,13 @@ void ModelGenerator::visit_simplerule(const SimpleRule &n) {
 }
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_startstate(const StartState &n) {
   //[X]TODO: update ModelGenerator::visit_startstate to new standards
   id_t id = next_startstate_id++;
-  
-  *this << indentation() << CodeGenerator::M_STARTSTATE__FUNC_ATTRS 
+
+  *this << indentation() << CodeGenerator::M_STARTSTATE__FUNC_ATTRS
         << " void " ROMP_STARTSTATE_PREFIX << n.name << "(";
 
   // parameters
@@ -1276,7 +1276,7 @@ void ModelGenerator::visit_startstate(const StartState &n) {
   // *this << indentation() << "using namespace ::" ROMP_TYPE_NAMESPACE ";\n";
 
   *this << indentation() << "try {\n";
-  indent(); 
+  indent();
 
   // aliases, variables, local types, etc.
   for (const Ptr<AliasDecl> &a : n.aliases) {
@@ -1304,9 +1304,9 @@ void ModelGenerator::visit_startstate(const StartState &n) {
   }
 
   dedent();
-  // *this << indentation() << "} catch (...) { ::std::throw_with_nested( " 
+  // *this << indentation() << "} catch (...) { ::std::throw_with_nested( "
   //                       ROMP_MAKE_MODEL_ERROR_STARTSTATE(n, id) " ); }\n";
-  *this << indentation() << "} catch (...) { throw " 
+  *this << indentation() << "} catch (...) { throw "
                         ROMP_MAKE_MODEL_ERROR_STARTSTATE(n, id) "; }\n";
 
   dedent();
@@ -1319,9 +1319,9 @@ void ModelGenerator::visit_startstate(const StartState &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
-void ModelGenerator::visit_sucast(const SUCast &n) { 
+void ModelGenerator::visit_sucast(const SUCast &n) {
   //[X]TODO: update ModelGenerator::visit_sucast to new standards
   *this << "((" << *n.target << ')' << *n.rhs << ')';
 # ifdef DEBUG
@@ -1329,7 +1329,7 @@ void ModelGenerator::visit_sucast(const SUCast &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_sub(const Sub &n) {
   *this << "(" << *n.lhs << " - " << *n.rhs << ")";
@@ -1338,7 +1338,7 @@ void ModelGenerator::visit_sub(const Sub &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_switch(const Switch &n) {
 
@@ -1394,7 +1394,7 @@ void ModelGenerator::visit_switch(const Switch &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_switchcase(const SwitchCase &n) {
   if (n.matches.empty()) {
@@ -1416,7 +1416,7 @@ void ModelGenerator::visit_switchcase(const SwitchCase &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_ternary(const Ternary &n) {
   *this << "(" << *n.cond << " ? " << *n.lhs << " : " << *n.rhs << ")";
@@ -1425,12 +1425,12 @@ void ModelGenerator::visit_ternary(const Ternary &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_typedecl(const TypeDecl &n) {
   //[X]TODO: update ModelGenerator::visit_typedecl to new standards
-  *this << indentation() << "typedef " ROMP_TYPE_TYPEID "<" << n.type_id << ',' 
-                                                            << *n.value << "> " 
+  *this << indentation() << "typedef " ROMP_TYPE_TYPEID "<" << n.type_id << ','
+                                                            << *n.value << "> "
                                       << n.name << ";";
   emit_trailing_comments(n);
   *this << "\n";
@@ -1439,11 +1439,11 @@ void ModelGenerator::visit_typedecl(const TypeDecl &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_typeexprid(const TypeExprID &n) { *this << n.name; }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_undefine(const Undefine &n) {
   *this << indentation() << "// Undefine " << n.rhs->to_string() << ';';
@@ -1454,7 +1454,7 @@ void ModelGenerator::visit_undefine(const Undefine &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_vardecl(const VarDecl& n) {
   *this << indentation() << *n.type << ' ' << n.name << ';';
@@ -1465,7 +1465,7 @@ void ModelGenerator::visit_vardecl(const VarDecl& n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_while(const While &n) {
   *this << indentation() << "while " << *n.condition << " {\n";
@@ -1483,7 +1483,7 @@ void ModelGenerator::visit_while(const While &n) {
 # endif
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void ModelGenerator::visit_xor(const Xor &n) {
   *this << "(" << *n.lhs << " ^ " << *n.rhs << ")";
@@ -1495,8 +1495,8 @@ void ModelGenerator::visit_xor(const Xor &n) {
 
 
 
-// << ========================================================================================== >> 
-// <<                                     UTILITY FUNCTIONS                                      >> 
+// << ========================================================================================== >>
+// <<                                     UTILITY FUNCTIONS                                      >>
 // << ========================================================================================== >>
 
 // write out a single line comment, accounting for the fact that '\' is an

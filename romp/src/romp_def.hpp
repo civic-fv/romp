@@ -6,10 +6,10 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file romp_def.hpp
- * 
- * @brief A bunch of definitions for configuration 
+ *
+ * @brief A bunch of definitions for configuration
  *        and other details in the romp codegen tool.
- * 
+ *
  * @date 2022/05/11
  * @version 0.3
  */
@@ -65,7 +65,7 @@
 #define ROMP_TYPE_SCALARSET "::" ROMP_TYPE_NAMESPACE "::" ROMP_TYPE_NAME_SCALARSET
 #define ROMP_TYPE_NAME_SCALAR_UNION "ScalarsetUnionType"
 #define ROMP_TYPE_SCALAR_UNION "::" ROMP_TYPE_NAMESPACE "::" ROMP_TYPE_NAME_SCALAR_UNION
-#define ROMP_TYPE_NAME_TYPEID "TypeIdType" 
+#define ROMP_TYPE_NAME_TYPEID "TypeIdType"
 #define ROMP_TYPE_TYPEID "::" ROMP_TYPE_NAMESPACE "::" ROMP_TYPE_NAME_TYPEID
 
 #define ROMP_SCALAR_ENUM_NAME "__romp__SCALAR_ENUM_t__"
@@ -87,11 +87,11 @@
 #define ROMP_COVER_PREPROCESSOR_VAR "__romp__ENABLE_cover_property"
 #define ROMP_LIVENESS_PREPROCESSOR_VAR "__romp__ENABLE_liveness_property"
 
-#define ROMP_INFO_TYPE_IDS_VAR_NAME "TYPE_IDS" 
+#define ROMP_INFO_TYPE_IDS_VAR_NAME "TYPE_IDS"
 #define ROMP_INFO_TYPE_IDS_DECL "const std::string " ROMP_INFO_TYPE_IDS_VAR_NAME "[]"
 #define ROMP_INFO_TYPE_IDS_VAR "::" ROMP_INFO_NAMESPACE_NAME "::" ROMP_INFO_TYPE_IDS_VAR_NAME
 
-#define ROMP_INFO_RF_IDS_VAR_NAME "RECORD_FIELD_LABELS" 
+#define ROMP_INFO_RF_IDS_VAR_NAME "RECORD_FIELD_LABELS"
 #define ROMP_INFO_RF_IDS_DECL "const std::string " ROMP_INFO_RF_IDS_VAR_NAME "[]"
 #define ROMP_INFO_RF_IDS_VAR "::" ROMP_INFO_NAMESPACE_NAME "::" ROMP_INFO_RF_IDS_VAR_NAME
 
@@ -163,7 +163,7 @@
 // #define ROMP_MAKE_JSON_CONVERTER_CALL(_type,_val) "" << (_type) << "_to_json(json," << (_val) << ")"
 // #define ROMP_MAKE_STREAM_CONVERTER_CALL(_type,_val) "" << (_type) << "_to_str(out," << (_val) << ")"
 // #define ROMP_MAKE_TYPE_INIT_SIG(_type) "void _init_" << (_name) << "(" << (_name) << "& val)"
-// #define ROMP_MAKE_TYPE_INIT_CALL(_type,_val) "_init_" << (_type) << "(" << (_val) << ")" 
+// #define ROMP_MAKE_TYPE_INIT_CALL(_type,_val) "_init_" << (_type) << "(" << (_val) << ")"
 
 #define ROMP_SHOW_TYPE_OPTION_EXPR "(out.OPTIONS.report_show_type)"
 // #define ROMP_MAKE_SHOW_TYPE_TURN_COND(_type) "((::romp::OPTIONS.result_show_type) ? \\": " + (_type) + " =\\" : \\":=\\")"
@@ -199,8 +199,8 @@
 #define ROMP_MAKE_ERROR_INFO_STRUCT(_n, _json) "{\"" << nEscape((_n).message) << "\"," ROMP_MAKE_LOCATION_STRUCT((_n).loc) << ",\"" << nEscape(_json) << "\"}"
 #define ROMP_MAKE_FUNCT_INFO_STRUCT(_n, _json, _str) "{\"" << nEscape((_n).name) << "\"," ROMP_MAKE_LOCATION_STRUCT((_n).loc) ",\"" << nEscape(_json) << "\",\"" << nEscape(_str) << "\"}"
 
-#define ROMP_MAKE_RULESET_STRUCT_HEADER(_info_id) "{" ROMP_INFO_RULESETS_VAR"[" <<(_info_id)<<"]" ",std::vector<" ROMP_CALLER_RULE_TYPE ">{" 
-#define ROMP_MAKE_RULESET_STRUCT_FOOTER(...) "}}" 
+#define ROMP_MAKE_RULESET_STRUCT_HEADER(_info_id) "{" ROMP_INFO_RULESETS_VAR"[" <<(_info_id)<<"]" ",std::vector<" ROMP_CALLER_RULE_TYPE ">{"
+#define ROMP_MAKE_RULESET_STRUCT_FOOTER(...) "}}"
 #define ROMP_MAKE_RULE_STRUCT(_guard, _action, _info_id, _json, _str) ROMP_CALLER_RULE_TYPE "{" << (_guard) << "," << (_action) << "," ROMP_INFO_RULESETS_VAR "[" <<(_info_id)<<"],\"" << nEscape(_json) << "\",\"" << nEscape(_str) << "\"}"
 #define ROMP_MAKE_PROPERTY_STRUCT(_check, _info_id, _json, _str) "{" << (_check) << "," ROMP_INFO_PROPERTIES_VAR "[" <<(_info_id)<<"],\"" << nEscape(_json) << "\",\"" << nEscape(_str) << "\"}"
 #define ROMP_MAKE_STARTSTATE_STRUCT(_init, _id, _info_id, _json, _str) "{" << (_init) << "," ROMP_INFO_STARTSTATES_VAR "[" <<(_info_id)<<"]," << (_id) << ",\"" << nEscape(_json) << "\",\"" << nEscape(_str) << "\"}"

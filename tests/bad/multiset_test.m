@@ -20,4 +20,3 @@ rule "spin"
 
 Invariant "multiplicity matters" m1 = m2;
 Invariant "multiplicity does NOT matter" m1 != m2;
-

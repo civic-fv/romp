@@ -7,9 +7,9 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file romp-rw_pregen-fix.hpp
- * 
+ *
  * @brief just a bunch of things to get the language support working on our files without doing code gen.
- * 
+ *
  * @date 2022/06/29
  * @version 0.3
  */
@@ -41,10 +41,10 @@
 #ifndef _ROMP_RULE_COUNT
 #define _ROMP_RULE_COUNT (16ul)
 #endif
-#ifndef _ROMP_PROPERTIES_LEN 
+#ifndef _ROMP_PROPERTIES_LEN
 #define _ROMP_PROPERTIES_LEN (2ul)
 #endif
-#ifndef _ROMP_PROPERTY_RULES_LEN 
+#ifndef _ROMP_PROPERTY_RULES_LEN
 #define _ROMP_PROPERTY_RULES_LEN (2ul)
 #endif
 #ifndef _ROMP_LIVENESS_PROP_COUNT
@@ -56,10 +56,10 @@
 #ifndef _ROMP_STARTSTATES_LEN
 #define _ROMP_STARTSTATES_LEN (2ul)
 #endif
-#ifndef _ROMP_STATE_TYPE 
+#ifndef _ROMP_STATE_TYPE
 #define _ROMP_STATE_TYPE ::__model__::__State__
 #endif
-#ifndef _ROMP_THREAD_TO_RW_RATIO 
+#ifndef _ROMP_THREAD_TO_RW_RATIO
 #define _ROMP_THREAD_TO_RW_RATIO (16u)
 #endif
 
@@ -76,7 +76,7 @@ namespace __model__ {
 namespace romp {
   typedef long range_t;
   typedef long scalar_t;
-  template<class O> struct ojstream; 
+  template<class O> struct ojstream;
   struct TypeInfo;
   struct RuleInfo;
   struct RuleSet;

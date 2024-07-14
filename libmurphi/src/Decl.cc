@@ -19,7 +19,7 @@ Decl::Decl(const std::string &name_, const location &loc_)
 
 Decl::~Decl() {}
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 ExprDecl::ExprDecl(const std::string &name_, const location &loc_)
     : Decl(name_, loc_) {}
@@ -44,7 +44,7 @@ bool AliasDecl::is_readonly() const { return value->is_readonly(); }
 
 Ptr<TypeExpr> AliasDecl::get_type() const { return value->type(); }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 ConstDecl::ConstDecl(const std::string &name_, const Ptr<Expr> &value_,
                      const location &loc_)
@@ -86,7 +86,7 @@ void ConstDecl::validate() const {
     throw Error("const definition is not a constant", value->loc);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 id_t TypeDecl::next_type_id = 0;
 
@@ -116,7 +116,7 @@ void TypeDecl::update() {
   }
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 VarDecl::VarDecl(const std::string &name_, const Ptr<TypeExpr> &type_,
                  const location &loc_)

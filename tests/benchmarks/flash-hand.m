@@ -868,7 +868,7 @@ ruleset src : NODE do
 rule "NI_InvAck"
   src != Home &
   Sta.InvMsg[src].Cmd = INV_InvAck &
-  Sta.Dir.Pending & Sta.Dir.InvSet[src]  
+  Sta.Dir.Pending & Sta.Dir.InvSet[src]
 ==>
 var NxtSta : STATE;
 begin
@@ -1099,4 +1099,3 @@ invariant "MemDataProp"
 --   min : NODE;
 --   mi : msg; /* the incoming message */
 --   mi := UniMsg[min];
-

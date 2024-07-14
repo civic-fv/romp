@@ -7,12 +7,12 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file SigPerm.hpp
- * 
+ *
  * @brief Implements a iterator class that can produce lists of the various permutations
  *        in the quantifiers of rumur's AST Rule's, so that we can call them in our output.
- * 
+ *
  *        Note: Note Optimized to be used in more than one file in a compilation (single file construction)
- * 
+ *
  * @date 2022/06/22
  * @version 0.3
  */
@@ -43,9 +43,9 @@ struct QuantExpansion;
 
 
 
-// << ========================================================================================== >> 
-// <<                                            Sig                                             >> 
-// << ========================================================================================== >> 
+// << ========================================================================================== >>
+// <<                                            Sig                                             >>
+// << ========================================================================================== >>
 #pragma region class_Sig
 struct Sig {
   size_t index;
@@ -75,9 +75,9 @@ private:
 #pragma endregion class_Sig
 
 
-// << ========================================================================================== >> 
-// <<                                         SigParam                                           >> 
-// << ========================================================================================== >> 
+// << ========================================================================================== >>
+// <<                                         SigParam                                           >>
+// << ========================================================================================== >>
 #pragma region class_SigParam
 struct SigParam {
   const mpz_class value;
@@ -97,9 +97,9 @@ private:
 #pragma endregion class_SigParam
 
 
-// << ========================================================================================== >> 
-// <<                                      QuantExpansion                                        >> 
-// << ========================================================================================== >> 
+// << ========================================================================================== >>
+// <<                                      QuantExpansion                                        >>
+// << ========================================================================================== >>
 #pragma region class_QuantExpansion
 struct QuantExpansion {
   std::vector<const SigParam*> values;
@@ -120,9 +120,9 @@ private:
 };
 #pragma endregion class_QuantExpansion
 
-// << ========================================================================================== >> 
-// <<                                          SigPerm                                           >> 
-// << ========================================================================================== >> 
+// << ========================================================================================== >>
+// <<                                          SigPerm                                           >>
+// << ========================================================================================== >>
 #pragma region class_SigPerm
 class SigPerm {
 private:
@@ -132,7 +132,7 @@ protected:
   // std::vector<std::shared_ptr<const QuantExpansion>> quant_vals;
   std::vector<std::shared_ptr<QuantExpansion>> quant_vals;
   size_t _size = 1;
-  
+
 
 public:
   const murphi::Rule& rule; // the "ruleset" we are creating all the signatures for
@@ -141,7 +141,7 @@ public:
   const size_t param_count;
 
 
-// << ============================= Constructors & Deconstructor =============================== >> 
+// << ============================= Constructors & Deconstructor =============================== >>
 private:
 protected:
   SigPerm(const murphi::Rule& rule_, const char* rule_type_);
@@ -151,19 +151,19 @@ public:
   SigPerm(const murphi::PropertyRule& rule_) : SigPerm(rule_, "PropertyRule") {}
   ~SigPerm() = default;
 
-// << =================================== Member Functions ===================================== >> 
+// << =================================== Member Functions ===================================== >>
 private:
   void add_quants(const std::vector<murphi::Quantifier>& qs);
 
   void add_quant(const murphi::Quantifier& q) ;
 
   // static void add_quant(const std::string& name, const murphi::Quantifier& q);
-  
+
   // std::vector<std::vector<const SigParam&>::iterator> get_init_param_iters() const;
   std::vector<size_t> get_init_param_iters() const;
 
 protected:
-  
+
 
 
 protected:
@@ -172,10 +172,10 @@ public:
 
   std::string to_string() const;
   std::string to_json() const;
-  
-  // << ========================================================================================== >> 
-  // <<                                     SigPerm::Iterator                                      >> 
-  // << ========================================================================================== >> 
+
+  // << ========================================================================================== >>
+  // <<                                     SigPerm::Iterator                                      >>
+  // << ========================================================================================== >>
 
   struct Iterator {
     const Sig& operator*() const ;
@@ -198,7 +198,7 @@ public:
     const SigPerm& perm;
     // std::vector<std::vector<const SigParam&>::iterator> param_iters;
     // std::vector<size_t> param_iters;
-    size_t* param_iters; // dynamic array of index values for the various quantifiers for a 
+    size_t* param_iters; // dynamic array of index values for the various quantifiers for a
   // public:
     // construct a "begin" iterator (ONLY)
     // Iterator(const SigPerm& perm_, std::vector<std::vector<const SigParam&>::iterator> param_iters_);

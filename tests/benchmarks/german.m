@@ -33,10 +33,10 @@ AuxData : DATA;                   -- Latest value of cache line
 
 ruleset d : DATA do startstate "init"
 --
--- All nodes: init all cmd channels to be empty, Cache States I, 
+-- All nodes: init all cmd channels to be empty, Cache States I,
 -- the set of nodes to be invalidated is empty
 -- and nodes having S or E copies empty
--- 
+--
   for i : NODE do
     Chan1[i].Cmd := Empty;
     Chan2[i].Cmd := Empty;
@@ -54,7 +54,7 @@ end end;
 
 -- State Transitions --
 --------------------------------------------
-ruleset i : NODE do 
+ruleset i : NODE do
 -- Any node with cmd req channel empty and cache I can request ReqS
   rule "SendReqS"
     Chan1[i].Cmd = Empty &
@@ -65,7 +65,7 @@ ruleset i : NODE do
 end;
 
 ----------------------
-ruleset i : NODE do 
+ruleset i : NODE do
 -- Any node with cmd req channel empty and cache I/S can request ReqE
   rule "SendReqE"
     Chan1[i].Cmd = Empty &
@@ -77,8 +77,8 @@ ruleset i : NODE do
 end;
 
 --------------------------------------------
-ruleset i : NODE do 
--- For any node that is waiting with ReqS requested, with CurCmd Empty 
+ruleset i : NODE do
+-- For any node that is waiting with ReqS requested, with CurCmd Empty
 -- we set CurCmd to ReqS on behalf of node i (setting CurPtr to point to it).
 -- Then void Chan1 empty.
 -- Now Set the nodes to be invalidated to the nodes having S or E copies.
@@ -95,11 +95,11 @@ end;
 
 ----------------------
 ruleset i : NODE do
--- For any node that is waiting with ReqE requested, with CurCmd Empty 
+-- For any node that is waiting with ReqE requested, with CurCmd Empty
 -- we set CurCmd to ReqE on behalf of node i (setting CurPtr to point to it).
 -- Then void Chan1 empty.
 -- Now Set the nodes to be invalidated to the nodes having S or E copies.
-  rule "RecvReqE" 
+  rule "RecvReqE"
     CurCmd = Empty &
     Chan1[i].Cmd = ReqE
     ==>
@@ -111,18 +111,18 @@ ruleset i : NODE do
 end;
 
 --------------------------------------------
-ruleset i : NODE do 
+ruleset i : NODE do
 -- For every node with Chan2 Cmd empty and InvSet true (node to be invalidated)
 -- and if CurCmd is ReqE or (ReqS with ExGnt true), then
 -- void Chan2 Cmd to Inv, and remove node i from InvSet (invalidation already set out)
-  rule "SendInv"  
+  rule "SendInv"
     Chan2[i].Cmd = Empty &
     InvSet[i] = true &  -- Gnt* and Inv channel
     ( CurCmd = ReqE |                 -- DC: curcmd = E
       CurCmd = ReqS & ExGntd = true ) -- DC: curcmd = S & ExGntd
   ==>
     Chan2[i].Cmd := Inv; -- fill Chan2 with Inv
-    InvSet[i] := false; 
+    InvSet[i] := false;
   end
 end;
 
@@ -131,7 +131,7 @@ end;
 -- When a node gets invalidated, it acks, and when it was E
 -- then the node (i) coughs up its cache data into Chan3
 -- Then cache state is I and undefine Cache Data
--- 
+--
 ruleset i : NODE do
   rule "SendInvAck"
     Chan2[i].Cmd = Inv &
@@ -219,10 +219,10 @@ end;
 ----------------------
 ruleset i : NODE;         -- for every node i
         d : DATA          -- for every data d
-  do 
+  do
     rule "Store"
       Cache[i].State = E  -- if node is in E
-      ==> 
+      ==>
       Cache[i].Data := d; -- store d into Cache[i].Data
       AuxData := d;       -- Also update latest cache line value
     end                   -- The node in E can get any "D" value
@@ -235,7 +235,7 @@ end;
 invariant "CtrlProp"
 forall i : NODE do
   forall j : NODE do
-   i!=j -> 
+   i!=j ->
     (Cache[i].State = E -> Cache[j].State = I) &
     (Cache[i].State = S -> Cache[j].State = I |
                            Cache[j].State = S)
@@ -250,6 +250,5 @@ invariant "DataProp"
  end;
 
 --------------------------------------------
-
 
 

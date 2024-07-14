@@ -41,8 +41,8 @@ using duration_mr_t = std::chrono::duration<long long,std::chrono::high_resoluti
 using time_mr_t = std::chrono::time_point<std::chrono::high_resolution_clock,std::chrono::duration<long long,std::chrono::high_resolution_clock::period>>;
 
 /**
- * @brief helper function rand_choice 
- * 
+ * @brief helper function rand_choice
+ *
  */
 template<typename T>
 T rand_choice(RandSeed_t &seed, T min, T max) {
@@ -65,7 +65,7 @@ T rand_choice(RandSeed_t &seed, T min, T max) {
 //   return res;
 // }
 
- 
+
 #if _ROMP_RULE_SELECTION_ALGO == (1ul)
 # define _ROMP_RULE_CHOICE_BAG_SIZE (_ROMP_MAX_RULESET_RULE_COUNT)
 #else
@@ -139,12 +139,12 @@ private:
   static id_t next_id;
   const id_t id;
   const Options& OPTIONS;
-  const bool IS_BFS; 
+  const bool IS_BFS;
   id_t start_id;
   const RandSeed_t init_rand_seed;
   RandSeed_t rand_seed;
   size_t _fuel; // = OPTIONS.depth;
-  bool _valid = true; 
+  bool _valid = true;
   bool _is_error = false; // legacy
   Result::Cause status = Result::RUNNING;
   json_file_t* json = nullptr;
@@ -179,8 +179,8 @@ private:
   duration_mr_t active_time = duration_mr_t(0l);
   duration_ms_t total_time = duration_ms_t(0l);
 #endif
-  
-  void init_state() noexcept {    
+
+  void init_state() noexcept {
     const StartState& startstate = ::__caller__::STARTSTATES[start_id];
 #ifdef __ROMP__DO_MEASURE
     start_time = time_mr();
@@ -193,7 +193,7 @@ private:
        __handle_exception/*<StartState,IModelError>*/(startstate,me);
     } catch (const std::exception& ex) {
       status = Result::UNKNOWN_CAUSE;
-      __handle_exception/*<StartState,std::exception>*/(startstate,ex); 
+      __handle_exception/*<StartState,std::exception>*/(startstate,ex);
     } catch (...) {
       status = Result::UNKNOWN_CAUSE;
       tripped_inside = new ModelStartStateError(startstate);
@@ -246,8 +246,8 @@ protected:
 //   RandWalker(const Options& OPTIONS_)
 //     : id(RandWalker::next_id++),
 //       OPTIONS(OPTIONS_),
-//       sim1Step(((OPTIONS.do_trace) 
-//                   ? std::function<void()>([this](){sim1Step_trace();}) 
+//       sim1Step(((OPTIONS.do_trace)
+//                   ? std::function<void()>([this](){sim1Step_trace();})
 //                   : std::function<void()>([this](){sim1Step_no_trace();}))),
 // #     ifdef __romp__ENABLE_cover_property
 //         enable_cover(OPTIONS_.complete_on_cover), goal_cover_count(OPTIONS_.cover_count),
@@ -271,14 +271,14 @@ protected:
 //     }
 
 public:
-  RandWalker(RandSeed_t rand_seed_, const Options& OPTIONS_) 
+  RandWalker(RandSeed_t rand_seed_, const Options& OPTIONS_)
     : // RandWalker(OPTIONS_),
       rand_seed(rand_seed_), init_rand_seed(rand_seed_),
       _fuel(OPTIONS_.depth), IS_BFS(false),
       id(RandWalker::next_id++),
       OPTIONS(OPTIONS_),
-      sim1Step(((OPTIONS.do_trace) 
-                  ? std::function<void()>([this](){sim1Step_trace();}) 
+      sim1Step(((OPTIONS.do_trace)
+                  ? std::function<void()>([this](){sim1Step_trace();})
                   : std::function<void()>([this](){sim1Step_no_trace();}))),
 #     ifdef __romp__ENABLE_cover_property
         enable_cover(OPTIONS_.complete_on_cover), goal_cover_count(OPTIONS_.cover_count),
@@ -287,7 +287,7 @@ public:
         enable_liveness(OPTIONS_.liveness), init_lcount(OPTIONS.lcount),
 #     endif
       _attempt_limit(OPTIONS_.attempt_limit), init_attempt_limit(OPTIONS_.attempt_limit)
-  { 
+  {
     if (OPTIONS.start_id != ~0u) {
       rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN); // burn one rand operation for consistency
       start_id = OPTIONS.start_id;
@@ -296,7 +296,7 @@ public:
       start_id = id % _ROMP_STARTSTATES_LEN;
     } else
       start_id = rand_choice(rand_seed,0ul,_ROMP_STARTSTATES_LEN);
-    state.__rw__ = this; /* provide a semi-hidden reference to this random walker for calling the property handlers */ 
+    state.__rw__ = this; /* provide a semi-hidden reference to this random walker for calling the property handlers */
     if (OPTIONS.do_trace) init_trace();
     for (int i=0; i<history_size(); ++i) this->history[i] = History{nullptr};
 #ifdef __romp__ENABLE_symmetry
@@ -318,11 +318,11 @@ public:
   RandWalker(const BFSWalker& bfs, RandSeed_t rand_seed_, const Options& OPTIONS_); //defined in impls.hpp
 
 
-  ~RandWalker() { 
-    if (json != nullptr) delete json; 
+  ~RandWalker() {
+    if (json != nullptr) delete json;
     if (tripped != nullptr) delete tripped;
     if (tripped_inside != nullptr) delete tripped_inside;
-    // if (history != nullptr) delete[] history; 
+    // if (history != nullptr) delete[] history;
   }
 
   inline void init() noexcept {
@@ -346,7 +346,7 @@ public:
     } else if (_fuel <= 0) {
       status = Result::MAX_DEPTH_REACHED;
 #ifdef __romp__ENABLE_cover_property
-    } else if (complete_cover()) { 
+    } else if (complete_cover()) {
       status = Result::COVER_COMPLETE;
       tripped_inside = new ModelRuleError(*history[(history_level-1)%history_size()].rule);
 #endif
@@ -379,10 +379,10 @@ private:
    * @brief to pick a rule in random for simulation step
    */
   // const RuleSet& rand_ruleset(){
-  //   return ::__caller__::RULESETS[rand_choice<size_t>(rand_seed,0ul,_ROMP_RULESETS_LEN)]; 
+  //   return ::__caller__::RULESETS[rand_choice<size_t>(rand_seed,0ul,_ROMP_RULESETS_LEN)];
   // }
 
-  
+
 
   void progress(const Rule& r) {
     --_fuel;
@@ -390,7 +390,7 @@ private:
     add_to_history(r);
     _progress();
   }
-  
+
 
 #if (_ROMP_RULE_SELECTION_ALGO == (0ul)) // 100% random
   const Rule& choose_rule() {
@@ -423,7 +423,7 @@ private:
     const size_t rs_id = rand_choice<size_t>(rand_seed,0ul,_ROMP_RULESETS_LEN);
     const RuleSet& rs = ::__caller__::RULESETS[rs_id];
     id_t& r_id = next_rule[rs_id];  // this is a reference
-    const Rule& r = rs.rules[r_id]; 
+    const Rule& r = rs.rules[r_id];
     if (++r_id >= rs.rules.size())
       r_id = 0;
     return r;
@@ -453,7 +453,7 @@ const RuleSet* _RS = nullptr;
     ruleset_bag.set();
   }
 #endif
-  
+
 
   void sim1Step_trace() noexcept {
 #ifdef __ROMP__DO_MEASURE
@@ -464,7 +464,7 @@ const RuleSet* _RS = nullptr;
     const Rule& r = choose_rule();
     if (not _valid) return;
     bool pass = false;
-    try {  
+    try {
       if ((pass = r.guard(state)) == true) {
         r.action(state);
         progress(r);
@@ -474,7 +474,7 @@ const RuleSet* _RS = nullptr;
       } else {
         *json << ",{\"$type\":\"rule-miss\",\"rule\":" << r << "}";
         --_attempt_limit;
-      }      
+      }
     } catch(IModelError& me) {
       __handle_exception/*<Rule,IModelError>*/(r,me);
       pass = false;
@@ -519,7 +519,7 @@ const RuleSet* _RS = nullptr;
     const Rule& r = choose_rule();
     if (not _valid) return;
     bool pass = false;
-    try {  
+    try {
       if ((pass = r.guard(state)) == true) {
         r.action(state);
         progress(r);
@@ -553,7 +553,7 @@ const RuleSet* _RS = nullptr;
         }
 #ifdef __ROMP__DO_MEASURE
     active_time += time_mr() - start_time;
-#endif             
+#endif
   }
 
   void init_trace() {
@@ -563,9 +563,9 @@ const RuleSet* _RS = nullptr;
     *json << "romp-simple-trace";
 #else
     *json << "romp-trace";
-#endif 
+#endif
     *json << "\",\"$version\":\"" _ROMP_TRACE_JSON_VERSION "\"";
-    *json << ",\"trace-id\":" << id 
+    *json << ",\"trace-id\":" << id
           << ",\"seed\":" << init_rand_seed
           << ",\"start-id\":" << start_id
           << ",\"metadata\":" << OPTIONS // .write_metadata_json(json->out)
@@ -577,16 +577,16 @@ const RuleSet* _RS = nullptr;
   void trace_result_out() const {
     using namespace std::chrono;
     *json << "]"; // close trace
-    // if (_valid && tripped == nullptr) // if it didn't end in an error we need to: 
-    if (tripped_inside == nullptr) // if it didn't end in an error we need to: 
+    // if (_valid && tripped == nullptr) // if it didn't end in an error we need to:
+    if (tripped_inside == nullptr) // if it didn't end in an error we need to:
       *json << ",\"error-trace\":[]"; // output empty error-trace
     *json << ",\"results\":{\"depth\":"<< OPTIONS.depth-_fuel <<",\"valid\":null,\"is-error\":null"
-          << ",\"result\":\"" << std::to_string(status) << "\"" 
+          << ",\"result\":\"" << std::to_string(status) << "\""
 #ifdef __ROMP__DO_MEASURE
-                                << ",\"active-time\":" << (duration_cast<duration_msf_t>(active_time).count()) 
+                                << ",\"active-time\":" << (duration_cast<duration_msf_t>(active_time).count())
                                 << ",\"total-time\":" << (duration_cast<duration_msf_t>(total_time).count())
 #else
-                                << ",\"active-time\":null,\"total-time\":null" 
+                                << ",\"active-time\":null,\"total-time\":null"
 #endif
             << ",\"property-violated\":" << tripped
             << ",\"tripped-inside\":" << tripped_inside
@@ -618,7 +618,7 @@ public:
   }
 
   // called when trying to print the results of the random walker when it finishes (will finish up trace file if necessary too)
-  //  the calling context should ensure that the RandWalker is not being used else where & safe output to the ostream 
+  //  the calling context should ensure that the RandWalker is not being used else where & safe output to the ostream
   friend ostream_p& operator << (ostream_p& out, const RandWalker& rw) {
     std::string res_color = get_color(rw.status);
     out << out.nl()
@@ -632,8 +632,8 @@ public:
         << "     Result: " << res_color << std::to_string(rw.status) << "\033[0m"   << out.nl()
         << out.dedent()                                                             << out.nl()
         << "TRACE LITE:"                                            << out.indent() << out.nl()
-        << "NOTE - " << ((rw.OPTIONS.do_trace) 
-                          ? "see \"" + rw.OPTIONS.trace_dir + std::to_string(rw.init_rand_seed) + ".json\" for full trace." 
+        << "NOTE - " << ((rw.OPTIONS.do_trace)
+                          ? "see \"" + rw.OPTIONS.trace_dir + std::to_string(rw.init_rand_seed) + ".json\" for full trace."
                           : "use the --trace/-t option to generate a full & detailed trace." ) << out.nl()
         << "History: ["                             << out.indent() << out.indent() << out.nl()
         << "-(0) " << ::__caller__::STARTSTATES[rw.start_id] << '\n';
@@ -662,17 +662,17 @@ public:
         try {
           msg.first(out);
         } catch (std::exception& ex) {
-          out << out.indent() << out.nl() << msg.second << " :: error occurred while evaluating put statement" 
+          out << out.indent() << out.nl() << msg.second << " :: error occurred while evaluating put statement"
               << out.nl() << ex << out.dedent() << out.nl();
         }
       }
       out << out.dedent() << out.nl() << "\"\"\"" << out.dedent() << out.nl();
     }
-        
+
 #ifdef __ROMP__DO_MEASURE
     out << out.dedent()                                                             << out.nl()
         << "TIME REPORT:"                                           << out.indent() << out.nl()
-        << "Active Time: " << rw.active_time                                        << out.nl()           
+        << "Active Time: " << rw.active_time                                        << out.nl()
         << " Total Time: " << rw.total_time                                         ;// << out.nl();
 #endif
     out << out.dedent()                                                             << out.nl()
@@ -682,8 +682,8 @@ public:
     return out;
   }
   // called when trying to print the results of the random walker when it finishes (will finish up trace file if necessary too)
-  //  the calling context should ensure that the RandWalker is not being used else where & safe output to the ostream 
-  friend std::ostream& operator << (std::ostream& out, const RandWalker& rw) 
+  //  the calling context should ensure that the RandWalker is not being used else where & safe output to the ostream
+  friend std::ostream& operator << (std::ostream& out, const RandWalker& rw)
   { ostream_p _out(out,rw.OPTIONS,0); _out << rw; return out; }
 
   // NOTE: currently not supporting choose rules
@@ -748,7 +748,7 @@ public:
   bool complete_cover() const {
     if (not enable_cover) return false;
     bool res = true;
-    for (int i=0; i<_ROMP_COVER_PROP_COUNT; ++i) 
+    for (int i=0; i<_ROMP_COVER_PROP_COUNT; ++i)
       res &= (cover_counts[i] >= goal_cover_count);
     return res;
   }
@@ -769,7 +769,7 @@ public:
       lcounts[liveness_id] = init_lcount;
       return false;
     }
-    if (--lcounts[liveness_id] > 0) return false; 
+    if (--lcounts[liveness_id] > 0) return false;
     _valid = false;
     _is_error = true;
     tripped = new ModelPropertyError(prop_id);
@@ -792,7 +792,7 @@ id_t RandWalker::next_id = 0u;
 
 /**
  * @brief A class that indexes and groups the various results a RandWalker can produce,
- *        and provides a helpful operator for writing a nice summary of the results 
+ *        and provides a helpful operator for writing a nice summary of the results
  *        to a \c std::ostream as well.
  */
 class ResultTree {
@@ -834,7 +834,7 @@ public:
 
 /**
  * @brief to generate random seeds for the no of random-walkers
- * rand is generated using UNIX timestamp 
+ * rand is generated using UNIX timestamp
  * @param root_seed the parent seed for generating the random seeds.
  */
 RandSeed_t gen_random_seed(RandSeed_t &root_seed) {
@@ -845,7 +845,7 @@ RandSeed_t gen_random_seed(RandSeed_t &root_seed) {
 
 /**
  * @brief generate all the random seeds for the various rand walkers
- * 
+ *
  */
 std::unordered_set<RandSeed_t> gen_random_seeds(const Options& OPTIONS, RandSeed_t root_seed)   {
   std::unordered_set<RandSeed_t> seeds;
@@ -874,7 +874,7 @@ void print_romp_results_summary(const ResultTree& summary) {
 
 
 /**
- * @brief implementing \c rw_count parallel \c RandWalker "simulations" which has the threads 
+ * @brief implementing \c rw_count parallel \c RandWalker "simulations" which has the threads
  *        and no of random-walkers specified by the user options .
  * @param rw_count the number of \c RandWalker 's to use.
  * @param rand_seed the starting random seed that will generate all other random seeds
@@ -882,8 +882,8 @@ void print_romp_results_summary(const ResultTree& summary) {
  * @param thread_count the max number of threads to use to accomplish all said random walks.
  */
 void launch_OpenMP(RandSeed_t root_seed) {
-  std::cout << "\n\t!! NOT YET IMPLEMENTED !!\n" << std::endl; return; //!! temp, remove when finished !! 
-  
+  std::cout << "\n\t!! NOT YET IMPLEMENTED !!\n" << std::endl; return; //!! temp, remove when finished !!
+
   // std::vector<RandWalker> rws;
   // try {
   //   rws = gen_random_walkers(rw_count, root_seed, fuel);
@@ -895,7 +895,7 @@ void launch_OpenMP(RandSeed_t root_seed) {
 }
 
 /**
- * @brief implementing \c rw_count parallel \c RandWalker "simulations" which has the threads 
+ * @brief implementing \c rw_count parallel \c RandWalker "simulations" which has the threads
  *        and no of random-walkers specified by the user options .
  * @param rw_count the number of \c RandWalker 's to use.
  * @param rand_seed the starting random seed that will generate all other random seeds
@@ -923,10 +923,10 @@ void launch_threads(const Options& OPTIONS) {
     // std::lock_guard<std::mutex> in_queue(_in_queue_mutex);
     // std::lock_guard<std::mutex> out_queue(_out_queue_mutex);
     in_queue.lock();
-    while (in_seeds.size() > 0) { 
+    while (in_seeds.size() > 0) {
 
       in_seeds.front(); RandWalker *rw = new RandWalker(in_seeds.front(),OPTIONS);
-      in_seeds.pop(); 
+      in_seeds.pop();
       in_queue.unlock();
 
       rw->init();
@@ -981,7 +981,7 @@ void launch_threads(const Options& OPTIONS) {
         delete rw;
       }
     }
-    std::this_thread::sleep_for(pause_delay); 
+    std::this_thread::sleep_for(pause_delay);
     out_queue.lock();
     if (not (walks_done < OPTIONS.walks)) {
       out_queue.unlock();
@@ -998,11 +998,11 @@ void launch_threads(const Options& OPTIONS) {
 
   print_romp_results_summary(summary);
 }
-  
+
 
 /**
  * @brief (NOT YET IMPLEMENTED) \n
- *        Implementing \c rw_count parallel \c RandWalker "simulations" which has the threads 
+ *        Implementing \c rw_count parallel \c RandWalker "simulations" which has the threads
  *        and no of random-walkers specified by the user options .
  * @param root_seed the starting random seed that will generate all other random seeds
  * @param fuel the max number of rules any \c RandWalker will try to apply.
@@ -1012,7 +1012,7 @@ void launch_CUDA(RandSeed_t root_seed);
 
 /**
  * @brief (NOT YET IMPLEMENTED) \n
- *        Implementing \c rw_count parallel \c RandWalker "simulations" which has the threads 
+ *        Implementing \c rw_count parallel \c RandWalker "simulations" which has the threads
  *        and no of random-walkers specified by the user options .
  * @param root_seed the starting random seed that will generate all other random seeds
  * @param fuel the max number of rules any \c RandWalker will try to apply.
@@ -1022,7 +1022,7 @@ void launch_SYCL(RandSeed_t root_seed);
 
 /**
  * @brief (NOT YET IMPLEMENTED) \n
- *        Implementing \c rw_count parallel \c RandWalker "simulations" which has the threads 
+ *        Implementing \c rw_count parallel \c RandWalker "simulations" which has the threads
  *        and no of random-walkers specified by the user options .
  * @param root_seed the starting random seed that will generate all other random seeds
  * @param fuel the max number of rules any \c RandWalker will try to apply.
@@ -1042,7 +1042,7 @@ void launch_single(const Options& OPTIONS) {
   while( not rw->is_done() )
     rw->sim1Step();
   rw->finalize();
-  std::cout << "SINGLE ROMP RESULT:\n\t" 
+  std::cout << "SINGLE ROMP RESULT:\n\t"
             << *rw << '\n' << std::endl;
   summary.stop_timer();
   summary.insert(rw->get_result());

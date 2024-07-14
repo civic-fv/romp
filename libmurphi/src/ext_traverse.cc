@@ -34,7 +34,7 @@ void ConstTypeTraversal::visit_chooserule(const ChooseRule& n) {
     dispatch(*r);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void Traversal::visit_ismember(IsMember& n) {
   dispatch(*n.designator);
@@ -53,7 +53,7 @@ void ConstTypeTraversal::visit_ismember(const IsMember& n) {
   dispatch(*n.type_value);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 void Traversal::visit_multiset(Multiset& n) {
@@ -73,7 +73,7 @@ void ConstStmtTraversal::visit_multiset(const Multiset& n) {
   dispatch(*n.element_type);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void Traversal::visit_multisetadd(MultisetAdd& n) {
   dispatch(*n.multiset);
@@ -93,7 +93,7 @@ void ConstTypeTraversal::visit_multisetadd(const MultisetAdd& n) {
 }
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 void Traversal::visit_multisetcount(MultisetCount& n) {
@@ -114,7 +114,7 @@ void ConstTypeTraversal::visit_multisetcount(const MultisetCount& n) {  //not us
 }
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 void Traversal::visit_multisetelement(MultisetElement& n) {
@@ -135,7 +135,7 @@ void ConstTypeTraversal::visit_multisetelement(const MultisetElement& n) {  //no
 }
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 
@@ -151,13 +151,13 @@ void ConstExprTraversal::visit_multisetremove(const MultisetRemove& n) {
   dispatch(*n.index);
   dispatch(*n.multiset);
 }
-void ConstTypeTraversal::visit_multisetremove(const MultisetRemove& n) { 
+void ConstTypeTraversal::visit_multisetremove(const MultisetRemove& n) {
   dispatch(*n.index);
   dispatch(*n.multiset);
 }
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 void Traversal::visit_multisetremovepred(MultisetRemovePred& n) {
@@ -172,13 +172,13 @@ void ConstExprTraversal::visit_multisetremovepred(const MultisetRemovePred& n) {
   dispatch(n.ms_quantifier);
   dispatch(*n.pred);
 }
-void ConstTypeTraversal::visit_multisetremovepred(const MultisetRemovePred& n) { 
+void ConstTypeTraversal::visit_multisetremovepred(const MultisetRemovePred& n) {
   dispatch(n.ms_quantifier);
   dispatch(*n.pred);
 }
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 void Traversal::visit_multisetquantifier(MultisetQuantifier& n) {
@@ -193,35 +193,35 @@ void ConstExprTraversal::visit_multisetquantifier(const MultisetQuantifier& n) {
 void ConstStmtTraversal::visit_multisetquantifier(const MultisetQuantifier& n) {
   dispatch(*n.multiset);
 }
-void ConstTypeTraversal::visit_multisetquantifier(const MultisetQuantifier& n) { 
+void ConstTypeTraversal::visit_multisetquantifier(const MultisetQuantifier& n) {
   dispatch(*n.multiset);
 }
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 void Traversal::visit_scalarsetunion(ScalarsetUnion& n) {
-  for (auto m : n.members) 
+  for (auto m : n.members)
     dispatch(*m);
 }
 void ConstTraversal::visit_scalarsetunion(const ScalarsetUnion& n) {
-  for (const auto m : n.members) 
+  for (const auto m : n.members)
     dispatch(*m);
 }
 void ConstExprTraversal::visit_scalarsetunion(const ScalarsetUnion& n) {
-  for (const auto m : n.members) 
+  for (const auto m : n.members)
     dispatch(*m);
 }
 void ConstStmtTraversal::visit_scalarsetunion(const ScalarsetUnion& n) {
-  for (const auto m : n.members) 
+  for (const auto m : n.members)
     dispatch(*m);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
-void Traversal::visit_sucast(SUCast& n) { 
+void Traversal::visit_sucast(SUCast& n) {
   dispatch(*n.rhs);
 }
 void ConstTraversal::visit_sucast(const SUCast& n) {
@@ -234,7 +234,7 @@ void ConstTypeTraversal::visit_sucast(const SUCast& n) {
   dispatch(*n.rhs);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 } // namespace murphi

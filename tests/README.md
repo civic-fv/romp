@@ -13,12 +13,12 @@ each buggy model using each model checker tool.
 
  makefile usage
 ----------------
-These test files come with a [`makefile`](./makefile) that allows you to build each model with 
+These test files come with a [`makefile`](./makefile) that allows you to build each model with
 CMurphi, rumur (z3 install required) in addition to romp.
 
-To use this makefile work ensure that romp is built properly with cmake, 
+To use this makefile work ensure that romp is built properly with cmake,
 and either modify the paths to the various other Murphi model generating tools in the make file,
-or that the repo's for the respective tools are located at the same file level as the root to this 
+or that the repo's for the respective tools are located at the same file level as the root to this
 repo, and that their tools are built.
 
 > _**Note:** all commands are given from the directory that the model and makefile are located._
@@ -67,7 +67,7 @@ make n_peterson_bug1.cm CMURPHI_ARGS+="-c"
 ### Cleanup
 Use `make clean` to clean up all generated files.
 
-Use `make clean-inter` to clean up all intermediary files, 
+Use `make clean-inter` to clean up all intermediary files,
  but keep the generated executable model-checkers.
 
 
@@ -77,7 +77,7 @@ There are a lot of models included in this repo that have no bugs in them,
 these are used for general benchmarking.
 
 If the model is not included in the following list(s) then it should not produce
-deadlock or report any errors. 
+deadlock or report any errors.
 Though one or more of the model-checkers might time out on them.
 
 
@@ -131,7 +131,7 @@ make adash_bug                                    # build the model checkers
 
 
 ### [`arbiter.m`](./arbiter.m)
-This is classic example to illustrate distributed mutual exclusion protocol. The protocol usess token-passing mechanism to ensure that shared resource can be accessed by one processor at a time. 
+This is classic example to illustrate distributed mutual exclusion protocol. The protocol usess token-passing mechanism to ensure that shared resource can be accessed by one processor at a time.
 
 #### About the Bug
 
@@ -161,7 +161,7 @@ make arbiter                                    # build the model checkers
 
 ### [`dpnew.m`](./dpnew.m)
 
-This is a classsic implmentation of synchronization issues in concurrent systems using  Dining Philosophers example. 
+This is a classsic implmentation of synchronization issues in concurrent systems using  Dining Philosophers example.
 #### About the Bug
 
 Deadlock Invariant checks if all the philosophers picking up their left forks and  waiting for
@@ -186,13 +186,13 @@ make dpnew                                    # build the model checkers
 | s-romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
 | ns-romp |  5,841.320 | "Explicit writeback for non dirty remote" (x510) & "WRD at home cluster" (x514) |
 | CMurphi |  1,55#.### | "Consistency of data"                                                      |
-|  rumur  |         -- | _-- Not compatible with rumur (contains union) --_   
+|  rumur  |         -- | _-- Not compatible with rumur (contains union) --_
 
 
 
 ### [`sort5.m`](./sort5.m)
 
-This is the implementation of bubble sort algorithm in Murphi. The code iterates through a list , compares adjustment elements and swaps them if they are in wrong order. 
+This is the implementation of bubble sort algorithm in Murphi. The code iterates through a list , compares adjustment elements and swaps them if they are in wrong order.
 #### About the Bug
 
 Invariant checks if there exists atleast one pair of adjacent elements where the first element is greater than second element. Once, the array is completely sorted the model fails.
@@ -216,7 +216,7 @@ make sort5                                    # build the model checkers
 | s-romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
 | ns-romp |  5,841.320 | "Explicit writeback for non dirty remote" (x510) & "WRD at home cluster" (x514) |
 | CMurphi |  1,55#.### | "Consistency of data"                                                      |
-|  rumur  |         -- | _-- Not compatible with rumur (contains union) --_    
+|  rumur  |         -- | _-- Not compatible with rumur (contains union) --_
 
 
 
@@ -225,7 +225,7 @@ This is the classic flash cache coherency protocol programmatically translated i
 the flows language, by an experimental tool.
 
 #### About the Bug
-We have not bothered t figure out what is actually broken in this model, 
+We have not bothered t figure out what is actually broken in this model,
 since the generated murphi model is unnecessarily complicated.
 
 #### Build & Run _(with recommended settings)_
@@ -254,7 +254,7 @@ This is the classic german protocol programmatically translated into murphi from
 the flows language, by an experimental tool.
 
 #### About the Bug
-We have not bothered t figure out what is actually broken in this model, 
+We have not bothered t figure out what is actually broken in this model,
 since the generated murphi model is unnecessarily complicated.
 
 #### Build & Run _(with recommended settings)_
@@ -284,20 +284,20 @@ make flash-flow                                    # build the model checkers
  Models with _"Synthetic"_ Bugs
 --------------------------------
 These models are designed as synthetic benchmarks,
-as such they are designed to have bugs in them with varying levels fo difficulty to find in 
+as such they are designed to have bugs in them with varying levels fo difficulty to find in
 a handful of different ways.
 Such as introducing bottlenecks that have to be passed, and varying degrees of sparsity for the
 violating states in the model.
-These factors are such that they are likely to occur naturally in "real" models, 
+These factors are such that they are likely to occur naturally in "real" models,
 but in these models they are isolated to better understand the effects that varying design choices in
 model checkers can have.
 
 ### [`n_peterson_bug.m`](./n_peterson_bug.m)
- 
+
  n_peterson is a classic solution to the critical section problem. The critical section problem ensures that no two process change or modify the value of a resource at the same time.
 #### About the Bug
 
-The bug state is a synthetically injected "Hard Bug" designed to be difficult to find. If a sequence of processors is in the queue , then that substring of orderings causes error. 
+The bug state is a synthetically injected "Hard Bug" designed to be difficult to find. If a sequence of processors is in the queue , then that substring of orderings causes error.
 Increasing the number of processors and making the substring to be equal to length of three makes it hard bug.
 #### Build & Run _(with recommended settings)_
 ```bash
@@ -318,7 +318,7 @@ make n_peterson_bug                                    # build the model checker
 | s-romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
 | ns-romp |  5,841.320 | "Explicit writeback for non dirty remote" (x510) & "WRD at home cluster" (x514) |
 | CMurphi |  1,55#.### | "Consistency of data"                                                      |
-|  rumur  |         -- | _-- Not compatible with rumur (contains union) --_   
+|  rumur  |         -- | _-- Not compatible with rumur (contains union) --_
 
 ### [`n_peterson_bug1.m`](./n_peterson_bug1.m)
 
@@ -326,7 +326,7 @@ make n_peterson_bug                                    # build the model checker
 
 #### About the Bug
 
-The bug state is a synthetically injected "Hard Bug" designed to be difficult to find. If a sequence of processors is in the queue , then that substring of orderings causes error. 
+The bug state is a synthetically injected "Hard Bug" designed to be difficult to find. If a sequence of processors is in the queue , then that substring of orderings causes error.
 Increasing the number of processors and making the substring to be equal to length of three makes it hard bug.
 
 #### Build & Run _(with recommended settings)_
@@ -348,11 +348,11 @@ make n_peterson_bug1                                    # build the model checke
 | s-romp  |  5,799.183 | "Explicit writeback for non dirty remote" (x480) & "WRD at home cluster" (x511) |
 | ns-romp |  5,841.320 | "Explicit writeback for non dirty remote" (x510) & "WRD at home cluster" (x514) |
 | CMurphi |  1,55#.### | "Consistency of data"                                                      |
-|  rumur  |         -- | _-- Not compatible with rumur (contains union) --_   
+|  rumur  |         -- | _-- Not compatible with rumur (contains union) --_
 
 ### [`deepdense.m`](./deepdense.m)
 This model is a synthetic model that introduces a bottleneck at a set distance away from the start,
-that after being passed the model enters a "dense field" of violating states. 
+that after being passed the model enters a "dense field" of violating states.
 
 #### About the Bug
 TODO description of what causes the bug
@@ -378,15 +378,15 @@ make deepdense                                    # build the model checkers
 |  rumur  |  1,###.### | invariant "sum"                                                            |
 | CMurphi |  1,55#.### | invariant "sum"                                                            |
 
-Note how romp with no symmetry reduction requires more walks 
-and a greater max depth than it's counterpart with our symmetry reduction enabled 
+Note how romp with no symmetry reduction requires more walks
+and a greater max depth than it's counterpart with our symmetry reduction enabled
 and still only a few of the walks with this seed find the bug.
 
 
 
 ### [`deepsparse.m`](./deepsparse.m)
 This model is a synthetic model that introduces a bottleneck at a set distance away from the start,
-that after being passed the model enters a "sparse field" of violating states. 
+that after being passed the model enters a "sparse field" of violating states.
 
 #### About the Bug
 TODO description of what causes the bug
@@ -412,8 +412,8 @@ make deepsparse                                    # build the model checkers
 |  rumur  |  2,###.### | invariant "everyone_is_not_ideal"                                          |
 | CMurphi |  6,76#.### | invariant "everyone_is_not_ideal"                                          |
 
-Note how romp with no symmetry reduction requires more walks 
-and a greater max depth than it's counterpart with our symmetry reduction enabled 
+Note how romp with no symmetry reduction requires more walks
+and a greater max depth than it's counterpart with our symmetry reduction enabled
 and still only a few of the walks with this seed find the bug.
 
 
@@ -425,6 +425,5 @@ TODO AO finish creating this model before inserting it's info here
 ### [`dash_bug.m`](./dash_bug.m)
 TODO AO ...
 TODO AO finish creating this model before inserting it's info here
-
 
 

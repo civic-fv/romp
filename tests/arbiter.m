@@ -1,25 +1,25 @@
 -------------------------------------------------------------------------
--- Copyright (C) 1992, 1993 by the Board of Trustees of 		 
--- Leland Stanford Junior University.					 
---									 
--- This description is provided to serve as an example of the use	 
--- of the Murphi description language and verifier, and as a benchmark	 
--- example for other verification efforts.				 
---									 
--- License to use, copy, modify, sell and/or distribute this description 
--- and its documentation any purpose is hereby granted without royalty,  
--- subject to the following terms and conditions, provided		 
---									 
--- 1.  The above copyright notice and this permission notice must	 
--- appear in all copies of this description.				 
--- 									 
--- 2.  The Murphi group at Stanford University must be acknowledged	 
--- in any publication describing work that makes use of this example. 	 
--- 									 
--- Nobody vouches for the accuracy or usefulness of this description	 
--- for any purpose.							 
+-- Copyright (C) 1992, 1993 by the Board of Trustees of
+-- Leland Stanford Junior University.
+--
+-- This description is provided to serve as an example of the use
+-- of the Murphi description language and verifier, and as a benchmark
+-- example for other verification efforts.
+--
+-- License to use, copy, modify, sell and/or distribute this description
+-- and its documentation any purpose is hereby granted without royalty,
+-- subject to the following terms and conditions, provided
+--
+-- 1.  The above copyright notice and this permission notice must
+-- appear in all copies of this description.
+--
+-- 2.  The Murphi group at Stanford University must be acknowledged
+-- in any publication describing work that makes use of this example.
+--
+-- Nobody vouches for the accuracy or usefulness of this description
+-- for any purpose.
 -------------------------------------------------------------------------
-
+
 ----------------------------------------------------------------------
 -- Filename: 	arbiter.m
 -- Content:	Hardware arbiter, travelling token, synchronous control
@@ -32,7 +32,7 @@ const n : 4;   -- Number of units
 
 type reg : Array[0..n-1] of boolean;
 
-var 
+var
    req : reg;                    -- req[u] == u requests the resource
    use : reg;                    -- use[u] == u uses the resource
    grant : reg;                  -- grant[u] == access is granted to u
@@ -54,14 +54,14 @@ end;
 
 ruleset u : 0..n-1 do  -- rules of units
    rule "start requesting"
-         !req[u] & !use[u] ==>  
+         !req[u] & !use[u] ==>
                  begin
-                 req[u] := true; 
+                 req[u] := true;
                  if (!Req_b & !Use_b) then NewToken() end;
                  Req_b := true;
                  end;
    rule "start using"
-          grant[u] ==> 
+          grant[u] ==>
                  begin
                  assert !Use_b; -- exclusive access
                  /* Doesn't work, why??
@@ -82,17 +82,17 @@ end;
 
 ruleset u : 0..n-1 do -- rules of arbiters
    rule "D-flip-flop"
-         tk[u] ==> 
+         tk[u] ==>
                  begin
                  flop[u] := req[u]; tk[u] := false; ntk[u] := true;
                  end;
    rule "access granting"
-         ntk[u] & flop[u] ==> 
+         ntk[u] & flop[u] ==>
                  begin
                  grant[u] := true; ntk[u] := false;
                  end;
    rule "token passing"
-         ntk[u] & !flop[u] ==> 
+         ntk[u] & !flop[u] ==>
                  begin
                  tk[u+1] := true; ntk[u] := false;
                  end;
@@ -103,12 +103,11 @@ startstate
    begin
    for u  : 0..n-1 do
        req[u] := false; use[u] := false; grant[u] := false;
-       flop[u] := false; tk[u] := false; ntk[u] := false; 
+       flop[u] := false; tk[u] := false; ntk[u] := false;
        p_req[u] := false;
    end;
    Req_b := false; Use_b := false; tk[n] := false;
    end;
 
 invariant  " no token lost " tk[n] = false;
-
 

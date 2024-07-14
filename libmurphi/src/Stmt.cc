@@ -21,7 +21,7 @@ namespace murphi {
 
 Stmt::Stmt(const location &loc_) : Node(loc_) {}
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 AliasStmt::AliasStmt(const std::vector<Ptr<AliasDecl>> &aliases_,
@@ -38,7 +38,7 @@ void AliasStmt::visit(ConstBaseTraversal &visitor) const {
   visitor.visit_aliasstmt(*this);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 PropertyStmt::PropertyStmt(const Property &property_,
@@ -62,7 +62,7 @@ void PropertyStmt::visit(ConstBaseTraversal &visitor) const {
   visitor.visit_propertystmt(*this);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Assignment::Assignment(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
@@ -105,7 +105,7 @@ void Assignment::visit(ConstBaseTraversal &visitor) const {
   visitor.visit_assignment(*this);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Clear::Clear(const Ptr<Expr> &rhs_, const location &loc_)
@@ -123,7 +123,7 @@ void Clear::validate() const {
   struct NoMultiset : ConstTraversal {
     const location& loc;
     NoMultiset(const location& loc_) : loc(loc_) {}
-    void visit_multiset(const Multiset& n) final { 
+    void visit_multiset(const Multiset& n) final {
       throw Error("invalid clear of a multiset type", loc);
     }
   };
@@ -137,7 +137,7 @@ void Clear::visit(ConstBaseTraversal &visitor) const {
   visitor.visit_clear(*this);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 ErrorStmt::ErrorStmt(const std::string &message_, const location &loc_)
@@ -153,7 +153,7 @@ void ErrorStmt::visit(ConstBaseTraversal &visitor) const {
   visitor.visit_errorstmt(*this);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 For::For(const Quantifier &quantifier_, const std::vector<Ptr<Stmt>> &body_,
@@ -169,7 +169,7 @@ void For::visit(BaseTraversal &visitor) { visitor.visit_for(*this); }
 
 void For::visit(ConstBaseTraversal &visitor) const { visitor.visit_for(*this); }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 IfClause::IfClause(const Ptr<Expr> &condition_,
@@ -196,7 +196,7 @@ void IfClause::visit(ConstBaseTraversal &visitor) const {
   visitor.visit_ifclause(*this);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 If::If(const std::vector<IfClause> &clauses_, const location &loc_)
@@ -208,7 +208,7 @@ void If::visit(BaseTraversal &visitor) { visitor.visit_if(*this); }
 
 void If::visit(ConstBaseTraversal &visitor) const { visitor.visit_if(*this); }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 ProcedureCall::ProcedureCall(const std::string &name,
@@ -229,7 +229,7 @@ void ProcedureCall::visit(ConstBaseTraversal &visitor) const {
   visitor.visit_procedurecall(*this);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Put::Put(const std::string &value_, const location &loc_)
@@ -248,7 +248,7 @@ void Put::visit(BaseTraversal &visitor) { visitor.visit_put(*this); }
 
 void Put::visit(ConstBaseTraversal &visitor) const { visitor.visit_put(*this); }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Return::Return(const Ptr<Expr> &expr_, const location &loc_)
@@ -262,7 +262,7 @@ void Return::visit(ConstBaseTraversal &visitor) const {
   visitor.visit_return(*this);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 SwitchCase::SwitchCase(const std::vector<Ptr<Expr>> &matches_,
@@ -280,7 +280,7 @@ void SwitchCase::visit(ConstBaseTraversal &visitor) const {
   visitor.visit_switchcase(*this);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Switch::Switch(const Ptr<Expr> &expr_, const std::vector<SwitchCase> &cases_,
@@ -311,7 +311,7 @@ void Switch::visit(ConstBaseTraversal &visitor) const {
   visitor.visit_switch(*this);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Undefine::Undefine(const Ptr<Expr> &rhs_, const location &loc_)
@@ -333,7 +333,7 @@ void Undefine::visit(ConstBaseTraversal &visitor) const {
   visitor.visit_undefine(*this);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 While::While(const Ptr<Expr> &condition_, const std::vector<Ptr<Stmt>> &body_,

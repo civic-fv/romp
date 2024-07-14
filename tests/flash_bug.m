@@ -3,11 +3,11 @@
  * OG Model Credit: http://www.cs.cmu.edu/~tmurali/flow_examples/
  * Bug Injected By: Andrew Osterhout
  * NOTE:
- *  This model has a bug injected that trggers an invariant if any process 
- *   writes to the same location it most recently read from more than 
+ *  This model has a bug injected that trggers an invariant if any process
+ *   writes to the same location it most recently read from more than
  *   a certain number of times in a row.
  *  This bug can be pretty deep, but doesn't really have any obvious bottlenecks.
- *  The thought behind this bug is that the bug free version of this protocol maps 
+ *  The thought behind this bug is that the bug free version of this protocol maps
  *   entirely into this new larger statespace.
  *  Also for funsies you can think of this bug as a way to model physical limitations and
  *   wear that might occur in actual hardware, but only kind of, and not really for most
@@ -114,8 +114,8 @@ type
   end;
 
   -- Bug Types:
-  BUG_STATE : record 
-    
+  BUG_STATE : record
+
   end;
 
 var
@@ -889,7 +889,7 @@ ruleset src : NODE do
 rule "NI_InvAck"
   src != Home &
   Sta.InvMsg[src].Cmd = INV_InvAck &
-  Sta.Dir.Pending & Sta.Dir.InvSet[src]  
+  Sta.Dir.Pending & Sta.Dir.InvSet[src]
 ==>
 var NxtSta : STATE;
 begin
@@ -1120,4 +1120,3 @@ invariant "MemDataProp"
 --   min : NODE;
 --   mi : msg; /* the incoming message */
 --   mi := UniMsg[min];
-

@@ -7,9 +7,9 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file decl.hpp
- * 
+ *
  * @brief the General Declarations for the romp random walker generated model checker
- * 
+ *
  * @date 2022/10/05
  * @version 0.3
  */
@@ -22,7 +22,7 @@
 #ifndef __romp__GENERATED_CODE  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
 #pragma once  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
 #include "pregen-fix.hpp"  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
-#include "include.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
+#include "include.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
 #endif  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
 
 
@@ -39,7 +39,7 @@
 #define VALUE_C(v) ((romp::range_t)(v))
 #define SCALAR_C(v) ((romp::scalar_t)(v))
 
-// << =================================== Useful Pre-decls ===================================== >> 
+// << =================================== Useful Pre-decls ===================================== >>
 namespace romp {
   struct TypeInfo; struct RuleInfo; struct PropertyInfo; struct StartStateInfo; struct MErrorInfo; struct FunctInfo;
   struct RuleSet; struct StartState; struct Property;
@@ -63,15 +63,15 @@ namespace __info__ {
   extern const std::string RECORD_FIELD_LABELS[];
   // extern const ::romp::TypeInfo TYPE_INFOS[];
   extern const ::romp::RuleInfo RULE_SET_INFOS[];
-  extern const ::romp::PropertyInfo PROPERTY_INFOS[]; 
-  extern const ::romp::StartStateInfo STARTSTATE_INFOS[]; 
-  extern const ::romp::MErrorInfo ERROR_INFOS[]; 
-  extern const ::romp::FunctInfo FUNCT_INFOS[]; 
+  extern const ::romp::PropertyInfo PROPERTY_INFOS[];
+  extern const ::romp::StartStateInfo STARTSTATE_INFOS[];
+  extern const ::romp::MErrorInfo ERROR_INFOS[];
+  extern const ::romp::FunctInfo FUNCT_INFOS[];
 } // namespace __info__
 
-// << ========================================================================================== >> 
-// <<                                           DECL                                             >> 
-// << ========================================================================================== >> 
+// << ========================================================================================== >>
+// <<                                           DECL                                             >>
+// << ========================================================================================== >>
 
 namespace romp {
 
@@ -99,7 +99,7 @@ namespace romp {
   const auto INIT_TIME = *std::localtime(&ROMP_ID);
   const auto INIT_TIME_STAMP = std::put_time(&INIT_TIME, "%F_%T");
 
-  
+
   typedef _ROMP_STATE_TYPE State_t;
   typedef unsigned int RandSeed_t;
 
@@ -172,7 +172,7 @@ namespace romp {
     const std::string quant_str;
     IModelError* make_error() const;
   };
-  
+
 
   struct RuleInfo {
     std::string label;
@@ -194,9 +194,9 @@ namespace romp {
     const RuleInfo& info;
     std::vector<Rule> rules;
     IModelError* make_error() const;
-  }; 
+  };
 
-  
+
   struct StartStateInfo {
     const std::string label;
     const location loc;
@@ -228,10 +228,10 @@ namespace romp {
     const std::string json;
     const std::string signature;
   };
-  
+
 
   /**
-   * @brief Abstract parent of The Random Walker that the model will hold a reference to 
+   * @brief Abstract parent of The Random Walker that the model will hold a reference to
    *        in order to bea ble to call it for various handlers
    */
   struct IRandWalker {
@@ -314,7 +314,7 @@ namespace romp {
     id_t root_seed; // the root seed of the RW
     id_t start_id; // id of start state
     Cause cause;  // the kind of cause that stoped the Rand Walker
-    size_t depth; // depth reached 
+    size_t depth; // depth reached
     const IModelError* tripped;  // what was tripped (promised not nested)
     const IModelError* inside;  // where it was tripped (could be nested w/ root cause)
 #ifdef __ROMP__DO_MEASURE
@@ -323,9 +323,9 @@ namespace romp {
     duration_mr_t active_time;
     duration_ms_t total_time;
 #endif
-    // Result(Result& old) 
+    // Result(Result& old)
     //   : id(old.id), root_seed(old.root_seed), start_id(old.start_id),
-    //     cause(old.cause), depth(old.depth), 
+    //     cause(old.cause), depth(old.depth),
     //     tripped(old.tripped), inside(old.inside)
     // { old.tripped = nullptr; old.inside = nullptr; }
     ~Result(); // { if (tripped != nullptr) delete tripped; if (inside != nullptr) delete inside; }
@@ -338,7 +338,7 @@ namespace romp {
 namespace std {
   template<>
   struct hash<romp::location> {
-    size_t operator () (const romp::location& loc) const { 
+    size_t operator () (const romp::location& loc) const {
       return (loc.start.row + loc.start.col + loc.end.row + loc.end.col) % UINT64_MAX;
     }
   };

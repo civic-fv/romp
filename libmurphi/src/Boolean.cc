@@ -25,11 +25,11 @@ const Ptr<TypeExprID> murphi::Boolean =
     Ptr<TypeExprID>::make("boolean", murphi::BooleanDecl, location());
 
 
-const Ptr<ConstDecl> murphi::FalseDecl = Ptr<ConstDecl>::make("false", 
+const Ptr<ConstDecl> murphi::FalseDecl = Ptr<ConstDecl>::make("false",
                                                               Ptr<Number>::make(0, location()), Boolean,
                                                               location());
 
-const Ptr<ConstDecl> murphi::TrueDecl = Ptr<ConstDecl>::make("true", 
+const Ptr<ConstDecl> murphi::TrueDecl = Ptr<ConstDecl>::make("true",
                                                               Ptr<Number>::make(1, location()), Boolean,
                                                               location());
 

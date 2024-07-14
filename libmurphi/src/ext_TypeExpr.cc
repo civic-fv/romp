@@ -24,10 +24,10 @@ namespace murphi {
 
 
 
-ScalarsetUnion::ScalarsetUnion(const std::vector<Ptr<TypeExpr>>& members_, const location &loc_) 
+ScalarsetUnion::ScalarsetUnion(const std::vector<Ptr<TypeExpr>>& members_, const location &loc_)
   : TypeExpr(loc_), members(members_), name("") {}
-ScalarsetUnion::ScalarsetUnion(const std::vector<Ptr<TypeExpr>>& members_, 
-                               const std::string& name_, const location &loc_) 
+ScalarsetUnion::ScalarsetUnion(const std::vector<Ptr<TypeExpr>>& members_,
+                               const std::string& name_, const location &loc_)
   : TypeExpr(loc_), members(members_), name(name_) {}
 ScalarsetUnion* ScalarsetUnion::clone() const { return new ScalarsetUnion(*this); }
 
@@ -46,7 +46,7 @@ std::string ScalarsetUnion::upper_bound() const {
 }
 std::string ScalarsetUnion::lower_bound() const { return "VALUE_C(1)"; }
 
-void ScalarsetUnion::validate() const { 
+void ScalarsetUnion::validate() const {
   for (const auto _m : members) {
     const auto m = _m->resolve();
     if (isa<Enum>(m)) {
@@ -114,7 +114,7 @@ bool ScalarsetUnion::contains(const TypeExpr& n) const {
   struct Contain : public ConstTypeTraversal {
     bool result = false;
     const ScalarsetUnion& u;
-    Contain(const ScalarsetUnion& u_) : u(u_) {} 
+    Contain(const ScalarsetUnion& u_) : u(u_) {}
     void visit_array(const Array&) final { result = false; }
 
     void visit_enum(const Enum &n) final {
@@ -136,7 +136,7 @@ bool ScalarsetUnion::contains(const TypeExpr& n) const {
         if (const auto _tid = dynamic_cast<const TypeExprID*>(i.get())) {
           const auto t = _tid->resolve();
           if (const auto _s = dynamic_cast<const Scalarset*>(t.get()))
-            return ((n.name==_tid->name) 
+            return ((n.name==_tid->name)
                     && (n.bound->constant_fold() == _s->bound->constant_fold()));
         }
         return false;
@@ -146,7 +146,7 @@ bool ScalarsetUnion::contains(const TypeExpr& n) const {
 
     void visit_scalarsetunion(const ScalarsetUnion& n) {
       /* new design does not allow for nesting unions (makes things cleaner).
-          therefore, one scalarset only contains the other if they are equal */ 
+          therefore, one scalarset only contains the other if they are equal */
       result = u.equal_to(n);
     }
 
@@ -165,7 +165,7 @@ bool ScalarsetUnion::contains(const TypeExpr& n) const {
 }
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Multiset::Multiset(const Ptr<Expr>& size_, const Ptr<TypeExpr>& element_type_, const location& loc_)

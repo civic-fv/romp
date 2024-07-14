@@ -68,7 +68,7 @@ protected:
   Expr &operator=(const Expr &) = default;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Ternary : public Expr {
@@ -97,7 +97,7 @@ struct MURPHI_API_WITH_RTTI Ternary : public Expr {
    */
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI BinaryExpr : public Expr {
@@ -118,7 +118,7 @@ protected:
   BinaryExpr &operator=(const BinaryExpr &) = default;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI BooleanBinaryExpr : public BinaryExpr {
@@ -135,7 +135,7 @@ protected:
   BooleanBinaryExpr &operator=(const BooleanBinaryExpr &) = default;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Implication : public BooleanBinaryExpr {
@@ -152,7 +152,7 @@ struct MURPHI_API_WITH_RTTI Implication : public BooleanBinaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 /// logical OR
@@ -169,7 +169,7 @@ struct MURPHI_API_WITH_RTTI Or : public BooleanBinaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 /// logical AND
@@ -186,7 +186,7 @@ struct MURPHI_API_WITH_RTTI And : public BooleanBinaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 /// An 'x & y' expression where a decision has not yet been made as to whether
@@ -207,7 +207,7 @@ struct MURPHI_API_WITH_RTTI AmbiguousAmp : public BinaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 /// An 'x | y' expression where a decision has not yet been made as to whether
@@ -228,7 +228,7 @@ struct MURPHI_API_WITH_RTTI AmbiguousPipe : public BinaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI UnaryExpr : public Expr {
@@ -247,7 +247,7 @@ protected:
   UnaryExpr &operator=(const UnaryExpr &) = default;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Not : public UnaryExpr {
@@ -265,7 +265,7 @@ struct MURPHI_API_WITH_RTTI Not : public UnaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI ComparisonBinaryExpr : public BinaryExpr {
@@ -280,7 +280,7 @@ protected:
   ComparisonBinaryExpr &operator=(const ComparisonBinaryExpr &) = default;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Lt : public ComparisonBinaryExpr {
@@ -297,7 +297,7 @@ struct MURPHI_API_WITH_RTTI Lt : public ComparisonBinaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Leq : public ComparisonBinaryExpr {
@@ -314,7 +314,7 @@ struct MURPHI_API_WITH_RTTI Leq : public ComparisonBinaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Gt : public ComparisonBinaryExpr {
@@ -331,7 +331,7 @@ struct MURPHI_API_WITH_RTTI Gt : public ComparisonBinaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Geq : public ComparisonBinaryExpr {
@@ -348,7 +348,7 @@ struct MURPHI_API_WITH_RTTI Geq : public ComparisonBinaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI EquatableBinaryExpr : public BinaryExpr {
@@ -363,7 +363,7 @@ protected:
   EquatableBinaryExpr &operator=(const EquatableBinaryExpr &) = default;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Eq : public EquatableBinaryExpr {
@@ -380,7 +380,7 @@ struct MURPHI_API_WITH_RTTI Eq : public EquatableBinaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Neq : public EquatableBinaryExpr {
@@ -397,7 +397,7 @@ struct MURPHI_API_WITH_RTTI Neq : public EquatableBinaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI ArithmeticBinaryExpr : public BinaryExpr {
@@ -413,7 +413,7 @@ protected:
   ArithmeticBinaryExpr &operator=(const ArithmeticBinaryExpr &) = default;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Add : public ArithmeticBinaryExpr {
@@ -429,7 +429,7 @@ struct MURPHI_API_WITH_RTTI Add : public ArithmeticBinaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Sub : public ArithmeticBinaryExpr {
@@ -445,7 +445,7 @@ struct MURPHI_API_WITH_RTTI Sub : public ArithmeticBinaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Negative : public UnaryExpr {
@@ -463,7 +463,7 @@ struct MURPHI_API_WITH_RTTI Negative : public UnaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Bnot : public UnaryExpr {
@@ -481,7 +481,7 @@ struct MURPHI_API_WITH_RTTI Bnot : public UnaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Mul : public ArithmeticBinaryExpr {
@@ -497,7 +497,7 @@ struct MURPHI_API_WITH_RTTI Mul : public ArithmeticBinaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Div : public ArithmeticBinaryExpr {
@@ -513,7 +513,7 @@ struct MURPHI_API_WITH_RTTI Div : public ArithmeticBinaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Mod : public ArithmeticBinaryExpr {
@@ -529,7 +529,7 @@ struct MURPHI_API_WITH_RTTI Mod : public ArithmeticBinaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Lsh : public ArithmeticBinaryExpr {
@@ -545,7 +545,7 @@ struct MURPHI_API_WITH_RTTI Lsh : public ArithmeticBinaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Rsh : public ArithmeticBinaryExpr {
@@ -561,7 +561,7 @@ struct MURPHI_API_WITH_RTTI Rsh : public ArithmeticBinaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 /// bitwise AND
@@ -578,7 +578,7 @@ struct MURPHI_API_WITH_RTTI Band : public ArithmeticBinaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 /// bitwise OR
@@ -595,7 +595,7 @@ struct MURPHI_API_WITH_RTTI Bor : public ArithmeticBinaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Xor : public ArithmeticBinaryExpr {
@@ -611,7 +611,7 @@ struct MURPHI_API_WITH_RTTI Xor : public ArithmeticBinaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI ExprID : public Expr {
@@ -639,7 +639,7 @@ struct MURPHI_API_WITH_RTTI ExprID : public Expr {
   bool is_pure() const final;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Field : public Expr {
@@ -672,7 +672,7 @@ struct MURPHI_API_WITH_RTTI Field : public Expr {
   void update() final;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Element : public Expr {
@@ -700,7 +700,7 @@ struct MURPHI_API_WITH_RTTI Element : public Expr {
   void update() override;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI FunctionCall : public Expr {
@@ -728,7 +728,7 @@ struct MURPHI_API_WITH_RTTI FunctionCall : public Expr {
   bool is_pure() const final;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Quantifier : public Node {
@@ -773,7 +773,7 @@ struct MURPHI_API_WITH_RTTI Quantifier : public Node {
   bool is_pure() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Exists : public Expr {
@@ -797,7 +797,7 @@ struct MURPHI_API_WITH_RTTI Exists : public Expr {
   bool is_pure() const final;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Forall : public Expr {
@@ -821,7 +821,7 @@ struct MURPHI_API_WITH_RTTI Forall : public Expr {
   bool is_pure() const final;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI IsUndefined : public UnaryExpr {
@@ -840,9 +840,9 @@ struct MURPHI_API_WITH_RTTI IsUndefined : public UnaryExpr {
   std::string to_string() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
-// everything below here is implemented in src/ext_Expr.h 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
+// everything below here is implemented in src/ext_Expr.h
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI IsMember : public Expr {
@@ -869,7 +869,7 @@ protected:
   void validate_types() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 /**
@@ -877,7 +877,7 @@ protected:
  *        but should be inserted by the Assignment operator when assigning into
  *        a scalarset union from a scalarset or vise versa.
  *        It is mostly used as a wrapper for an existing AST node to wrap a child in.
- *        WARNING: This is a internal AST tool only & is pretty HACKY, 
+ *        WARNING: This is a internal AST tool only & is pretty HACKY,
  *                 therefore it is not included directly in any traversal tool,
  *                  and will just register as an (UN-validated) Add Expr!
  *        NOTE: does NOT guarantee bounds validity when casting OUT of a union into
@@ -894,14 +894,14 @@ struct MURPHI_API_WITH_RTTI SUCast : public UnaryExpr {
   /**
    * @brief \b Constructor: \n Construct a new \c SUCast object.
    *        \b NOTE: all parameters are expected have their symbols resolved before construction (HACKY)
-   * @param target_ The SCALARSET UNION type you wish to get to 
+   * @param target_ The SCALARSET UNION type you wish to get to
    * @param cur_ The expression that will have its value cast to target
    * @param loc_ The location of the parent AST that creates this as a wrapper for an expression.
    */
   SUCast(const Ptr<TypeExpr>& target_, const Ptr<Expr>& cur_, const location& loc_);
   virtual ~SUCast() = default;
   SUCast *clone() const override;
-  
+
   void visit(BaseTraversal& visitor) override;
   void visit(ConstBaseTraversal& visitor) const override;
 
@@ -913,7 +913,7 @@ struct MURPHI_API_WITH_RTTI SUCast : public UnaryExpr {
   std::string to_string() const final;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI MultisetQuantifier : public Quantifier {
@@ -932,20 +932,20 @@ struct MURPHI_API_WITH_RTTI MultisetQuantifier : public Quantifier {
   std::string to_string() const final;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 /**
  * @brief The only way to access an element of a multiset.
  *        NOTE: this AST node can't produced by parsing an Murphi file, only by code after the fact
- *              (currently in the disambiguate function of the symbol-resolver)  
+ *              (currently in the disambiguate function of the symbol-resolver)
  */
 struct MURPHI_API_WITH_RTTI MultisetElement : public Expr {
 
   Ptr<ExprID> index;
   Ptr<Expr> multiset;
 
-  MultisetElement(const Ptr<Expr>& multiset_, 
+  MultisetElement(const Ptr<Expr>& multiset_,
                   const Ptr<ExprID> index_, const location& loc_);
   MultisetElement *clone() const override;
   ~MultisetElement() = default;
@@ -965,7 +965,7 @@ struct MURPHI_API_WITH_RTTI MultisetElement : public Expr {
   std::string to_string() const final;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI MultisetCount : public Expr {

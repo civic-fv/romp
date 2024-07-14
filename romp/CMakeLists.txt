@@ -1,5 +1,5 @@
 # Define resources.
-add_custom_command(# the man/help page 
+add_custom_command(# the man/help page
   OUTPUT resources_manpage.cpp
   COMMAND ../misc/xxd.py doc/romp.1 ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cpp
   MAIN_DEPENDENCY doc/romp.1
@@ -65,7 +65,7 @@ add_custom_command(# just some random implementations of functions that need to 
   MAIN_DEPENDENCY resources/romp-rw/impls.hpp
   DEPENDS ../misc/xxd.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-add_custom_command(# file with our main function 
+add_custom_command(# file with our main function
   OUTPUT resources_romp-rw_main.cpp
   COMMAND ../misc/xxd.py resources/romp-rw/main.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_main.cpp
   MAIN_DEPENDENCY resources/romp-rw/main.hpp
@@ -76,7 +76,7 @@ add_custom_command(# file with our main function
 #   COMMAND curl -L https://github.com/nlohmann/json/releases/download/v3.10.5/json.hpp > ${CMAKE_CURRENT_SOURCE_DIR}/resources/lib/nlohmann_json.hpp
 #   # MAIN_DEPENDENCY resources/lib/nlohmann_json.hpp
 #   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-# add_custom_command(# convert jsonlib to 
+# add_custom_command(# convert jsonlib to
 #   OUTPUT resources_lib_nlohmann_json.cpp
 #   COMMAND ../misc/xxd.py resources/lib/nlohmann_json.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_lib_nlohmann_json.cpp
 #   MAIN_DEPENDENCY resources/lib/nlohmann_json.hpp

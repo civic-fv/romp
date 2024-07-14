@@ -38,7 +38,7 @@ namespace romp {
     unsigned int get_default_thread_count() {
       switch (__SYSTEM_THREAD_COUNT) {
       case 0: return 0;
-      case 1: 
+      case 1:
       case 2:
         return 1;
       default:
@@ -50,9 +50,9 @@ constexpr size_t _ROMP_ATTEMPT_LIMIT_DEFAULT();
 struct Options {
   // size_t history_length = 4;
   bool do_trace = false;
-  unsigned int threads =  get_default_thread_count(); 
-  size_t depth = 1024ul; // INT16_MAX;      
-  unsigned int walks = threads*_ROMP_THREAD_TO_RW_RATIO; 
+  unsigned int threads =  get_default_thread_count();
+  size_t depth = 1024ul; // INT16_MAX;
+  unsigned int walks = threads*_ROMP_THREAD_TO_RW_RATIO;
   unsigned int rand_seed = INIT_SEED;
   std::string seed_str = std::to_string(INIT_SEED);
   bool do_single = false;
@@ -68,7 +68,7 @@ struct Options {
 #endif
 #ifdef __romp__ENABLE_cover_property
   bool complete_on_cover = false;
-  id_t cover_count = INT16_MAX; 
+  id_t cover_count = INT16_MAX;
 #endif
   bool r_cover = false;
 // #ifdef __romp__ENABLE_assume_property
@@ -95,7 +95,7 @@ struct Options {
     if (not do_single)
       return get_trace_dir() + "/" + std::to_string(rw_id) + ".trace.json";
     std::stringstream buf; buf << INIT_TIME_STAMP;
-    return trace_dir + "/" + __model__filename + "_" + buf.str() + ".trace.json"; 
+    return trace_dir + "/" + __model__filename + "_" + buf.str() + ".trace.json";
   }
   bool report_any() const {
     return (report_all || do_single || report_error || r_assume || r_cover);

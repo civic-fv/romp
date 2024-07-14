@@ -7,9 +7,9 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file generate_metadata.cpp
- * 
+ *
  * @brief Output the metadata constructs for the model_checker
- * 
+ *
  * @date 2022/10/18
  * @version 0.3
  */
@@ -18,16 +18,16 @@
 #include "romp_def.hpp"
 #include "nested_escape.hpp"
 #include <murphi/murphi.h>
-#include <sstream> 
+#include <sstream>
 
 namespace romp {
 
   using namespace murphi;
 
 
-// << ========================================================================================== >> 
-// <<                                     HELPER FUNCTIONS                                       >> 
-// << ========================================================================================== >> 
+// << ========================================================================================== >>
+// <<                                     HELPER FUNCTIONS                                       >>
+// << ========================================================================================== >>
 
 namespace  {
 
@@ -70,15 +70,15 @@ std::string to_json(const Rule& rule, const std::string rule_type) {
          "\"loc\":{\"$type\":\"location\","
                     // "\"file\":\"" << nEscape(CodeGenerator::input_file_path.string()) <<  "\","
                     // "\"inside\":\"global\","
-                    "\"start\":["<< rule.loc.begin.line << "," << rule.loc.begin.column << "],"  
+                    "\"start\":["<< rule.loc.begin.line << "," << rule.loc.begin.column << "],"
                     "\"end\":["<< rule.loc.end.line << "," << rule.loc.end.column << "]}";
   return buf.str();
 }
 
 std::string to_json(const Function& funct) {
   std::stringstream buf;
-  buf << "{\"$type\":\"" << ((funct.return_type == nullptr) 
-                              ? "procedure" 
+  buf << "{\"$type\":\"" << ((funct.return_type == nullptr)
+                              ? "procedure"
                               : "function\","
                                 "\"return-type\":\"" + nEscape(funct.return_type->to_string())) << "\","
       << "\"label\":\"" << nEscape(funct.name) << "\","
@@ -93,7 +93,7 @@ std::string to_json(const Function& funct) {
   buf << "],\"loc\":{\"$type\":\"location\","
                     // "\"file\":\"" << nEscape(CodeGenerator::input_file_path.string()) << "\","
                     // "\"inside\":\"global\","
-                    "\"start\":["<< funct.loc.begin.line << "," << funct.loc.begin.column << "],"  
+                    "\"start\":["<< funct.loc.begin.line << "," << funct.loc.begin.column << "],"
                     "\"end\":["<< funct.loc.end.line << "," << funct.loc.end.column << "]}}";
   return buf.str();
 }
@@ -112,7 +112,7 @@ std::string to_string(const Function& f) {
     if (f.parameters.size() >= 2)
       for (int i=1; i<f.parameters.size(); ++i) {
         p = f.parameters[i].get();
-        if (_p->readonly == p->readonly 
+        if (_p->readonly == p->readonly
               && (_p->type->unique_id == p->type->unique_id || equal(_p->type->loc, p->type->loc)))
           buf << ',' << nEscape(p->name);
         else {
@@ -136,7 +136,7 @@ std::string to_string(const Function& f) {
     buf << "{\"$type\":\"error-statement\",";
     buf << "\"label\":\"" << nEscape(rule.message) << "\","
             "\"loc\":{\"$type\":\"location\","
-                      "\"start\":["<< rule.loc.begin.line << "," << rule.loc.begin.column << "],"  
+                      "\"start\":["<< rule.loc.begin.line << "," << rule.loc.begin.column << "],"
                       "\"end\":["<< rule.loc.end.line << "," << rule.loc.end.column << "]}";
     return buf.str();
   }
@@ -148,17 +148,17 @@ std::string to_string(const Function& f) {
         << "\"label\":\"" << nEscape(prop.message == "" ? prop.property.expr->to_string() : prop.message) << "\","
         << "\"expr\":\"" << nEscape(prop.property.expr->to_string()) << "\","
             "\"loc\":{\"$type\":\"location\","
-                      "\"start\":["<< prop.loc.begin.line << "," << prop.loc.begin.column << "],"  
+                      "\"start\":["<< prop.loc.begin.line << "," << prop.loc.begin.column << "],"
                       "\"end\":["<< prop.loc.end.line << "," << prop.loc.end.column << "]}";
     return buf.str();
   }
-} // namespace <anon> 
+} // namespace <anon>
 
 
 
-// << ========================================================================================== >> 
-// <<                              GENERATOR FUNCTION DEFINITIONS                                >> 
-// << ========================================================================================== >> 
+// << ========================================================================================== >>
+// <<                              GENERATOR FUNCTION DEFINITIONS                                >>
+// << ========================================================================================== >>
 
 void generate_type_ids_metadata(CodeGenerator& gen, const Node& n) {
   struct GenerateTypeIds : public murphi::ConstTraversal {
@@ -180,7 +180,7 @@ void generate_type_ids_metadata(CodeGenerator& gen, const Node& n) {
   gen << '}';
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 void generate_record_members_metadata(CodeGenerator& gen, const Node& n) {
@@ -207,7 +207,7 @@ void generate_record_members_metadata(CodeGenerator& gen, const Node& n) {
   gen << '}';
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 void generate_ruleset_metadata(CodeGenerator& gen, const Node& n) {
@@ -225,7 +225,7 @@ void generate_ruleset_metadata(CodeGenerator& gen, const Node& n) {
   gen << '}';
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 std::pair<id_t,id_t> generate_property_metadata(CodeGenerator& gen, const Node& n) {
@@ -277,7 +277,7 @@ std::pair<id_t,id_t> generate_property_metadata(CodeGenerator& gen, const Node& 
   return std::make_pair(generator.next_cover_id,generator.next_liveness_id);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 void generate_startstate_metadata(CodeGenerator& gen, const Node& n) {
@@ -295,7 +295,7 @@ void generate_startstate_metadata(CodeGenerator& gen, const Node& n) {
   gen << '}';
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 void generate_error_metadata(CodeGenerator& gen, const Node& n) {
@@ -313,7 +313,7 @@ void generate_error_metadata(CodeGenerator& gen, const Node& n) {
   gen << '}';
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 void generate_function_metadata(CodeGenerator& gen, const Node& n) {

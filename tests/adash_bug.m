@@ -1,76 +1,76 @@
 --------------------------------------------------------------------------
--- Copyright (C) 1992, 1993 by the Board of Trustees of 		  
--- Leland Stanford Junior University.					  
---									  
--- This description is provided to serve as an example of the use	  
--- of the Murphi description language and verifier, and as a benchmark	  
--- example for other verification efforts.				  
---									  
--- License to use, copy, modify, sell and/or distribute this description  
--- and its documentation any purpose is hereby granted without royalty,   
--- subject to the following terms and conditions, provided		  
---									  
--- 1.  The above copyright notice and this permission notice must	  
--- appear in all copies of this description.				  
--- 									  
--- 2.  The Murphi group at Stanford University must be acknowledged	  
--- in any publication describing work that makes use of this example. 	  
--- 									  
--- Nobody vouches for the accuracy or usefulness of this description	  
--- for any purpose.							  
---------------------------------------------------------------------------
-
---------------------------------------------------------------------------
--- Author:    C. Norris Ip                                                
---                                                                        
--- File:        adash.m                                                   
---                                                                        
--- Content:     abstract Dash Protocol                                    
---              with elementary operations and extended DMA operations    
---              suitable for conversion to use scalarset declarations     
---                                                                        
--- Specification decision:                                                
---          1)  Each cluster is modeled by a cache and a RAC              
---              to store outstanding operations.                          
---          2)  Simplification:                                           
---              RAC is not used to stored data; the cluster               
---              acts as a single processor/global shared cache            
---          3)  Seperate network channels are used.                       
---              (request and reply)                                       
---          4)  Aliases are used extensively.                             
---                                                                        
--- Summary of result:                                                     
---          1)  A "non-obvious" bug is rediscovered.                      
---          2)  No bug is discovered for the final version                
---              of the protocol.                                          
---          3)  Details of result can be found at the end of this file.   
---                                                                        
--- Options:                                                               
---          The code for the bug is retained in the description.          
---          To see the result of using a erronous protocol,               
---          use option flag 'bug1'.                                       
---                                                                        
---          An option flag 'nohome' is used to switch on/off the local    
---          memory action.  This enables us to simplify the protocol to   
---          examine the behaviour when the number of processor increases. 
---                                                                        
--- References: 						       	       	  
---          1) Daniel Lenoski, James Laudon, Kourosh Gharachorloo, 	  
---             Wlof-Dietrich Weber, Anoop Gupta, John Hennessy, 	  
---             Mark Horowitz and Monica Lam.				  
---             The Stanford DASH Multiprocessor.			  
---             Computer, Vol 25 No 3, p.63-79, March 1992.		  
---             (available online)					  
---          2) Daniel Lenoski, 						  
---             DASH Prototype System,					  
---             PhD thesis, Stanford University, Chapter 3, 1992		  
---             (available online)					  
---                                                                        
--- Last Modified:        17 Feb 93                                        
---                                                                        
+-- Copyright (C) 1992, 1993 by the Board of Trustees of
+-- Leland Stanford Junior University.
+--
+-- This description is provided to serve as an example of the use
+-- of the Murphi description language and verifier, and as a benchmark
+-- example for other verification efforts.
+--
+-- License to use, copy, modify, sell and/or distribute this description
+-- and its documentation any purpose is hereby granted without royalty,
+-- subject to the following terms and conditions, provided
+--
+-- 1.  The above copyright notice and this permission notice must
+-- appear in all copies of this description.
+--
+-- 2.  The Murphi group at Stanford University must be acknowledged
+-- in any publication describing work that makes use of this example.
+--
+-- Nobody vouches for the accuracy or usefulness of this description
+-- for any purpose.
 --------------------------------------------------------------------------
 
-/*
+--------------------------------------------------------------------------
+-- Author:    C. Norris Ip
+--
+-- File:        adash.m
+--
+-- Content:     abstract Dash Protocol
+--              with elementary operations and extended DMA operations
+--              suitable for conversion to use scalarset declarations
+--
+-- Specification decision:
+--          1)  Each cluster is modeled by a cache and a RAC
+--              to store outstanding operations.
+--          2)  Simplification:
+--              RAC is not used to stored data; the cluster
+--              acts as a single processor/global shared cache
+--          3)  Seperate network channels are used.
+--              (request and reply)
+--          4)  Aliases are used extensively.
+--
+-- Summary of result:
+--          1)  A "non-obvious" bug is rediscovered.
+--          2)  No bug is discovered for the final version
+--              of the protocol.
+--          3)  Details of result can be found at the end of this file.
+--
+-- Options:
+--          The code for the bug is retained in the description.
+--          To see the result of using a erronous protocol,
+--          use option flag 'bug1'.
+--
+--          An option flag 'nohome' is used to switch on/off the local
+--          memory action.  This enables us to simplify the protocol to
+--          examine the behaviour when the number of processor increases.
+--
+-- References:
+--          1) Daniel Lenoski, James Laudon, Kourosh Gharachorloo,
+--             Wlof-Dietrich Weber, Anoop Gupta, John Hennessy,
+--             Mark Horowitz and Monica Lam.
+--             The Stanford DASH Multiprocessor.
+--             Computer, Vol 25 No 3, p.63-79, March 1992.
+--             (available online)
+--          2) Daniel Lenoski,
+--             DASH Prototype System,
+--             PhD thesis, Stanford University, Chapter 3, 1992
+--             (available online)
+--
+-- Last Modified:        17 Feb 93
+--
+--------------------------------------------------------------------------
+
+/*
 Declarations
 
 The number of clusters is defined by 'ProcCount'.  To simplify the
@@ -86,7 +86,7 @@ Array is used to model every individual cluster-to-cluster network
 channel. The size of the array is estimated to be larger than the
 max possible number of message in network.
 
-All the addresses are in the cacheable address space.  
+All the addresses are in the cacheable address space.
 */
 
 --------------------------------------------------
@@ -110,7 +110,7 @@ Const
   nohome:       true;           -- options to switch off processors at Home.
                                 -- to simplify the protocol.
 
---------------------------------------------------
+--------------------------------------------------
 -- Type Declarations
 --------------------------------------------------
 Type
@@ -208,7 +208,7 @@ Type
         Locally_Exmod
         };
 
-
+
 Type
   -- Directory Controller and the Memory
   -- a) Directory DRAM
@@ -276,7 +276,7 @@ Var
 -- Parameter
 --   Ndepth: 3;
 
-/*
+/*
 Procedures
 -- Directory handling functions
 -- Request Network handling functions
@@ -318,7 +318,7 @@ Begin
   End;
 End;
 
-
+
 --------------------------------------------------
 -- Request Network handling functions
 -- a) A request is put into the end of a specific channel connecting
@@ -395,7 +395,7 @@ Begin
   End;
 End;
 
---------------------------------------------------
+--------------------------------------------------
 -- Sending request
 --------------------------------------------------
 
@@ -548,7 +548,7 @@ Begin
   --  Send_Req(WB, Dst, Src, Don'tCare, Addr, Val);
 End;
 
---------------------------------------------------
+--------------------------------------------------
 -- Sending Reply
 --------------------------------------------------
 
@@ -664,7 +664,7 @@ Begin
   --  Send_Reply(SACK, Dst, Src, Src, Addr, Don'tCare, 0);
 End;
 
---------------------------------------------------
+--------------------------------------------------
 -- Sending DMA Request
 --------------------------------------------------
 -- DMA Read request to home
@@ -781,7 +781,7 @@ Begin
   --  Send_Req(DWR_RAC, Dst, Src, Aux, Addr, Val);
 End;
 
---------------------------------------------------
+--------------------------------------------------
 -- Sending DMA Reply
 --------------------------------------------------
 
@@ -843,7 +843,7 @@ Begin
   --  Send_Reply(SACK, Dst, Src, Aux, Addr, Don'tCare, 0);
 End;
 
-/*
+/*
 Rule Sets for fundamental memory access and DMA access
 1) CPU Ia   : basic home memory requests from CPU
    CPU Ib   : DMA home memory requests from CPU
@@ -926,7 +926,7 @@ Do
     End;
   End; -- rule -- Local Memory Read Request
 
-
+
   --------------------------------------------------
   -- Home CPU issue read exclusive request
   -- confirmed with tables net.tbl, rc_1.tbl, rc_3.tbl up_mp.tbl
@@ -999,7 +999,7 @@ End; --ruleset; -- h
 End; --ruleset; -- n
 
 
-/*
+/*
 CPU Ib
 
 The rule set indeterministically issue requests for local
@@ -1059,7 +1059,7 @@ Do
     End;
   End; -- rule -- DMA Local Memory Read Request
 
-
+
   --------------------------------------------------
   -- Home CPU issue DMA write request
   -- confirmed with tables net.tbl, rc_1.tbl, rc_3.tbl up_mp.tbl
@@ -1139,7 +1139,7 @@ End; --ruleset; -- a
 End; --ruleset; -- h
 End; --ruleset; -- n
 
-/*
+/*
 CPU IIa
 
 The rule set indeterministically issue requests for remote
@@ -1210,7 +1210,7 @@ Do
     End; --switch;
   End; -- rule -- Remote Memory Read Request
 
-
+
   --------------------------------------------------
   -- remote CPU issue read exclusive request
   -- confirmed with tables net.tbl, rc_1.tbl, rc_3.tbl up_mp.tbl
@@ -1255,7 +1255,7 @@ Do
     End; --switch;
   End; -- rule -- Remote Memory Read Exclusive Request
 
-
+
   --------------------------------------------------
   -- remote CPU issue explicit writeback request
   --------------------------------------------------
@@ -1281,7 +1281,7 @@ End; --ruleset; -- a
 End; --ruleset; -- h
 End; --ruleset; -- n
 
-/*
+/*
 CPU IIb
 
 The rule set indeterministically issue requests for remote
@@ -1340,7 +1340,7 @@ Do
     End;
   End; -- rule -- DMA Remote Memory Read Request
 
-
+
   --------------------------------------------------
   -- remote CPU issue DMA write request
   -- confirmed with tables net.tbl, rc_1.tbl, rc_3.tbl up_mp.tbl
@@ -1388,7 +1388,7 @@ End; --ruleset; -- a
 End; --ruleset; -- h
 End; --ruleset; -- n
 
-/*
+/*
 PCPU Ia
 
 PCPU handles basic requests to Home for cacheable memory.
@@ -1466,7 +1466,7 @@ Do
   End; -- alias : RAC, Cache, Dir, Mem
   End; -- rule -- handle read request to home
 
-
+
   --------------------------------------------------
   -- PCPU Read exclusive request to home cluster handling procedure
   -- confirmed with tables net.tbl, rc_1.tbl, rc_3.tbl up_mp.tbl
@@ -1563,7 +1563,7 @@ Do
   End; -- alias : RAC, Cache, Dir, Mem
   End; -- rule -- handle read exclusive request to home
 
-
+
   --------------------------------------------------
   -- PCPU sharing writeback request to home cluster handling procedure
   --------------------------------------------------
@@ -1633,7 +1633,7 @@ End; --ruleset; -- Src
 End; --ruleset; -- Dst
 
 
-/*
+/*
 PCPU Ib
 
 PCPU handles DMA requests to Home for cacheable memory.
@@ -1696,7 +1696,7 @@ Do
   End; -- alias : RAC, Cache, Dir, Mem
   End; -- rule -- handle DMA read request to home
 
-
+
   --------------------------------------------------
   -- PCPU DMA write request to home cluster handling procedure
   -- confirmed with tables net.tbl, rc_1.tbl, rc_3.tbl up_mp.tbl
@@ -1763,7 +1763,7 @@ End; --ruleset; -- Src
 End; --ruleset; -- Dst
 
 
-/*
+/*
 PCPU IIa
 
 PCPU handles basic requests to non-home for cacheable memory.
@@ -1837,7 +1837,7 @@ Do
   End; -- alias : RAC, Cache
   End; -- rule -- handle read request to remote cluster
 
-
+
   --------------------------------------------------
   -- PCPU invalidate request handling procedure
   --------------------------------------------------
@@ -1914,7 +1914,7 @@ Do
   End; -- alias : RAC, Cache
   End; -- rule -- handle invalidate request
 
-
+
   --------------------------------------------------
   -- PCPU Read exclusive request to remote cluster handling procedure
   -- confirmed with tables net.tbl, rc_1.tbl, rc_3.tbl up_mp.tbl
@@ -1968,7 +1968,7 @@ End; --ruleset; -- Src
 End; --ruleset; -- Dst
 
 
-/*
+/*
 PCPU IIb
 
 PCPU handles DMA requests to non-home for cacheable memory.
@@ -2029,7 +2029,7 @@ Do
   End; -- alias : RAC, Cache
   End; -- rule -- handle DMA read request to remote cluster
 
-
+
   --------------------------------------------------
   -- PCPU DMA update request handling procedure
   --------------------------------------------------
@@ -2079,7 +2079,7 @@ Do
   End; -- alias : v, RAC, Cache
   End; -- rule -- handle DMA update request to remote cluster
 
-
+
   --------------------------------------------------
   -- PCPU DMA write request to remote cluster handling procedure
   -- confirmed with tables net.tbl, rc_1.tbl, rc_3.tbl up_mp.tbl
@@ -2123,7 +2123,7 @@ End; --alias; -- ReqChan, Request, Addr, Aux
 End; --ruleset; -- Src
 End; --ruleset; -- Dst
 
-/*
+/*
 RCPU Iab
 
 RCPU handles cacheable and DMA acknowledgements and replies.
@@ -2236,7 +2236,7 @@ Do
   End; -- alias : RAC, Cache, Dir, Mem
   End; -- rule -- handle ACK
 
-
+
   Rule "handle negative Acknowledgement"
     ReplyChan.Count > 0
     & Reply = NAK
@@ -2336,7 +2336,7 @@ Do
   End; -- alias : RAC
   End; -- rule -- handle NAK
 
-
+
   Rule "handle Indirect Acknowledgement"
     ReplyChan.Count > 0
     & Reply = IACK
@@ -2394,7 +2394,7 @@ Do
   End; -- alias : RAC, Cache, Dir
   End; -- rule -- IACK
 
-
+
   Rule "handle Supplementary Acknowledgement"
     ReplyChan.Count > 0
     & Reply = SACK
@@ -2449,7 +2449,7 @@ End; --ruleset; -- Src
 End; --ruleset; -- Dst
 
 
-/*
+/*
 -- rule for indeterministically change the master copy
 */
 Ruleset v : Value Do
@@ -2469,7 +2469,7 @@ End; --ruleset; -- n
 End; --ruleset; -- h
 End; --ruleset; -- v
 
-/*
+/*
 Start state
 
 the memory can have arbitrary value
@@ -2512,7 +2512,7 @@ Ruleset v: Value Do
 
 End; -- ruleset -- v
 
-/*
+/*
 Invariant "Globally invalid RAC state at Home Cluster"
 Invariant "Globally invalid RAC state at Local Cluster"
 Invariant "Only a single master copy exist"
@@ -2706,7 +2706,7 @@ Summary of Result (using release 2.3):
    with a max of about 2594 states in queue
    in sun sparc 2 station
 
-   Rel2.72S 
+   Rel2.72S
    breath-first search
    Error: Invariant Consistency of data failed.
    1126bits (141bytes) per state
@@ -2715,7 +2715,7 @@ Summary of Result (using release 2.3):
    in sun sparc 2 station
    using symmetry algorithm 5
 
-   error trace as  
+   error trace as
 Startstate Startstate 0, v:Value_1 fired.
 Rule DMA Remote Memory Write Request, n:Remote_1, h:Home_1, a:Address_1, v:Value_1 fired.
 Rule Remote Memory Read Request, n:Remote_2, h:Home_1, a:Address_1 fired.

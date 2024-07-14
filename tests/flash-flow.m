@@ -1390,8 +1390,8 @@ end;
 
 --invariant
 invariant "safety"
-  forall i: ProcId do 
-    forall j:ProcId do 
+  forall i: ProcId do
+    forall j:ProcId do
       forall d: DirId do
         ((i != j & !dirs[d].pending) ->  (procs[i].state = E -> procs[j].state = I))
       endForall

@@ -7,9 +7,9 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file throw_nested_error.hpp
- * 
+ *
  * @brief util function for joining and throwing a nested rumur error, for easy nested error traces.
- * 
+ *
  * @date 2022/06/28
  * @version 0.3
  */

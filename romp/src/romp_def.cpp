@@ -6,10 +6,10 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file romp_def.hpp
- * 
- * @brief A bunch of definitions for configuration 
+ *
+ * @brief A bunch of definitions for configuration
  *        and other details in the romp codegen tool.
- * 
+ *
  * @date 2022/05/11
  * @version 0.3
  */

@@ -7,12 +7,12 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file type_traverse.hpp
- * 
- * @brief a semi-abstract traverser that can take in a \c murphi::TypeExpr 
+ *
+ * @brief a semi-abstract traverser that can take in a \c murphi::TypeExpr
  *        and allows you to just write what happens when it encounters specific \c murphi::TypeExpr 's
- *        else throws a \c murphi::Error if it encounters a non-typeexpr \c murphi::Node , 
+ *        else throws a \c murphi::Error if it encounters a non-typeexpr \c murphi::Node ,
  *        with a configurable custom error message.
- * 
+ *
  * @date 2022/06/28
  * @version 0.3
  */
@@ -20,7 +20,7 @@
 #pragma once
 
 #include <murphi/murphi.h>
-#include <string> 
+#include <string>
 
 namespace murphi {
 
@@ -105,7 +105,7 @@ public:
   void visit_multisetelement(const MultisetElement& n) { unsupported_traversal(n,"murphi::MultisetElement"); }
   void visit_multisetremove(const MultisetRemove& n) { unsupported_traversal(n,"murphi::MultisetRemove"); }
   void visit_multisetremovepred(const MultisetRemovePred& n) { unsupported_traversal(n,"murphi::MultisetRemovePred"); }
-  void visit_multisetquantifier(const MultisetQuantifier& n) { unsupported_traversal(n,"murphi::MultisetQuantifier"); } 
+  void visit_multisetquantifier(const MultisetQuantifier& n) { unsupported_traversal(n,"murphi::MultisetQuantifier"); }
   // void visit_scalarsetunion(const ScalarsetUnion& n) { unsupported_traversal(n,"murphi::ScalarsetUnion"); }
   void visit_sucast(const SUCast& n) { unsupported_traversal(n,"murphi::SUCast"); }
 

@@ -7,9 +7,9 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file romp-rw-main.hpp
- * 
- * @brief 
- * 
+ *
+ * @brief
+ *
  * @date 2022/07/12
  * @version 0.3
  */
@@ -22,17 +22,17 @@
 #endif
 
 // #include <unistd.h>
-namespace romp { 
+namespace romp {
   void init_trace_dir(const Options& OPTIONS) {
     std::string args = "mkdir -p \"" + OPTIONS.get_trace_dir() + "\"";
     int err = system(args.c_str());
     if (err) {
-      std::cerr << "\nERROR :: trace directory ``" << OPTIONS.get_trace_dir() << "`` does not exists and could not be created !!\n\n" 
+      std::cerr << "\nERROR :: trace directory ``" << OPTIONS.get_trace_dir() << "`` does not exists and could not be created !!\n\n"
                 << std::flush;
       exit(EXIT_FAILURE);
     }
   }
-  
+
   void launch_prompt(const Options& OPTIONS) {
     ostream_p out(std::cout,OPTIONS,0);
     std::cout << '\n';
@@ -44,13 +44,13 @@ namespace romp {
       std::cin >> _val;
       if (_val.size()>0) val = std::tolower(_val[0]);
       switch (val) {
-        case 'y': 
-        case 'l': 
+        case 'y':
+        case 'l':
           return;
         case 'n':
-        case 'e': 
+        case 'e':
           exit(EXIT_SUCCESS); break;
-        default: 
+        default:
           break;
       }
       std::cout << "COULDN'T RECOGNISE RESPONSE; TRY AGAIN\n";

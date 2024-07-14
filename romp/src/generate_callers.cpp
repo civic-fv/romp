@@ -7,9 +7,9 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file generate_callers.cpp
- * 
+ *
  * @brief generate all of the ruleset expansion callers for the model.
- * 
+ *
  * @date 2022/10/19
  * @version 0.3
  */
@@ -30,7 +30,7 @@ namespace romp {
 // CodeGenerator& operator << (CodeGenerator& out, const Sig& sig) {
 //   out << sig.perm.rule.name << "(";
 //   std::string sep;
-//   for (size_t i=0; i<sig.size(); ++i) 
+//   for (size_t i=0; i<sig.size(); ++i)
 //     if (sig.params[i] != nullptr) {
 //       out << sep << *sig.params[i];
 //       sep = ", ";
@@ -41,7 +41,7 @@ namespace romp {
 
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void generate_ruleset_callers(romp::CodeGenerator& gen, const murphi::Model& m) {
   struct Generator : public murphi::ConstTraversal {
@@ -110,7 +110,7 @@ void generate_ruleset_callers(romp::CodeGenerator& gen, const murphi::Model& m) 
 }
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 void generate_property_rule_callers(romp::CodeGenerator& gen, const murphi::Model& m) {
@@ -141,7 +141,7 @@ void generate_property_rule_callers(romp::CodeGenerator& gen, const murphi::Mode
       SigPerm sigs(prop);
       for (auto& sig : sigs) {
         std::string _check = ROMP_PROPERTYRULE_PREFIX + prop.name + "__" + std::to_string(sig.index);  // int_to_hex(sig.index);
-        gen << gen.indentation() 
+        gen << gen.indentation()
             << gen.M_PROPERTY__FUNC_ATTRS
             // << " void "
             << " bool "
@@ -198,13 +198,13 @@ void generate_property_rule_callers(romp::CodeGenerator& gen, const murphi::Mode
                                                   "+ ___propRule_assume_count___ "
                                                   "+ ___propRule_cover_count___ "
                                                   "+ ___propRule_liveness_count___)\n"
-        << "\n/* All of the property rules expanded in one place */\n" 
+        << "\n/* All of the property rules expanded in one place */\n"
           << ROMP_CALLER_PROPERTIES_DECL " = {\n"  << generator.prop_list.str() << "};\n"
         << /*std::*/gen.flush();
 }
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 void generate_startstate_callers(romp::CodeGenerator& gen, const murphi::Model& m) {
@@ -231,7 +231,7 @@ void generate_startstate_callers(romp::CodeGenerator& gen, const murphi::Model& 
       SigPerm sigs(startstate);
       for (auto& sig : sigs) {
         std::string _init = ROMP_STARTSTATE_PREFIX + startstate.name + "__" + std::to_string(sig.index);  // int_to_hex(sig.index);
-        gen << gen.indentation() 
+        gen << gen.indentation()
             << gen.M_STARTSTATE__FUNC_ATTRS
             << " void "
             << _init

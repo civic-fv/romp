@@ -278,7 +278,7 @@ nodes: nodes decl {
 aliasrule: ALIAS exprdecls DO rules endalias {
   std::vector<murphi::Ptr<murphi::AliasDecl>> decls;
   for (const std::tuple<std::string, murphi::Ptr<murphi::Expr>, murphi::location> &d : $2) {
-    decls.push_back(murphi::Ptr<murphi::AliasDecl>::make(id_handler(std::get<0>(d), murphi::ALIAS_NAME, std::get<2>(d)), 
+    decls.push_back(murphi::Ptr<murphi::AliasDecl>::make(id_handler(std::get<0>(d), murphi::ALIAS_NAME, std::get<2>(d)),
                                                      std::get<1>(d), std::get<2>(d)));
   }
   $$ = murphi::Ptr<murphi::AliasRule>::make(decls, $4, @$);
@@ -302,7 +302,7 @@ comma_opt: ',' | %empty;
 
 decl: CONST exprdecls {
   for (const std::tuple<std::string, murphi::Ptr<murphi::Expr>, murphi::location> &d : $2) {
-    $$.push_back(murphi::Ptr<murphi::ConstDecl>::make(id_handler(std::get<0>(d),murphi::CONST_NAME,std::get<2>(d)), 
+    $$.push_back(murphi::Ptr<murphi::ConstDecl>::make(id_handler(std::get<0>(d),murphi::CONST_NAME,std::get<2>(d)),
                                                   std::get<1>(d), std::get<2>(d)));
   }
 } | TYPE typedecls {
@@ -513,7 +513,7 @@ parameters: parameters parameter semi_opt {
 };
 
 procdecl: function ID '(' parameters ')' return_type decls begin_opt stmts endfunction semi_opt {
-  // std::transform($4.begin(), $4.end(), 
+  // std::transform($4.begin(), $4.end(),
   //               [&](murphi::Ptr<murphi::VarDecl> v) -> murphi::Ptr<murphi::VarDecl> {
   //                 v->name = id_handler(v->name, murphi::FUNCT_PARAM_NAME, v->loc);
   //                 return v;
@@ -522,11 +522,11 @@ procdecl: function ID '(' parameters ')' return_type decls begin_opt stmts endfu
 };
 
 property: category STRING expr {
-  $$ = murphi::Ptr<murphi::PropertyRule>::make(id_handler($2, murphi::PROPERTY_RULE_NAME, @2), 
+  $$ = murphi::Ptr<murphi::PropertyRule>::make(id_handler($2, murphi::PROPERTY_RULE_NAME, @2),
                                            murphi::Property(*$1, $3, @3), @$);
 } | category expr string_opt {
   ;
-  $$ = murphi::Ptr<murphi::PropertyRule>::make((($3!="") ? id_handler($3, murphi::PROPERTY_RULE_NAME, @3) : ""), 
+  $$ = murphi::Ptr<murphi::PropertyRule>::make((($3!="") ? id_handler($3, murphi::PROPERTY_RULE_NAME, @3) : ""),
                                             murphi::Property(*$1, $2, @2), @$);
 };
 
@@ -581,7 +581,7 @@ semi_opt: semi_opt ';' | %empty;
 semis: semi_opt ';';
 
 simplerule: RULE string_opt guard_opt decls_header stmts endrule {
-  $$ = murphi::Ptr<murphi::SimpleRule>::make((($2!="") ? id_handler($2, murphi::RULE_NAME, @2) : ""), 
+  $$ = murphi::Ptr<murphi::SimpleRule>::make((($2!="") ? id_handler($2, murphi::RULE_NAME, @2) : ""),
                                          $3, $4, $5, @$);
 };
 
@@ -598,7 +598,7 @@ stmt: category STRING expr {
   $$ = murphi::Ptr<murphi::PropertyStmt>::make(p, id_handler($2, murphi::PROPERTY_STMT_NAME, @2), @$);
 } | category expr string_opt {
   murphi::Property p(*$1, $2, @2);
-  $$ = murphi::Ptr<murphi::PropertyStmt>::make(p, 
+  $$ = murphi::Ptr<murphi::PropertyStmt>::make(p,
                                            (($3!="") ? id_handler($3, murphi::PROPERTY_STMT_NAME, @3) : ""),
                                            @$);
 } | designator COLON_EQ expr {
@@ -606,7 +606,7 @@ stmt: category STRING expr {
 } | ALIAS exprdecls DO stmts endalias {
   std::vector<murphi::Ptr<murphi::AliasDecl>> decls;
   for (const std::tuple<std::string, murphi::Ptr<murphi::Expr>, murphi::location> &d : $2) {
-    decls.push_back(murphi::Ptr<murphi::AliasDecl>::make(id_handler(std::get<0>(d), murphi::ALIAS_NAME, std::get<2>(d)), 
+    decls.push_back(murphi::Ptr<murphi::AliasDecl>::make(id_handler(std::get<0>(d), murphi::ALIAS_NAME, std::get<2>(d)),
                                                                 std::get<1>(d), std::get<2>(d)));
   }
   $$ = murphi::Ptr<murphi::AliasStmt>::make(decls, $4, @$);
@@ -709,7 +709,7 @@ union_list: union_list ',' union_list_item {
 } | union_list_item ',' union_list_item { /* at least 2 is required */
   $$ = std::vector<murphi::Ptr<murphi::TypeExpr>>{$1,$3};
 } | %empty {
-  /* do nothing and check size later */ 
+  /* do nothing and check size later */
 };
 
 typeexpr: BOOLEAN {

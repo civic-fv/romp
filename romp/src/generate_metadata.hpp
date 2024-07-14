@@ -7,9 +7,9 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file generate_metadata.hpp
- * 
+ *
  * @brief Output the metadata constructs for the model_checker
- * 
+ *
  * @date 2022/10/18
  * @version 0.3
  */

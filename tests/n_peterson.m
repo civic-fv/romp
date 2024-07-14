@@ -1,47 +1,47 @@
 --------------------------------------------------------------------------
--- Copyright (C) 1992 by the Board of Trustees of 			  
--- Leland Stanford Junior University.					  
---									  
--- This description is provided to serve as an example of the use	  
--- of the Murphi description language and verifier, and as a benchmark	  
--- example for other verification efforts.				  
---									  
--- License to use, copy, modify, sell and/or distribute this description  
--- and its documentation any purpose is hereby granted without royalty,   
--- subject to the following terms and conditions, provided		  
---									  
--- 1.  The above copyright notice and this permission notice must	  
--- appear in all copies of this description.				  
--- 									  
--- 2.  The Murphi group at Stanford University must be acknowledged	  
--- in any publication describing work that makes use of this example. 	  
--- 									  
--- Nobody vouches for the accuracy or usefulness of this description	  
--- for any purpose.							  
+-- Copyright (C) 1992 by the Board of Trustees of
+-- Leland Stanford Junior University.
+--
+-- This description is provided to serve as an example of the use
+-- of the Murphi description language and verifier, and as a benchmark
+-- example for other verification efforts.
+--
+-- License to use, copy, modify, sell and/or distribute this description
+-- and its documentation any purpose is hereby granted without royalty,
+-- subject to the following terms and conditions, provided
+--
+-- 1.  The above copyright notice and this permission notice must
+-- appear in all copies of this description.
+--
+-- 2.  The Murphi group at Stanford University must be acknowledged
+-- in any publication describing work that makes use of this example.
+--
+-- Nobody vouches for the accuracy or usefulness of this description
+-- for any purpose.
 --------------------------------------------------------------------------
-
+
 --------------------------------------------------------------------------
 --
---                                                                        
--- File:        muxn.m                                                    
---                                                                        
--- Content:     Peterson's algorithm (mutual exclusion for n-processes)   
---                                                                        
--- Summary of result:                                                     
---          1)  No bug is discovered 					  
---          2)  Details of result can be found at the end of this file.   
---                                                                        
--- References: 						       	       	  
--- Peterson, G.L.,  Myths about the mutual exclusion problem,             
--- Information processing letters, Vol 12, No 3, 1981.                    
---                                                                        
--- Date created:         28 Oct 92                                        
--- Last Modified:        17 Feb 93                                        
---                                                                        
+--
+-- File:        muxn.m
+--
+-- Content:     Peterson's algorithm (mutual exclusion for n-processes)
+--
+-- Summary of result:
+--          1)  No bug is discovered
+--          2)  Details of result can be found at the end of this file.
+--
+-- References:
+-- Peterson, G.L.,  Myths about the mutual exclusion problem,
+-- Information processing letters, Vol 12, No 3, 1981.
+--
+-- Date created:         28 Oct 92
+-- Last Modified:        17 Feb 93
+--
 --------------------------------------------------------------------------
 
 Const
-  N: 7;	
+  N: 7;
 
 Type
   --  The scalarset is used for symmetry, which is implemented in Murphi 1.5
@@ -67,21 +67,21 @@ Ruleset i: pid  Do
     P[i] = L0  ==>
   Begin
     localj[i] := 1;
-    P[i] := L1; 
+    P[i] := L1;
   End;
 
   Rule "execute assign Qi j"
     P[i] = L1  ==>
   Begin
     Q[i] := localj[i];
-    P[i] := L2; 
+    P[i] := L2;
   End;
 
   Rule "execute assign TURNj i"
     P[i] = L2  ==>
   Begin
     turn[localj[i]]  := i;
-    P[i] := L3; 
+    P[i] := L3;
   End;
 
   Rule "execute wait until"
@@ -95,10 +95,10 @@ Ruleset i: pid  Do
       localj[i] := localj[i] + 1;
       If ( localj[i]<N )
       Then
-        P[i] := L1; 
+        P[i] := L1;
       Else
-        P[i] := L4; 
-      End; --If 
+        P[i] := L4;
+      End; --If
     End; --If
   End;
 
@@ -107,7 +107,7 @@ Ruleset i: pid  Do
   Begin
     Q[i] := 1;
     P[i] := L0;
-  End; 
+  End;
 
 End; --Ruleset
 
@@ -123,7 +123,7 @@ Begin
   End; --For
 
   Clear localj;
-End;  
+End;
 
 Invariant
   ! Exists i1: pid Do
@@ -134,7 +134,7 @@ Invariant
       )
     End  --Exists
     End; --Exists
- 
+
 /******************
 
 Summary of Result (using release 2.3):
@@ -177,7 +177,7 @@ Summary of Result (using release 2.3):
 	628868 states, 3144340 rules fired in 758.92s.
 	25458 states max in the queue.
 
-gamma2.9S on theforce.stanford.edu 
+gamma2.9S on theforce.stanford.edu
 
   	5 proc
 	-O4 compile 119.7s 2.7Mbytes
@@ -187,7 +187,7 @@ gamma2.9S on theforce.stanford.edu
 	6 proc
 	-O4 compile 120.2s 2.7Mbytes
 	    (28 bytes per states)
-        -sym2,3,4  35,159 states, 210954 rules 117.45s 
+        -sym2,3,4  35,159 states, 210954 rules 117.45s
 
 Release 2.9S (Sparc 20, cabbage.stanford.edu)
 
@@ -200,4 +200,3 @@ Release 2.9S (Sparc 20, cabbage.stanford.edu)
       -c 163298 states, 1143086 rules fired in 292.42s.
 
 ******************/
-

@@ -7,9 +7,9 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file ModelGenerator.hpp
- * 
+ *
  * @brief generates the C++ code for the model itself
- * 
+ *
  * @date 2022/10/14
  * @version 0.3
  */
@@ -186,5 +186,5 @@ protected:
   // output single line comments following the given node
   size_t emit_trailing_comments(const murphi::Node &n);
 };
-  
+
 } // namespace romp

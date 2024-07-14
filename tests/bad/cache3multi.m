@@ -1,25 +1,25 @@
 -----------------------------------------------------------------------
--- Copyright (C) 1992, 1993 by the Board of Trustees of 		 
--- Leland Stanford Junior University.					 
---									 
--- This description is provided to serve as an example of the use	 
--- of the Murphi description language and verifier, and as a benchmark	 
--- example for other verification efforts.				 
---									 
--- License to use, copy, modify, sell and/or distribute this description 
--- and its documentation any purpose is hereby granted without royalty,  
--- subject to the following terms and conditions, provided		 
---									 
--- 1.  The above copyright notice and this permission notice must	 
--- appear in all copies of this description.				 
--- 									 
--- 2.  The Murphi group at Stanford University must be acknowledged	 
--- in any publication describing work that makes use of this example. 	 
--- 									 
--- Nobody vouches for the accuracy or usefulness of this description	 
--- for any purpose.							 
+-- Copyright (C) 1992, 1993 by the Board of Trustees of
+-- Leland Stanford Junior University.
+--
+-- This description is provided to serve as an example of the use
+-- of the Murphi description language and verifier, and as a benchmark
+-- example for other verification efforts.
+--
+-- License to use, copy, modify, sell and/or distribute this description
+-- and its documentation any purpose is hereby granted without royalty,
+-- subject to the following terms and conditions, provided
+--
+-- 1.  The above copyright notice and this permission notice must
+-- appear in all copies of this description.
+--
+-- 2.  The Murphi group at Stanford University must be acknowledged
+-- in any publication describing work that makes use of this example.
+--
+-- Nobody vouches for the accuracy or usefulness of this description
+-- for any purpose.
 -------------------------------------------------------------------------
-
+
 -------------------------------------------------------------------------
 --
 -- File : cache3multi.m
@@ -43,7 +43,7 @@
 -- not necessarily implement an appropriate memory model.
 --
 --------------------------------------------------------------------------
--- 
+--
 -- Note:
 --
 -- For verification, it is convenient to split nodes into two
@@ -66,7 +66,7 @@ Const
 
 Type
   Home:	Scalarset (HomeCount);
-  Proc: Scalarset (ProcCount); 
+  Proc: Scalarset (ProcCount);
   Node: Union { Home, Proc};
   -- Kludge! so I don't have to redo all message field types.
   Address: Scalarset (AddressCount);
@@ -116,7 +116,7 @@ Type
           State: enum{	Inv, 		-- Invalid
 			Shared_Remote,  -- Shared by remote clusters
 			Master_Remote,  -- Owned by a remote cluster
-			Wait_Inv,	-- Waiting for Invalidate 
+			Wait_Inv,	-- Waiting for Invalidate
 					-- Acknowledge
 			Wait_Update,	-- Waiting for Update to home
 			Wait_WB		-- Waiting for ack for the
@@ -139,7 +139,7 @@ Type
           State: enum{I, S, M}; -- Invalid, Shared, or Master
           Value: Value;
         End;
-      PMMState:  Array [Home] of Array [Address] of 
+      PMMState:  Array [Home] of Array [Address] of
 		   enum{NOP,		-- invalid
 			CR_Pend,	-- waiting for Cache_Read reply
 			CRE_Pend,	-- waiting for Cache_Read_Ex reply
@@ -148,7 +148,7 @@ Type
 			Uncache_Pend	-- waitign for Uncache_ack
 			};
     End;
-
+
 Var
   -- The Net is, abstractly, a bounded set of NetMax or
   -- fewer messages.  It is implemented as an unsorted array,
@@ -162,7 +162,7 @@ Var
   Procs:  Array [Proc] of ProcState;
 
 -- Network functions
-Procedure Send(M: Message_Type; 
+Procedure Send(M: Message_Type;
 	       Dst:Node; Src:Node; Aux: Node;
 	       Addr:Address; Val:Value);
 Var msg:Message;
@@ -177,7 +177,7 @@ Begin
   MultiSetAdd(msg,Net);
 End;
 
--- Special send functions
+-- Special send functions
 Procedure Send_Cache_Read(Dst:Node; Src:Node; Addr:Address);
 Begin
   Send(Cache_Read, Dst, Src, UNDEFINED, Addr, UNDEFINED);
@@ -253,14 +253,14 @@ Begin
   Send(Write_Back_Ack, Dst, Src, UNDEFINED, Addr, UNDEFINED);
 End;
 
--- Directory support functions
+-- Directory support functions
 
 Procedure add_dir_entry( h:Node;  a:Address;  n:Node);
   -- h = home node, a = address, n = node to be added.
   If Homes[h].Dir[a].Shared_Count = DirMax
   Then
     Error "Directory overflow";
-  End; 
+  End;
   Homes[h].Dir[a].Entries[Homes[h].Dir[a].Shared_Count] := n;
   Homes[h].Dir[a].Shared_Count := Homes[h].Dir[a].Shared_Count+1;
 End;
@@ -272,20 +272,20 @@ Procedure remove_dir_entry( h:Node;  a:Address;  n:Node);
   If Homes[h].Dir[a].Shared_Count = 0
   Then
     Error "Cannot remove from empty directory";
-  End;	 
+  End;
   -- h = home node, a = address, n = node to be added.
   For i : 0..DirMax-1 Do
     If (i < Homes[h].Dir[a].Shared_Count) &
        (Homes[h].Dir[a].Entries[i] = n)
     Then
       -- overwrite this entry with last entry.
-      Homes[h].Dir[a].Entries[i] := 
+      Homes[h].Dir[a].Entries[i] :=
 	Homes[h].Dir[a].Entries[Homes[h].Dir[a].Shared_Count-1];
-      -- clear last entry	
+      -- clear last entry
       Undefine Homes[h].Dir[a].Entries[Homes[h].Dir[a].Shared_Count-1];
       Homes[h].Dir[a].Shared_Count := Homes[h].Dir[a].Shared_Count-1;
     End;
-  End;	
+  End;
   -- if we removed last entry, go to Inv state.
   If Homes[h].Dir[a].Shared_Count = 0
   Then
@@ -293,13 +293,13 @@ Procedure remove_dir_entry( h:Node;  a:Address;  n:Node);
   End;
 End;
 
--- Procedures for operations that are repeated in several places.
+-- Procedures for operations that are repeated in several places.
 
 -- This procedure is called when an Inv_Ack message is received,
 -- or when we would like to pretend that that has happened.
 Procedure Handle_Inv_Ack( n:Node;  addr: Address);
   If Homes[n].Dir[addr].Inv_Count = 0
-  Then 
+  Then
     Error "Bad invalidation count";
   End;
   Homes[n].Dir[addr].Inv_Count := Homes[n].Dir[addr].Inv_Count-1;
@@ -313,7 +313,7 @@ Procedure Handle_Inv_Ack( n:Node;  addr: Address);
   End;
 End;
 
-Procedure Handle_Uncache_Ack( n:Node;  home:Node; 
+Procedure Handle_Uncache_Ack( n:Node;  home:Node;
 			      addr:Address);
   If Procs[n].PMMState[home][addr] != Uncache_Pend
   Then
@@ -324,7 +324,7 @@ Procedure Handle_Uncache_Ack( n:Node;  home:Node;
   Undefine Procs[n].Cache[home][addr].Value;
 End;
 
-Procedure Handle_Write_Back_Ack( n:Node;  home:Node; 
+Procedure Handle_Write_Back_Ack( n:Node;  home:Node;
 				 addr:Address);
   If Procs[n].PMMState[home][addr] != WB_Pend
   Then
@@ -335,7 +335,7 @@ Procedure Handle_Write_Back_Ack( n:Node;  home:Node;
   Undefine Procs[n].Cache[home][addr].Value;
 End;
 
--- PMM rules
+-- PMM rules
 Ruleset n:Proc Do
   Alias me:Procs[n] Do
     Ruleset h:Home Do
@@ -375,7 +375,7 @@ Ruleset n:Proc Do
           Send_Cache_Promote(h, n, a);
 	Endrule;
 
--- PMM rules, cont.
+-- PMM rules, cont.
 
 	Rule
 	  -- uncache
@@ -383,7 +383,7 @@ Ruleset n:Proc Do
 	  & (me.PMMState[h][a] = NOP)
 	  & (MultiSetCount(i:Net,true) <= NetMax - ProcCount - 1)  -- avoid deadlock
 	==>
-	  me.PMMState[h][a] := Uncache_Pend; 
+	  me.PMMState[h][a] := Uncache_Pend;
 	  Send_Uncache(h, n, a);
 	Endrule;
 
@@ -412,8 +412,8 @@ Ruleset n:Proc Do
     Endruleset;
   Endalias;
 Endruleset;
- 
--- Receive part of PMM.  Note: "n" and "me" are bound in enclosing
+
+-- Receive part of PMM.  Note: "n" and "me" are bound in enclosing
 -- ruleset and alias.
 
 -- This rule set nondeterministically chooses a candidate
@@ -446,7 +446,7 @@ Choose M_Index: Net Do
 	    Endswitch;
 
 	  Case Invalidate:
-	    If   (  me.Cache[msg.Source][msg.Address].State = S 
+	    If   (  me.Cache[msg.Source][msg.Address].State = S
 		  | me.Cache[msg.Source][msg.Address].State = I)
 	    Then
 	      me.Cache[msg.Source][msg.Address].State := I;
@@ -475,10 +475,10 @@ Choose M_Index: Net Do
 	          Error "Got Invalidate with funny PMM state";
 	        Endswitch;
 	    Else
-	      Error "Invalidate message when in M state";	
+	      Error "Invalidate message when in M state";
 	    Endif;
 
--- PMM rules, cont.
+-- PMM rules, cont.
 
           Case Fw_Cache_R:
 	    -- We have an M copy.  Someone else wants an S copy.
@@ -501,9 +501,9 @@ Choose M_Index: Net Do
 	      -- We have to block, because we don't have the
 	      -- data to forward.
 	      -- The data is definitely on its way, so we won't
-	      -- deadlock.	
+	      -- deadlock.
 	      -- Let the Fw_Cache_R sit in the queue.
-	    Case CP_Pend: -- !! Block. 
+	    Case CP_Pend: -- !! Block.
 	      -- We did a Cache_Promote successfully, but Cache_Read from
 	      --  someone else caused a Fw_Cache_R, which got here before
 	      -- the Cache_Promote_Ack.
@@ -516,10 +516,10 @@ Choose M_Index: Net Do
 	      Handle_Write_Back_Ack(n, msg.Source, msg.Address);
 	      MultiSetRemove(M_Index, Net);
 	    Else
-	      Error "Fw_Cache_R received with funny PMMState";	
+	      Error "Fw_Cache_R received with funny PMMState";
 	    Endswitch;
 
--- PMM rules, cont.
+-- PMM rules, cont.
 
 	  Case Fw_Cache_R_Ex:
 	    -- We have an M copy. Someone else wants one,
@@ -544,7 +544,7 @@ Choose M_Index: Net Do
 	      MultiSetRemove(M_Index, Net);
 	    Case WB_Pend:
 	      -- We are already in the middle of a writeback.
-	      -- Treat Fw_Cache_R_Ex like a Write_Back_Ack, but forward data to 
+	      -- Treat Fw_Cache_R_Ex like a Write_Back_Ack, but forward data to
 	      -- local.
 	      Send_Data(msg.Aux, n, msg.Source, msg.Address,
 			me.Cache[msg.Source][msg.Address].Value);
@@ -559,12 +559,12 @@ Choose M_Index: Net Do
 	    Else
 	      Error "Fw_Cache_R_Ex received in funny PMMState";
 	    Endswitch;
--- PMM rules, cont.
+-- PMM rules, cont.
 
 	  Case Cache_Promote_Ack:
 	    -- Our Cache_Promote has succeeded.  Make the copy writeable.
 	    If me.PMMState[msg.Source][msg.Address] = CP_Pend
-	    Then 
+	    Then
 	      me.PMMState[msg.Source][msg.Address] := NOP;
               me.Cache[msg.Source][msg.Address].State := M;
 	      MultiSetRemove(M_Index, Net);
@@ -584,11 +584,11 @@ Choose M_Index: Net Do
 
 	  Case Write_Back_Ack:
 	    If me.PMMState[msg.Source][msg.Address] = WB_Pend
-	    Then		
+	    Then
 	      Handle_Write_Back_Ack(n, msg.Source, msg.Address);
 	      MultiSetRemove(M_Index, Net);
 	    Else
-	      Error "Write_Back_Ack when PMMState not WB_Pend";	
+	      Error "Write_Back_Ack when PMMState not WB_Pend";
 	    Endif;
 
 	  Else
@@ -600,7 +600,7 @@ Choose M_Index: Net Do
   Endrule;
 Endchoose;
 
--- RAS< rules. "n" and "me" still bound
+-- RAS< rules. "n" and "me" still bound
 
 Choose M_Index: Net Do
 
@@ -650,11 +650,11 @@ Choose M_Index: Net Do
 	      Else
 		Error "Cache_Read received in funny Dir state";
               Endswitch;
--- RAS rules, cont.
+-- RAS rules, cont.
 
 	    Case Cache_Read_Ex:
 	      Switch me.Dir[msg.Address].State
-	      Case Inv: 
+	      Case Inv:
 		-- add local to the directory in Master_Remote state.
                 me.Dir[msg.Address].State := Master_Remote;
 	        add_dir_entry(n, msg.Address, msg.Source);
@@ -696,7 +696,7 @@ Choose M_Index: Net Do
 	      Case Wait_WB:  -- Block. Wait for writeback
 	      Case Wait_Update:  -- Block. Wait for update
 
-/*	      Case Master_Remote:	
+/*	      Case Master_Remote:
 	        -- Treat like Inv_Ack (someone else got entry in M state).
 	        Handle_Inv_Ack(n, msg.Address);
 		MultiSetRemove(M_Index, Net);
@@ -704,11 +704,11 @@ Choose M_Index: Net Do
 	      Else
 	        Error "Cache_Read_Ex received in funny Dir state";
 	      Endswitch;
--- RAS rules, cont.
+-- RAS rules, cont.
 
 	    Case Cache_Promote:
 	      Switch me.Dir[msg.Address].State
-	      Case Inv: 
+	      Case Inv:
 		Error "Home in Inv state on Cache_Promote";
 	      Case Shared_Remote:
 	        -- do nothing -- moved to another rule
@@ -723,7 +723,7 @@ Choose M_Index: Net Do
 		  -- But not to the local that originated the Cache_Promote!
 		  For i:0..DirMax-1 Do
 		    If   (i < me.Dir[msg.Address].Shared_Count)
-		       & (me.Dir[msg.Address].Entries[i] != msg.Source ) 
+		       & (me.Dir[msg.Address].Entries[i] != msg.Source )
 		    Then
 		      Send_Invalidate(me.Dir[msg.Address].Entries[i], n, msg.Address);
 		    End;
@@ -733,16 +733,16 @@ Choose M_Index: Net Do
 		  -- Empty out the directory.
 		  Undefine me.Dir[msg.Address].Entries;
 	          me.Dir[msg.Address].Shared_Count := 0;
-		  -- Add local to directory. 
+		  -- Add local to directory.
 	          -- Wait_Inv = Waiting for Inv_Acks.
 	          me.Dir[msg.Address].State := Wait_Inv;
                   add_dir_entry(n, msg.Address, msg.Source);
-	        End; 
+	        End;
 	        -- Acknowledge the Cache_Promote
 		Send_Cache_Promote_Ack(msg.Source, n, msg.Address);
 		MultiSetRemove(M_Index, Net);
 
-	      Case Wait_Inv: 
+	      Case Wait_Inv:
 		-- Treat Cache_Promote as Inv_Ack, because it was or will be
 		-- aborted (home is handling a Cache_Read_Ex).
 	        Handle_Inv_Ack(n, msg.Address);
@@ -757,7 +757,7 @@ Choose M_Index: Net Do
 	      Else
 	        Error "Cache_Promote received in funny Dir state";
 	      Endswitch;
--- RAS rules, cont.
+-- RAS rules, cont.
 
             Case Write_Back:
 	      -- Write back happens when local invalidates
@@ -771,7 +771,7 @@ Choose M_Index: Net Do
 	        remove_dir_entry(n, msg.Address, msg.Source);
 		Send_Write_Back_Ack(msg.Source, n, msg.Address);
 		MultiSetRemove(M_Index, Net);
-	      Case Wait_WB: 
+	      Case Wait_WB:
 		-- writeback arrived while awaiting an Ack_Fw_Cache_Ex.
 		-- !! Except you have to make sure it's from
 		-- the OLD node, not the new one.
@@ -791,7 +791,7 @@ Choose M_Index: Net Do
 		-- shared state.
 		me.Mem[msg.Address] := msg.Value;
 		remove_dir_entry(n, msg.Address, msg.Source);
-		me.Dir[msg.Address].State := Shared_Remote;	
+		me.Dir[msg.Address].State := Shared_Remote;
 		-- The Fw_Cache_R we already sent is the Write_Back_Ack
 		MultiSetRemove(M_Index, Net);
 	      Case Wait_Inv:
@@ -806,15 +806,15 @@ Choose M_Index: Net Do
 		  --  !! Data goes to local, which then decides
 		  --  to write_back, before inv_ack has returned
 		  --  from remote.  Block the writeback.
-		End;  
+		End;
 	      Else
 		Error "Writeback received in funny Dir state";
 	      Endswitch;
--- RAS rules, cont.
+-- RAS rules, cont.
 
             Case Update:
 	      -- This happens when remote wants to update the main memory
-	      -- while keeping a shared copy (in response to Fw_Cache_R).	
+	      -- while keeping a shared copy (in response to Fw_Cache_R).
 	      Switch me.Dir[msg.Address].State
 	      Case Wait_Update:
 		-- waiting for update in response to our Fw_Cache_R.
@@ -829,7 +829,7 @@ Choose M_Index: Net Do
 	    Case Uncache:
 	      -- Message sent by node in S state to indicate that
 	      -- entry is no longer cached.
-	      Switch me.Dir[msg.Address].State 
+	      Switch me.Dir[msg.Address].State
 	      Case Wait_Inv:
 	        -- Home just sent an invalidate to everyone
 	        -- including local because of a Cache_Read_Ex on another
@@ -855,7 +855,7 @@ Choose M_Index: Net Do
 		End;
 	      Endswitch;
 
--- RAS rules, cont.
+-- RAS rules, cont.
 
 	    Case Ack_Fw_Cache_Ex:
 	      -- Acknowledge from Fw_Cache_R_Ex
@@ -870,7 +870,7 @@ Choose M_Index: Net Do
 	    Case Inv_Ack:
 	      Handle_Inv_Ack(n, msg.Address);
 	      MultiSetRemove(M_Index, Net);
-	    Else 
+	    Else
 	      -- otherwise, it's a message we don't care about. Do nothing.
 	    Endswitch;
 
@@ -880,7 +880,7 @@ Choose M_Index: Net Do
   Endrule;
 Endchoose;
 
- -- Initialization
+ -- Initialization
 
 Ruleset v: Value Do
 Startstate
@@ -911,7 +911,7 @@ Startstate
 Endstartstate;
 Endruleset;
 
--- Specification
+-- Specification
 -- This can be simplified a lot by symmetry arguments.
 
   Invariant "Unused Dir Entries Undefined"
@@ -925,17 +925,17 @@ Endruleset;
       Endforall
     Endforall;
 
-  Invariant "Mutual Exclusion on Dirty Data"	
+  Invariant "Mutual Exclusion on Dirty Data"
     Forall n1:Proc Do
       Forall n2:Proc Do
-        Forall home:Home Do 
+        Forall home:Home Do
           Forall addr:Address Do
   	  !(n1 != n2) |
   	  !( (  (Procs[n1].Cache[home][addr].State = M)
   	      & (Procs[n1].PMMState[home][addr] != WB_Pend))
   	    &((  (Procs[n2].Cache[home][addr].State = M)
   	       & (Procs[n2].PMMState[home][addr] != WB_Pend))
-  	      | (  (Procs[n2].Cache[home][addr].State = S) 
+  	      | (  (Procs[n2].Cache[home][addr].State = S)
   		 & (Procs[n2].PMMState[home][addr] != Uncache_Pend)
   		 & MultiSetCount(i:Net,
   	              Net[i].MType = Invalidate &
@@ -952,7 +952,7 @@ Endruleset;
     Forall n1:Proc Do
       Forall home:Home Do
         Forall addr:Address Do
-  	  !(  Procs[n1].Cache[home][addr].State = S 
+  	  !(  Procs[n1].Cache[home][addr].State = S
   	    & (Procs[n1].Cache[home][addr].Value != Homes[home].Mem[addr])
   	    & (Procs[n1].PMMState[home][addr] != Uncache_Pend)
   	    & MultiSetCount(i:Net,
@@ -984,7 +984,7 @@ Summary of Result (using release 2.3):
    1.96s in sun sparc 2 station
 
 2.73S
-* 5 processors 1 data value 
+* 5 processors 1 data value
    179 bits (23 bytes)
 
    BFS -sym1

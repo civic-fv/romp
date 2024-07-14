@@ -7,10 +7,10 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file StateSpaceCalc.hpp
- * 
- * @brief Simple utility to calculate the total number of possible permutations 
+ *
+ * @brief Simple utility to calculate the total number of possible permutations
  *        a murphi models state can be in.
- * 
+ *
  * @date 2022/08/19
  * @version 0.3
  */

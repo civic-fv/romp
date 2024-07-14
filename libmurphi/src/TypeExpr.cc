@@ -123,7 +123,7 @@ static bool equal(const TypeExpr &t1, const TypeExpr &t2) {
           //     result &= (n.contains(*u_m) && u->contains(*n_m));
         return;
         }
-      } 
+      }
       result = false;
     }
 
@@ -136,7 +136,7 @@ static bool equal(const TypeExpr &t1, const TypeExpr &t2) {
 }
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 // id_t TypeExpr::next_type_id = 0u;
 
@@ -204,7 +204,7 @@ bool TypeExpr::equal_to(const TypeExpr &other) const {
 bool TypeExpr::is_boolean() const { return false; }
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Range::Range(const Ptr<Expr> &min_, const Ptr<Expr> &max_, const location &loc_)
@@ -264,7 +264,7 @@ std::string Range::to_string() const {
 
 bool Range::constant() const { return min->constant() && max->constant(); }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Scalarset::Scalarset(const Ptr<Expr> &bound_, const location &loc_)
@@ -314,7 +314,7 @@ std::string Scalarset::to_string() const {
 bool Scalarset::is_useful() const { return (bound->constant_fold() > 1_mpz); }  // @Smattr you might want to tweak this comparison (just copied from CMurphi)
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Enum::Enum(const std::vector<std::pair<std::string, location>> &members_,
@@ -379,7 +379,7 @@ bool Enum::is_boolean() const {
          members[1].first == "true";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Record::Record(const std::vector<Ptr<VarDecl>> &fields_, const location &loc_)
@@ -421,7 +421,7 @@ std::string Record::to_string() const {
   return s + "EndRecord";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Array::Array(const Ptr<TypeExpr> &index_type_,
@@ -478,7 +478,7 @@ bool Array::is_useful() const {
   return index_type->is_useful();
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 TypeExprID::TypeExprID(const std::string &name_, const Ptr<TypeDecl> &referent_,

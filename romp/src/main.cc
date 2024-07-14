@@ -244,10 +244,10 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
   //   );
   if (gen.default_walk_multiplier == 0) {
     gen.default_walk_multiplier = 1u;
-    std::cerr << "WARNING : `0` is an invalid value for default walk multiplier, `1` will used instead !! (for -w/--default-wal-multiplier flag)\n" 
+    std::cerr << "WARNING : `0` is an invalid value for default walk multiplier, `1` will used instead !! (for -w/--default-wal-multiplier flag)\n"
               << std::flush;
   }
-  
+
 }
 
 static dup_t make_stdin_dup() {
@@ -268,12 +268,12 @@ std::string trim(const std::string &s)
     while (start != s.end() && std::isspace(*start)) {
         start++;
     }
- 
+
     auto end = s.end();
     do {
         end--;
     } while (std::distance(start, end) > 0 && std::isspace(*end));
- 
+
     return std::string(start, end + 1);
 }
 

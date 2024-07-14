@@ -35,7 +35,7 @@ bool Expr::is_literal_true() const { return false; }
 
 bool Expr::is_literal_false() const { return false; }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Ternary::Ternary(const Ptr<Expr> &cond_, const Ptr<Expr> &lhs_,
@@ -80,7 +80,7 @@ bool Ternary::is_pure() const {
   return cond->is_pure() && lhs->is_pure() && rhs->is_pure();
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 BinaryExpr::BinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
@@ -91,7 +91,7 @@ bool BinaryExpr::constant() const { return lhs->constant() && rhs->constant(); }
 
 bool BinaryExpr::is_pure() const { return lhs->is_pure() && rhs->is_pure(); }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 BooleanBinaryExpr::BooleanBinaryExpr(const Ptr<Expr> &lhs_,
@@ -109,7 +109,7 @@ void BooleanBinaryExpr::validate() const {
     throw Error("right hand side of expression is not a boolean", rhs->loc);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Implication::Implication(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
@@ -134,7 +134,7 @@ std::string Implication::to_string() const {
   return "(" + lhs->to_string() + " -> " + rhs->to_string() + ")";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Or::Or(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -156,7 +156,7 @@ std::string Or::to_string() const {
   return "(" + lhs->to_string() + " | " + rhs->to_string() + ")";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 And::And(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -178,7 +178,7 @@ std::string And::to_string() const {
   return "(" + lhs->to_string() + " & " + rhs->to_string() + ")";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 AmbiguousAmp::AmbiguousAmp(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
@@ -211,7 +211,7 @@ std::string AmbiguousAmp::to_string() const {
   return "(" + lhs->to_string() + " & " + rhs->to_string() + ")";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 AmbiguousPipe::AmbiguousPipe(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
@@ -244,7 +244,7 @@ std::string AmbiguousPipe::to_string() const {
   return "(" + lhs->to_string() + " | " + rhs->to_string() + ")";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 UnaryExpr::UnaryExpr(const Ptr<Expr> &rhs_, const location &loc_)
@@ -254,7 +254,7 @@ bool UnaryExpr::constant() const { return rhs->constant(); }
 
 bool UnaryExpr::is_pure() const { return rhs->is_pure(); }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Not::Not(const Ptr<Expr> &rhs_, const location &loc_) : UnaryExpr(rhs_, loc_) {}
@@ -291,7 +291,7 @@ static bool comparable(const Expr &lhs, const Expr &rhs) {
   return false;
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 ComparisonBinaryExpr::ComparisonBinaryExpr(const Ptr<Expr> &lhs_,
@@ -304,7 +304,7 @@ void ComparisonBinaryExpr::validate() const {
     throw Error("expressions are not comparable", loc);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Lt::Lt(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -328,7 +328,7 @@ std::string Lt::to_string() const {
   return "(" + lhs->to_string() + " < " + rhs->to_string() + ")";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Leq::Leq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -352,7 +352,7 @@ std::string Leq::to_string() const {
   return "(" + lhs->to_string() + " <= " + rhs->to_string() + ")";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Gt::Gt(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -376,7 +376,7 @@ std::string Gt::to_string() const {
   return "(" + lhs->to_string() + " > " + rhs->to_string() + ")";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Geq::Geq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -400,7 +400,7 @@ std::string Geq::to_string() const {
   return "(" + lhs->to_string() + " >= " + rhs->to_string() + ")";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 EquatableBinaryExpr::EquatableBinaryExpr(const Ptr<Expr> &lhs_,
@@ -413,7 +413,7 @@ void EquatableBinaryExpr::validate() const {
     throw Error("expressions are not comparable", loc);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Eq::Eq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -437,7 +437,7 @@ std::string Eq::to_string() const {
   return "(" + lhs->to_string() + " = " + rhs->to_string() + ")";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Neq::Neq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -472,7 +472,7 @@ static bool arithmetic(const Expr &lhs, const Expr &rhs) {
   return false;
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 ArithmeticBinaryExpr::ArithmeticBinaryExpr(const Ptr<Expr> &lhs_,
@@ -489,7 +489,7 @@ Ptr<TypeExpr> ArithmeticBinaryExpr::type() const {
   return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Add::Add(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -511,7 +511,7 @@ std::string Add::to_string() const {
   return "(" + lhs->to_string() + " + " + rhs->to_string() + ")";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Sub::Sub(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -533,7 +533,7 @@ std::string Sub::to_string() const {
   return "(" + lhs->to_string() + " - " + rhs->to_string() + ")";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Negative::Negative(const Ptr<Expr> &rhs_, const location &loc_)
@@ -564,7 +564,7 @@ std::string Negative::to_string() const {
   return "(-" + rhs->to_string() + ")";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Bnot::Bnot(const Ptr<Expr> &rhs_, const location &loc_)
@@ -591,7 +591,7 @@ mpz_class Bnot::constant_fold() const { return ~rhs->constant_fold(); }
 
 std::string Bnot::to_string() const { return "(~" + rhs->to_string() + ")"; }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Mul::Mul(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -613,7 +613,7 @@ std::string Mul::to_string() const {
   return "(" + lhs->to_string() + " * " + rhs->to_string() + ")";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Div::Div(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -639,7 +639,7 @@ std::string Div::to_string() const {
   return "(" + lhs->to_string() + " / " + rhs->to_string() + ")";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Mod::Mod(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -665,7 +665,7 @@ std::string Mod::to_string() const {
   return "(" + lhs->to_string() + " % " + rhs->to_string() + ")";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Lsh::Lsh(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -739,7 +739,7 @@ std::string Lsh::to_string() const {
   return "(" + lhs->to_string() + " << " + rhs->to_string() + ")";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Rsh::Rsh(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -763,7 +763,7 @@ std::string Rsh::to_string() const {
   return "(" + lhs->to_string() + " >> " + rhs->to_string() + ")";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Band::Band(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -787,7 +787,7 @@ std::string Band::to_string() const {
   return "(" + lhs->to_string() + " & " + rhs->to_string() + ")";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Bor::Bor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -811,7 +811,7 @@ std::string Bor::to_string() const {
   return "(" + lhs->to_string() + " | " + rhs->to_string() + ")";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Xor::Xor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -835,7 +835,7 @@ std::string Xor::to_string() const {
   return "(" + lhs->to_string() + " ^ " + rhs->to_string() + ")";
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 ExprID::ExprID(const std::string &id_, const Ptr<ExprDecl> &value_,
@@ -910,7 +910,7 @@ bool ExprID::is_literal_false() const { return id == "false"; }
 
 bool ExprID::is_pure() const { return true; }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Field::Field(const Ptr<Expr> &record_, const std::string &field_,
@@ -990,17 +990,17 @@ void Field::update() {
     for (size_t i=0; i<_r->fields.size(); ++i)
       if (_r->fields[i]->name == field) {
         record_field_index = i;
-        record_field_offset = offset; 
+        record_field_offset = offset;
         break;
       } else {
         offset += _r->fields[i]->type->width();
       }
-      
+
   } else
     throw Error("trying to access the field of a non record type", loc);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Element::Element(const Ptr<Expr> &array_, const Ptr<Expr> &index_,
@@ -1074,7 +1074,7 @@ void Element::update() {
   // }
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 FunctionCall::FunctionCall(const std::string &name_,
@@ -1197,7 +1197,7 @@ bool FunctionCall::is_pure() const {
   return true;
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Quantifier::Quantifier(const std::string &name_, const Ptr<TypeExpr> &type_,
@@ -1354,7 +1354,7 @@ bool Quantifier::is_pure() const {
   return true;
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Exists::Exists(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
@@ -1391,7 +1391,7 @@ std::string Exists::to_string() const {
 
 bool Exists::is_pure() const { return quantifier.is_pure() && expr->is_pure(); }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Forall::Forall(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
@@ -1428,7 +1428,7 @@ std::string Forall::to_string() const {
 
 bool Forall::is_pure() const { return quantifier.is_pure() && expr->is_pure(); }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 IsUndefined::IsUndefined(const Ptr<Expr> &expr_, const location &loc_)

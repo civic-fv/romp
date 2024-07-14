@@ -3,9 +3,9 @@ Const
 	MaxPID: N+1;
 	FileTableSize: 2;
 	MaxFileID: 2;
-	-- Assume that no more than N processes are ever in play. 
-	-- It should be fair to assume that the lack of any interesting races 
-	-- found at N or less implies the lack of similar races greater than 
+	-- Assume that no more than N processes are ever in play.
+	-- It should be fair to assume that the lack of any interesting races
+	-- found at N or less implies the lack of similar races greater than
 	-- N processes, assuming infinite memory and other resources.
 
 Type
@@ -13,7 +13,7 @@ Type
 	SleepChannel: 0..N;	-- Arbitrary: Set to the same as N (+ 0), since up to N processes can sleep.
 	PIDCount: 0..MaxPID;	-- Up to MaxPID process IDs
 	FileRefCount: 1..FileTableSize;
-	state: Enum { 
+	state: Enum {
 		UNUSED,	-- No process exists with this ID.
 		RUNNING, -- This process is currently running
 		RUNNABLE, -- This should be fair to schedule.
@@ -21,7 +21,7 @@ Type
 		ZOMBIE,	-- This process is dead, but needs to be cleaned up by it's parent.
 		KILLED,	-- This process has been killed, and needs cleanup. (and was formerly a zombie.)
 	};
-	
+
 	FileTable: Array[FileRefCount] of 0..MaxFileID;	-- 8 entries of a file ID.
 
 Var
@@ -33,7 +33,7 @@ Var
 	States: Array[ProcIndex] Of state;
 	PrevStates: Array[ProcIndex] Of state;
 	ProcessFileTable: Array[ProcIndex] of FileTable;
-	
+
 	NextPID: PIDCount;
 
 	function allocpid() : PIDCount
@@ -55,7 +55,7 @@ Var
 	function allocproc(i : ProcIndex)
 	Begin
 		for z:ProcIndex Do
-			if (States[z] == UNUSED) then	
+			if (States[z] == UNUSED) then
 				PIDs[z] := allocpid();
 				Parents[z] := PIDs[i];
 				States[z] := RUNNABLE;
@@ -65,20 +65,20 @@ Var
 			End;
 		End;
 	End;
-	
+
 	function fork(i : ProcIndex)
 	Begin
 		-- Not yet implemented: Increment file references
 		allocproc(i);
 	End;
-	
+
 	function exit(i : ProcIndex)
 	Begin
 		-- Not yet implemented: Decremenet all file references
 		States[i] := ZOMBIE;
-		PrevStates[i] := RUNNING;		
+		PrevStates[i] := RUNNING;
 	End;
-	
+
 	function open(i : ProcIndex; z : FileRefCount)
 	Begin
 		-- The entire file struct is not needed: only use reference counts.
@@ -93,7 +93,7 @@ Var
 		open(i, z);
 		open(i2, z2);
 	End;
-	
+
 	-- This function does not exactly exist in xv6, but we need to close open fds somehow.
 	function fd_dealloc(i : ProcIndex; z : FileRefCount)
 	Begin
@@ -101,36 +101,36 @@ Var
 		if (ProcessFileTable[i][z] > 0) then
 			ProcessFileTable[i][z] := ProcessFileTable[i][z] - 1;
 		end;
-	End;	
-	
+	End;
+
 	function sleep(i : ProcIndex; c : SleepChannel)
 	Begin
 		-- The current proc lock needs to be acquired.
 		ProcLocks[i] := true;
-		
+
 		-- The global wait lock needs to be released.
 		WaitLock := false;
-		
+
 		-- The current channel is set.
 		ProcChannels[i] := c;
-		
+
 		-- The process is marked asleep.
 		States[i] := SLEEPING;
 		PrevStates[i] := RUNNING;
-		
+
 		-- Note that sched() invokes a coroutine, where this
 		-- code only executes when this process is later woken up.
-		-- This will be modelled as a separate function...	
+		-- This will be modelled as a separate function...
 	End;
-	
+
 	function fini_sleep(i : ProcIndex)
 	Begin
 		-- Following from line 549 in the original proc.c code...
 		ProcChannels[i] := 0;
-		
+
 		-- The process lock is then released.
 		ProcLocks[i] := false;
-		
+
 		-- The global wait lock is re-acquired. This is needed
 		-- since an invariant in the C code is that after sleep
 		-- is called, the wait lock is still held to avoid races.
@@ -149,9 +149,9 @@ Var
 				end;
 				ProcLocks[z] := false;
 			End;
-		End;		
+		End;
 	End;
-	
+
 	function cleanup_fds(i : ProcIndex)
 	Begin
 		For fileindex := 1 to FileTableSize Do
@@ -264,7 +264,7 @@ Ruleset i: ProcIndex; i2: ProcIndex; fi : FileRefCount; fi2 : FileRefCount Do
 			States[i] := UNUSED;
 			PrevStates[i] := KILLED;
 		End;
-		
+
 	Startstate
 	Begin
 		NextPID := 1;
@@ -280,14 +280,14 @@ Ruleset i: ProcIndex; i2: ProcIndex; fi : FileRefCount; fi2 : FileRefCount Do
 				ProcessFileTable[k][z] := 0;
 			End;
 		End;
-		
+
 		-- Except PID 1, which must always be present and not dead.
 		-- On a unix system, this corresponds to init.
 		PIDs[1] := 1;
 		Parents[1] := 0;
 		States[1] := RUNNING;
 		PrevStates[1] := RUNNABLE;
-		
+
 		-- Global wait lock is not held.
 		WaitLock := false;
 	End;
@@ -333,19 +333,19 @@ Invariant "Any process not sleeping must have a zero channel"
 	Forall k:ProcIndex Do
 		ProcChannels[k] == 0 -> States[k] != SLEEPING
 	End
-	
+
 Invariant "No process can be its own parent."
 	Forall k:ProcIndex Do
 		Parents[k] != PIDs[k]
 	End
-	
+
 Invariant "No process has negative file references."
 	Forall k:ProcIndex Do
 		Forall z:FileRefCount Do
 			ProcessFileTable[k][z] >= 0
 		End
 	End
-	
+
 Invariant "No dead process has open file references."
 	Forall k:ProcIndex Do
 		Forall z:FileRefCount Do

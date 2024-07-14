@@ -1,6 +1,6 @@
 romp
 ====
-romp is a verification tool that uses the murphi verification language along side a 
+romp is a verification tool that uses the murphi verification language along side a
 parallelized random walk of the state-space to perform verification tasks.
 
 It utilizes libmurphi which is a custom fork of rumur_'s librumur murphi parsing library, and CMake build system.

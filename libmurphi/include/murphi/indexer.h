@@ -98,9 +98,9 @@ public:
   void visit_multisetadd(MultisetAdd& n) final;
   void visit_multisetcount(MultisetCount& n) final;
   void visit_multisetelement(MultisetElement& n) final;
-  void visit_multisetremove(MultisetRemove& n) final; 
-  void visit_multisetremovepred(MultisetRemovePred& n) final; 
-  void visit_multisetquantifier(MultisetQuantifier& n) final; 
+  void visit_multisetremove(MultisetRemove& n) final;
+  void visit_multisetremovepred(MultisetRemovePred& n) final;
+  void visit_multisetquantifier(MultisetQuantifier& n) final;
   void visit_scalarsetunion(ScalarsetUnion& n) final;
   void visit_sucast(SUCast& n) final;
 

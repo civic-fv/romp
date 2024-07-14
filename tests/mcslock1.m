@@ -1,45 +1,45 @@
 --------------------------------------------------------------------------
--- Copyright (C) 1992, 1993 by the Board of Trustees of        		  
--- Leland Stanford Junior University.					  
---									  
--- This description is provided to serve as an example of the use	  
--- of the Murphi description language and verifier, and as a benchmark	  
--- example for other verification efforts.				  
---									  
--- License to use, copy, modify, sell and/or distribute this description  
--- and its documentation any purpose is hereby granted without royalty,   
--- subject to the following terms and conditions, provided		  
---									  
--- 1.  The above copyright notice and this permission notice must	  
--- appear in all copies of this description.				  
--- 									  
--- 2.  The Murphi group at Stanford University must be acknowledged	  
--- in any publication describing work that makes use of this example. 	  
--- 									  
--- Nobody vouches for the accuracy or usefulness of this description	  
--- for any purpose.							  
+-- Copyright (C) 1992, 1993 by the Board of Trustees of
+-- Leland Stanford Junior University.
+--
+-- This description is provided to serve as an example of the use
+-- of the Murphi description language and verifier, and as a benchmark
+-- example for other verification efforts.
+--
+-- License to use, copy, modify, sell and/or distribute this description
+-- and its documentation any purpose is hereby granted without royalty,
+-- subject to the following terms and conditions, provided
+--
+-- 1.  The above copyright notice and this permission notice must
+-- appear in all copies of this description.
+--
+-- 2.  The Murphi group at Stanford University must be acknowledged
+-- in any publication describing work that makes use of this example.
+--
+-- Nobody vouches for the accuracy or usefulness of this description
+-- for any purpose.
 --------------------------------------------------------------------------
-
+
 --------------------------------------------------------------------------
 --
---                                                                        
--- File:        mcslock1.m                                                
---                                                                        
--- Content:     MCS distributed list-based queuing lock                   
---              with atomic compare_and_swap operations                   
---                                                                        
--- Summary of result:                                                     
---          1)  No bug is discovered 					  
---          2)  Details of result can be found at the end of this file.   
---                                                                        
--- References: 						       	       	  
--- J.M. Mellor-Crummey and M.L. Scott,					  
+--
+-- File:        mcslock1.m
+--
+-- Content:     MCS distributed list-based queuing lock
+--              with atomic compare_and_swap operations
+--
+-- Summary of result:
+--          1)  No bug is discovered
+--          2)  Details of result can be found at the end of this file.
+--
+-- References:
+-- J.M. Mellor-Crummey and M.L. Scott,
 -- Algorithms for Scalable Synchronization on Shared-Memory Multiprocessors,
--- ACM transactions on computer systems, Vol 9, No 1, 1991.               
---                                                                        
--- Date created:         28 Oct 92                                        
--- Last Modified:        17 Feb 93                                        
---                                                                        
+-- ACM transactions on computer systems, Vol 9, No 1, 1991.
+--
+-- Date created:         28 Oct 92
+-- Last Modified:        17 Feb 93
+--
 --------------------------------------------------------------------------
 
 Const
@@ -50,14 +50,14 @@ Type
   --  and not upgraded to Murphi 2.0 yet
   pid: scalarset (N);
   -- pid: 1..N;
-  label_t: Enum{L0,  -- : non critical section; 
+  label_t: Enum{L0,  -- : non critical section;
 		     -- : acquire => R->next := nil
 		L1,  -- :            predecessor := fetch_and_store( L,R )
 		L2,  -- : 	     if (predecessor != nil)
 		L3,  -- : 		R->locked := true
 		L4,  -- : 		predecessor->next := R
 		L5,  -- : 		repeat while R->locked
-		L6,  -- : critical section; 
+		L6,  -- : critical section;
  		     -- : release => if (R->next = nil)
 		L7,  -- : 		 	if compare_and_swap (L,R,nil)
 		     -- : 				return
@@ -84,37 +84,37 @@ Procedure setNextNil( i:pid);
 Begin
     R[i].next.nil := true;
     Undefine R[i].next.p;
-End; 
+End;
 
 Procedure setNext( i, n:pid);
 Begin
     R[i].next.nil := false;
     R[i].next.p := n;
-End; 
+End;
 
 Procedure setPredNil( i:pid);
 Begin
     localpred[i].nil := true;
     Undefine localpred[i].p;
-End; 
-  
+End;
+
 Procedure setPred( i, n:pid);
 Begin
     localpred[i].nil := false;
     localpred[i].p := n;
-End; 
+End;
 
 Procedure setLockNil();
 Begin
     lock.nil := true;
     Undefine lock.p;
-End; 
+End;
 
 Procedure setLock( i:pid);
 Begin
     lock.nil := false;
     lock.p := i;
-End; 
+End;
 
 Ruleset i: pid  Do
 
@@ -123,7 +123,7 @@ Ruleset i: pid  Do
   ==>
   Begin
     setNextNil(i);
-    P[i] := L1; 
+    P[i] := L1;
   End;
 
   Rule "execute assign pred FandS L I"
@@ -137,7 +137,7 @@ Ruleset i: pid  Do
       setPred(i,lock.p);
     End; --If
     setLock(i);
-    P[i] := L2; 
+    P[i] := L2;
   End;
 
   Rule "execute if pred nil"
@@ -146,7 +146,7 @@ Ruleset i: pid  Do
   Begin
     If ( localpred[i].nil )
     Then
-      P[i] := L6; 
+      P[i] := L6;
     Else
       P[i] := L3;
     End; --If
@@ -156,8 +156,8 @@ Ruleset i: pid  Do
     P[i] = L3
   ==>
   Begin
-    R[i].locked := true; 
-    P[i] := L4; 
+    R[i].locked := true;
+    P[i] := L4;
   End;
 
   Rule "execute assign prednext I"
@@ -190,7 +190,7 @@ Ruleset i: pid  Do
     End; --If
   End;
 
-  Rule "execute if CandS L I nil" 
+  Rule "execute if CandS L I nil"
     P[i] = L7
   ==>
   Begin
@@ -202,7 +202,7 @@ Ruleset i: pid  Do
       P[i] := L8;
     End; --If
   End;
-      
+
   Rule "execute repeat while Inext nil"
     P[i] = L8
   ==>
@@ -218,13 +218,13 @@ Ruleset i: pid  Do
   ==>
   Begin
     R[R[i].next.p].locked := false;
-    P[i] := L0; 
+    P[i] := L0;
   End;
 
 End; --Ruleset
-   
+
 Startstate
-Begin 
+Begin
   For i:pid Do
     P[i] := L0;
     setNextNil(i);
@@ -232,8 +232,8 @@ Begin
     setPredNil(i);
   End; --For
   setLockNil();
-End;  
-  
+End;
+
 Invariant
   ! Exists i1: pid Do
     Exists i2: pid Do
@@ -243,7 +243,7 @@ Invariant
       )
     End  --exists
     End; --Exists
- 
+
 
 /******************
 

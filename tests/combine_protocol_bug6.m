@@ -21,7 +21,7 @@ const
 type
 
   ------    common part    ------
-  ClusterCnt:   0..ProcCnt; 
+  ClusterCnt:   0..ProcCnt;
   NODE :   scalarset(NODE_NUM);
   Datas :  scalarset(DataCnt);
   L2Name:  enum{L2};
@@ -101,11 +101,11 @@ type
   ProcState: record
 
     -- these 3 are for invariant purposes
-    CurrData: Datas;  
+    CurrData: Datas;
     PrevData: Datas;
     Collecting: boolean;
 
-    -- structure inside a cluster 
+    -- structure inside a cluster
     Proc :   array [NODE] of NODE_STATE;
 
     UniMsg: array [NODE_L2] of UNI_MSG;
@@ -118,15 +118,15 @@ type
     L2: record
       State:   L2State;
       Data:    Datas;
-      pending: boolean;  
+      pending: boolean;
       Dirty:   boolean;
-      ShrSet:  array [NODE] of boolean; 
+      ShrSet:  array [NODE] of boolean;
       InvCnt: CacheCnt;
-      HeadPtr: NODE_L2; 
-      ReqId:   NODE; -- requesting L1 whose req is pending 
+      HeadPtr: NODE_L2;
+      ReqId:   NODE; -- requesting L1 whose req is pending
       OnlyCopy: boolean; -- if this cluster has the only copy
       ReqCluster: Procss; -- fwded req cluster
-      ReqType: boolean;   -- fwded req type: true if Get otherwise GetX 
+      ReqType: boolean;   -- fwded req type: true if Get otherwise GetX
       Gblock_WB: boolean;
       isRetired: boolean;
       -- Apr 8
@@ -153,7 +153,7 @@ type
     HeadPtr: Procss;
 
     -- invariant purpose
-    Collecting: boolean; 
+    Collecting: boolean;
     CurrData: Datas;
     PrevData: Datas;
   end;
@@ -222,7 +222,7 @@ flag1, flag2 : boolean;
 ruleset d: Datas do
 
 -- startstate "bombCnt1,2 and flag1,2"
-  
+
 -- endstartstate;
 
 startstate "Init"
@@ -409,7 +409,7 @@ ruleset p: Procss; src: NODE do
      Procs[p].UniMsg[src].Cmd = UNI_GetX) &
     Procs[p].UniMsg[src].Proc = L2
   ==>
-  var  
+  var
     owner: NODE;
     isGet: boolean;
   begin
@@ -441,7 +441,7 @@ ruleset p: Procss; src: NODE do
         Procs[p].UniMsg[src].Cmd := UNI_Get;
         Procs[p].UniMsg[src].Proc := owner;
         undefine Procs[p].UniMsg[src].Data;
-      else 
+      else
         Procs[p].UniMsg[src].Cmd := UNI_GetX;
         Procs[p].UniMsg[src].Proc := owner;
         undefine Procs[p].UniMsg[src].Data;
@@ -556,7 +556,7 @@ begin
       Procs[p].UniMsg[src].Cmd := UNI_None;
       Procs[p].L2.isRetired := false;
 
-    else 
+    else
       undefine Procs[p].UniMsg[src];
       Procs[p].UniMsg[src].Cmd := UNI_Nak;
     end;
@@ -606,7 +606,7 @@ ruleset p: Procss; src: NODE do
             Procs[p].L2.ShrSet[n] := false;
           end;
         end;
-        Procs[p].L2.InvCnt := iCnt; 
+        Procs[p].L2.InvCnt := iCnt;
         -- invariant purpose
         Procs[p].PrevData := Procs[p].CurrData;
         Procs[p].Collecting := true;
@@ -626,13 +626,13 @@ ruleset p: Procss; src: NODE do
               Procs[p].L2.ShrSet[n] := false;
             end;
           end;
-          Procs[p].L2.InvCnt := iCnt; 
+          Procs[p].L2.InvCnt := iCnt;
           Procs[p].PrevData := Procs[p].CurrData;
           Procs[p].Collecting := true;
         end;
         Procs[p].RAC.State := WRDX;
         Procs[p].L2.ReqId := src;
-        if (p != Home) then 
+        if (p != Home) then
           GUniMsg[p].Cmd := RDX_H;
           undefine GUniMsg[p].Cluster;
           undefine GUniMsg[p].Data;
@@ -644,8 +644,8 @@ ruleset p: Procss; src: NODE do
 
       else
         Procs[p].UniMsg[src].Cmd := UNI_Nak;
-        undefine Procs[p].UniMsg[src].Data; 
-        undefine Procs[p].UniMsg[src].Proc; 
+        undefine Procs[p].UniMsg[src].Data;
+        undefine Procs[p].UniMsg[src].Proc;
       end;
     end;
   endrule;
@@ -711,14 +711,14 @@ ruleset p: Procss; dst: NODE; src: NODE_L2 do
      Procs[p].UniMsg[src].Cmd = UNI_GetX) &
     Procs[p].UniMsg[src].Proc = dst &
 
-    Procs[p].Proc[dst].CacheState != CACHE_E & 
+    Procs[p].Proc[dst].CacheState != CACHE_E &
     Procs[p].Proc[dst].CacheState != CACHE_M &
     Procs[p].Proc[dst].block_WB = false
   ==>
   begin
     assert (src != dst) "Funny forwarded req to itself.";
 
-    if (Procs[p].Proc[dst].CacheState = CACHE_I & 
+    if (Procs[p].Proc[dst].CacheState = CACHE_I &
 	Procs[p].Proc[dst].ProcCmd = NODE_None) then
       if (src = L2) then
         Procs[p].NakcMsg.Cmd := NAKC_SD;
@@ -779,7 +779,7 @@ ruleset p: Procss; src: NODE do
         if (p = Home) then
           assert (GUniMsg[aux].Cmd = RD_H) "Funny GUniMsg[aux].Cmd value.";
         else
-          assert (GUniMsg[aux].Cmd = RD_RAC & GUniMsg[aux].Cluster = p) 
+          assert (GUniMsg[aux].Cmd = RD_RAC & GUniMsg[aux].Cluster = p)
             "Funny GUniMsg[aux].Cmd value.";
         end;
 
@@ -787,7 +787,7 @@ ruleset p: Procss; src: NODE do
         if (p = Home) then
           assert (GUniMsg[aux].Cmd = RDX_H) "Funny GUniMsg[aux].Cmd value.";
         else
-          assert (GUniMsg[aux].Cmd = RDX_RAC & GUniMsg[aux].Cluster = p) 
+          assert (GUniMsg[aux].Cmd = RDX_RAC & GUniMsg[aux].Cluster = p)
             "Funny GUniMsg[aux].Cmd value.";
         end;
       end;
@@ -836,10 +836,10 @@ ruleset p: Rmt do
       assert (Procs[p].L2.ifHoldMsg = true) "Funny Procs[p].L2.ifHoldMsg value.";
       Procs[p].L2.ifHoldMsg := false;
       if (Procs[p].L2.ReqType = true) then
-          assert (GUniMsg[aux].Cmd = RD_RAC & GUniMsg[aux].Cluster = p) 
+          assert (GUniMsg[aux].Cmd = RD_RAC & GUniMsg[aux].Cluster = p)
             "Funny GUniMsg[aux].Cmd value.";
       else
-          assert (GUniMsg[aux].Cmd = RDX_RAC & GUniMsg[aux].Cluster = p) 
+          assert (GUniMsg[aux].Cmd = RDX_RAC & GUniMsg[aux].Cluster = p)
             "Funny GUniMsg[aux].Cmd value.";
       end;
 
@@ -848,7 +848,7 @@ ruleset p: Rmt do
       isGet := Procs[p].L2.ReqType;
       if (Procs[p].L2.HeadPtr = L2) then
         assert (Procs[p].L2.State != Invld) "Funny L2.State receiving NAKC_SD.";
-  
+
         if (isGet = true) then
           GUniMsg[aux].Cmd := ACK;
         else
@@ -908,7 +908,7 @@ ruleset p: Rmt do
       if (Procs[p].L2.HeadPtr = Procs[p].NakcMsg.Proc) then
         Procs[p].L2.HeadPtr := L2;
       end;
-    end;      
+    end;
 
     undefine Procs[p].NakcMsg;
     Procs[p].NakcMsg.Cmd := NAKC_None;
@@ -939,7 +939,7 @@ endruleset;
       -- Apr 8
       assert (Procs[Home].L2.ifHoldMsg = true) "Funny Procs[p].L2.ifHoldMsg value.";
       Procs[Home].L2.ifHoldMsg := false;
-      if (Procs[Home].L2.ReqType = true) then      
+      if (Procs[Home].L2.ReqType = true) then
         assert (GUniMsg[aux].Cmd = RD_H) "Funny GUniMsg[aux].Cmd value";
       else
           assert (GUniMsg[aux].Cmd = RDX_H) "Funny GUniMsg[aux].Cmd value.";
@@ -950,7 +950,7 @@ endruleset;
       isGet := Procs[Home].L2.ReqType;
       if (Procs[Home].L2.HeadPtr = L2) then
         assert (Procs[Home].L2.State != Invld) "Funny L2.State receiving NAKC_SD.";
-  
+
         if (isGet = true) then
           GUniMsg[aux].Cmd := ACK;
           Dir.ShrSet[aux] := true;
@@ -1000,7 +1000,7 @@ endruleset;
       if (Procs[Home].L2.HeadPtr = Procs[Home].NakcMsg.Proc) then
         Procs[Home].L2.HeadPtr := L2;
       end;
-    end;      
+    end;
 
     undefine Procs[Home].NakcMsg;
     Procs[Home].NakcMsg.Cmd := NAKC_None;
@@ -1027,7 +1027,7 @@ ruleset p: Procss; dst: NODE; src: NODE_L2 do
     else
       Procs[p].ShWbMsg.Data := Procs[p].Proc[dst].CacheData;
     end;
-    undefine Procs[p].UniMsg[src];    
+    undefine Procs[p].UniMsg[src];
     Procs[p].UniMsg[src].Cmd := UNI_None;
 
     if (src != L2) then
@@ -1047,7 +1047,7 @@ ruleset p: Procss do
   rule "L2_Recv_SHWB"
     Procs[p].ShWbMsg.Cmd = SHWB_ShWb
   ==>
-  var 
+  var
     src: NODE_L2;
     dst: NODE_L2;
     aux: Procss;
@@ -1093,7 +1093,7 @@ ruleset p: Procss do
         if (p = Home) then
           assert (GUniMsg[aux].Cmd = RD_H) "Funny GUniMsg[aux].Cmd value.";
         else
-          assert (GUniMsg[aux].Cmd = RD_RAC & GUniMsg[aux].Cluster = p) 
+          assert (GUniMsg[aux].Cmd = RD_RAC & GUniMsg[aux].Cluster = p)
             "Funny GUniMsg[aux].Cmd value.";
         end;
 
@@ -1180,7 +1180,7 @@ ruleset p: Procss do
 rule "L2_Recv_SHWB_FAck"
   Procs[p].ShWbMsg.Cmd = SHWB_FAck
 ==>
-var 
+var
   src: NODE_L2;
   dst: NODE_L2;
   aux: Procss;
@@ -1204,7 +1204,7 @@ begin
         if (p = Home) then
           assert (GUniMsg[aux].Cmd = RDX_H) "Funny GUniMsg[aux].Cmd value.";
         else
-          assert (GUniMsg[aux].Cmd = RDX_RAC & GUniMsg[aux].Cluster = p) 
+          assert (GUniMsg[aux].Cmd = RDX_RAC & GUniMsg[aux].Cluster = p)
             "Funny GUniMsg[aux].Cmd value.";
         end;
 
@@ -1403,7 +1403,7 @@ rule "L1_Recv_WbAck"
 ==>
 begin
   assert (Procs[p].Proc[dst].block_WB = true &
-	  Procs[p].Proc[dst].ProcCmd = NODE_None) 
+	  Procs[p].Proc[dst].ProcCmd = NODE_None)
      "Funny Proc[dst] state receiving WB_WbAck.";
 
   Procs[p].Proc[dst].block_WB := false;
@@ -1476,7 +1476,7 @@ rule "Dir_HomeGet_RmtGet"
   Procs[Home].RAC.State = WRDO &
   Dir.isBusy = false &
   Dir.State = Excl &
-  Dir.isLocal = false 
+  Dir.isLocal = false
 ==>
 begin
   Dir.isBusy := true;
@@ -1493,7 +1493,7 @@ rule "Dir_HomeGet_isLocal_Put"
   Procs[Home].RAC.State = WRDO &
   Dir.isBusy = false &
   Dir.State = Excl &
-  Dir.isLocal = true 
+  Dir.isLocal = true
 ==>
 var src: NODE;
 begin
@@ -1524,9 +1524,9 @@ endrule;
 
 rule "Dir_HomeGetX_RmtGetX"
   Procs[Home].RAC.State = WRDX &
-  Dir.isBusy = false & 
+  Dir.isBusy = false &
   Dir.State = Excl &
-  Dir.isLocal = false 
+  Dir.isLocal = false
 ==>
 begin
   Dir.isBusy := true;
@@ -1544,7 +1544,7 @@ rule "Dir_HomeGetX_isLocal_PutX"
   Procs[Home].RAC.State = WRDX &
   Dir.isBusy = false &
   Dir.State = Excl &
-  Dir.isLocal = true 
+  Dir.isLocal = true
 ==>
 var src: NODE;
 begin
@@ -1555,7 +1555,7 @@ begin
   Procs[Home].L2.Data := Dir.Mem;
   Procs[Home].L2.OnlyCopy := true;
 
-  assert (Procs[Home].L2.pending = true & !isundefined(Procs[Home].L2.ReqId)) 
+  assert (Procs[Home].L2.pending = true & !isundefined(Procs[Home].L2.ReqId))
      "Funny Procs[Home].L2 state with outside reply42.";
   Procs[Home].RAC.State := Inval;
   Procs[Home].L2.HeadPtr := Procs[Home].L2.ReqId;
@@ -1565,7 +1565,7 @@ begin
 	  Procs[Home].L2.InvCnt = 0)
      "Funny Procs[Home].L2.ShrSet state.";
   Procs[Home].L2.pending := false;
-  -- invariant purpose  
+  -- invariant purpose
   Procs[Home].CurrData := Dir.Mem;
 
   src := Procs[Home].L2.ReqId;
@@ -1587,7 +1587,7 @@ rule "Dir_HomeGetX_PutX"
 ==>
 var src: NODE;
 begin
-  assert (Dir.isLocal = false & isundefined(Dir.HeadPtr)) 
+  assert (Dir.isLocal = false & isundefined(Dir.HeadPtr))
      "Funny Dir Invld and isLocal/HeadPtr.";
 
   Dir.State := Excl;
@@ -1597,14 +1597,14 @@ begin
   Procs[Home].L2.Data := Dir.Mem;
   Procs[Home].L2.Dirty := false;
 
-  assert (Procs[Home].L2.pending = true & !isundefined(Procs[Home].L2.ReqId)) 
+  assert (Procs[Home].L2.pending = true & !isundefined(Procs[Home].L2.ReqId))
      "Funny Procs[Home].L2 state with outside reply41.";
   Procs[Home].RAC.State := Inval;
   Procs[Home].L2.HeadPtr := Procs[Home].L2.ReqId;
   if (Procs[Home].L2.InvCnt = 0) then
     Procs[Home].L2.pending := false;
   end;
-  -- invariant purpose  
+  -- invariant purpose
   Procs[Home].CurrData := Dir.Mem;
 
   src := Procs[Home].L2.ReqId;
@@ -1622,7 +1622,7 @@ endrule;
 rule "Dir_Shrd_HomeGetX_PutX"
   Procs[Home].RAC.State = WRDX &
   Dir.isBusy = false &
-  Dir.State = Shrd 
+  Dir.State = Shrd
 ==>
 var ShrCnt: ClusterCnt;
     src: NODE;
@@ -1648,7 +1648,7 @@ begin
         Dir.ShrSet[r] := false;
         ShrCnt := ShrCnt + 1;
         GInvMsg[r].Cmd := INV;
-        GInvMsg[r].Cluster := Home;        
+        GInvMsg[r].Cluster := Home;
       end;
     end;
     Procs[Home].RAC.State := WINV;
@@ -1660,7 +1660,7 @@ begin
   end;
 
   Dir.isLocal := true;
-  assert (Procs[Home].L2.pending = true & !isundefined(Procs[Home].L2.ReqId)) 
+  assert (Procs[Home].L2.pending = true & !isundefined(Procs[Home].L2.ReqId))
     "Funny Procs[Home].L2 state with outside reply4.";
   Procs[Home].L2.HeadPtr := Procs[Home].L2.ReqId;
   src := Procs[Home].L2.ReqId;
@@ -1719,7 +1719,7 @@ rule "Home_Recv_IACK(X)"
 ==>
 var dst: Procss;
     src: NODE;
-begin 
+begin
   assert (Dir.isBusy = true) "Funny Dir.isBusy state1.";
   Dir.isBusy := false;
   assert (Procs[Home].RAC.State = WRDX) "Funny cluster state receive IACK(X).";
@@ -1735,7 +1735,7 @@ begin
     Procs[Home].L2.Dirty := true;
   end;
 
-  assert (Procs[Home].L2.pending = true & !isundefined(Procs[Home].L2.ReqId)) 
+  assert (Procs[Home].L2.pending = true & !isundefined(Procs[Home].L2.ReqId))
      "Funny Procs[Home].L2 state with outside reply.";
   src := Procs[Home].L2.ReqId;
   Procs[Home].L2.HeadPtr := src;
@@ -1748,7 +1748,7 @@ begin
   undefine Procs[Home].L2.ReqId;
 
   assert (Dir.State = Excl & !isundefined(GUniMsg[Home].Cluster) &
-	  Dir.HeadPtr = GUniMsg[Home].Cluster) 
+	  Dir.HeadPtr = GUniMsg[Home].Cluster)
      "Funny Dir state with home IACK.";
   undefine Dir.HeadPtr;
   Dir.isLocal := true;
@@ -1763,7 +1763,7 @@ begin
 endrule;
 
 
--- we can grant Home req when NAK_Home, but it will need another 
+-- we can grant Home req when NAK_Home, but it will need another
 -- ReqType inside L2.
 rule "Home_Recv_Nak"
   GUniMsg[Home].Cmd = NAK |
@@ -1776,7 +1776,7 @@ begin
 
   Procs[Home].RAC.State := Inval;
   Procs[Home].RAC.InvCnt := 0;
-  assert (Procs[Home].L2.pending = true & !isundefined(Procs[Home].L2.ReqId)) 
+  assert (Procs[Home].L2.pending = true & !isundefined(Procs[Home].L2.ReqId))
     "Funny Procs[Home].L2 state with outside reply.";
   if (Procs[Home].L2.InvCnt = 0) then
     Procs[Home].L2.pending := false;
@@ -1840,7 +1840,7 @@ begin
   assert (Procs[Home].L2.pending = true) "Funny request without pending.";
   assert (Procs[Home].RAC.State != Inval) "Funny ACK in Inval RAC state.";
 
-  switch Procs[Home].RAC.State 
+  switch Procs[Home].RAC.State
 
   -- home wait read reply
   case WRDO:
@@ -1851,7 +1851,7 @@ begin
     Dir.Mem := GUniMsg[Home].Data;
     -- Dir.CurrData := GUniMsg[Home].Data;
 
-    assert (Dir.State = Excl & Dir.HeadPtr = GUniMsg[Home].Cluster) 
+    assert (Dir.State = Excl & Dir.HeadPtr = GUniMsg[Home].Cluster)
      "Funny dir state with home receiving ACK.";
     Dir.State := Shrd;
     Dir.ShrSet[Dir.HeadPtr] := true;
@@ -1875,11 +1875,11 @@ begin
     Procs[Home].RAC.State := Inval;
     Procs[Home].RAC.InvCnt := 0;
 
-    assert (Procs[Home].L2.pending = true & !isundefined(Procs[Home].L2.ReqId)) 
+    assert (Procs[Home].L2.pending = true & !isundefined(Procs[Home].L2.ReqId))
       "Funny Procs[Home].L2 state with outside reply.";
     Procs[Home].L2.pending := false;
 
-    assert (Dir.State = Excl & Dir.HeadPtr = GUniMsg[Home].Cluster) 
+    assert (Dir.State = Excl & Dir.HeadPtr = GUniMsg[Home].Cluster)
      "Funny dir state with home receiving ACK.";
     Dir.State := Shrd;
     Dir.ShrSet[Dir.HeadPtr] := true;
@@ -1934,7 +1934,7 @@ begin
         GShWbMsg.Data := Procs[r].L2.Data;
       end;
 
-    elsif (!isundefined(Procs[r].L2.HeadPtr) & Procs[r].L2.HeadPtr != L2 & 
+    elsif (!isundefined(Procs[r].L2.HeadPtr) & Procs[r].L2.HeadPtr != L2 &
 	   Procs[r].L2.State = Excl) then
       Procs[r].L2.pending := true;
       Procs[r].UniMsg[L2].Cmd := UNI_Get;
@@ -2007,7 +2007,7 @@ rule "RmtCluster_Recv_GetX"
   -- Apr 8
   Procs[dst].L2.ifHoldMsg = false
 ==>
-var 
+var
   iCnt: CacheCnt;
 begin
   assert (src != dst) "Funny forwarded req to itself.";
@@ -2037,7 +2037,7 @@ begin
       undefine Procs[dst].PrevData;
       undefine Procs[dst].CurrData;
 
-    elsif (!isundefined(Procs[dst].L2.HeadPtr) & Procs[dst].L2.HeadPtr != L2 & 
+    elsif (!isundefined(Procs[dst].L2.HeadPtr) & Procs[dst].L2.HeadPtr != L2 &
 	   Procs[dst].L2.State = Excl) then
       Procs[dst].L2.pending := true;
 
@@ -2063,7 +2063,7 @@ begin
       iCnt := 0;
       for n: NODE do
         if Procs[dst].L2.ShrSet[n] = true then
-          Procs[dst].InvMsg[n].Cmd := INV_Inv; 
+          Procs[dst].InvMsg[n].Cmd := INV_Inv;
           iCnt := iCnt + 1;
           Procs[dst].L2.ShrSet[n] := false;
         end;
@@ -2137,7 +2137,7 @@ endrule;
 
 
 
-rule "Dir_Recv_ShWb"  
+rule "Dir_Recv_ShWb"
   GShWbMsg.Cmd = SHWB
 ==>
 begin
@@ -2145,7 +2145,7 @@ begin
   Dir.isBusy := false;
 
   assert (Dir.State = Excl) "Funny ShWb without being excl.";
-  assert (!isundefined(Dir.HeadPtr) & Dir.isLocal = false) 
+  assert (!isundefined(Dir.HeadPtr) & Dir.isLocal = false)
      "Funny ShWb without remote being excl.";
   Dir.Mem := GShWbMsg.Data;
   -- Dir.CurrData := GShWbMsg.Data;
@@ -2168,7 +2168,7 @@ var aux: NODE;
 begin
   assert (Procs[dst].RAC.State != Inval) "Funny ACK in Inval RAC state.";
 
-  switch Procs[dst].RAC.State 
+  switch Procs[dst].RAC.State
 
   -- remote wait read reply
   case WRD:
@@ -2250,7 +2250,7 @@ rule "RmtCluster_Recv_Nak"
 ==>
 var aux: NODE;
 begin
-  assert ((Procs[dst].RAC.State != Inval) & (Procs[dst].RAC.State != WINV)) 
+  assert ((Procs[dst].RAC.State != Inval) & (Procs[dst].RAC.State != WINV))
      "Funny NAK in Inval/WINV RAC state2.";
   Procs[dst].RAC.State := Inval;
   Procs[dst].RAC.InvCnt := 0;
@@ -2322,7 +2322,7 @@ begin
   case WRDX:
     if (proc = dst) then
       Procs[dst].RAC.InvCnt := Procs[dst].RAC.InvCnt + 1;
-    else 
+    else
       Procs[dst].L2.State := Invld;
       undefine Procs[dst].L2.Data;
       if (!isundefined(Procs[dst].L2.HeadPtr) & Procs[dst].L2.HeadPtr = L2) then
@@ -2380,7 +2380,7 @@ begin
     end;
 
   else
-    Error "Funny RAC.State value."; 
+    Error "Funny RAC.State value.";
   end;
 
   undefine GInvMsg[src];
@@ -2419,7 +2419,7 @@ begin
     Dir.Collecting := false;
   end;
 
-  assert (Procs[dst].L2.pending = true & !isundefined(Procs[dst].L2.ReqId)) 
+  assert (Procs[dst].L2.pending = true & !isundefined(Procs[dst].L2.ReqId))
      "Funny L2.pending and ReqId values receiving IACK(X).";
   if (Procs[dst].L2.InvCnt = 0) then
     Procs[dst].L2.pending := false;
@@ -2443,7 +2443,7 @@ endruleset;
 
 ruleset r: Rmt do
 rule "Dir_Recv_RmtGet_Put"
-  (Dir.State = Invld | 
+  (Dir.State = Invld |
    Dir.State = Shrd) &
   Dir.isBusy = false &
   GUniMsg[r].Cmd = RD_H
@@ -2497,7 +2497,7 @@ begin
     Dir.State := Shrd;
     Dir.ShrSet[r] := true;
     undefine Dir.HeadPtr;
-  else 
+  else
     Dir.isBusy := true;
     GUniMsg[r].Cmd := RD_RAC;
     undefine GUniMsg[r].Data;
@@ -2513,7 +2513,7 @@ endruleset;
 ruleset r: Rmt do
 rule "Dir_Recv_RmtGetX_(RmtGetX)"
   Dir.State = Excl &
-  Dir.isBusy = false & 
+  Dir.isBusy = false &
   Dir.isLocal = false &
   GUniMsg[r].Cmd = RDX_H
 ==>
@@ -2523,7 +2523,7 @@ begin
     GUniMsg[r].Data := Dir.Mem;
     undefine GUniMsg[r].Cluster;
     GUniMsg[r].InvCnt := 0;
-  else 
+  else
     Dir.isBusy := true;
     GUniMsg[r].Cmd := RDX_RAC;
     undefine GUniMsg[r].Data;
@@ -2539,7 +2539,7 @@ endruleset;
 ruleset r: Rmt do
 rule "Dir_Recv_RmtGetX_isLocal"
   Dir.State = Excl &
-  Dir.isBusy = false & 
+  Dir.isBusy = false &
   Dir.isLocal = true &
   GUniMsg[r].Cmd = RDX_H &
 
@@ -2570,7 +2570,7 @@ begin
       Dir.isLocal := false;
       Dir.HeadPtr := r;
 
-    elsif (Procs[Home].L2.State = Excl & !isundefined(Procs[Home].L2.HeadPtr) & 
+    elsif (Procs[Home].L2.State = Excl & !isundefined(Procs[Home].L2.HeadPtr) &
 	   Procs[Home].L2.HeadPtr != L2) then
       Procs[Home].L2.pending := true;
       Procs[Home].UniMsg[L2].Cmd := UNI_GetX;
@@ -2617,7 +2617,7 @@ begin
       Dir.isLocal := false;
       Dir.HeadPtr := r;
 
-    else 
+    else
       GUniMsg[r].Data := Dir.Mem;
       GUniMsg[r].InvCnt := 0;
       undefine GUniMsg[r].Cluster;
@@ -2634,7 +2634,7 @@ begin
     undefine GUniMsg[r].InvCnt;
     undefine GUniMsg[r].Cluster;
     GUniMsg[r].Cmd := NAK;
-  end; 
+  end;
 endrule;
 endruleset;
 
@@ -2643,7 +2643,7 @@ endruleset;
 ruleset r: Rmt do
 rule "Dir_Recv_RmtGet_isLocal"
   Dir.State = Excl &
-  Dir.isBusy = false & 
+  Dir.isBusy = false &
   Dir.isLocal = true &
   GUniMsg[r].Cmd = RD_H &
 
@@ -2665,7 +2665,7 @@ begin
       undefine GUniMsg[r].Cluster;
       Dir.ShrSet[r] := true;
 
-    elsif (Procs[Home].L2.State = Excl & !isundefined(Procs[Home].L2.HeadPtr) & 
+    elsif (Procs[Home].L2.State = Excl & !isundefined(Procs[Home].L2.HeadPtr) &
 	   Procs[Home].L2.HeadPtr != L2) then
       Procs[Home].L2.pending := true;
       Procs[Home].UniMsg[L2].Cmd := UNI_Get;
@@ -2696,7 +2696,7 @@ begin
       GUniMsg[r].InvCnt := 0;
       undefine GUniMsg[r].Cluster;
 
-    else 
+    else
       Dir.isLocal := false;
       Dir.State := Shrd;
       Dir.ShrSet[r] := true;
@@ -2713,7 +2713,7 @@ begin
     undefine GUniMsg[r].Data;
     undefine GUniMsg[r].InvCnt;
     undefine GUniMsg[r].Cluster
-  end; 
+  end;
 endrule;
 endruleset;
 
@@ -2723,7 +2723,7 @@ ruleset r: Rmt do
 rule "Dir_Recv_RmtGetX_PutX"
   Dir.State = Invld &
   Dir.isBusy = false &
-  GUniMsg[r].Cmd = RDX_H 
+  GUniMsg[r].Cmd = RDX_H
 ==>
 begin
   Dir.State := Excl;
@@ -2782,7 +2782,7 @@ rule "Dir_Recv_WB"
 begin
   /*
   -- cannot assert the following:
-  assert (Dir.State = Excl & Dir.HeadPtr = r & Dir.isLocal = false) 
+  assert (Dir.State = Excl & Dir.HeadPtr = r & Dir.isLocal = false)
      "Writeback with funny directory state.";
   -- counterexample:
     Rmt_Send_GetX, r:Rmt_1
@@ -2795,7 +2795,7 @@ begin
     RmtCluster_Recv_IACK, dst:Rmt_2
     Cluster_WriteBack, p:Rmt_2
   */
-  assert (Dir.State = Excl & !isundefined(Dir.HeadPtr) & Dir.isLocal = false) 
+  assert (Dir.State = Excl & !isundefined(Dir.HeadPtr) & Dir.isLocal = false)
      "Writeback with funny directory state.";
   Dir.State := Invld;
   undefine Dir.HeadPtr;
@@ -2816,7 +2816,7 @@ rule "RmtCluster_Recv_WBAck"
   GUniMsg[r].Cmd = WB_Ack
 ==>
 begin
-  assert (Procs[r].L2.Gblock_WB = true & Procs[r].RAC.State = Inval) 
+  assert (Procs[r].L2.Gblock_WB = true & Procs[r].RAC.State = Inval)
      "Funny Gblock_WB state receiving WB_Ack";
   Procs[r].L2.Gblock_WB := false;
   undefine GUniMsg[r];
@@ -2849,7 +2849,7 @@ begin
   Dir.HeadPtr := r;
 
   -- only r is in the sharer list
-  if (ShrCnt = 0 & 
+  if (ShrCnt = 0 &
       forall i: Rmt do i != r -> Dir.ShrSet[i] = false end) then
     GUniMsg[r].Cmd := ACK;
     GUniMsg[r].Data := Dir.Mem;
@@ -2872,7 +2872,7 @@ begin
     GUniMsg[r].Cmd := IACK;
     GUniMsg[r].Data := Dir.Mem;
     GUniMsg[r].InvCnt := ShrCnt;
-    undefine GUniMsg[r].Cluster;  
+    undefine GUniMsg[r].Cluster;
   end;
 endrule;
 endruleset;
@@ -2882,10 +2882,10 @@ endruleset;
 /* ...1
    invariant "ClusterShrdDataProp" */
 
-rule "bogus-invar-fail-flag1" 
+rule "bogus-invar-fail-flag1"
 (exists p: Procss do
   ( (Procs[p].L2.State = Shrd) /* & bombCnt1 == BL */ /* & bombCnt2 == BL */ /* -> */
-     
+
      &
      !
      ((Dir.Collecting -> Procs[p].L2.Data = Dir.PrevData) &
@@ -2896,14 +2896,14 @@ rule "bogus-invar-fail-flag1"
   endrule;
 
 
-   
+
 
 /*...2
   invariant "ClusterRecvInvProp" */
 
 rule "bogus-invar-fail-flag2"
 
-  (exists p: Procss do 
+  (exists p: Procss do
     (GInvMsg[p].Cmd = INV)
       /* & bombCnt1 == BL */ /* & bombCnt2 == BL */   /* -> */
      &
@@ -2925,18 +2925,18 @@ invariant "CacheStateProp"
   forall p: Procss do
   forall n1: NODE do forall n2: NODE do
     n1 != n2 ->
-    !((Procs[p].Proc[n1].CacheState = CACHE_E | 
-       Procs[p].Proc[n1].CacheState = CACHE_M) & 
-      (Procs[p].Proc[n2].CacheState = CACHE_E |  
+    !((Procs[p].Proc[n1].CacheState = CACHE_E |
+       Procs[p].Proc[n1].CacheState = CACHE_M) &
+      (Procs[p].Proc[n2].CacheState = CACHE_E |
        Procs[p].Proc[n2].CacheState = CACHE_M))
   end end end;
 
 
-invariant "CacheDataProp"   
+invariant "CacheDataProp"
   forall p: Procss do
   forall n : NODE do
-    ((Procs[p].Proc[n].CacheState = CACHE_E |  
-      Procs[p].Proc[n].CacheState = CACHE_M) 
+    ((Procs[p].Proc[n].CacheState = CACHE_E |
+      Procs[p].Proc[n].CacheState = CACHE_M)
      ->
      Procs[p].Proc[n].CacheData = Procs[p].CurrData ) &
     (Procs[p].Proc[n].CacheState = CACHE_S ->
@@ -2960,10 +2960,10 @@ invariant "CacheInvldDataProp"
 
 invariant "L2InvldDataProp"
   forall p: Procss do
-    (Procs[p].L2.State = Invld) 
-     -> 
+    (Procs[p].L2.State = Invld)
+     ->
     (isundefined(Procs[p].L2.Data) &
-     Procs[p].L2.OnlyCopy = false & 
+     Procs[p].L2.OnlyCopy = false &
      Procs[p].L2.Dirty = false)
   end;
 
@@ -2976,7 +2976,7 @@ invariant "Remote cluster cannot be WRDO."
   end;
 
 
-invariant "ClusterStateProp" 
+invariant "ClusterStateProp"
   forall p: Procss do
     forall q: Procss do
       !((p != q) &
@@ -2987,12 +2987,12 @@ invariant "ClusterStateProp"
 invariant "InvldDataProp"
   forall p: Procss do
     (Procs[p].L2.State = Invld) ->
-    (isundefined(Procs[p].L2.Data)) 
+    (isundefined(Procs[p].L2.Data))
   end;
 
 
 invariant "RACINvalProp"
-  forall p: Procss do 
+  forall p: Procss do
     (Procs[p].RAC.State = Inval) ->
     (Procs[p].RAC.InvCnt = 0)
   end;
@@ -3002,7 +3002,7 @@ invariant "RACINvalProp"
 invariant "InvStateProp"
   forall p: Procss do
   forall q: Procss do
-    ((p != q) & (Procs[p].RAC.State = WINV) & (Procs[q].L2.State = Shrd)) 
+    ((p != q) & (Procs[p].RAC.State = WINV) & (Procs[q].L2.State = Shrd))
     ->
     (GInvMsg[q].Cmd = INV)
   end end;
@@ -3060,13 +3060,13 @@ invariant "MemDataProp"
 invariant "tmpProp"
 forall p: Procss do
   forall src: NODE do
-    (Procs[p].InvMsg[src].Cmd = INV_InvAck) 
+    (Procs[p].InvMsg[src].Cmd = INV_InvAck)
     ->
     Procs[p].L2.pending = true
 end end;
 
 
-invariant "L2.InvCnt>=0"  
+invariant "L2.InvCnt>=0"
 forall p: Procss do
   forall src: NODE do
     (Procs[p].InvMsg[src].Cmd = INV_InvAck)
@@ -3088,7 +3088,7 @@ end;
 invariant "Uni_PutwithDataProp"
 forall p: Procss do
   forall n: NODE do
-    Procs[p].UniMsg[n].Cmd = UNI_Put 
+    Procs[p].UniMsg[n].Cmd = UNI_Put
     ->
     !isundefined(Procs[p].UniMsg[n].Data)
 end end;
@@ -3102,9 +3102,9 @@ invariant "HomeRecvIACK(X)Prop"
 
 invariant "isRetiredProp1"
 forall p: Procss do
-  Procs[p].L2.isRetired = true 
+  Procs[p].L2.isRetired = true
 ->
-  Procs[p].RAC.State = Inval | 
+  Procs[p].RAC.State = Inval |
   Procs[p].RAC.State = WINV |
   Procs[p].L2.OnlyCopy = true
 end;
@@ -3112,15 +3112,15 @@ end;
 
 invariant "isRetiredProp2"
 forall p: Procss do
-  Procs[p].RAC.State = Inval | 
-  Procs[p].RAC.State = WINV 
+  Procs[p].RAC.State = Inval |
+  Procs[p].RAC.State = WINV
 ->
-  Procs[p].L2.isRetired = true 
+  Procs[p].L2.isRetired = true
 end;
 
 
 invariant "StateProp"
-  Dir.isLocal = false 
+  Dir.isLocal = false
 ->
   Procs[Home].L2.State != Excl;
 
@@ -3137,7 +3137,7 @@ end;
 
 invariant "Excl->OnlyCopy"
 forall p: Procss do
-  Procs[p].L2.State = Excl 
+  Procs[p].L2.State = Excl
 ->
   Procs[p].L2.OnlyCopy = true
 end;
@@ -3178,7 +3178,7 @@ end;
 
 invariant "!Invld->!Gblock_WB"
 forall p: Procss do
-  Procs[p].L2.State != Invld 
+  Procs[p].L2.State != Invld
 ->
   Procs[p].L2.Gblock_WB = false
 end;
@@ -3219,9 +3219,9 @@ end;
 
 invariant "SHWB_ShWb->Excl"
 forall p: Procss do
-  Procs[p].ShWbMsg.Cmd = SHWB_ShWb 
+  Procs[p].ShWbMsg.Cmd = SHWB_ShWb
 ->
-  Procs[p].L2.State = Excl 
+  Procs[p].L2.State = Excl
 end;
 
 
@@ -3242,9 +3242,9 @@ forall src: Procss do
    GUniMsg[src].Cmd = RDX_RAC) &
   GUniMsg[src].Cluster = p &
   Procs[p].RAC.State = Inval &
-  !isundefined(Procs[p].L2.HeadPtr) & 
+  !isundefined(Procs[p].L2.HeadPtr) &
   Procs[p].L2.HeadPtr = L2
--> 
+->
   Procs[p].L2.State = Excl
 end end;
 
@@ -3257,7 +3257,7 @@ invariant "flag1,2"
 
 
 ganesh@ganesh-XPS-17-9710:~/romp/NEW/romp/tests$ g++ -std=c++17 -O3 -pthread  -o combine_protocol_bug6.sym.romp combine_protocol_bug6.romp.cpp
-ganesh@ganesh-XPS-17-9710:~/romp/NEW/romp/tests$ ./combine_protocol_bug6.romp 
+ganesh@ganesh-XPS-17-9710:~/romp/NEW/romp/tests$ ./combine_protocol_bug6.romp
 
 INFO : the number of threads to use was not specified (with -ptn/--threads flags)
      |-> defaults to 14
@@ -3271,7 +3271,7 @@ BASE LAUNCH CONFIG:
          seed: 1683751001 	(default:time)
    startstate: randomly assigned 	(default)
     max depth: 1024 	(default)
-     deadlock: 
+     deadlock:
      symmetry: YES, heuristic 	(config when generating with romp)
 INITIAL BFS OPTIONS:
   	>>	DISABLED 	(default)	<<
@@ -3285,11 +3285,11 @@ PER WALK REPORTS:
 WALKS INCLUDED IN FINAL REPORT:
      - property violations      	(default)
      - error statements reached 	(default)
-    
+
 Correct Config? [yes=launch/no=exit]: yes
 
 ================================
-          ROMP RESULTS:         
+          ROMP RESULTS:
 ================================
 
 
@@ -3321,7 +3321,6 @@ RW SUMMARY:
        mean walk time: mean(t)=0.14ms (mean(Δt)=0.14ms)
            RW runtime: 1179.27ms
 
-ganesh@ganesh-XPS-17-9710:~/romp/NEW/romp/tests$ 
+ganesh@ganesh-XPS-17-9710:~/romp/NEW/romp/tests$
 
 -- end of test results */
-

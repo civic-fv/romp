@@ -1,6 +1,6 @@
 #! /usr/bin/make
 
-# NOTE: this file addapts to the contents of the directory it is in 
+# NOTE: this file addapts to the contents of the directory it is in
 #       and provides a path to generate and compile a murphi model for each of the three
 #       model-checkers (romp, cmurphi, rumur).
 #       PLEASE update the paths to each model checker for your computer
@@ -24,8 +24,8 @@ ROMP := ../../build/romp/romp
 CMURPHI := ../../../cmurphi/src/mu
 RUMUR := ../../../rumur/build/rumur/rumur
 
-RM := rm -rf 
-RMDIR := rm -rf 
+RM := rm -rf
+RMDIR := rm -rf
 MKDIR := mkdir -p
 CP := cp -rf
 
@@ -133,9 +133,9 @@ $(foreach model,$(ALL_MODELS),$(eval $(call __generate_per_model_directive,$(mod
 
 
 
-# ================= 
+# =================
 #  make directives
-# ================= 
+# =================
 all: $(ALL_MODEL_EXE)
 	@printf "Finished Building all model checkers in directory\n"
 

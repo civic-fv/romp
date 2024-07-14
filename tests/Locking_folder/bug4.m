@@ -1,10 +1,10 @@
 -----------------------------------------------------------------------------
--- Murphi code for the locking protocol                                    
--- Author : Ganesh Gopalakrishnan, written circa year 2000 
--- Derived from Dilip Khandekar and John Carter's work     
--- Compare against Promela model studied in Asg3, CS 6110, Spring 2022     
+-- Murphi code for the locking protocol
+-- Author : Ganesh Gopalakrishnan, written circa year 2000
+-- Derived from Dilip Khandekar and John Carter's work
+-- Compare against Promela model studied in Asg3, CS 6110, Spring 2022
 -----------------------------------------------------------------------------
-			 
+
 -- begin of locking.m --
 
 Const
@@ -21,8 +21,8 @@ Type
 					    -- -1 acts as empty indicator
 		end;
 
-		/* With Nprocs=1, we get 0..-1 which makes sense 
-		   mathematically (empty) but perhaps not in Murphi. 
+		/* With Nprocs=1, we get 0..-1 which makes sense
+		   mathematically (empty) but perhaps not in Murphi.
 		   So, avoid Nprocs <= 1. Similar caveats apply for
 		   all array declarations of the form 0..N-2. */
 
@@ -32,13 +32,13 @@ Type
 -------------------------------------------------------
 
 Var
-  request_bufs 	: Array [procT] of request_bufT; 
-  prob_owners  	: Array [procT] of procT;        
-  waiters	: Array [procT] of request_bufT; 
-  mutexes	: Array [procT] of Boolean;      
+  request_bufs 	: Array [procT] of request_bufT;
+  prob_owners  	: Array [procT] of procT;
+  waiters	: Array [procT] of request_bufT;
+  mutexes	: Array [procT] of Boolean;
 
-  ar_states	: Array [procT] of stateT;       
-  hstates	: Array [procT] of hstateT;      
+  ar_states	: Array [procT] of stateT;
+  hstates	: Array [procT] of hstateT;
 
 -------------------------------------------------------
 
@@ -85,7 +85,7 @@ begin
       endif
  endif
 end;
-	
+
 procedure enqueue(var queue: request_bufT; pid: procT);
                   -- queue of Array range 0..Nprocs-2
 begin
@@ -131,15 +131,15 @@ end;
 -------------------------------------------------------
 
 Ruleset p:procT Do
-    Alias 	request_buf: request_bufs[p] Do 
-    Alias	prob_owner : prob_owners[p]  Do 
-    Alias	waiter	   : waiters[p]	     Do 
-    Alias	state	   : ar_states[p]    Do 
-    Alias	hstate	   : hstates[p]      Do 
-    Alias	mutex	   : mutexes[p]      Do 
+    Alias 	request_buf: request_bufs[p] Do
+    Alias	prob_owner : prob_owners[p]  Do
+    Alias	waiter	   : waiters[p]	     Do
+    Alias	state	   : ar_states[p]    Do
+    Alias	hstate	   : hstates[p]      Do
+    Alias	mutex	   : mutexes[p]      Do
 
     	Rule "Try acquiring the lock"
-	 	((state = ENTER) & !mutex) 
+	 	((state = ENTER) & !mutex)
 			==> mutex := true;
 			    state := TRYING;
 	Endrule;
@@ -149,7 +149,7 @@ Ruleset p:procT Do
 		((state = TRYING) & (prob_owner = p) & mutex)
 			==> mutex := false;
                             state := LOCKED;
-                            
+
 	Endrule;
 	-------------------------------------------------------
 
@@ -160,7 +160,7 @@ Ruleset p:procT Do
 			    state := BLOCKED;
 	Endrule;
 	-------------------------------------------------------
-	
+
 	Rule "Locked -> Enter if no waiters"
 		((state = LOCKED) & emptyq(waiter)) ==> state := ENTER;
 	Endrule;
@@ -173,7 +173,7 @@ Ruleset p:procT Do
 	Endrule;
 	-------------------------------------------------------
 
-	-- added emptyq check for waiter 
+	-- added emptyq check for waiter
     	Rule "In EXITING state, pass hd waiter and tail of waiters along."
 		((state = EXITING) & !emptyq(waiter) & mutex)
 			==>   mutex := false;
@@ -185,7 +185,7 @@ Ruleset p:procT Do
 		   	      prob_owner := frontq(waiter);
 
 -- added this new line to update the state of acquire's thread state when passing the lock
-			      ar_states[frontq(waiter)] := LOCKED;   
+			      ar_states[frontq(waiter)] := LOCKED;
 
 			      copytail(waiter, waiters[prob_owner]);
 			      state := ENTER;
@@ -196,7 +196,7 @@ Ruleset p:procT Do
 	-- added this new rule which will get fired when there are no waiters in the queue
 	-- Rule "In EXITING state, release the lock if no waiters."
         --        ((state = EXITING) & emptyq(waiter) & mutex)
-        --                ==>   
+        --                ==>
         --                    state := ENTER;
         --                    mutex := false;
         -- Endrule;
@@ -233,9 +233,9 @@ Ruleset p:procT Do
 
 		   	    dequeue(request_buf);
 		   	    hstate := HANDLE;
-	
+
 			   endif
-			
+
 	Endrule;
 	-------------------------------------------------------
 
@@ -246,7 +246,7 @@ Ruleset p:procT Do
                             place_request(prob_owner,frontq(request_buf));
 		   	    dequeue(request_buf);
 		   	    hstate := HANDLE;
-		   	    
+
 	Endrule;
 	-------------------------------------------------------
 
@@ -257,7 +257,7 @@ Ruleset p:procT Do
                             enqueue(waiter,frontq(request_buf));
 		   	    dequeue(request_buf);
 		   	    hstate := HANDLE;
-		   	    
+
 	Endrule;
 	-------------------------------------------------------
 

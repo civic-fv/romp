@@ -30,7 +30,7 @@ protected:
   Stmt &operator=(const Stmt &) = default;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI AliasStmt : public Stmt {
@@ -47,7 +47,7 @@ struct MURPHI_API_WITH_RTTI AliasStmt : public Stmt {
   void visit(ConstBaseTraversal &visitor) const override;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI PropertyStmt : public Stmt {
@@ -65,7 +65,7 @@ struct MURPHI_API_WITH_RTTI PropertyStmt : public Stmt {
   void visit(ConstBaseTraversal &visitor) const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Assignment : public Stmt {
@@ -85,7 +85,7 @@ struct MURPHI_API_WITH_RTTI Assignment : public Stmt {
   void update() final;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Clear : public Stmt {
@@ -101,7 +101,7 @@ struct MURPHI_API_WITH_RTTI Clear : public Stmt {
   void visit(ConstBaseTraversal &visitor) const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI ErrorStmt : public Stmt {
@@ -116,7 +116,7 @@ struct MURPHI_API_WITH_RTTI ErrorStmt : public Stmt {
   void visit(ConstBaseTraversal &visitor) const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI For : public Stmt {
@@ -133,7 +133,7 @@ struct MURPHI_API_WITH_RTTI For : public Stmt {
   void visit(ConstBaseTraversal &visitor) const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI IfClause : public Node {
@@ -151,7 +151,7 @@ struct MURPHI_API_WITH_RTTI IfClause : public Node {
   void visit(ConstBaseTraversal &visitor) const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI If : public Stmt {
@@ -165,7 +165,7 @@ struct MURPHI_API_WITH_RTTI If : public Stmt {
   void visit(ConstBaseTraversal &visitor) const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI ProcedureCall : public Stmt {
@@ -180,7 +180,7 @@ struct MURPHI_API_WITH_RTTI ProcedureCall : public Stmt {
   void visit(ConstBaseTraversal &visitor) const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Put : public Stmt {
@@ -198,7 +198,7 @@ struct MURPHI_API_WITH_RTTI Put : public Stmt {
   void visit(ConstBaseTraversal &visitor) const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Return : public Stmt {
@@ -212,7 +212,7 @@ struct MURPHI_API_WITH_RTTI Return : public Stmt {
   void visit(ConstBaseTraversal &visitor) const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI SwitchCase : public Node {
@@ -228,7 +228,7 @@ struct MURPHI_API_WITH_RTTI SwitchCase : public Node {
   void visit(ConstBaseTraversal &visitor) const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Switch : public Stmt {
@@ -246,7 +246,7 @@ struct MURPHI_API_WITH_RTTI Switch : public Stmt {
   void visit(ConstBaseTraversal &visitor) const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Undefine : public Stmt {
@@ -262,7 +262,7 @@ struct MURPHI_API_WITH_RTTI Undefine : public Stmt {
   void visit(ConstBaseTraversal &visitor) const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI While : public Stmt {
@@ -280,9 +280,9 @@ struct MURPHI_API_WITH_RTTI While : public Stmt {
   void visit(ConstBaseTraversal &visitor) const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
-// everything below here is implemented in src/ext_Stmt.h 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
+// everything below here is implemented in src/ext_Stmt.h
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI MultisetAdd : public Stmt {
@@ -302,7 +302,7 @@ struct MURPHI_API_WITH_RTTI MultisetAdd : public Stmt {
 
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI MultisetRemove : public Stmt {
@@ -324,7 +324,7 @@ struct MURPHI_API_WITH_RTTI MultisetRemove : public Stmt {
   void update() final;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI MultisetRemovePred : public Stmt {

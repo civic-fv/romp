@@ -7,9 +7,9 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file CodeGenerator.hpp
- * 
+ *
  * @brief The place where dreams come to die
- * 
+ *
  * @date 2022/06/10
  * @version 0.3
  */
@@ -80,7 +80,7 @@ namespace romp {
     bool is_cover_enabled = false;
     bool is_liveness_enabled = false;
     bool is_measure_enabled = false;
-    
+
 
   protected:
     // id_t next_property_rule_id = 0u;
@@ -96,7 +96,7 @@ namespace romp {
     // // id_t next_type_id = 0u;
     // // id_t next_enum_id = 0u;
     // id_t next_record_member_id = 0u;
-    
+
 
   public:
     // get a white space string for the current indentation level
@@ -141,9 +141,9 @@ namespace romp {
     // CodeGenerator& operator << (const std::function<std::ostream&(std::ostream&)>& manipulator);
     // CodeGenerator& operator << (const std::function<CodeGenerator&(CodeGenerator&)>& manipulator);
     // inline CodeGenerator& operator << (const murphi::Node &n);
-    
+
     // friend inline CodeGenerator& _flush(CodeGenerator& gen);
-    
+
 
     // template<typename T>
     // friend inline CodeGenerator& operator << (CodeGenerator& gen, const T &val);

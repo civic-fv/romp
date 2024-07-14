@@ -2,21 +2,21 @@
 
 -- With H = 4, has 9621 errors, at level 161
 Const
-        INITIAL_VAL: 50;  -- where to start the count. 
-        L: 1;             -- 
---         H: 3;             -- H - L + 1 = number of counter processes. 
+        INITIAL_VAL: 50;  -- where to start the count.
+        L: 1;             --
+--         H: 3;             -- H - L + 1 = number of counter processes.
                           -- determines branching factor and # of states.
 		H: 4;
         MAX_VAL: (H-L+1) * INITIAL_VAL;
-        DESIRED_VAL : (H-L+1)* 10; -- value of each counter for an accept state. 
-                          -- determines accept state depth. 
+        DESIRED_VAL : (H-L+1)* 10; -- value of each counter for an accept state.
+                          -- determines accept state depth.
         bottleneck:  25; -- value at which there is 1 state between the 2 diamonds.
-        RESET_VAL : 10;  -- When to reset a counter.  This causes cycles. 
-                         -- difference between this value and DESIRED_VAL 
-                         -- determines cycle size. 
-                         -- should be less than the desired value. 
-        RESET_TO  : 50;  -- where to reset the counter to.  
-                         -- should be greater than desired val 
+        RESET_VAL : 10;  -- When to reset a counter.  This causes cycles.
+                         -- difference between this value and DESIRED_VAL
+                         -- determines cycle size.
+                         -- should be less than the desired value.
+        RESET_TO  : 50;  -- where to reset the counter to.
+                         -- should be greater than desired val
 
 Type
         bool_t: Boolean;
@@ -33,43 +33,43 @@ Var
         stack: Boolean;
 
 Function desired_value(a : arr_t) : boolean;
-     begin 
+     begin
      return (
-        forall i : ind_t do 
+        forall i : ind_t do
         a[i] = DESIRED_VAL end
         );
-     end; 
+     end;
 
-Function everyone_at (a  : arr_t ) : boolean; 
-begin 
+Function everyone_at (a  : arr_t ) : boolean;
+begin
 return (
-        forall i : ind_t do 
-        a[i] = bottleneck end 
+        forall i : ind_t do
+        a[i] = bottleneck end
         );
-end; 
-Function everyone_above ( a : arr_t) : boolean; 
+end;
+Function everyone_above ( a : arr_t) : boolean;
 Begin
-return ( 
-        forall i : ind_t do 
+return (
+        forall i : ind_t do
         a[i] >= bottleneck end
         );
-end; 
+end;
 
-Function everyone_below ( a : arr_t) : boolean; 
+Function everyone_below ( a : arr_t) : boolean;
 Begin
-return ( 
-        Forall i : ind_t do 
-        a[i] <= bottleneck end 
+return (
+        Forall i : ind_t do
+        a[i] <= bottleneck end
         );
-end; 
+end;
 
-Function resetable ( a : arr_t) : boolean; 
+Function resetable ( a : arr_t) : boolean;
 Begin
-return ( 
-        Forall i : ind_t do 
-        a[i] <= RESET_VAL end 
+return (
+        Forall i : ind_t do
+        a[i] <= RESET_VAL end
         );
-end; 
+end;
 
 
 
@@ -100,12 +100,12 @@ Begin
 End;
 
 
-rule "reset everyone"  
+rule "reset everyone"
 resetable (a)
      ==>
 begin
-For j : ind_t Do 
-        a[j] := RESET_TO; 
+For j : ind_t Do
+        a[j] := RESET_TO;
 end;
 End;
 
@@ -113,8 +113,8 @@ End;
 Ruleset i : L .. H Do
 
         Rule
-                a[i] > bottleneck &  
-                everyone_above (a) 
+                a[i] > bottleneck &
+                everyone_above (a)
         ==>
         Begin
                 Decrement( a[i] );
@@ -130,15 +130,15 @@ Ruleset i : L .. H Do
 		End;
 
         Rule
-                everyone_at (a) 
+                everyone_at (a)
         ==>
         Begin
                 Decrement( a[i] );
         End;
 
         Rule
-                a[i] <= bottleneck & 
-                everyone_below (a) 
+                a[i] <= bottleneck &
+                everyone_below (a)
         ==>
         Begin
                 Decrement( a[i] );
@@ -181,7 +181,7 @@ End;
 Startstate
   Begin
   --      stateid := 0;
-    --    accept := false; 
+    --    accept := false;
         stack := false;
         For i : ind_t Do
                 a[ i ] := INITIAL_VAL;
@@ -191,7 +191,6 @@ Startstate
 Invariant "sum"
   !(Sum(a) = DESIRED_VAL);
 --Invariant "everyone is not ideal"
---Exists i : ind_t Do 
+--Exists i : ind_t Do
  -- a[i] != DESIRED_VAL
---Endexists; 
-
+--Endexists;

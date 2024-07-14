@@ -7,10 +7,10 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file StateSpaceCalc.hpp
- * 
- * @brief Simple utility to calculate the total number of possible permutations 
+ *
+ * @brief Simple utility to calculate the total number of possible permutations
  *        a murphi models state can be in.
- * 
+ *
  * @date 2022/08/19
  * @version 0.3
  */
@@ -28,7 +28,7 @@ mpz_class statespace_count(const murphi::Model& m) {
     mpz_class perm = 1_mpz;
   public: state_perm() : ConstBaseTypeTraversal("was not a type") {}
   protected:
-    void visit_array(const murphi::Array& n) { 
+    void visit_array(const murphi::Array& n) {
       mpz_class count = n.index_type->count();
       mpz_class arr_perm = 1_mpz;
       state_perm elm; elm.dispatch(*n.element_type);
@@ -41,7 +41,7 @@ mpz_class statespace_count(const murphi::Model& m) {
       state_perm elm; elm.dispatch(*n.element_type);
       perm *= n.size->constant_fold() * elm.perm;
     }
-    void visit_record(const murphi::Record& n) { 
+    void visit_record(const murphi::Record& n) {
       state_perm field;
       for (const auto& f: n.fields) {
         if (f == nullptr) continue;
@@ -49,7 +49,7 @@ mpz_class statespace_count(const murphi::Model& m) {
         perm *= field.perm;
       }
     }
-    void visit_typeexprid(const murphi::TypeExprID& n) { 
+    void visit_typeexprid(const murphi::TypeExprID& n) {
       dispatch(*n.referent->value);
     }
     void visit_enum(const murphi::Enum& n) {

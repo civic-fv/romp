@@ -7,9 +7,9 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file hash.hpp
- * 
+ *
  * @brief where the hashing objects for the murphi types are defined
- * 
+ *
  * @date 2023/01/10
  * @version 0.3
  */
@@ -155,7 +155,7 @@ protected:
 /* // defined in bfs.hpp for orderings sake
 template<>
 struct hash<::romp::State_t> {
-  inline size_t operator () (const ::romp::State_t& state) const { 
+  inline size_t operator () (const ::romp::State_t& state) const {
     return state.__romp__model_hash();
   }
 };

@@ -48,7 +48,7 @@ public:
 };
 } // namespace
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Rule::Rule(const std::string &name_, const location &loc_)
@@ -56,7 +56,7 @@ Rule::Rule(const std::string &name_, const location &loc_)
 
 std::vector<Ptr<Rule>> Rule::flatten() const { return {Ptr<Rule>(clone())}; }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 AliasRule::AliasRule(const std::vector<Ptr<AliasDecl>> &aliases_,
@@ -87,7 +87,7 @@ std::vector<Ptr<Rule>> AliasRule::flatten() const {
   return rs;
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 SimpleRule::SimpleRule(const std::string &name_, const Ptr<Expr> &guard_,
@@ -114,7 +114,7 @@ void SimpleRule::visit(ConstBaseTraversal &visitor) const {
   visitor.visit_simplerule(*this);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 StartState::StartState(const std::string &name_,
@@ -135,7 +135,7 @@ void StartState::visit(ConstBaseTraversal &visitor) const {
   visitor.visit_startstate(*this);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 PropertyRule::PropertyRule(const std::string &name_, const Property &property_,
@@ -157,7 +157,7 @@ void PropertyRule::update() {
   //   guard = MultisetElement::convert_element(mq, guard);
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 Ruleset::Ruleset(const std::vector<Quantifier> &quantifiers_,

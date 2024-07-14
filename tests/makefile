@@ -1,6 +1,6 @@
 #! /usr/bin/make
 
-# NOTE: this file addapts to the contents of the directory it is in 
+# NOTE: this file addapts to the contents of the directory it is in
 #       and provides a path to generate and compile a murphi model for each of the three
 #       model-checkers (romp, cmurphi, rumur).
 #       PLEASE update the paths to each model checker for your computer
@@ -27,13 +27,13 @@ RUMUR := ../../rumur/build/rumur/rumur
 CFLAGS := -std=c11 -O3 -pthread -march=native
 CXXFLAGS := -O3 -pthread
 ROMP_FLAGS := -m
-CMURPHI_FLAGS := 
+CMURPHI_FLAGS :=
 # $(info CMURPHI_FLAGS = $(CMURPHI_FLAGS))
 CMURPHI_INCLUDE_DIR := ../../cmurphi/include
 RUMUR_FLAGS := --smt-path z3 --smt-arg=-smt2 --smt-arg=-in --smt-arg=-t:5000
 
-RM := rm -rf 
-RMDIR := rm -rf 
+RM := rm -rf
+RMDIR := rm -rf
 MKDIR := mkdir -p
 CP := cp -rf
 
@@ -131,9 +131,9 @@ endef
 $(foreach model,$(ALL_MODELS),$(eval $(call __generate_per_model_directive,$(model:%.m=%),$(if $(filter $(model:%.m=%).m,$(ROMP_MODELS)),$(model:%.m=%).romp $(model:%.m=%).nsym.romp )$(if $(filter $(model:%.m=%).m,$(CMURPHI_MODELS)),$(model:%.m=%).cm )$(if $(filter $(model:%.m=%).m,$(RUMUR_MODELS)),$(model:%.m=%).ru))))
 
 
-# ================= 
+# =================
 #  make directives
-# ================= 
+# =================
 all: $(ALL_MODEL_EXE)
 	@printf "Finished Building all model checkers in directory\n"
 

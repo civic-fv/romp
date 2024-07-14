@@ -7,9 +7,9 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file ScalarEnum.hpp
- * 
- * @brief 
- * 
+ *
+ * @brief
+ *
  * @date 2022/10/14
  * @version 0.3
  */
@@ -33,8 +33,8 @@ public:
 
   std::unordered_map<std::string,size_t> enum_ids = {{ROMP_SCALAR_ENUM_UNDEFINED_NAME,0}};
   std::list<std::string> _enum_ids = {ROMP_SCALAR_ENUM_UNDEFINED_DISPLAY_NAME};
-  
-  
+
+
   ScalarEnumGenerator(CodeGenerator& gen_);
   ~ScalarEnumGenerator() = default;
 

@@ -7,9 +7,9 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file generate_state_stream.cpp
- * 
+ *
  * @brief generate the stream operators used to output the state to json files or the console
- * 
+ *
  * @date 2022/10/19
  * @version 0.3
  */
@@ -53,11 +53,11 @@ void generate_state_stream(romp::CodeGenerator& gen, const murphi::Model& m) {
                                 "out << s; "
                                 "return out_; }\n";
   gen << "\n" << "#ifdef " ROMP_SIMPLE_TRACE_PREPROCESSOR_VAR "\n"
-              << gen.indentation() 
+              << gen.indentation()
               << "template<class O> friend " ROMP_JSON_STREAM_TYPE "& operator << (" ROMP_JSON_STREAM_TYPE "& json, const " ROMP_STATE_TYPE "& s) { "
                     "return (json << '[' " << json_simp.str() << " << ']'); }\n"
               << "#else\n"
-              << gen.indentation() 
+              << gen.indentation()
               << "template<class O> friend " ROMP_JSON_STREAM_TYPE "& operator << (" ROMP_JSON_STREAM_TYPE "& json, const " ROMP_STATE_TYPE "& s) { "
                     "return (json << \"{\\\"$type\\\":\\\"model-state\\\",\\\"value\\\":[\"" << json.str() << " << \"]}\"); }\n"
               << "#endif\n";
@@ -89,4 +89,3 @@ void generate_state_hash(romp::CodeGenerator& gen, const murphi::Model& m) {
 
 
 } // namespace romp
-

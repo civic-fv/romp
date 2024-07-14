@@ -1,7 +1,7 @@
 Internals — Seen State Set
 ==========================
 When exploring the state space of your model, the generated verifier stores the
-states it has encountered in a global set structure. This structure's key 
+states it has encountered in a global set structure. This structure's key
 properties are:
 
 * Insert-only: there is no support for removing elements from the set.
