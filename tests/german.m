@@ -1,3 +1,8 @@
+
+--------------------------------------------------------------------------------
+-- RUN: romp %s -o /dev/stdout | c++ - -o /dev/null
+--------------------------------------------------------------------------------
+
 const -- configuration parameters --
 NODE_NUM : 4;
 DATA_NUM : 2;
@@ -53,7 +58,7 @@ end end;
 
 
 -- State Transitions --
---------------------------------------------
+--------------------------------------------------------------------------------
 ruleset i : NODE do
 -- Any node with cmd req channel empty and cache I can request ReqS
   rule "SendReqS"
@@ -64,7 +69,7 @@ ruleset i : NODE do
   end
 end;
 
-----------------------
+--------------------------------------------------------------------------------
 ruleset i : NODE do
 -- Any node with cmd req channel empty and cache I/S can request ReqE
   rule "SendReqE"
@@ -76,7 +81,7 @@ ruleset i : NODE do
   end
 end;
 
---------------------------------------------
+--------------------------------------------------------------------------------
 ruleset i : NODE do
 -- For any node that is waiting with ReqS requested, with CurCmd Empty
 -- we set CurCmd to ReqS on behalf of node i (setting CurPtr to point to it).
@@ -93,7 +98,7 @@ ruleset i : NODE do
   end
 end;
 
-----------------------
+--------------------------------------------------------------------------------
 ruleset i : NODE do
 -- For any node that is waiting with ReqE requested, with CurCmd Empty
 -- we set CurCmd to ReqE on behalf of node i (setting CurPtr to point to it).
@@ -110,7 +115,7 @@ ruleset i : NODE do
   end
 end;
 
---------------------------------------------
+--------------------------------------------------------------------------------
 ruleset i : NODE do
 -- For every node with Chan2 Cmd empty and InvSet true (node to be invalidated)
 -- and if CurCmd is ReqE or (ReqS with ExGnt true), then
@@ -126,7 +131,7 @@ ruleset i : NODE do
   end
 end;
 
-----------------------
+--------------------------------------------------------------------------------
 --
 -- When a node gets invalidated, it acks, and when it was E
 -- then the node (i) coughs up its cache data into Chan3
@@ -144,7 +149,7 @@ ruleset i : NODE do
   end
 end;
 
-----------------------
+--------------------------------------------------------------------------------
 ruleset i : NODE do
   rule "RecvInvAck"
     Chan3[i].Cmd = InvAck &
@@ -158,7 +163,7 @@ ruleset i : NODE do
   end
 end;
 
---------------------------------------------
+--------------------------------------------------------------------------------
 ruleset i : NODE do
   rule "SendGntS"
     CurCmd = ReqS &
@@ -174,7 +179,7 @@ ruleset i : NODE do
   end
 end;
 
-----------------------
+--------------------------------------------------------------------------------
 ruleset i : NODE do
   rule "SendGntE"
     CurCmd = ReqE &
@@ -192,7 +197,7 @@ ruleset i : NODE do
   end
 end;
 
-----------------------
+--------------------------------------------------------------------------------
 ruleset i : NODE do
   rule "RecvGntS"
     Chan2[i].Cmd = GntS
@@ -204,7 +209,7 @@ ruleset i : NODE do
   end
 end;
 
-----------------------
+--------------------------------------------------------------------------------
 ruleset i : NODE do
   rule "RecvGntE"
     Chan2[i].Cmd = GntE
@@ -216,7 +221,7 @@ ruleset i : NODE do
   end
 end;
 
-----------------------
+--------------------------------------------------------------------------------
 ruleset i : NODE;         -- for every node i
         d : DATA          -- for every data d
   do
@@ -228,7 +233,7 @@ ruleset i : NODE;         -- for every node i
     end                   -- The node in E can get any "D" value
 end;
 
---------------------------------------------
+--------------------------------------------------------------------------------
 
 ---- Invariant properties ----
 
@@ -249,6 +254,6 @@ invariant "DataProp"
     Cache[i].Data = AuxData
  end;
 
---------------------------------------------
+--------------------------------------------------------------------------------
 
 

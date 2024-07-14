@@ -1,4 +1,4 @@
---------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 -- Copyright (C) 1992, 1993 by the Board of Trustees of
 -- Leland Stanford Junior University.
 --
@@ -18,9 +18,9 @@
 --
 -- Nobody vouches for the accuracy or usefulness of this description
 -- for any purpose.
---------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
---------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 -- Author:    C. Norris Ip
 --
 -- File:        adash.m
@@ -68,7 +68,11 @@
 --
 -- Last Modified:        17 Feb 93
 --
---------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- RUN: romp %s -o /dev/stdout | c++ - -o /dev/null
+--------------------------------------------------------------------------------
 
 /*
 Declarations
@@ -89,9 +93,9 @@ max possible number of message in network.
 All the addresses are in the cacheable address space.
 */
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Constant Declarations
---------------------------------------------------
+--------------------------------------------------------------------------------
 Const
   HomeCount:    1;              -- number of homes.
   RemoteCount:  2;              -- number of remote nodes.
@@ -110,9 +114,9 @@ Const
   nohome:       true;           -- options to switch off processors at Home.
                                 -- to simplify the protocol.
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Type Declarations
---------------------------------------------------
+--------------------------------------------------------------------------------
 Type
   --  The scalarset is used for symmetry, which is implemented in Murphi 1.5
   --  and not upgraded to Murphi 2.0 yet
@@ -250,14 +254,14 @@ Type
                End;
     End;
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Variable Declarations
 --
 -- Clusters 0..HomeCount-1 :  Clusters with distributed memory
 -- Clusters HomeCount..ProcCount-1 : Simplified Clusters without memory.
 -- ReqNet : Virtual network with cluster-to-cluster channels
 -- ReplyNet : Virtual network with cluster-to-cluster channels
---------------------------------------------------
+--------------------------------------------------------------------------------
 Var
   ReqNet:   Array[Proc] of Array[Proc] of
               Record
@@ -286,11 +290,11 @@ Procedures
 -- Sending DMA Request
 -- Sending DMA Reply
 */
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Directory handling functions
 -- a) set first entry in directory and clear all other
 -- b) add node to directory if it does not already exist
---------------------------------------------------
+--------------------------------------------------------------------------------
 Procedure Set_Dir_1st_Entry( h : Home;
                              a : Address;
                              n : Proc);
@@ -319,13 +323,13 @@ Begin
 End;
 
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Request Network handling functions
 -- a) A request is put into the end of a specific channel connecting
 --    the source Src and the destination Dst.
 -- b) Request is only consumed at the head of the queue, forming
 --    a FIFO ordered network channel.
---------------------------------------------------
+--------------------------------------------------------------------------------
 Procedure Send_Req( t : RequestType;
                     Dst, Src, Aux : Proc;
                     Addr : Address;
@@ -356,13 +360,13 @@ Begin
   End;
 End;
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Reply Network handling functions
 -- a) A Reply is put into the end of a specific channel connecting
 --    the source Src and the destination Dst.
 -- b) Reply is only consumed at the head of the queue, forming
 --    a FIFO ordered network channel.
---------------------------------------------------
+--------------------------------------------------------------------------------
 Procedure Send_Reply( t : ReplyType;
                       Dst, Src, Aux : Proc;
                       Addr : Address;
@@ -395,9 +399,9 @@ Begin
   End;
 End;
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Sending request
---------------------------------------------------
+--------------------------------------------------------------------------------
 
 -- send read request to home cluster
 Procedure Send_R_Req_H( Dst, Src : Proc;
@@ -548,9 +552,9 @@ Begin
   --  Send_Req(WB, Dst, Src, Don'tCare, Addr, Val);
 End;
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Sending Reply
---------------------------------------------------
+--------------------------------------------------------------------------------
 
 -- send read reply
 --      Aux = home cluster
@@ -664,9 +668,9 @@ Begin
   --  Send_Reply(SACK, Dst, Src, Src, Addr, Don'tCare, 0);
 End;
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Sending DMA Request
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- DMA Read request to home
 Procedure Send_DMA_R_Req_H( Dst, Src : Proc;
                             Addr : Address);
@@ -781,9 +785,9 @@ Begin
   --  Send_Req(DWR_RAC, Dst, Src, Aux, Addr, Val);
 End;
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Sending DMA Reply
---------------------------------------------------
+--------------------------------------------------------------------------------
 
 -- DMA read reply
 Procedure Send_DMA_R_Reply( Dst, Src, Aux : Proc;

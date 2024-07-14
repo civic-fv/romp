@@ -35,6 +35,11 @@
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+
+--------------------------------------------------------------------------------
+-- RUN: romp %s -o /dev/stdout | c++ - -o /dev/null
+--------------------------------------------------------------------------------
+
 --Backend/Murphi/MurphiModular/Constants/GenConst
   ---- System access constants
   const

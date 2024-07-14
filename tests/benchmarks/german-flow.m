@@ -3,6 +3,10 @@
  * Credit: http://www.cs.cmu.edu/~tmurali/flow_examples/
  */
 
+--------------------------------------------------------------------------------
+-- RUN: romp %s -o /dev/stdout | c++ - -o /dev/null
+--------------------------------------------------------------------------------
+
 --| Variable declarations
 const
   AGT_NUM : 3;

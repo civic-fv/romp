@@ -1,4 +1,4 @@
---------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 -- Copyright (C) 1992, 1993 by the Board of Trustees of
 -- Leland Stanford Junior University.
 --
@@ -18,9 +18,9 @@
 --
 -- Nobody vouches for the accuracy or usefulness of this description
 -- for any purpose.
---------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
---------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 --
 --
 -- File:        ldash.m
@@ -63,7 +63,11 @@
 --
 -- Last Modified:        20 April 94
 --
---------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- RUN: romp %s -o /dev/stdout | c++ - -o /dev/null
+--------------------------------------------------------------------------------
 
 /*
 Declarations
@@ -91,9 +95,9 @@ and separate RAC entries are used as in ULRAC.
 only lock address space and IODir address space are used.
 */
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Constant Declarations
---------------------------------------------------
+--------------------------------------------------------------------------------
 Const
   HomeCount:        1;         	 -- number of homes.
   RemoteCount:      4;		 -- number of remote nodes.
@@ -109,9 +113,9 @@ Const
   nohome:       true;           -- options to switch off processors at Home.
                                 -- to simplify the protocol.
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Type Declarations
---------------------------------------------------
+--------------------------------------------------------------------------------
 Type
   Home   : Scalarset (HomeCount);
   Remote : Scalarset (ProcCount-HomeCount);
@@ -219,14 +223,14 @@ Type
                 End;
     End;
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Variable Declarations
 --
 -- Clusters 0..HomeCount-1 :  Clusters with distributed memory (Procs and Homes)
 -- Clusters HomeCount..ProcCount-1 : Simplified Clusters w/o memory. (Procs only)
 -- ReqNet : Virtual network with cluster-to-cluster channels
 -- ReplyNet : Virtual network with cluster-to-cluster channels
---------------------------------------------------
+--------------------------------------------------------------------------------
 Var
   ReqNet:    Array[Proc] of Array[Proc] of
                Record
@@ -255,11 +259,11 @@ Procedures
 -- Sending Lock messages
 */
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Lock Directory handling functions
 -- a) remove a queued cluster from the lock queue
 -- b) add a queued cluster to the lock queue
---------------------------------------------------
+--------------------------------------------------------------------------------
 Procedure Remove_from_Queue( h : Proc;
 		             l : LAddress;
 			     Entry : Dir_Index);
@@ -305,13 +309,13 @@ Begin
   Endalias;
 Endprocedure;
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Request Network handling functions
 -- a) A request is put into the end of a specific channel connecting
 --    the source Src and the destination Dst.
 -- b) Request is only consumed at the head of the queue, forming
 --    a FIFO ordered network channel.
---------------------------------------------------
+--------------------------------------------------------------------------------
 Procedure Send_Req( t : Request_Type;
                     Dst, Src, Aux : Proc;
                     LAddr : LAddress );
@@ -348,13 +352,13 @@ Begin
   Endalias;
 Endprocedure;
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Reply Network handling functions
 -- a) A Reply is put into the end of a specific channel connecting
 --    the source Src and the destination Dst.
 -- b) Reply is only consumed at the head of the queue, forming
 --    a FIFO ordered network channel.
---------------------------------------------------
+--------------------------------------------------------------------------------
 Procedure Send_Reply( t : Reply_Type;
 		      Dst, Src, Aux : Proc;
                       LAddr : LAddress );
@@ -391,20 +395,20 @@ Begin
   Endalias;
 Endprocedure;
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Procedure Checking mutual exclusion
 -- rules should call this function whenever it wants to
 -- enter Critical section.
---------------------------------------------------
+--------------------------------------------------------------------------------
 Procedure Check_Mutual_Exclusion( h : Home;
 				  l : LAddress);
 Begin
   Assert ( LockOwner[h][l].State != Valid) "Mutual exclusion violated";
 Endprocedure;
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Sending Lock messages
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Granting acknowledge
 Procedure Send_ACK_L( Dst, Src, Aux : Proc;
 		      l : LAddress);

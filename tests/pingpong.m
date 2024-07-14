@@ -1,4 +1,4 @@
--------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 -- Copyright (C) 1992, 1993 by the Board of Trustees of
 -- Leland Stanford Junior University.
 --
@@ -19,13 +19,17 @@
 --
 -- Nobody vouches for the accuracy or usefulness of this description
 -- for any purpose.
---------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 /* pingpong.m
  * Ralph Melton, 8/30/92.
  * Done to test Murphi and
  * because it's an important toy problem that we don't already have.
  */
+
+--------------------------------------------------------------------------------
+-- RUN: romp %s -o /dev/stdout | c++ - -o /dev/null
+--------------------------------------------------------------------------------
 
 Type player_t : 0..1;
 Var Players : Array[ player_t ] of Record

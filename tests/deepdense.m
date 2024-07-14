@@ -1,5 +1,9 @@
 -- Credit: http://formalverification.cs.utah.edu/pdmc03.html
 
+--------------------------------------------------------------------------------
+-- RUN: romp %s -o /dev/stdout | c++ - -o /dev/null
+--------------------------------------------------------------------------------
+
 -- With H = 4, has 9621 errors, at level 161
 Const
         INITIAL_VAL: 50;  -- where to start the count.

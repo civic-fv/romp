@@ -104,6 +104,11 @@ tests/**/*.out
 # vscode excludes
 .vscode/*.log
 
+
+# Lit test times
+.lit_test_times.*
+
+
 # CMake ignores
 CMakeLists.txt.user
 CMakeCache.txt

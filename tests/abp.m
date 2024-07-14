@@ -1,4 +1,4 @@
--------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 -- Copyright (C) 1992, 1993 by the Board of Trustees of
 -- Leland Stanford Junior University.
 --
@@ -18,14 +18,19 @@
 -- Nobody vouches for the accuracy or usefulness of this description
 -- for any purpose.
 
-----------------------------------------------------------------------
+--------------------------------------------------------------------------------
 -- Filename: 	abp.m
 -- Content:	Simplex communication over a lossy channel
 -- 		using a 1 bit sequence number
 -- Version:	Murphi 2.3
 -- Engineer:	Originally by C. Han Yang, 1991
 --		Update to Murphi 2.3 by Ralph Melton, 1993.
-----------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- RUN: romp %s -o /dev/stdout | c++ - -o /dev/null
+--------------------------------------------------------------------------------
+
 /*
 Simplex communication over a lossy media using a 1 bit sequence number
 */
