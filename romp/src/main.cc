@@ -30,7 +30,6 @@ using dup_t =
 
 static std::string in_filename = "<stdin>";
 static dup_t in;
-static std::shared_ptr<std::ofstream> out;
 
 // output C source? (as opposed to C header)
 // static bool source = true;
@@ -86,13 +85,12 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
       exit(EXIT_SUCCESS);
 
     case 'o': { // --output
-      auto o = std::make_shared<std::ofstream>(optarg,std::ios::out);
+      auto o = std::make_unique<std::ofstream>(optarg, std::ios::out | std::ios::trunc);
       if (!o->is_open()) {
         std::cerr << "failed to open " << optarg << "\n";
         exit(EXIT_FAILURE);
       }
-      gen.set_out(o);
-      // out = o;
+      gen.set_out(move(o));
       gen.output_file_path = make_path(optarg);
       out_file_provided = true;
       break;
@@ -234,13 +232,12 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
   if (not out_file_provided) {
     gen.output_file_path = gen.input_file_path;
     gen.output_file_path.replace_extension(".romp.cpp");
-    auto o = std::make_shared<std::ofstream>(gen.output_file_path);
+    auto o = std::make_unique<std::ofstream>(gen.output_file_path, std::ios::out | std::ios::trunc);
     if (!o->is_open()) {
       std::cerr << "failed to open \"" << gen.output_file_path << "\"\n"  << std::flush;
       exit(EXIT_FAILURE);
     }
-    out = o;
-    gen.set_out(o);
+    gen.set_out(move(o));
   }
   // gen.enable_preprocessor_option(
   //     ROMP_HISTORY_SIZE_PREPROCESSOR_VAR " (" + std::to_string(gen.hist_len) + "ul)"

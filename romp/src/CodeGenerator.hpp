@@ -34,12 +34,12 @@ namespace romp {
   // some common supporting code used by code generation functions
   class CodeGenerator {
   protected:
-    std::shared_ptr<std::ofstream> out = nullptr;
+    std::unique_ptr<std::ostream> out = nullptr;
 
   public:
     CodeGenerator() = default;
     ~CodeGenerator() = default;
-    void set_out(std::shared_ptr<std::ofstream>& out_);
+    void set_out(std::unique_ptr<std::ofstream> out_);
 
 
     // the backend type for ranges
