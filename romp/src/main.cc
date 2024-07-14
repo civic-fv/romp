@@ -16,6 +16,7 @@
 #include <murphi/murphi.h>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <utility>
@@ -85,7 +86,7 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
       exit(EXIT_SUCCESS);
 
     case 'o': { // --output
-      auto o = std::make_unique<std::ofstream>(optarg, std::ios::out | std::ios::trunc);
+      auto o = std::make_unique<std::ofstream>(std::string_view(optarg) == "-" ? "/dev/stdout" : optarg, std::ios::out | std::ios::trunc);
       if (!o->is_open()) {
         std::cerr << "failed to open " << optarg << "\n";
         exit(EXIT_FAILURE);
