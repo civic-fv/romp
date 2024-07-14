@@ -21,6 +21,16 @@ using namespace murphi;
 
 // << ------------------------------------------------------------------------------------------ >> 
 
+void ModelGenerator::set_params(const std::unordered_map<std::string,size_t> &enum_ids_,
+                                const std::vector<murphi::Comment> &comments_)
+{
+  enum_ids = enum_ids_;
+  comments = comments_;
+  emitted.resize(comments_.size(), false);
+}
+
+// << ------------------------------------------------------------------------------------------ >> 
+
 void ModelGenerator::visit_add(const Add &n) {
   *this << "(" << *n.lhs << " + " << *n.rhs << ")";
 # ifdef DEBUG
@@ -1598,16 +1608,7 @@ size_t ModelGenerator::emit_trailing_comments(const Node &n) {
 // }
 
 
-template<typename T>
-/* inline  */typename std::enable_if<!std::is_base_of<Node,T>::value,ModelGenerator&>::type ModelGenerator::operator << (const T& val) {
-  *((CodeGenerator*)this) << val;
-  return *this;
-}
-template<typename T>
-/* inline  */typename std::enable_if<std::is_base_of<Node,T>::value,ModelGenerator&>::type ModelGenerator::operator << (const T& val) {
-  dispatch(val);
-  return *this;
-}
+
 // template<typename T>
 // inline ModelGenerator& ModelGenerator::operator << (const T& val) {
 //   *((CodeGenerator*)this) << val;

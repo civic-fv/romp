@@ -2,7 +2,7 @@
 #include "generate.hpp"
 #include "check.h"
 #include "NestedError.hpp"
-#include "CodeGenerator.hpp"
+#include "ModelGenerator.hpp"
 // #include "generate_h.h"
 // #include "options.h"
 #include "resources.h"
@@ -289,7 +289,7 @@ std::string _to_lower(const std::string& data) {
 
 int main(int argc, char **argv) {
 
-  romp::CodeGenerator gen;
+  romp::ModelGenerator gen;
   // parse command line options
   parse_args(gen, argc, argv);
 

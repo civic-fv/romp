@@ -72,11 +72,10 @@ public:
   std::vector<id_t> cover_id_map;
 
 public:
-  ModelGenerator(const romp::CodeGenerator& gen_,
-                 const std::unordered_map<std::string,size_t>& enum_ids_,
-                 const std::vector<murphi::Comment> &comments_)
-      : romp::CodeGenerator(gen_), enum_ids(enum_ids_),
-        comments(comments_), emitted(comments_.size(), false) {}
+  ModelGenerator() = default;
+
+  void set_params(const std::unordered_map<std::string,size_t> &enum_ids_,
+                 const std::vector<murphi::Comment> &comments_);
 
   void visit_add(const murphi::Add &n) final;
   void visit_aliasdecl(const murphi::AliasDecl &n) final;
@@ -155,25 +154,19 @@ public:
   void visit_while(const murphi::While &n) final;
   void visit_xor(const murphi::Xor &n) final;
 
-  // helpers to make output more natural
-  // ModelGenerator &operator<<(const murphi::Node& n);
-  // template<>
-  // inline ModelGenerator& operator << <murphi::Node>(const murphi::Node &n);
-  // template<typename T>
-  // friend inline ModelGenerator& operator << (ModelGenerator& gen, const T& val);
-  // template<typename T>
-  // friend inline typename std::enable_if<std::is_base_of<murphi::Node,T>::value,ModelGenerator&>::type operator << (ModelGenerator& gen, const T& n);
-  // template<typename T>
-  // friend inline typename std::enable_if<!std::is_base_of<murphi::Node,T>::value,ModelGenerator&>::type operator << (ModelGenerator& gen, const T& val);
-  // template<typename T>
-  // inline ModelGenerator& operator << (const T& val);
-  // template<>
-  // inline ModelGenerator& operator << <murphi::Node>(const murphi::Node& val);
   template<typename T>
-  /* inline  */typename std::enable_if<std::is_base_of<murphi::Node,T>::value,ModelGenerator&>::type operator << (const T& n);
+  typename std::enable_if<!std::is_base_of<murphi::Node, T>::value, ModelGenerator&>::type
+  operator << (const T& val) {
+    *(static_cast<CodeGenerator*>(this)) << val;
+    return *this;
+  }
+
   template<typename T>
-  /* inline  */typename std::enable_if<!std::is_base_of<murphi::Node,T>::value,ModelGenerator&>::type operator << (const T& val);
-  
+  typename std::enable_if<std::is_base_of<murphi::Node, T>::value, ModelGenerator&>::type
+  operator << (const T& val) {
+    dispatch(val);
+    return *this;
+  }
 
   ~ModelGenerator() = default;
 

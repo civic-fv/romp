@@ -52,7 +52,7 @@ namespace  {
 
 
 void generate(const Model &m, const std::vector<Comment> &comments,
-                romp::CodeGenerator &gen, const std::string& build_cmds) {
+                romp::ModelGenerator &gen, const std::string& build_cmds) {
   
   gen << ROMP_GENERATED_FILE_PREFACE("\tGenerated code for a romp \"parallel random walker\" verification tool based off of the Murphi Model described in:\n"
                                      "\t\tOriginal Murphi Model: " + gen.input_file_path.filename().string() + "\n"
@@ -145,8 +145,8 @@ void generate(const Model &m, const std::vector<Comment> &comments,
 
   gen << "\n\n#pragma region model__generated_code\n\n"
       << gen.indentation() << "namespace " ROMP_MODEL_NAMESPACE_NAME " {\n";
-  romp::ModelGenerator m_gen(gen, se_gen.enum_ids, comments);
-  m_gen.dispatch(m);
+  gen.set_params(se_gen.enum_ids, comments);
+  gen.dispatch(m);
   gen << "\n" << gen.indentation() << "} // namespace " ROMP_MODEL_NAMESPACE_NAME "\n"
       << "\n\n#pragma endregion model__generated_code\n\n" << /*std::*/gen.flush();
 
@@ -173,14 +173,14 @@ void generate(const Model &m, const std::vector<Comment> &comments,
       << "#define " ROMP_LIVENESS_PROP_COUNT " (" << prop_ids.second <<  "ul)\n\n"
       << gen.indentation() << "const " ROMP_INFO_PROPERTY_TYPE "* LIVENESS_INFOS[" ROMP_LIVENESS_PROP_COUNT "] = {";
   std::string sep = "";
-  for (auto i : m_gen.liveness_id_map) {
+  for (auto i : gen.liveness_id_map) {
     gen << sep << "&" ROMP_INFO_PROPERTIES_VAR "[" << i << ']';
     sep = ",";
   }
   gen << "};\n"
       << gen.indentation() << "const " ROMP_INFO_PROPERTY_TYPE "* COVER_INFOS[" ROMP_COVER_PROP_COUNT "] = {";
   sep = "";
-  for (auto i : m_gen.cover_id_map) {
+  for (auto i : gen.cover_id_map) {
     gen << sep << "&" ROMP_INFO_PROPERTIES_VAR "[" << i << ']';
     sep = ",";
   }
