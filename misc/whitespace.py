@@ -19,7 +19,7 @@ def main(argv: list[str]) -> int:
         with open(filename, 'r') as f:
             text = f.read()
 
-        text = '\n'.join(map(str.rstrip, text.splitlines()))
+        text = "\n".join(map(str.rstrip, text.splitlines())) + "\n"
 
         with open(filename, 'w') as f:
             f.write(text)
