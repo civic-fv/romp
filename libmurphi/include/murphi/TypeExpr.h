@@ -79,7 +79,7 @@ protected:
   // friend TypeDecl;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 struct MURPHI_API_WITH_RTTI Range : public TypeExpr {
 
@@ -103,7 +103,7 @@ struct MURPHI_API_WITH_RTTI Range : public TypeExpr {
   bool constant() const final;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 struct MURPHI_API_WITH_RTTI Scalarset : public TypeExpr {
 
@@ -129,7 +129,7 @@ struct MURPHI_API_WITH_RTTI Scalarset : public TypeExpr {
   bool is_useful() const final;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 struct MURPHI_API_WITH_RTTI Enum : public TypeExpr {
 
@@ -159,7 +159,7 @@ struct MURPHI_API_WITH_RTTI Enum : public TypeExpr {
   bool is_boolean() const final;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 struct MURPHI_API_WITH_RTTI Record : public TypeExpr {
 
@@ -179,7 +179,7 @@ struct MURPHI_API_WITH_RTTI Record : public TypeExpr {
   std::string to_string() const final;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 struct MURPHI_API_WITH_RTTI Array : public TypeExpr {
 
@@ -201,7 +201,7 @@ struct MURPHI_API_WITH_RTTI Array : public TypeExpr {
   bool is_useful() const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 struct MURPHI_API_WITH_RTTI TypeExprID : public TypeExpr {
 
@@ -232,9 +232,9 @@ struct MURPHI_API_WITH_RTTI TypeExprID : public TypeExpr {
 };
 
 
-// << ------------------------------------------------------------------------------------------ >> 
-// everything below here is implemented in src/ext_TypeExpr.h 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
+// everything below here is implemented in src/ext_TypeExpr.h
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI ScalarsetUnion : public TypeExpr {
@@ -244,7 +244,7 @@ struct MURPHI_API_WITH_RTTI ScalarsetUnion : public TypeExpr {
   std::string name; // added durring update of type decl, if ""/empty it is unnamed/un-declared
 
   ScalarsetUnion(const std::vector<Ptr<TypeExpr>>& members_, const location& loc_);
-  ScalarsetUnion(const std::vector<Ptr<TypeExpr>>& members_, 
+  ScalarsetUnion(const std::vector<Ptr<TypeExpr>>& members_,
                  const std::string& name_, const location& loc_);
   ScalarsetUnion *clone() const;
   virtual ~ScalarsetUnion() = default;
@@ -267,7 +267,7 @@ struct MURPHI_API_WITH_RTTI ScalarsetUnion : public TypeExpr {
   bool contains(const TypeExpr &other) const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 struct MURPHI_API_WITH_RTTI Multiset : public TypeExpr {
 

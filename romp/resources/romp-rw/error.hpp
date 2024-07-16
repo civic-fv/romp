@@ -7,28 +7,28 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file error.hpp
- * 
- * @brief The definitions for the Error handling system used to interact with 
+ *
+ * @brief The definitions for the Error handling system used to interact with
  *        the generated model.
- * 
+ *
  * @date 2022/10/05
- * @version 0.2
+ * @version 0.3
  */
 
 #ifndef __romp__GENERATED_CODE
 #pragma once
 #include "pregen-fix.hpp"  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
-#include "include.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-#include "decl.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-#include "writers.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
+#include "include.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+#include "decl.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+#include "writers.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
 #endif
 
 namespace romp {
 
 
-// << ========================================================================================== >> 
-// <<                                ABSTRACT ERROR PARENT DECL                                  >> 
-// << ========================================================================================== >> 
+// << ========================================================================================== >>
+// <<                                ABSTRACT ERROR PARENT DECL                                  >>
+// << ========================================================================================== >>
 
 const std::exception_ptr __get_root_except(const std::exception_ptr& ex) {
   try { std::rethrow_if_nested(ex);
@@ -43,7 +43,7 @@ const std::exception_ptr __get_root_except(const std::exception_ptr& ex) {
 }
 
 struct IModelError : public std::nested_exception {
-  IModelError() 
+  IModelError()
     : std::nested_exception() {}
   virtual ~IModelError() = default;
   const char* what() const noexcept {
@@ -60,33 +60,33 @@ struct IModelError : public std::nested_exception {
   virtual bool is_generic() const noexcept = 0;
   virtual std::string get_type() const noexcept = 0;
   bool is_flat() const { return (quants() == ""); }
-  const std::exception_ptr get_root_except() const { 
-    if (this->nested_ptr() == nullptr) 
+  const std::exception_ptr get_root_except() const {
+    if (this->nested_ptr() == nullptr)
       try { throw this;
       } catch (...) { return std::current_exception(); }
-    return __get_root_except(this->nested_ptr()); 
+    return __get_root_except(this->nested_ptr());
   }
-  void write_root_excpt_what(std::ostream& out) const { 
+  void write_root_excpt_what(std::ostream& out) const {
     try { throw this->get_root_except();
-    } catch (const std::exception& ex) { out << ex.what(); } 
+    } catch (const std::exception& ex) { out << ex.what(); }
   }
   friend bool operator == (const IModelError& l, const IModelError& r) { return (l.hash() == r.hash()); }
 };
 
 template<class O>
-ojstream<O>& ojstream<O>::operator << (const IModelError& me) noexcept { 
+ojstream<O>& ojstream<O>::operator << (const IModelError& me) noexcept {
   me.to_json(*this);
   if (me.nested_ptr() != nullptr)
     __jprint_exception(*this,me);
-  return *this; 
+  return *this;
 }
 
-// << ========================================================================================== >> 
-// <<                              DERIVED MODEL ERROR CLASS DECLS                               >> 
-// << ========================================================================================== >> 
+// << ========================================================================================== >>
+// <<                              DERIVED MODEL ERROR CLASS DECLS                               >>
+// << ========================================================================================== >>
 
 
-// << ================================= Model Property Error =================================== >> 
+// << ================================= Model Property Error =================================== >>
 
 struct ModelPropertyError : public IModelError {
     ModelPropertyError(const Property& prop_) : isProp(true) { data.prop = &prop_; }
@@ -101,7 +101,7 @@ struct ModelPropertyError : public IModelError {
     union {const Property* prop; const PropertyInfo* info;} data;
     const bool isProp;
     template<class O>
-    void _to_json(ojstream<O>& json) const noexcept { 
+    void _to_json(ojstream<O>& json) const noexcept {
       json << "{\"$type\":\"model-error\","
                "\"type\":\"property\","
               //  "\"what\":\""<< escape_str(what()) << "\","
@@ -114,7 +114,7 @@ struct ModelPropertyError : public IModelError {
     const std::string& label() const noexcept { return ((isProp) ? data.prop->info.label : data.info->label); }
     const std::string& quants() const noexcept { return ((isProp) ? data.prop->quant_str : EMPTY_STR); }
     bool is_generic() const noexcept { return not isProp; }
-    std::string get_type() const noexcept { 
+    std::string get_type() const noexcept {
       std::stringstream tmp;
       tmp << info().type;
       return tmp.str();
@@ -125,8 +125,8 @@ struct ModelPropertyError : public IModelError {
   IModelError* Property::make_error() const { return new ModelPropertyError(*this); }
 
 
-  // << ================================== Model Rule Error(s) =================================== >> 
-  
+  // << ================================== Model Rule Error(s) =================================== >>
+
   struct ModelRuleError : public IModelError {
     enum Where {UNKNOWN,GUARD,ACTION};
     ModelRuleError(const Rule& rule_) : isRule(true), where(UNKNOWN) { data.rule = &rule_; }
@@ -144,13 +144,13 @@ struct ModelPropertyError : public IModelError {
     const bool isRule;
     const Where where;
     template<class O>
-    void _to_json(ojstream<O>& json) const noexcept { 
+    void _to_json(ojstream<O>& json) const noexcept {
       json << "{\"$type\":\"model-error\","
                "\"type\":\"rule" << ((where==UNKNOWN) ? "" : ((where==GUARD) ? "-guard" : "-action")) << "\","
               //  "\"what\":\""<< escape_str(what()) << "\","
                "\"inside\":";
       if (isRule) json << *data.rule; else json << *data.info;
-      json << '}'; 
+      json << '}';
     }
   public:
     size_t hash() const noexcept { return reinterpret_cast<size_t>(&(info())); }
@@ -166,7 +166,7 @@ struct ModelPropertyError : public IModelError {
 
 
 
-  // << =============================== Model StartState Error(s) ================================ >> 
+  // << =============================== Model StartState Error(s) ================================ >>
 
   struct ModelStartStateError : public IModelError {
     ModelStartStateError(const StartState& rule_) : isStartState(true) { data.rule = &rule_; }
@@ -181,13 +181,13 @@ struct ModelPropertyError : public IModelError {
     union {const StartState* rule; const StartStateInfo* info;} data;
     const bool isStartState;
     template<class O>
-    void _to_json(ojstream<O>& json) const noexcept { 
+    void _to_json(ojstream<O>& json) const noexcept {
       json << "{\"$type\":\"model-error\","
                "\"type\":\"startstate\","
               //  "\"what\":\""<< escape_str(what()) << "\","
                "\"inside\":";
       if (isStartState) json << *data.rule; else json << *data.info;
-      json << '}'; 
+      json << '}';
     }
   public:
     size_t hash() const noexcept { return reinterpret_cast<size_t>((isStartState) ? &(data.rule->info) : data.info); }
@@ -201,7 +201,7 @@ struct ModelPropertyError : public IModelError {
   IModelError* StartState::make_error() const { return new ModelStartStateError(*this); }
 
 
-  // << ================================= Model Error Error(s) =================================== >> 
+  // << ================================= Model Error Error(s) =================================== >>
 
   struct ModelMErrorError : public IModelError {
     ModelMErrorError(const MErrorInfo& info_) : _info(info_) {}
@@ -214,11 +214,11 @@ struct ModelPropertyError : public IModelError {
   private:
     const MErrorInfo& _info;
     template<class O>
-    void _to_json(ojstream<O>& json) const noexcept { 
+    void _to_json(ojstream<O>& json) const noexcept {
       json << "{\"$type\":\"model-error\","
                "\"type\":\"error-statement\","
               //  "\"what\":\"" << escape_str(what()) << "\","
-               "\"inside\":" << _info << '}'; 
+               "\"inside\":" << _info << '}';
     }
   public:
     size_t hash() const noexcept { return reinterpret_cast<size_t>(&_info); }
@@ -229,7 +229,7 @@ struct ModelPropertyError : public IModelError {
   };
 
 
-  // << ================================ Model Function Error(s) ================================= >> 
+  // << ================================ Model Function Error(s) ================================= >>
 
   struct ModelFunctError : public IModelError {
     ModelFunctError(const FunctInfo& info_) : _info(info_) {}
@@ -242,7 +242,7 @@ struct ModelPropertyError : public IModelError {
   private:
     const FunctInfo& _info;
     template<class O>
-    void _to_json(ojstream<O>& json) const noexcept { 
+    void _to_json(ojstream<O>& json) const noexcept {
       json << "{\"$type\":\"model-error\","
                "\"type\":\"function\","
               //  "\"what\":\"" << escape_str(what()) << "\","
@@ -257,14 +257,14 @@ struct ModelPropertyError : public IModelError {
   };
 
 
-  // << =================================== Model Type Errors ==================================== >> 
+  // << =================================== Model Type Errors ==================================== >>
 
   struct ModelTypeError : public IModelError {
-    std::string msg; 
+    std::string msg;
     location loc;
     ModelTypeError(const std::string& msg_, const location& loc_) : msg(msg_), loc(loc_) {}
     ~ModelTypeError() = default;
-    void what(std::ostream& out) const noexcept { 
+    void what(std::ostream& out) const noexcept {
       out << loc << " :: " << msg;
     }
     void to_json(json_file_t& json) const noexcept { _to_json(json); }
@@ -276,7 +276,7 @@ struct ModelPropertyError : public IModelError {
     virtual std::string get_type() const noexcept { return "type"; }
   private:
     template<class O>
-    void _to_json(ojstream<O>& json) const noexcept { 
+    void _to_json(ojstream<O>& json) const noexcept {
       json << "{\"$type\":\"model-type-error\","
                "\"location\":" << loc << ","
                "\"what\":\"" << escape_str(msg) << "\"}";
@@ -284,11 +284,11 @@ struct ModelPropertyError : public IModelError {
   };
 
 
-// << ========================================================================================== >> 
-// <<                              NESTED EXCEPTION/ERROR WRITERS                                >> 
-// << ========================================================================================== >> 
+// << ========================================================================================== >>
+// <<                              NESTED EXCEPTION/ERROR WRITERS                                >>
+// << ========================================================================================== >>
 
-  // << ========================== Json Nested Error/Exception Writers =========================== >> 
+  // << ========================== Json Nested Error/Exception Writers =========================== >>
 
   template<class O> void __jprint_exception(ojstream<O>& json, const std::exception& ex) noexcept {
     try {
@@ -316,7 +316,7 @@ struct ModelPropertyError : public IModelError {
   }
 
 
-  // << ====================== Pretty Print Nested Error/Exception Writers ======================= >> 
+  // << ====================== Pretty Print Nested Error/Exception Writers ======================= >>
 
   void __fprint_exception(ostream_p& out, const std::exception& ex) noexcept;
   void __fprint_exception(ostream_p& out, const IModelError& ex) noexcept;

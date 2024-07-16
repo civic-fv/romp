@@ -6,7 +6,7 @@
 #include<functional>
 #include<string>
 
-// << =============================== Preprocessor DEclarations ================================ >> 
+// << =============================== Preprocessor DEclarations ================================ >>
 
 #define STATE_HISTORY_SIZE;
 #ifndef RULES_SIZE
@@ -20,7 +20,7 @@
 namespace romp
 {
 
-  // << =================================== Type Declarations ==================================== >> 
+  // << =================================== Type Declarations ==================================== >>
 
   class ProtoState {
   public:
@@ -60,7 +60,7 @@ namespace romp
 
 
 
-  // << ================================ Extern Predeclarations ================================== >> 
+  // << ================================ Extern Predeclarations ================================== >>
   extern Rule RULES[];
   extern std::function<bool(ProtoState)> INVARIANTS[];
   extern std::function<bool(ProtoState)> ASSERTIONS[];
@@ -71,9 +71,9 @@ namespace romp
 
 
 
-  // << ========================================================================================== >> 
-  // <<                                         ROMP CODE                                          >> 
-  // << ========================================================================================== >> 
+  // << ========================================================================================== >>
+  // <<                                         ROMP CODE                                          >>
+  // << ========================================================================================== >>
 
     // template<class S, class R>
   void Sim1Step(State states[], Rule rule, size_t state_count)

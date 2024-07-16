@@ -501,7 +501,7 @@ public:
     ms_quantifiers.close_scope();
     symtab.close_scope();
   }
-  
+
   void visit_ismember(IsMember& n) final {
     dispatch(*n.designator);
     // wrap symbol resolution within the type in a dummy scope to suppress any
@@ -512,20 +512,20 @@ public:
     symtab.close_scope();
     disambiguate(n.designator);
   }
-  
+
   void visit_multiset(Multiset& n) final {
     dispatch(*n.size); // index_type should be nullptr
     dispatch(*n.element_type);
     disambiguate(n.size);
   }
-  
+
   void visit_multisetadd(MultisetAdd& n) final {
     dispatch(*n.value);
     dispatch(*n.multiset);
     disambiguate(n.value);
     disambiguate(n.multiset);
   }
-  
+
   void visit_multisetcount(MultisetCount& n) final {
     symtab.open_scope();
     ms_quantifiers.open_scope();
@@ -536,14 +536,14 @@ public:
     ms_quantifiers.close_scope();
     symtab.close_scope();
   }
-  
+
   void visit_multisetelement(MultisetElement& n) final {
     dispatch(*n.multiset);
     dispatch(*n.index);
     disambiguate(n.multiset);
     // disambiguate(n.index);
   }
-  
+
   void visit_multisetremove(MultisetRemove& n) final {
     dispatch(*n.index);
     dispatch(*n.multiset);
@@ -552,7 +552,7 @@ public:
     n.ms_quantifier = ms_quantifiers.lookup<MultisetQuantifier>(n.index->id, n.index->loc);
 
   }
-  
+
   void visit_multisetremovepred(MultisetRemovePred& n) final {
     symtab.open_scope();
     ms_quantifiers.open_scope();
@@ -563,14 +563,14 @@ public:
     ms_quantifiers.close_scope();
     symtab.close_scope();
   }
-  
+
   void visit_multisetquantifier(MultisetQuantifier& n) final {
     dispatch(*n.multiset);
     disambiguate(n.multiset);
     n.update();
     ms_quantifiers.declare(n.name, Ptr<MultisetQuantifier>::make(n));
-  } 
-  
+  }
+
   void visit_scalarsetunion(ScalarsetUnion& n) final {
     // wrap symbol resolution within the type in a dummy scope to suppress any
     // declarations (primarily enum members) as these will be duplicated in
@@ -581,7 +581,7 @@ public:
     symtab.close_scope();
     //bound is nullptr until update is called
   }
-  
+
   void visit_sucast(SUCast& n) final {
     dispatch(*n.target);
     dispatch(*n.rhs);

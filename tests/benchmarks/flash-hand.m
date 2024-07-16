@@ -1,6 +1,10 @@
 
 -- Credit: http://www.cs.cmu.edu/~tmurali/flow_examples/
 
+--------------------------------------------------------------------------------
+-- RUN: romp "%s" -o - | c++ - -o /dev/null
+--------------------------------------------------------------------------------
+
 const
 
   NODE_NUM : 2;
@@ -104,7 +108,7 @@ var
   Home : NODE;
   Sta : STATE;
 
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 ruleset h : NODE; d : DATA do
 startstate "Init"
@@ -137,7 +141,7 @@ startstate "Init"
 endstartstate;
 endruleset;
 
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 ruleset src : NODE; data : DATA do
 rule "Store"
@@ -868,7 +872,7 @@ ruleset src : NODE do
 rule "NI_InvAck"
   src != Home &
   Sta.InvMsg[src].Cmd = INV_InvAck &
-  Sta.Dir.Pending & Sta.Dir.InvSet[src]  
+  Sta.Dir.Pending & Sta.Dir.InvSet[src]
 ==>
 var NxtSta : STATE;
 begin
@@ -973,7 +977,7 @@ begin
 endrule;
 endruleset;
 
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 invariant "CacheStateProp"
   forall p : NODE do forall q : NODE do
@@ -993,7 +997,7 @@ invariant "CacheDataProp"
 invariant "MemDataProp"
   !Sta.Dir.Dirty -> Sta.MemData = Sta.CurrData;
 
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 --   /* refinement relations */
 
@@ -1099,4 +1103,3 @@ invariant "MemDataProp"
 --   min : NODE;
 --   mi : msg; /* the incoming message */
 --   mi := UniMsg[min];
-

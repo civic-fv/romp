@@ -7,12 +7,12 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file romp-rw/writers.hpp
- * 
- * @brief The definitions for the writer objects 
+ *
+ * @brief The definitions for the writer objects
  *        used for outputting to trace files and the console.
- * 
+ *
  * @date 2022/10/05
- * @version 0.2
+ * @version 0.3
  */
 
 #ifndef __romp__GENERATED_CODE
@@ -24,7 +24,7 @@
 
 namespace romp {
 
-  // << =========================== Helpful String Manipulation Utils ============================ >> 
+  // << =========================== Helpful String Manipulation Utils ============================ >>
 
   static std::string octal(char c) {
     char buffer[sizeof("\\000")];
@@ -50,15 +50,15 @@ namespace romp {
     return out;
   }
 
-// << ========================================================================================== >> 
-// <<                                    WRITER DECLARATIONS                                     >> 
-// << ========================================================================================== >> 
+// << ========================================================================================== >>
+// <<                                    WRITER DECLARATIONS                                     >>
+// << ========================================================================================== >>
 
  // useful pre-decls
   template<class O> void __jprint_exception(ojstream<O>& json, const std::exception& ex) noexcept;
   template<class O> void __jprint_exception(ojstream<O>& json, const IModelError& ex) noexcept;
 
-// << ====================================== Json Writer ======================================= >> 
+// << ====================================== Json Writer ======================================= >>
 
   template <class O>
   struct ojstream {
@@ -68,9 +68,9 @@ namespace romp {
     // int ex_level = 0;
   public:
     ~ojstream() { out << std::flush; out.close(); } // probs move this to random walker
-    template<typename... Args> ojstream(Args &&...args) 
+    template<typename... Args> ojstream(Args &&...args)
       : out(O(std::forward<Args>(args)...)) {}
-    // template<typename T> 
+    // template<typename T>
     // friend ojstream<O>& operator << (ojstream<O>& json, const T& val);
     template <typename T>
     ojstream<O>& operator << (const T* ptr) { if (ptr != nullptr) *this << *ptr; else out << "null"; return *this; }
@@ -90,16 +90,16 @@ namespace romp {
     ojstream<O>& operator << (const bool val) { out << ((val) ? "true" : "false"); return *this; }
     ojstream<O>& operator << (const stream_void& me) noexcept { return *this; };
     ojstream<O>& operator << (const IModelError& me) noexcept;
-    ojstream<O>& operator << (const std::exception& ex) noexcept { 
+    ojstream<O>& operator << (const std::exception& ex) noexcept {
       // if (ex_level++ == 0) out << "],\"error-trace\":["
       out << "{\"$type\":\"exception\","
               "\"what\":\"" << escape_str(ex.what()) << "\"}";
       __jprint_exception(*this,ex);
       // if (--ex_level == 0) out << "],";
-      return *this; 
+      return *this;
     }
-    std::string str() { 
-      if (std::is_base_of<std::stringstream, O>::value) return out.str(); 
+    std::string str() {
+      if (std::is_base_of<std::stringstream, O>::value) return out.str();
       else return "Not Allowed for non stringstream base (json_str_t) !!\t[dev-error]";
     }
   };
@@ -110,7 +110,7 @@ namespace romp {
   typedef ojstream<std::stringstream> json_str_t;
 
 
-// << ================================= Pretty Format Writer =================================== >> 
+// << ================================= Pretty Format Writer =================================== >>
 
   class ostream_p {
   public:
@@ -150,30 +150,30 @@ namespace romp {
     // ostream_p& operator << (const stream_void& me) noexcept { return *this; };
   };
   template <typename T>
-  ostream_p& operator << (ostream_p& out, const T& val) { out.out << val; return out; }  
+  ostream_p& operator << (ostream_p& out, const T& val) { out.out << val; return out; }
   // template <>
-  // inline ostream_p& operator << <std::_Setw>(ostream_p& out, const std::_Setw val) { _width = val._M_n; return *this; } 
+  // inline ostream_p& operator << <std::_Setw>(ostream_p& out, const std::_Setw val) { _width = val._M_n; return *this; }
   template <>
   ostream_p& operator << <stream_void>(ostream_p& out, const stream_void& val) { return out; }
   template <>
   ostream_p& operator << <bool>(ostream_p& out, const bool& val) { (out.out << ((val) ? "YES" : "NO")); return out; }
   // template <typename T>
-  // inline ostream_p& ostream_p::operator << (const T val) { out << val; return *this; }  
+  // inline ostream_p& ostream_p::operator << (const T val) { out << val; return *this; }
   // // template <>
-  // // inline ostream_p& ostream_p::operator << <std::_Setw>(const std::_Setw val) { out._width = val._M_n; return out; } 
+  // // inline ostream_p& ostream_p::operator << <std::_Setw>(const std::_Setw val) { out._width = val._M_n; return out; }
   // template <>
   // inline ostream_p& ostream_p::operator << <stream_void>(const stream_void val) { return *this; }
   // template <>
   // inline ostream_p& ostream_p::operator << <bool>(const bool val) { return (*this << ((val) ? "YES" : "NO")); }
-  
 
 
-// << ========================================================================================== >> 
-// <<                          WRITER STREAM OPERATOR IMPLEMENTATIONS                            >> 
-// << ========================================================================================== >> 
+
+// << ========================================================================================== >>
+// <<                          WRITER STREAM OPERATOR IMPLEMENTATIONS                            >>
+// << ========================================================================================== >>
 
 
-// << =================================== Fancy Time Writer ==================================== >> 
+// << =================================== Fancy Time Writer ==================================== >>
 
   template<typename ratio1, typename ratio2>
   struct CompareStdRatios {
@@ -182,7 +182,7 @@ namespace romp {
     static constexpr long double dif() { return (ratio1::num/ratio1::den) - (ratio2::num/ratio2::den); };
   };
 
-  template<typename T, class R> 
+  template<typename T, class R>
   const std::string _pre0(const std::chrono::duration<T,R> dur) { return ((dur.count()<10) ? "0" : ""); }
   template<typename T, class R>
   ostream_p& operator << (ostream_p& out, const std::chrono::duration<T,R> _dur) noexcept {
@@ -220,7 +220,7 @@ namespace romp {
       if (msu > _s || dur >= seconds(10)) {
         s = duration_cast<seconds>(dur);
         dur -= s; msu = ((msu > _s) ? msu : _s);
-      } 
+      }
       if (msu > _ms || dur >= microseconds(1)) {
         ms = duration_cast<milliseconds>(dur);
       } else msu = __ms;  // case: measured essentially 0 time ms
@@ -236,14 +236,14 @@ namespace romp {
           msu = _ns;
         } else                            // case: "smallest"/"too small to care about"/femto time "format"
           msu = _fs;
-      // } else                              // case: "not needed "   
+      // } else                              // case: "not needed "
       //   msu = __ms;
       }
     }
-    
+
     switch (msu) {
       case _d:
-        return (out << d.count() << "d " 
+        return (out << d.count() << "d "
                     << _pre0(h) << h.count() << ':'
                     << _pre0(m) << m.count() << ':'
                     << _pre0(s) << s.count() << '.'
@@ -285,11 +285,11 @@ namespace romp {
     return out;
   }
 
-// << =================================== Metadata Writers ===================================== >> 
+// << =================================== Metadata Writers ===================================== >>
 
-  // std::ostream& operator << (std::ostream& out, const TypeType& val) { 
-  //   switch (val) { 
-  //     case TypeType::BOOLEAN: return out << "Boolean"; 
+  // std::ostream& operator << (std::ostream& out, const TypeType& val) {
+  //   switch (val) {
+  //     case TypeType::BOOLEAN: return out << "Boolean";
   //     case TypeType::RANGE: return out << "Range";
   //     case TypeType::ENUM: return out << "Enum";
   //     case TypeType::SCALARSET: return out << "Scalarset";
@@ -303,23 +303,23 @@ namespace romp {
 
 
   template<class O>
-  ojstream<O>& operator << (ojstream<O>& json, const file_position& fp) { 
-    return (json << '[' << fp.row << ',' << fp.col << ']'); 
+  ojstream<O>& operator << (ojstream<O>& json, const file_position& fp) {
+    return (json << '[' << fp.row << ',' << fp.col << ']');
   }
-  std::ostream& operator << (std::ostream& out, const file_position& fp) { 
-    return (out << fp.row << ',' << fp.col); 
+  std::ostream& operator << (std::ostream& out, const file_position& fp) {
+    return (out << fp.row << ',' << fp.col);
   }
 
   template<class O>
-  ojstream<O>& operator << (ojstream<O>& json, const location& loc) { 
+  ojstream<O>& operator << (ojstream<O>& json, const location& loc) {
     return (json << "{\"$type\":\"location\","
             << "\"file\":\"" __model__filename "\","
             // << (loc.model_obj != "") ? "\"inside\":\""+loc.model_obj+"\"," : EMPTY_STR
-            << "start" << ':' << loc.start << ',' 
+            << "start" << ':' << loc.start << ','
             << "\"end\":" << loc.end
-            << '}'); 
+            << '}');
   }
-  std::ostream& operator << (std::ostream& out, const location& loc) { 
+  std::ostream& operator << (std::ostream& out, const location& loc) {
     out << ((__model__filename_contains_space) ? "\"" __model__filename "\":" : __model__filename ":");
     if (loc.start.row == loc.end.row) {
       out << loc.start.row << ',' << loc.start.col;
@@ -329,13 +329,13 @@ namespace romp {
       out << loc.start << '-' << loc.end;
     // if (loc.model_obj != "")
     //   out << " in ``" << loc.model_obj << "``";
-    return out; 
+    return out;
   }
 
 
-  std::ostream& operator << (std::ostream& out, const PropertyType& val) { 
-    switch (val) { 
-      case PropertyType::ASSERTION: return out << "assert"; 
+  std::ostream& operator << (std::ostream& out, const PropertyType& val) {
+    switch (val) {
+      case PropertyType::ASSERTION: return out << "assert";
       case PropertyType::ASSUMPTION: return out << "assume";
       case PropertyType::COVER: return out << "cover";
       case PropertyType::LIVENESS: return out << "liveness";
@@ -344,18 +344,18 @@ namespace romp {
   }
   template<class O> ojstream<O>& operator << (ojstream<O>& json, const PropertyType& val) { json.out << val; return json; }
 
-  std::ostream& operator << (std::ostream& out, const PropertyInfo& pi) noexcept { 
-    return (out << pi.type << " \"" << pi.label << "\" " /* << pi.expr */ << " @(" << pi.loc << ")"); 
+  std::ostream& operator << (std::ostream& out, const PropertyInfo& pi) noexcept {
+    return (out << pi.type << " \"" << pi.label << "\" " /* << pi.expr */ << " @(" << pi.loc << ")");
   }
   template<class O> ojstream<O>& operator << (ojstream<O>& json, const PropertyInfo& pi) noexcept {
     return (json << pi.json_h << '}');
   }
 
-  std::ostream& operator << (std::ostream& out, const Property& p) noexcept { 
+  std::ostream& operator << (std::ostream& out, const Property& p) noexcept {
     out << p.info.type << " \"" << p.info.label << "\" ";
     if (p.quant_str.size() > 0)
       out << " Quantifiers(" << p.quant_str << ") ";
-    return (out << "@(" << p.info.loc << ')'); 
+    return (out << "@(" << p.info.loc << ')');
   }
   template<class O> ojstream<O>& operator << (ojstream<O>& json, const Property& p) noexcept {
     return (json << p.info.json_h << ",\"quantifiers\":" << p.quant_json << '}');
@@ -364,7 +364,7 @@ namespace romp {
 
   template<class O> ojstream<O>& operator << (ojstream<O>& json, const RuleInfo& ri) noexcept {
 #ifdef __ROMP__SIMPLE_TRACE
-    json.out << "\"rule \\\""<< ri.label << "\\\"" 
+    json.out << "\"rule \\\""<< ri.label << "\\\""
                 // " @(" << ri.loc << ")\"";
              << '"';
 #else
@@ -372,8 +372,8 @@ namespace romp {
 #endif
     return json;
   }
-  std::ostream& operator << (std::ostream& out, const RuleInfo& ri) noexcept { 
-    return (out << "rule \""<< ri.label << "\" @(" << ri.loc << ")"); 
+  std::ostream& operator << (std::ostream& out, const RuleInfo& ri) noexcept {
+    return (out << "rule \""<< ri.label << "\" @(" << ri.loc << ")");
   }
 
   template<class O> ojstream<O>& operator << (ojstream<O>& json, const Rule& r) noexcept {
@@ -388,31 +388,31 @@ namespace romp {
 #endif
     return json;
   }
-  std::ostream& operator << (std::ostream& out, const Rule& r) noexcept { 
+  std::ostream& operator << (std::ostream& out, const Rule& r) noexcept {
     out << "rule \"" << r.info.label << "\" ";
     if (r.quant_str.size() > 0)
       out << " Quantifiers(" << r.quant_str << ") ";
     return (out << "@(" << r.info.loc << ')');
   }
 
-  template<class O> ojstream<O>& operator << (ojstream<O>& json, const RuleSet& rs) noexcept { 
-    return (json << rs.info); 
+  template<class O> ojstream<O>& operator << (ojstream<O>& json, const RuleSet& rs) noexcept {
+    return (json << rs.info);
   }
-  std::ostream& operator << (std::ostream& out, const RuleSet& rs) noexcept { 
+  std::ostream& operator << (std::ostream& out, const RuleSet& rs) noexcept {
     return (out << rs.info);
   }
 
 
-  
+
   template<class O> ojstream<O>& operator << (ojstream<O>& json, const StartStateInfo& si) noexcept {
     return (json << si.json_h << '}');
   }
-  std::ostream& operator << (std::ostream& out, const StartStateInfo& si) noexcept { 
-    return (out << "startstate \""<< si.label << "\" @(" << si.loc << ")"); 
+  std::ostream& operator << (std::ostream& out, const StartStateInfo& si) noexcept {
+    return (out << "startstate \""<< si.label << "\" @(" << si.loc << ")");
   }
 
   template<class O> ojstream<O>& operator << (ojstream<O>& json, const StartState& s) noexcept {
-    json << s.info.json_h 
+    json << s.info.json_h
          << ",\"id\":" << s.id
          << ",\"quantifiers\":" << s.quant_json << '}';
     return json;
@@ -420,25 +420,25 @@ namespace romp {
   std::ostream& operator << (std::ostream& out, const StartState& s) noexcept {
     out << "startstate \"" << s.info.label << "\" ";
     if (s.quant_str.size() > 0)
-      out << "-- id: " << s.id 
+      out << "-- id: " << s.id
           << " -- Quantifiers(" << s.quant_str << ") ";
     return (out << "@(" << s.info.loc << ')');
   }
 
 
-  template<class O> ojstream<O>& operator << (ojstream<O>& json, const MErrorInfo& ei) noexcept { 
-    return (json << ei.json); 
+  template<class O> ojstream<O>& operator << (ojstream<O>& json, const MErrorInfo& ei) noexcept {
+    return (json << ei.json);
   }
-  std::ostream& operator << (std::ostream& out, const MErrorInfo& ei) noexcept { 
-    return (out << "error \""<< ei.label << "\" @(" << ei.loc << ")"); 
+  std::ostream& operator << (std::ostream& out, const MErrorInfo& ei) noexcept {
+    return (out << "error \""<< ei.label << "\" @(" << ei.loc << ")");
   }
 
 
-  template<class O> ojstream<O>& operator << (ojstream<O>& json, const FunctInfo& fi) noexcept { 
-    return (json << fi.json); 
+  template<class O> ojstream<O>& operator << (ojstream<O>& json, const FunctInfo& fi) noexcept {
+    return (json << fi.json);
   }
-  std::ostream& operator << (std::ostream& out, const FunctInfo& fi) noexcept { 
-    return (out << fi.signature << " @(" << fi.loc << ")"); 
+  std::ostream& operator << (std::ostream& out, const FunctInfo& fi) noexcept {
+    return (out << fi.signature << " @(" << fi.loc << ")");
   }
 
 

@@ -7,11 +7,11 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file StreamVoid.hpp
- * 
- * @brief A util for cleaner code 
- * 
+ *
+ * @brief A util for cleaner code
+ *
  * @date 2022/10/21
- * @version 0.2
+ * @version 0.3
  */
 
 #include <ostream>
@@ -24,7 +24,7 @@ namespace romp {
     friend inline std::ostream& operator << (std::ostream& out, const _StreamVoid&) { return out; }
   };
 
-  typedef const _StreamVoid StreamVoid; 
+  typedef const _StreamVoid StreamVoid;
 
   StreamVoid S_VOID;
 

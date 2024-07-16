@@ -555,6 +555,40 @@
             "miDebuggerPath": "/bin/gdb"
         },
         {
+            "name": "romp: romp->g++ build and debug active murphi file (bfs->parallel test)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${file}.test",
+            "args": [
+                "-s", "1234567890",
+                "-w", "2048",
+                "-d","2048",
+                "-bfs", "s", "1",
+                "-rhl","8",
+                "-a"
+                // ,"-y"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "C/C++: g++ build active murphi file [romp]",
+            "miDebuggerPath": "/bin/gdb"
+        },
+        {
             "name": "C/C++: romp-rw g++ build and debug active C++ file (parallel-walk test)",
             "type": "cppdbg",
             "request": "launch",
@@ -679,7 +713,18 @@
             "request": "launch",
             "program": "${workspaceFolder}/tests/trace_stats.py",
             "args": [
-                "${workspaceFolder}/traces"
+                "${workspaceFolder}/tests/traces"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Trace Stats (numpy)",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/trace_stats_np.py",
+            "args": [
+                "${workspaceFolder}/tests/traces"
             ],
             "console": "integratedTerminal",
             "justMyCode": true

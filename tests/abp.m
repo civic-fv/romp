@@ -1,31 +1,36 @@
--------------------------------------------------------------------------
--- Copyright (C) 1992, 1993 by the Board of Trustees of 		 
--- Leland Stanford Junior University.					 
---									 
--- This description is provided to serve as an example of the use	 
--- of the Murphi description language and verifier, and as a benchmark	 
--- example for other verification efforts.				 
---									 
--- License to use, copy, modify, sell and/or distribute this description 
--- and its documentation any purpose is hereby granted without royalty,  
--- subject to the following terms and conditions, provided		 
---									 
--- appear in all copies of this description.				 
--- 									 
--- 2.  The Murphi group at Stanford University must be acknowledged	 
--- in any publication describing work that makes use of this example. 	 
--- 									 
--- Nobody vouches for the accuracy or usefulness of this description	 
--- for any purpose.							 
-
-----------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Copyright (C) 1992, 1993 by the Board of Trustees of
+-- Leland Stanford Junior University.
+--
+-- This description is provided to serve as an example of the use
+-- of the Murphi description language and verifier, and as a benchmark
+-- example for other verification efforts.
+--
+-- License to use, copy, modify, sell and/or distribute this description
+-- and its documentation any purpose is hereby granted without royalty,
+-- subject to the following terms and conditions, provided
+--
+-- appear in all copies of this description.
+--
+-- 2.  The Murphi group at Stanford University must be acknowledged
+-- in any publication describing work that makes use of this example.
+--
+-- Nobody vouches for the accuracy or usefulness of this description
+-- for any purpose.
+
+--------------------------------------------------------------------------------
 -- Filename: 	abp.m
 -- Content:	Simplex communication over a lossy channel
 -- 		using a 1 bit sequence number
 -- Version:	Murphi 2.3
 -- Engineer:	Originally by C. Han Yang, 1991
 --		Update to Murphi 2.3 by Ralph Melton, 1993.
-----------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- RUN: romp "%s" -o - | c++ - -o /dev/null
+--------------------------------------------------------------------------------
+
 /*
 Simplex communication over a lossy media using a 1 bit sequence number
 */
@@ -79,7 +84,7 @@ Begin
       -- Acknowledgement from Receiver has been corrupted, Send old Value
       SendPacket (X2RChannel, PACKET, OldValue, XSeqNo);
     Case ACK:
-      -- 
+      --
       If (R2XChannel.SeqNo != XSeqNo)
       Then
         -- Last message was properly accepted.  Send new packet
@@ -171,6 +176,5 @@ Begin
   R2XChannel.SeqNo := 0;
   ReceivedValue := 0;
 End; --Startstate;
-
 
 

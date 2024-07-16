@@ -35,53 +35,58 @@
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+
+--------------------------------------------------------------------------------
+-- RUN: romp "%s" -o - | c++ - -o /dev/null
+--------------------------------------------------------------------------------
+
 --Backend/Murphi/MurphiModular/Constants/GenConst
   ---- System access constants
   const
     ENABLE_QS: false;
     VAL_COUNT: 2;
     ADR_COUNT: 1;
-  
+
   ---- System network constants
     O_NET_MAX: 12;
     U_NET_MAX: 12;
-  
+
   ---- SSP declaration constants
     NrCachesL1C1: 2;
-  
+
 --Backend/Murphi/MurphiModular/GenTypes
   type
     ----Backend/Murphi/MurphiModular/Types/GenAdrDef
     Address: 0..ADR_COUNT;
     ClValue: 0..VAL_COUNT;
-    
+
     ----Backend/Murphi/MurphiModular/Types/Enums/GenEnums
       ------Backend/Murphi/MurphiModular/Types/Enums/SubEnums/GenAccess
       PermissionType: enum {
-        load, 
-        store, 
-        evict, 
+        load,
+        store,
+        evict,
         none
       };
-      
+
       ------Backend/Murphi/MurphiModular/Types/Enums/SubEnums/GenMessageTypes
       MessageType: enum {
-        GetML1C1, 
-        GetSL1C1, 
-        PutSL1C1, 
-        Inv_AckL1C1, 
-        GetM_Ack_DL1C1, 
-        GetS_AckL1C1, 
-        WBL1C1, 
-        PutML1C1, 
-        PutEL1C1, 
-        GetM_Ack_ADL1C1, 
-        InvL1C1, 
-        Put_AckL1C1, 
-        Fwd_GetSL1C1, 
+        GetML1C1,
+        GetSL1C1,
+        PutSL1C1,
+        Inv_AckL1C1,
+        GetM_Ack_DL1C1,
+        GetS_AckL1C1,
+        WBL1C1,
+        PutML1C1,
+        PutEL1C1,
+        GetM_Ack_ADL1C1,
+        InvL1C1,
+        Put_AckL1C1,
+        Fwd_GetSL1C1,
         Fwd_GetML1C1
       };
-      
+
       ------Backend/Murphi/MurphiModular/Types/Enums/SubEnums/GenArchEnums
       s_directoryL1C1: enum {
         directoryL1C1_S,
@@ -91,7 +96,7 @@
         directoryL1C1_E_GetS,
         directoryL1C1_E
       };
-      
+
       s_cacheL1C1: enum {
         cacheL1C1_S_store_GetM_Ack_AD,
         cacheL1C1_S_store,
@@ -109,21 +114,21 @@
         cacheL1C1_E_evict,
         cacheL1C1_E
       };
-      
+
     ----Backend/Murphi/MurphiModular/Types/GenMachineSets
       -- Cluster: C1
       OBJSET_directoryL1C1: enum{directoryL1C1};
       OBJSET_cacheL1C1: scalarset(NrCachesL1C1);
       C1Machines: union{OBJSET_directoryL1C1, OBJSET_cacheL1C1}; -- scalarset(1/*<--enum OBJSET_directoryL1C1*/+ NrCachesL1C1/*<--scalarset OBJSET_cacheL1C1*/);
       -- C1Machines: scalarset(1/*<--enum OBJSET_directoryL1C1*/+ NrCachesL1C1/*<--scalarset OBJSET_cacheL1C1*/);
-      
+
       Machines: union{OBJSET_directoryL1C1, OBJSET_cacheL1C1}; -- scalarset(1+NrCachesL1C1);
-    
+
     ----Backend/Murphi/MurphiModular/Types/GenCheckTypes
       ------Backend/Murphi/MurphiModular/Types/CheckTypes/GenPermType
         acc_type_obj: multiset[3] of PermissionType;
         PermMonitor: array[Machines] of array[Address] of acc_type_obj;
-      
+
       ------Backend/Murphi/MurphiModular/Types/CheckTypes/GenStoreMonitorType
         GlobalStoreMonitor: array[Address] of ClValue;
 
@@ -136,42 +141,42 @@
         cl: ClValue;
         acksExpectedL1C1: 0..NrCachesL1C1;
       end;
-      
+
     ----Backend/Murphi/MurphiModular/Types/GenNetwork
       NET_Ordered: array[Machines] of array[0..O_NET_MAX-1] of Message;
       NET_Ordered_cnt: array[Machines] of 0..O_NET_MAX;
       NET_Unordered: array[Machines] of multiset[U_NET_MAX] of Message;
-    
+
     ----Backend/Murphi/MurphiModular/Types/GenMachines
       v_cacheL1C1: multiset[NrCachesL1C1] of Machines;
       cnt_v_cacheL1C1: 0..NrCachesL1C1;
-      
+
       ENTRY_directoryL1C1: record
         State: s_directoryL1C1;
         cl: ClValue;
         cacheL1C1: v_cacheL1C1;
         ownerL1C1: Machines;
       end;
-      
+
       MACH_directoryL1C1: record
         cb: array[Address] of ENTRY_directoryL1C1;
       end;
-      
+
       OBJ_directoryL1C1: array[OBJSET_directoryL1C1] of MACH_directoryL1C1;
-      
+
       ENTRY_cacheL1C1: record
         State: s_cacheL1C1;
         cl: ClValue;
         acksReceivedL1C1: 0..NrCachesL1C1;
         acksExpectedL1C1: 0..NrCachesL1C1;
       end;
-      
+
       MACH_cacheL1C1: record
         cb: array[Address] of ENTRY_cacheL1C1;
       end;
-      
+
       OBJ_cacheL1C1: array[OBJSET_cacheL1C1] of MACH_cacheL1C1;
-    
+
 
 --Backend/Murphi/MurphiModular/GenVars
   var
@@ -181,8 +186,8 @@
     cnt_resp: NET_Ordered_cnt;
     req: NET_Ordered;
     cnt_req: NET_Ordered_cnt;
-  
-  
+
+
     g_perm: PermMonitor;
     g_monitor_store: GlobalStoreMonitor;
     i_directoryL1C1: OBJ_directoryL1C1;
@@ -199,11 +204,11 @@
           i_directoryL1C1[i].cb[a].cl := 0;
           undefine i_directoryL1C1[i].cb[a].cacheL1C1;
           undefine i_directoryL1C1[i].cb[a].ownerL1C1;
-    
+
         endfor;
       endfor;
     end;
-    
+
     procedure ResetMachine_cacheL1C1();
     begin
       for i:OBJSET_cacheL1C1 do
@@ -212,16 +217,16 @@
           i_cacheL1C1[i].cb[a].cl := 0;
           i_cacheL1C1[i].cb[a].acksReceivedL1C1 := 0;
           i_cacheL1C1[i].cb[a].acksExpectedL1C1 := 0;
-    
+
         endfor;
       endfor;
     end;
-    
+
       procedure ResetMachine_();
       begin
       ResetMachine_directoryL1C1();
       ResetMachine_cacheL1C1();
-      
+
       end;
   ----Backend/Murphi/MurphiModular/Functions/GenPermFunc
     procedure Clear_perm(adr: Address; m: Machines);
@@ -230,7 +235,7 @@
           undefine l_perm_set;
       endalias;
     end;
-    
+
     procedure Set_perm(acc_type: PermissionType; adr: Address; m: Machines);
     begin
       alias l_perm_set:g_perm[m][adr] do
@@ -239,7 +244,7 @@
       endif;
       endalias;
     end;
-    
+
     procedure Reset_perm();
     begin
       for m:Machines do
@@ -248,8 +253,8 @@
         endfor;
       endfor;
     end;
-    
-  
+
+
   ----Backend/Murphi/MurphiModular/Functions/GenStoreMonitorFunc
     procedure Execute_store_monitor(cb: ClValue; adr: Address);
     begin
@@ -265,14 +270,14 @@
         endif;
       endalias;
     end;
-    
+
     procedure Reset_global_monitor();
     begin
       for adr:Address do
         g_monitor_store[adr] := 0;
       endfor;
     end;
-  
+
     procedure Store(var m_exc: ClValue; adr: Address);
     begin
       Execute_store_monitor(m_exc, adr);
@@ -290,7 +295,7 @@
          endif;
       endif;
     end;
-  
+
   ----Backend/Murphi/MurphiModular/Functions/GenVectorFunc
     -- .add()
     procedure AddElement_cacheL1C1(var sv:v_cacheL1C1; n:Machines);
@@ -299,7 +304,7 @@
           MultiSetAdd(n, sv);
         endif;
     end;
-    
+
     -- .del()
     procedure RemoveElement_cacheL1C1(var sv:v_cacheL1C1; n:Machines);
     begin
@@ -307,13 +312,13 @@
           MultiSetRemovePred(i:sv, sv[i] = n);
         endif;
     end;
-    
+
     -- .clear()
     procedure ClearVector_cacheL1C1(var sv:v_cacheL1C1;);
     begin
         MultiSetRemovePred(i:sv, true);
     end;
-    
+
     -- .contains()
     function IsElement_cacheL1C1(var sv:v_cacheL1C1; n:Machines) : boolean;
     begin
@@ -326,30 +331,30 @@
         endif;
       return false;
     end;
-    
+
     -- .empty()
     function HasElement_cacheL1C1(var sv:v_cacheL1C1; n:Machines) : boolean;
     begin
         if MultiSetCount(i:sv, true) = 0 then
           return false;
         endif;
-    
+
         return true;
     end;
-    
+
     -- .count()
     function VectorCount_cacheL1C1(var sv:v_cacheL1C1) : cnt_v_cacheL1C1;
     begin
         return MultiSetCount(i:sv, true);
     end;
-    
+
   ----Backend/Murphi/MurphiModular/Functions/GenNetworkFunc
     procedure Send_fwd(msg:Message; src: Machines;);
       Assert(cnt_fwd[msg.dst] < O_NET_MAX) "Too many messages";
       fwd[msg.dst][cnt_fwd[msg.dst]] := msg;
       cnt_fwd[msg.dst] := cnt_fwd[msg.dst] + 1;
     end;
-    
+
     procedure Pop_fwd(dst:Machines; src: Machines;);
     begin
       Assert (cnt_fwd[dst] > 0) "Trying to advance empty Q";
@@ -362,13 +367,13 @@
       endfor;
       cnt_fwd[dst] := cnt_fwd[dst] - 1;
     end;
-    
+
     procedure Send_resp(msg:Message; src: Machines;);
       Assert(cnt_resp[msg.dst] < O_NET_MAX) "Too many messages";
       resp[msg.dst][cnt_resp[msg.dst]] := msg;
       cnt_resp[msg.dst] := cnt_resp[msg.dst] + 1;
     end;
-    
+
     procedure Pop_resp(dst:Machines; src: Machines;);
     begin
       Assert (cnt_resp[dst] > 0) "Trying to advance empty Q";
@@ -381,13 +386,13 @@
       endfor;
       cnt_resp[dst] := cnt_resp[dst] - 1;
     end;
-    
+
     procedure Send_req(msg:Message; src: Machines;);
       Assert(cnt_req[msg.dst] < O_NET_MAX) "Too many messages";
       req[msg.dst][cnt_req[msg.dst]] := msg;
       cnt_req[msg.dst] := cnt_req[msg.dst] + 1;
     end;
-    
+
     procedure Pop_req(dst:Machines; src: Machines;);
     begin
       Assert (cnt_req[dst] > 0) "Trying to advance empty Q";
@@ -400,7 +405,7 @@
       endfor;
       cnt_req[dst] := cnt_req[dst] - 1;
     end;
-    
+
     procedure Multicast_fwd_v_cacheL1C1(var msg: Message; dst_vect: v_cacheL1C1; src: Machines;);
     begin
           for n:Machines do
@@ -412,7 +417,7 @@
               endif;
           endfor;
     end;
-    
+
     function fwd_network_ready(): boolean;
     begin
           for dst:Machines do
@@ -422,7 +427,7 @@
               endif;
             endfor;
           endfor;
-    
+
           return true;
     end;
     function req_network_ready(): boolean;
@@ -434,7 +439,7 @@
               endif;
             endfor;
           endfor;
-    
+
           return true;
     end;
     function resp_network_ready(): boolean;
@@ -446,7 +451,7 @@
               endif;
             endfor;
           endfor;
-    
+
           return true;
     end;
     function network_ready(): boolean;
@@ -454,43 +459,43 @@
             if !fwd_network_ready() then
             return false;
           endif;
-    
-    
+
+
           if !req_network_ready() then
             return false;
           endif;
-    
-    
+
+
           if !resp_network_ready() then
             return false;
           endif;
-    
-    
-    
+
+
+
       return true;
     end;
-    
+
     procedure Reset_NET_();
     begin
-      
+
       undefine resp;
       for dst:Machines do
           cnt_resp[dst] := 0;
       endfor;
-      
+
       undefine req;
       for dst:Machines do
           cnt_req[dst] := 0;
       endfor;
-      
+
       undefine fwd;
       for dst:Machines do
           cnt_fwd[dst] := 0;
       endfor;
-    
+
     end;
-    
-  
+
+
   ----Backend/Murphi/MurphiModular/Functions/GenMessageConstrFunc
     function RequestL1C1(adr: Address; mtype: MessageType; src: Machines; dst: Machines) : Message;
     var Message: Message;
@@ -501,7 +506,7 @@
       Message.dst := dst;
     return Message;
     end;
-    
+
     function AckL1C1(adr: Address; mtype: MessageType; src: Machines; dst: Machines) : Message;
     var Message: Message;
     begin
@@ -511,7 +516,7 @@
       Message.dst := dst;
     return Message;
     end;
-    
+
     function RespL1C1(adr: Address; mtype: MessageType; src: Machines; dst: Machines; cl: ClValue) : Message;
     var Message: Message;
     begin
@@ -522,7 +527,7 @@
       Message.cl := cl;
     return Message;
     end;
-    
+
     function RespAckL1C1(adr: Address; mtype: MessageType; src: Machines; dst: Machines; cl: ClValue; acksExpectedL1C1: 0..NrCachesL1C1) : Message;
     var Message: Message;
     begin
@@ -534,8 +539,8 @@
       Message.acksExpectedL1C1 := acksExpectedL1C1;
     return Message;
     end;
-    
-  
+
+
 
 --Backend/Murphi/MurphiModular/GenStateMachines
 
@@ -551,7 +556,7 @@
     endalias;
     endalias;
     end;
-    
+
     procedure FSM_Access_cacheL1C1_E_load(adr:Address; m:OBJSET_cacheL1C1);
     begin
     alias m_shr: i_cacheL1C1[m] do
@@ -561,7 +566,7 @@
     endalias;
     endalias;
     end;
-    
+
     procedure FSM_Access_cacheL1C1_E_store(adr:Address; m:OBJSET_cacheL1C1);
     begin
     alias m_shr: i_cacheL1C1[m] do
@@ -572,7 +577,7 @@
     endalias;
     endalias;
     end;
-    
+
     procedure FSM_Access_cacheL1C1_I_load(adr:Address; m:OBJSET_cacheL1C1);
     var msg: Message;
     begin
@@ -584,7 +589,7 @@
     endalias;
     endalias;
     end;
-    
+
     procedure FSM_Access_cacheL1C1_I_store(adr:Address; m:OBJSET_cacheL1C1);
     var msg: Message;
     begin
@@ -597,7 +602,7 @@
     endalias;
     endalias;
     end;
-    
+
     procedure FSM_Access_cacheL1C1_M_evict(adr:Address; m:OBJSET_cacheL1C1);
     var msg: Message;
     begin
@@ -609,7 +614,7 @@
     endalias;
     endalias;
     end;
-    
+
     procedure FSM_Access_cacheL1C1_M_load(adr:Address; m:OBJSET_cacheL1C1);
     begin
     alias m_shr: i_cacheL1C1[m] do
@@ -619,7 +624,7 @@
     endalias;
     endalias;
     end;
-    
+
     procedure FSM_Access_cacheL1C1_M_store(adr:Address; m:OBJSET_cacheL1C1);
     begin
     alias m_shr: i_cacheL1C1[m] do
@@ -630,7 +635,7 @@
     endalias;
     endalias;
     end;
-    
+
     procedure FSM_Access_cacheL1C1_S_evict(adr:Address; m:OBJSET_cacheL1C1);
     var msg: Message;
     begin
@@ -642,7 +647,7 @@
     endalias;
     endalias;
     end;
-    
+
     procedure FSM_Access_cacheL1C1_S_load(adr:Address; m:OBJSET_cacheL1C1);
     begin
     alias m_shr: i_cacheL1C1[m] do
@@ -651,7 +656,7 @@
     endalias;
     endalias;
     end;
-    
+
     procedure FSM_Access_cacheL1C1_S_store(adr:Address; m:OBJSET_cacheL1C1);
     var msg: Message;
     begin
@@ -664,7 +669,7 @@
     endalias;
     endalias;
     end;
-    
+
   ----Backend/Murphi/MurphiModular/StateMachines/GenMessageStateMachines
     function FSM_MSG_directoryL1C1(inmsg:Message; m:OBJSET_directoryL1C1) : boolean;
     var msg: Message;
@@ -681,7 +686,7 @@
           Clear_perm(adr, m);
           m_exc.State := directoryL1C1_M;
           return true;
-        
+
         case GetSL1C1:
           msg := RequestL1C1(adr, Fwd_GetSL1C1, inmsg.src, m_exc.ownerL1C1);
           Send_fwd(msg, m);
@@ -690,7 +695,7 @@
           Clear_perm(adr, m);
           m_exc.State := directoryL1C1_E_GetS;
           return true;
-        
+
         case PutEL1C1:
           msg := AckL1C1(adr, Put_AckL1C1, m, inmsg.src);
           Send_fwd(msg, m);
@@ -704,7 +709,7 @@
             m_exc.State := directoryL1C1_I;
             return true;
           endif
-        
+
         case PutML1C1:
           msg := AckL1C1(adr, Put_AckL1C1, m, inmsg.src);
           Send_fwd(msg, m);
@@ -719,7 +724,7 @@
             m_exc.State := directoryL1C1_E;
             return true;
           endif
-        
+
         case PutSL1C1:
           msg := AckL1C1(adr, Put_AckL1C1, m, inmsg.src);
           Send_fwd(msg, m);
@@ -733,10 +738,10 @@
             m_exc.State := directoryL1C1_E;
             return true;
           endif
-        
+
         else return false;
       endswitch;
-      
+
       case directoryL1C1_E_GetS:
       switch inmsg.mtype
         case WBL1C1:
@@ -750,10 +755,10 @@
             m_exc.State := directoryL1C1_S;
             return true;
           endif
-        
+
         else return false;
       endswitch;
-      
+
       case directoryL1C1_I:
       switch inmsg.mtype
         case GetML1C1:
@@ -763,7 +768,7 @@
           Clear_perm(adr, m);
           m_exc.State := directoryL1C1_M;
           return true;
-        
+
         case GetSL1C1:
           msg := RespL1C1(adr, GetM_Ack_DL1C1, m, inmsg.src, m_exc.cl);
           Send_resp(msg, m);
@@ -771,7 +776,7 @@
           Clear_perm(adr, m);
           m_exc.State := directoryL1C1_E;
           return true;
-        
+
         case PutEL1C1:
           msg := AckL1C1(adr, Put_AckL1C1, m, inmsg.src);
           Send_fwd(msg, m);
@@ -785,7 +790,7 @@
             m_exc.State := directoryL1C1_I;
             return true;
           endif
-        
+
         case PutML1C1:
           msg := AckL1C1(adr, Put_AckL1C1, m, inmsg.src);
           Send_fwd(msg, m);
@@ -800,7 +805,7 @@
             m_exc.State := directoryL1C1_I;
             return true;
           endif
-        
+
         case PutSL1C1:
           msg := AckL1C1(adr, Put_AckL1C1, m, inmsg.src);
           Send_fwd(msg, m);
@@ -814,10 +819,10 @@
             m_exc.State := directoryL1C1_I;
             return true;
           endif
-        
+
         else return false;
       endswitch;
-      
+
       case directoryL1C1_M:
       switch inmsg.mtype
         case GetML1C1:
@@ -827,7 +832,7 @@
           Clear_perm(adr, m);
           m_exc.State := directoryL1C1_M;
           return true;
-        
+
         case GetSL1C1:
           msg := RequestL1C1(adr, Fwd_GetSL1C1, inmsg.src, m_exc.ownerL1C1);
           Send_fwd(msg, m);
@@ -836,7 +841,7 @@
           Clear_perm(adr, m);
           m_exc.State := directoryL1C1_M_GetS;
           return true;
-        
+
         case PutEL1C1:
           msg := AckL1C1(adr, Put_AckL1C1, m, inmsg.src);
           Send_fwd(msg, m);
@@ -851,7 +856,7 @@
             m_exc.State := directoryL1C1_I;
             return true;
           endif
-        
+
         case PutML1C1:
           msg := AckL1C1(adr, Put_AckL1C1, m, inmsg.src);
           Send_fwd(msg, m);
@@ -866,7 +871,7 @@
             m_exc.State := directoryL1C1_I;
             return true;
           endif
-        
+
         case PutSL1C1:
           msg := AckL1C1(adr, Put_AckL1C1, m, inmsg.src);
           Send_fwd(msg, m);
@@ -881,10 +886,10 @@
             m_exc.State := directoryL1C1_I;
             return true;
           endif
-        
+
         else return false;
       endswitch;
-      
+
       case directoryL1C1_M_GetS:
       switch inmsg.mtype
         case WBL1C1:
@@ -898,10 +903,10 @@
             m_exc.State := directoryL1C1_M_GetS;
             return true;
           endif
-        
+
         else return false;
       endswitch;
-      
+
       case directoryL1C1_S:
       switch inmsg.mtype
         case GetML1C1:
@@ -927,7 +932,7 @@
             m_exc.State := directoryL1C1_M;
             return true;
           endif
-        
+
         case GetSL1C1:
           msg := RespL1C1(adr, GetS_AckL1C1, m, inmsg.src, m_exc.cl);
           Send_resp(msg, m);
@@ -935,7 +940,7 @@
           Clear_perm(adr, m);
           m_exc.State := directoryL1C1_S;
           return true;
-        
+
         case PutEL1C1:
           msg := AckL1C1(adr, Put_AckL1C1, m, inmsg.src);
           Send_fwd(msg, m);
@@ -949,7 +954,7 @@
             m_exc.State := directoryL1C1_S;
             return true;
           endif
-        
+
         case PutML1C1:
           msg := AckL1C1(adr, Put_AckL1C1, m, inmsg.src);
           Send_fwd(msg, m);
@@ -963,7 +968,7 @@
             m_exc.State := directoryL1C1_S;
             return true;
           endif
-        
+
         case PutSL1C1:
           msg := AckL1C1(adr, Put_AckL1C1, m, inmsg.src);
           Send_fwd(msg, m);
@@ -977,16 +982,16 @@
             m_exc.State := directoryL1C1_S;
             return true;
           endif
-        
+
         else return false;
       endswitch;
-      
+
     endswitch;
     endalias;
     endalias;
     return false;
     end;
-    
+
     function FSM_MSG_cacheL1C1(inmsg:Message; m:OBJSET_cacheL1C1) : boolean;
     var msg: Message;
     begin
@@ -1001,7 +1006,7 @@
           Clear_perm(adr, m);
           m_exc.State := cacheL1C1_I;
           return true;
-        
+
         case Fwd_GetSL1C1:
           msg := RespL1C1(adr, GetS_AckL1C1, m, inmsg.src, m_exc.cl);
           Send_resp(msg, m);
@@ -1010,10 +1015,10 @@
           Clear_perm(adr, m); Set_perm(load, adr, m);
           m_exc.State := cacheL1C1_S;
           return true;
-        
+
         else return false;
       endswitch;
-      
+
       case cacheL1C1_E_evict:
       switch inmsg.mtype
         case Fwd_GetML1C1:
@@ -1022,7 +1027,7 @@
           Clear_perm(adr, m);
           m_exc.State := cacheL1C1_E_evict_x_I;
           return true;
-        
+
         case Fwd_GetSL1C1:
           msg := RespL1C1(adr, GetS_AckL1C1, m, inmsg.src, m_exc.cl);
           Send_resp(msg, m);
@@ -1031,30 +1036,30 @@
           Clear_perm(adr, m);
           m_exc.State := cacheL1C1_S_evict;
           return true;
-        
+
         case Put_AckL1C1:
           Clear_perm(adr, m);
           m_exc.State := cacheL1C1_I;
           return true;
-        
+
         else return false;
       endswitch;
-      
+
       case cacheL1C1_E_evict_x_I:
       switch inmsg.mtype
         case Put_AckL1C1:
           Clear_perm(adr, m);
           m_exc.State := cacheL1C1_I;
           return true;
-        
+
         else return false;
       endswitch;
-      
+
       case cacheL1C1_I:
       switch inmsg.mtype
         else return false;
       endswitch;
-      
+
       case cacheL1C1_I_load:
       switch inmsg.mtype
         case GetM_Ack_DL1C1:
@@ -1063,17 +1068,17 @@
           Clear_perm(adr, m); Set_perm(store, adr, m); Set_perm(load, adr, m);
           m_exc.State := cacheL1C1_E;
           return true;
-        
+
         case GetS_AckL1C1:
           m_exc.cl := inmsg.cl;
           Set_perm(load, adr, m);
           Clear_perm(adr, m); Set_perm(load, adr, m);
           m_exc.State := cacheL1C1_S;
           return true;
-        
+
         else return false;
       endswitch;
-      
+
       case cacheL1C1_I_store:
       switch inmsg.mtype
         case GetM_Ack_ADL1C1:
@@ -1090,7 +1095,7 @@
             Store(m_exc.cl, adr);
             return true;
           endif
-        
+
         case GetM_Ack_DL1C1:
           m_exc.cl := inmsg.cl;
           Set_perm(store, adr, m);
@@ -1098,16 +1103,16 @@
           m_exc.State := cacheL1C1_M;
           Store(m_exc.cl, adr);
           return true;
-        
+
         case Inv_AckL1C1:
           m_exc.acksReceivedL1C1 := m_exc.acksReceivedL1C1+1;
           Clear_perm(adr, m);
           m_exc.State := cacheL1C1_I_store;
           return true;
-        
+
         else return false;
       endswitch;
-      
+
       case cacheL1C1_I_store_GetM_Ack_AD:
       switch inmsg.mtype
         case Inv_AckL1C1:
@@ -1123,10 +1128,10 @@
             Store(m_exc.cl, adr);
             return true;
           endif
-        
+
         else return false;
       endswitch;
-      
+
       case cacheL1C1_M:
       switch inmsg.mtype
         case Fwd_GetML1C1:
@@ -1135,7 +1140,7 @@
           Clear_perm(adr, m);
           m_exc.State := cacheL1C1_I;
           return true;
-        
+
         case Fwd_GetSL1C1:
           msg := RespL1C1(adr, GetS_AckL1C1, m, inmsg.src, m_exc.cl);
           Send_resp(msg, m);
@@ -1144,10 +1149,10 @@
           Clear_perm(adr, m); Set_perm(load, adr, m);
           m_exc.State := cacheL1C1_S;
           return true;
-        
+
         else return false;
       endswitch;
-      
+
       case cacheL1C1_M_evict:
       switch inmsg.mtype
         case Fwd_GetML1C1:
@@ -1156,7 +1161,7 @@
           Clear_perm(adr, m);
           m_exc.State := cacheL1C1_M_evict_x_I;
           return true;
-        
+
         case Fwd_GetSL1C1:
           msg := RespL1C1(adr, GetS_AckL1C1, m, inmsg.src, m_exc.cl);
           Send_resp(msg, m);
@@ -1165,25 +1170,25 @@
           Clear_perm(adr, m);
           m_exc.State := cacheL1C1_S_evict;
           return true;
-        
+
         case Put_AckL1C1:
           Clear_perm(adr, m);
           m_exc.State := cacheL1C1_I;
           return true;
-        
+
         else return false;
       endswitch;
-      
+
       case cacheL1C1_M_evict_x_I:
       switch inmsg.mtype
         case Put_AckL1C1:
           Clear_perm(adr, m);
           m_exc.State := cacheL1C1_I;
           return true;
-        
+
         else return false;
       endswitch;
-      
+
       case cacheL1C1_S:
       switch inmsg.mtype
         case InvL1C1:
@@ -1192,10 +1197,10 @@
           Clear_perm(adr, m);
           m_exc.State := cacheL1C1_I;
           return true;
-        
+
         else return false;
       endswitch;
-      
+
       case cacheL1C1_S_evict:
       switch inmsg.mtype
         case InvL1C1:
@@ -1204,25 +1209,25 @@
           Clear_perm(adr, m);
           m_exc.State := cacheL1C1_S_evict_x_I;
           return true;
-        
+
         case Put_AckL1C1:
           Clear_perm(adr, m);
           m_exc.State := cacheL1C1_I;
           return true;
-        
+
         else return false;
       endswitch;
-      
+
       case cacheL1C1_S_evict_x_I:
       switch inmsg.mtype
         case Put_AckL1C1:
           Clear_perm(adr, m);
           m_exc.State := cacheL1C1_I;
           return true;
-        
+
         else return false;
       endswitch;
-      
+
       case cacheL1C1_S_store:
       switch inmsg.mtype
         case GetM_Ack_ADL1C1:
@@ -1238,30 +1243,30 @@
             m_exc.State := cacheL1C1_S_store_GetM_Ack_AD;
             return true;
           endif
-        
+
         case GetM_Ack_DL1C1:
           Set_perm(store, adr, m);
           Clear_perm(adr, m); Set_perm(load, adr, m); Set_perm(store, adr, m);
           m_exc.State := cacheL1C1_M;
           Store(m_exc.cl, adr);
           return true;
-        
+
         case InvL1C1:
           msg := RespL1C1(adr, Inv_AckL1C1, m, inmsg.src, m_exc.cl);
           Send_resp(msg, m);
           Clear_perm(adr, m);
           m_exc.State := cacheL1C1_I_store;
           return true;
-        
+
         case Inv_AckL1C1:
           m_exc.acksReceivedL1C1 := m_exc.acksReceivedL1C1+1;
           Clear_perm(adr, m);
           m_exc.State := cacheL1C1_S_store;
           return true;
-        
+
         else return false;
       endswitch;
-      
+
       case cacheL1C1_S_store_GetM_Ack_AD:
       switch inmsg.mtype
         case Inv_AckL1C1:
@@ -1277,16 +1282,16 @@
             Store(m_exc.cl, adr);
             return true;
           endif
-        
+
         else return false;
       endswitch;
-      
+
     endswitch;
     endalias;
     endalias;
     return false;
     end;
-    
+
 
 --Backend/Murphi/MurphiModular/GenResetFunc
 
@@ -1297,7 +1302,7 @@
   Reset_NET_();
   ResetMachine_();
   end;
-  
+
 
 --Backend/Murphi/MurphiModular/GenRules
   ----Backend/Murphi/MurphiModular/Rules/GenAccessRuleSet
@@ -1306,88 +1311,88 @@
       alias m_shr:i_cacheL1C1[m] do
       alias m_exc:m_shr.cb[adr] do
       rule "cacheL1C1_E_store"
-        m_exc.State = cacheL1C1_E 
+        m_exc.State = cacheL1C1_E
       ==>
         FSM_Access_cacheL1C1_E_store(adr, m);
-        
+
       endrule;
-    
+
       rule "cacheL1C1_E_load"
-        m_exc.State = cacheL1C1_E 
+        m_exc.State = cacheL1C1_E
       ==>
         FSM_Access_cacheL1C1_E_load(adr, m);
-        
+
       endrule;
-    
+
       rule "cacheL1C1_E_evict"
-        m_exc.State = cacheL1C1_E & network_ready() 
+        m_exc.State = cacheL1C1_E & network_ready()
       ==>
         FSM_Access_cacheL1C1_E_evict(adr, m);
-        
+
       endrule;
-    
+
       rule "cacheL1C1_I_store"
-        m_exc.State = cacheL1C1_I & network_ready() 
+        m_exc.State = cacheL1C1_I & network_ready()
       ==>
         FSM_Access_cacheL1C1_I_store(adr, m);
-        
+
       endrule;
-    
+
       rule "cacheL1C1_I_load"
-        m_exc.State = cacheL1C1_I & network_ready() 
+        m_exc.State = cacheL1C1_I & network_ready()
       ==>
         FSM_Access_cacheL1C1_I_load(adr, m);
-        
+
       endrule;
-    
+
       rule "cacheL1C1_M_load"
-        m_exc.State = cacheL1C1_M 
+        m_exc.State = cacheL1C1_M
       ==>
         FSM_Access_cacheL1C1_M_load(adr, m);
-        
+
       endrule;
-    
+
       rule "cacheL1C1_M_store"
-        m_exc.State = cacheL1C1_M 
+        m_exc.State = cacheL1C1_M
       ==>
         FSM_Access_cacheL1C1_M_store(adr, m);
-        
+
       endrule;
-    
+
       rule "cacheL1C1_M_evict"
-        m_exc.State = cacheL1C1_M & network_ready() 
+        m_exc.State = cacheL1C1_M & network_ready()
       ==>
         FSM_Access_cacheL1C1_M_evict(adr, m);
-        
+
       endrule;
-    
+
       rule "cacheL1C1_S_evict"
-        m_exc.State = cacheL1C1_S & network_ready() 
+        m_exc.State = cacheL1C1_S & network_ready()
       ==>
         FSM_Access_cacheL1C1_S_evict(adr, m);
-        
+
       endrule;
-    
+
       rule "cacheL1C1_S_load"
-        m_exc.State = cacheL1C1_S 
+        m_exc.State = cacheL1C1_S
       ==>
         FSM_Access_cacheL1C1_S_load(adr, m);
-        
+
       endrule;
-    
+
       rule "cacheL1C1_S_store"
-        m_exc.State = cacheL1C1_S & network_ready() 
+        m_exc.State = cacheL1C1_S & network_ready()
       ==>
         FSM_Access_cacheL1C1_S_store(adr, m);
-        
+
       endrule;
-    
-    
+
+
       endalias;
       endalias;
     endruleset;
     endruleset;
-    
+
   ----Backend/Murphi/MurphiModular/Rules/GenNetworkRule
     ruleset dst:Machines do
         ruleset src: Machines do
@@ -1405,12 +1410,12 @@
               endif;
             else error "unknown machine";
             endif;
-    
+
               endrule;
             endalias;
         endruleset;
     endruleset;
-    
+
     ruleset dst:Machines do
         ruleset src: Machines do
             alias msg:req[dst][0] do
@@ -1427,12 +1432,12 @@
               endif;
             else error "unknown machine";
             endif;
-    
+
               endrule;
             endalias;
         endruleset;
     endruleset;
-    
+
     ruleset dst:Machines do
         ruleset src: Machines do
             alias msg:fwd[dst][0] do
@@ -1449,12 +1454,12 @@
               endif;
             else error "unknown machine";
             endif;
-    
+
               endrule;
             endalias;
         endruleset;
     endruleset;
-    
+
 
 --Backend/Murphi/MurphiModular/GenStartStates
 

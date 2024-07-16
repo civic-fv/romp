@@ -7,10 +7,10 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file impls.cpp
- * 
+ *
  * @brief implementations of functions that could not be put where they were declared,
  *        because they required something pre-decl'ed to be fully declared first.
- * 
+ *
  * @date 2022/10/05
  * @version 0.1
  */
@@ -18,15 +18,25 @@
 #ifndef __romp__GENERATED_CODE
 #pragma once
 #include "pregen-fix.hpp"  // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
-#include "include.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-#include "decl.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-#include "writers.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-#include "types.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-#include "error.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
-// #include "walker.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !! 
+#include "include.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+#include "decl.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+#include "writers.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+#include "types.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+#include "error.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
+// #include "walker.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!
 #endif
 
 namespace romp {
+
+constexpr size_t _ROMP_ATTEMPT_LIMIT_DEFAULT() {
+# if (_ROMP_RULE_SELECTION_ALGO == (1ul))
+    return ((_ROMP_MAX_RULESET_RULE_COUNT) * (_ROMP_RULESETS_LEN)); //TODO might cause compilation issues
+# elif (_ROMP_RULE_SELECTION_ALGO == (2ul))
+    return (_ROMP_RULE_COUNT);
+# else
+    return (INT16_MAX);
+# endif
+}
 
   template<size_t EID, size_t B, class... U_M>
   inline void __assign(EnumType<EID,B>& _this, const ScalarsetUnionType<U_M...>& other) { _this = other.__get_value(); }
@@ -36,14 +46,14 @@ namespace romp {
   Result::~Result() { if (tripped != nullptr) delete tripped; if (inside != nullptr) delete inside; }
 
   // template<size_t L_ID, size_t L_B, size_t R_ID, size_t R_B>
-  // inline bool operator == (const EnumType<L_ID,L_B>& l, const EnumType<R_ID,R_B> r) { 
-  //   return ((L_ID == R_ID) // this static expr should help the compiler optimize this per type definition. 
-  //           && (l.value == r.value)); 
+  // inline bool operator == (const EnumType<L_ID,L_B>& l, const EnumType<R_ID,R_B> r) {
+  //   return ((L_ID == R_ID) // this static expr should help the compiler optimize this per type definition.
+  //           && (l.value == r.value));
   // }
   // template<size_t L_ID, size_t L_B, size_t R_ID, size_t R_B>
-  // inline bool operator != (const EnumType<L_ID,L_B>& l, const EnumType<R_ID,R_B> r) { 
-  //   return ((L_ID != R_ID) // this should help the compiler optimize this per type definition. 
-  //           || (l.value != r.value)); 
+  // inline bool operator != (const EnumType<L_ID,L_B>& l, const EnumType<R_ID,R_B> r) {
+  //   return ((L_ID != R_ID) // this should help the compiler optimize this per type definition.
+  //           || (l.value != r.value));
   // }
 
   // template<class... L_M, class... R_M>
@@ -84,33 +94,33 @@ namespace romp {
   //   return EnumType<EID,B>::IsMember(u.value);
   // }
 
-  // << ------------------------------------------------------------------------------------------ >> 
+  // << ------------------------------------------------------------------------------------------ >>
 
-  ostream_p::ostream_p(std::ostream& out_, const Options& OPTIONS_, unsigned int level_) 
+  ostream_p::ostream_p(std::ostream& out_, const Options& OPTIONS_, unsigned int level_)
     : out(out_), _width(level_*OPTIONS_.tab_size), OPTIONS(OPTIONS_)
     { _indentation = std::string(_width,OPTIONS_.tab_char); }
-  inline const stream_void ostream_p::dedent() { 
+  inline const stream_void ostream_p::dedent() {
     if (((signed)_width)-((signed)OPTIONS.tab_size) >= 0)
       _width-=OPTIONS.tab_size;
-    _indentation = std::string(_width,OPTIONS.tab_char); 
+    _indentation = std::string(_width,OPTIONS.tab_char);
     return S_VOID;
   }
   inline const stream_void ostream_p::indent() { _indentation = std::string((_width+=OPTIONS.tab_size),OPTIONS.tab_char); return S_VOID; }
 
-  // << ------------------------------------------------------------------------------------------ >> 
+  // << ------------------------------------------------------------------------------------------ >>
 
   ResultTree::~ResultTree() {
     for (auto p : unknown_causes) if (p!=nullptr) delete p;
     for (auto p : attempt_limits_reached) if (p!=nullptr) delete p;
     for (auto p : max_depths_reached) if (p!=nullptr) delete p;
-#ifdef __romp__ENABLE_cover_property  
+#ifdef __romp__ENABLE_cover_property
     for (auto p : completed_covers) if (p!=nullptr) delete p;
 #endif
     for (auto _p : properties_violated)
       for (auto p : _p.second) if (p!=nullptr) delete p;
     for (auto _p : merrors_reached)
       for (auto p : _p.second) if (p!=nullptr) delete p;
-#ifdef __romp__ENABLE_assume_property  
+#ifdef __romp__ENABLE_assume_property
     for (auto _p : assumptions_violated)
       for (auto p : _p.second) if (p!=nullptr) delete p;
 #endif
@@ -120,6 +130,9 @@ namespace romp {
     switch (res->cause) {
       case Result::ATTEMPT_LIMIT_REACHED:
         attempt_limits_reached.push_back(res);
+        break;
+      case Result::DEADLOCK:
+        deadlocks_reached.push_back(res);
         break;
       case Result::MAX_DEPTH_REACHED:
         max_depths_reached.push_back(res);
@@ -184,14 +197,14 @@ namespace romp {
     if (r.OPTIONS.r_assume && r.n_assumptions_violated > 0) {
       issues += r.assumptions_violated.size();
       abs_issues += r.n_assumptions_violated;
-      out << out.indentation() << "\033[1;4mASSUMPTION(S) VIOLATED (n="<< r.assumptions_violated.size() 
+      out << out.indentation() << "\033[1;4mASSUMPTION(S) VIOLATED (n="<< r.assumptions_violated.size()
           << " |n|=" << r.n_assumptions_violated << "):\033[0m\n";
       out.indent(); i = 1;
       for (const auto& _a : r.assumptions_violated) {
-        if (i > _ROMP_HIST_LEN && not (r.OPTIONS.report_all || r.OPTIONS.report_error)) { 
-          out << out.indentation() << "-(..) ... " << _a.second.size()-(i-1) << " more ...\n"; 
+        if (i > _ROMP_HIST_LEN && not (r.OPTIONS.report_all || r.OPTIONS.report_error)) {
+          out << out.indentation() << "-(..) ... " << _a.second.size()-(i-1) << " more ...\n";
           break;
-        } 
+        }
         out << out.indentation()
             << "\033[1m-(" << (i++) << ") assume \"" << _a.first.label() << "\":\033[0m\n";
         out.indent();
@@ -204,7 +217,7 @@ namespace romp {
           if (not a->tripped->is_flat())
             out << out.nl()
                 << "        quantifiers(" << a->tripped->quants() << ")\n";
-          out << out.indentation() 
+          out << out.indentation()
               << ((a->tripped->is_generic())
                   ? "        inside"
                   : "        last-rule")
@@ -221,15 +234,45 @@ namespace romp {
       out.out << out._dedent() << std::endl;
     }
 #endif
-    if ((r.OPTIONS.attempt_limit != _ROMP_ATTEMPT_LIMIT_DEFAULT && r.OPTIONS.deadlock) 
+    if ((r.OPTIONS.attempt_limit != _ROMP_ATTEMPT_LIMIT_DEFAULT() && r.OPTIONS.deadlock)
           && r.attempt_limits_reached.size() > 0) {
-        out << out.indentation() << "\033[1;4mATTEMPT LIMIT(S) REACHED (n=" 
+        out << out.indentation() << "\033[1;4mATTEMPT LIMIT(S) REACHED (n="
                 << r.attempt_limits_reached.size() << "):\033[0m\n";
         out.indent();
         i = 1;
         for (const auto& _al : r.attempt_limits_reached) {
-          if (i > _ROMP_HIST_LEN && not (r.OPTIONS.report_all)) { 
-            out << out.indentation() << "-(..) ... " << r.attempt_limits_reached.size()-(i-1) << " more ...\n"; 
+          if (i > _ROMP_HIST_LEN && not (r.OPTIONS.report_all)) {
+            out << out.indentation() << "-(..) ... " << r.attempt_limits_reached.size()-(i-1) << " more ...\n";
+            break;
+          }
+          out << out.indentation()
+              << "-(" << i << ") [w#" << _al->id << "] seed=" << _al->root_seed << " start-id=" << _al->start_id <<" depth=" << _al->depth;
+#ifdef __ROMP__DO_MEASURE
+          out << " t=" << _al->active_time << " (Δt=" << _al->total_time << ')';
+#endif
+          out << out.nl()
+              << "        last-rule=";
+          if (_al->inside != nullptr) {
+            out << '{' << _al->inside->get_type() << " \"" << _al->inside->label() << "\"";
+            if (not _al->inside->is_flat())
+              out << " quantifiers(" << _al->inside->quants() << ")";
+            out << "}\n";
+          } else {
+            out << "none\n";
+          }
+          ++i;
+        }
+      out.out << out._dedent() << std::endl;
+     }
+    if ((r.OPTIONS.deadlock)
+          && r.deadlocks_reached.size() > 0) {
+        out << out.indentation() << "\033[1;4mDEADLOCK(S) REACHED (n="
+                << r.deadlocks_reached.size() << "):\033[0m\n";
+        out.indent();
+        i = 1;
+        for (const auto& _al : r.deadlocks_reached) {
+          if (i > _ROMP_HIST_LEN && not (r.OPTIONS.report_all)) {
+            out << out.indentation() << "-(..) ... " << r.deadlocks_reached.size()-(i-1) << " more ...\n";
             break;
           }
           out << out.indentation()
@@ -253,13 +296,13 @@ namespace romp {
      }
 #ifdef __romp__ENABLE_cover_property
      if (r.OPTIONS.r_cover && r.completed_covers.size() > 0) {
-      out << out.indentation() << "\033[1;4mCOVER(S) COMPLETED (n=" 
+      out << out.indentation() << "\033[1;4mCOVER(S) COMPLETED (n="
                 << r.completed_covers.size() << "):\033[0m\n";
         out.indent();
         i = 1;
         for (const auto& _c : r.completed_covers) {
-          if (i > _ROMP_HIST_LEN+1 && not (r.OPTIONS.report_all)) { 
-            out << out.indentation() << "-[..] ... " << r.completed_covers.size()-(i-1) << " more ...\n"; 
+          if (i > _ROMP_HIST_LEN+1 && not (r.OPTIONS.report_all)) {
+            out << out.indentation() << "-[..] ... " << r.completed_covers.size()-(i-1) << " more ...\n";
             break;
           }
           out << out.indentation()
@@ -272,19 +315,19 @@ namespace romp {
               if (not _c->inside->is_flat())
                 out << " quantifiers(" << _c->inside->quants() << ")";
           out << "}\n";
-          ++i; 
+          ++i;
         }
       out.out << out._dedent() << std::endl;
      }
 #endif
     if (r.OPTIONS.report_all && r.max_depths_reached.size() > 0) {
-      out << out.indentation() << "\033[1;4mMAX DEPTH(S) REACHED (n=" 
+      out << out.indentation() << "\033[1;4mMAX DEPTH(S) REACHED (n="
                 << r.max_depths_reached.size() << "):\033[0m";
         out.indent();
         i = 1;
         for (const auto& _r : r.max_depths_reached) {
-          if (i > _ROMP_HIST_LEN && not (r.OPTIONS.report_all)) { 
-            out << out.indentation() << "-(..) ... " << r.max_depths_reached.size()-(i-1) << " more ...\n"; 
+          if (i > _ROMP_HIST_LEN && not (r.OPTIONS.report_all)) {
+            out << out.indentation() << "-(..) ... " << r.max_depths_reached.size()-(i-1) << " more ...\n";
             break;
           }
             out << out.nl()
@@ -298,7 +341,7 @@ namespace romp {
     if (r.n_merrors_reached > 0) {
       issues += r.merrors_reached.size();
       abs_issues += r.n_merrors_reached;
-      out << out.indentation() << "\033[1;4mERROR STATEMENT(S) REACHED (n="<< r.merrors_reached.size() 
+      out << out.indentation() << "\033[1;4mERROR STATEMENT(S) REACHED (n="<< r.merrors_reached.size()
           << " |n|=" << r.n_merrors_reached << "):\033[0m\n";
       out.indent(); i = 1;
       for (const auto& _a : r.merrors_reached) {
@@ -307,8 +350,8 @@ namespace romp {
         out.indent();
         int j = 0;
         for (const auto& a : _a.second) {
-          if (j > _ROMP_HIST_LEN && not (r.OPTIONS.report_all || r.OPTIONS.report_error)) { 
-            out << out.indentation() << "-[..] ... " << _a.second.size()-j << " more ...\n"; 
+          if (j > _ROMP_HIST_LEN && not (r.OPTIONS.report_all || r.OPTIONS.report_error)) {
+            out << out.indentation() << "-[..] ... " << _a.second.size()-j << " more ...\n";
             break;
           }
           out << out.indentation()
@@ -331,7 +374,7 @@ namespace romp {
     if (r.n_properties_violated > 0) {
       issues += r.properties_violated.size();
       abs_issues += r.n_properties_violated;
-      out << out.indentation() << "\033[1;4mPROPERTY(S) VIOLATED (n="<< r.properties_violated.size() 
+      out << out.indentation() << "\033[1;4mPROPERTY(S) VIOLATED (n="<< r.properties_violated.size()
           << " |n|=" << r.n_properties_violated << "):\033[0m\n";
       out.indent(); i = 1;
       for (const auto& _a : r.properties_violated) {
@@ -342,8 +385,8 @@ namespace romp {
         out.indent();
         int j = 0;
         for (const auto& a : _a.second) {
-          if (j > 2 && not (r.OPTIONS.report_all || r.OPTIONS.report_error)) { 
-            out << out.indentation() << "-[..] ... " << _a.second.size()-j << " more ...\n"; 
+          if (j > 2 && not (r.OPTIONS.report_all || r.OPTIONS.report_error)) {
+            out << out.indentation() << "-[..] ... " << _a.second.size()-j << " more ...\n";
             break;
           }
           out << out.indentation()
@@ -374,7 +417,7 @@ namespace romp {
     if (r.OPTIONS.report_all && r.unknown_causes.size() > 0) {
       issues += r.unknown_causes.size();
       abs_issues += r.unknown_causes.size();
-      out << out.indentation() << "\033[41;37;1;4mUNKNOWN ERROR(S) (n=" 
+      out << out.indentation() << "\033[41;37;1;4mUNKNOWN ERROR(S) (n="
                 << r.unknown_causes.size() << "):\033[21;24m\n";
         out.indent();
         i = 1;
@@ -407,9 +450,9 @@ namespace romp {
         << out.nl() << "            runtime: " << r.get_time();
 #else
         << out.nl() << "    total walk time: t=" << r.total_walk_active_time << " "
-                                          "(Δt=" << r.total_walk_time << ")" 
+                                          "(Δt=" << r.total_walk_time << ")"
         << out.nl() << "     mean walk time: mean(t)=" << (r.total_walk_active_time/r.size) << " "
-                                           "(mean(Δt)=" << (r.total_walk_time/r.size) << ')' 
+                                           "(mean(Δt)=" << (r.total_walk_time/r.size) << ')'
         << out.nl() << "         RW runtime: " << r.get_time();
 #endif
     out.out << "\n\n" << std::flush;
@@ -421,13 +464,63 @@ void print_help() {
   using namespace std;
   Options default_opts;
   // clang-format off
-  std::cout << 
+  std::cout <<
     "This is a murphi model checker generated from the romp random walker tool.\n"
     "   generated from: " __model__filename "\n"
     "\n\n"
     "CLI USAGE:    <> - required  {} - optional  * - can have 0 or more\n"
     "   ./<this-file> {options}*\n"
-    "\n\n"
+    "\n"
+    "RULE SELECTION ALGO: \n"
+    "    note: change this using the --selection-algo/-s option in the romp tool\n"
+# if (_ROMP_RULE_SELECTION_ALGO == (0ul))
+    "  ---- 100% random everything [opt 0] ----\n"
+    "  (1) At every step CHOOSE a random rule.\n"
+    "  (2) CHOOSE the ruleset params at random.\n"
+    "  (3) CHECK the guard\n"
+    "      IF it returns true THEN GOTO step 4\n"
+    "        ELSE RETURN to step 1 for next simulation step.\n"
+    "  (4) APPLY the rule.\n"
+    "  (5) CHECK the global properties\n"
+    "  (6) RETURN to step 1 for the next simulation step\n"
+# elif (_ROMP_RULE_SELECTION_ALGO == (2ul))
+    "  ---- Random everything without replacement until successful [opt: 2] ----\n"
+    "  (1) CREATE a \"bag\" of all rules with all of their ruleset param options\n"
+    "  (2) CHOOSE a rule with its ruleset param(s) from the \"bag\" at random\n"
+    "      (IF bag empty, THEN end walk early -deadlock-)\n"
+    "  (3) CHECK the guard,\n"
+    "      IF it returns true THEN GOTO step 4,\n"
+    "        ELSE RETURN to step 2 for the next simulation step.\n"
+    "  (4) APPLY the rule.\n"
+    "  (5) CHECK the global properties (IF any fail THEN end the walk)\n"
+    "  (6) RETURN to step 1 for the next simulation step.\n"
+# elif (_ROMP_RULE_SELECTION_ALGO == (3ul))
+    "  ----  Heuristic Symmetry Reduction [opt: 3] ----\n"
+    "  (1) At every step CHOOSE a random rule\n"
+    "  (2) CHOOSE it's ruleset parameters by the using next combination in\n"
+    "       lexicographic order.\n"
+    "  (3) CHECK the guard,\n"
+    "      IF it returns true THEN GOTO step 4 ELSE GOTO step 5.\n"
+    "  (4) APPLY the rule.\n"
+    "  (5) CHECK the global properties (IF any fail THEN end the walk)\n"
+    "  (6) regardless of the results of step 3\n"
+    "      RETURN to step 1 for the next simulation step.\n"
+# else // default
+    "  ---- Random Ruleset params without replacement [opt 1: DEFAULT] ----\n"
+    "  (1) CREATE a \"bag\" of all of the rules (not specifying ruleset params)\n"
+    "  (2) CHOOSE a rule at random from the \"bag\" of rules\n"
+    "      (IF rule \"bag\" empty THEN end walk early -deadlock-)\n"
+    "  (3) CREATE a \"bag\" of all possible ruleset param combinations possible\n"
+    "  (4) CHOOSE a set of ruleset params from the params \"bag\" at random\n"
+    "      (IF params bag empty, but params to fill THEN RETURN to step 2)\n"
+    "  (5) CHECK the guard,\n"
+    "      IF it returns true THEN GOTO step 6,\n"
+    "        ELSE RETURN to step 4 for the next simulation step.\n"
+    "  (6) APPLY the rule\n"
+    "  (7) CHECK the global properties (if any fail end the walk)\n"
+    "  (8) RETURN to step 1 for the next simulation step.\n"
+# endif
+    "\n"
     "NOTE:\n"
     "  Option flags and arguments are NOT POSIX compliant!\n"
     "  Please separate all options and their arguments with spaces,\n"
@@ -458,7 +551,7 @@ void print_help() {
     "    | -s <str/int>    default: current system time\n"
     "  --even-start      Determine startstate for even distribution\n"
     "    | -es             rather than random choice (default behavior).\n"
-    "  --start-id <id>   Set a single startstate to use (For all walks).\n"  
+    "  --start-id <id>   Set a single startstate to use (For all walks).\n"
     "    | -sid <id>       <id> is an int determined by a startstate's\n"
     "                      position in the file after ruleset expansion.\n"
     "                      Valid <id> values are integers between:\n"
@@ -610,7 +703,7 @@ void Options::parse_args(int argc, char **argv) {
   bool start_provided = false;
   bool guard_provided = false;
 
-  for (int i = 0; i < argc; ++i) {
+  for (int i = 1; i < argc; ++i) {
 
     if ("-h" == std::string(argv[i]) || "--help" == std::string(argv[i])) { // to print help message and ( result of comparison
                                                   // against a string literal is unspecified)
@@ -626,7 +719,7 @@ void Options::parse_args(int argc, char **argv) {
     }
      else if ("-sid" == std::string(argv[i]) || "--start-id" == std::string(argv[i])) {
       start_provided = true;
-      if (i + 1 < argc && '-' != argv[i + 1][0]) { 
+      if (i + 1 < argc && '-' != argv[i + 1][0]) {
         ++i;
         try {
           start_id = std::stoul(argv[i], nullptr, 0);
@@ -726,7 +819,7 @@ void Options::parse_args(int argc, char **argv) {
       }
     } else if ("-s" == std::string(argv[i]) || "--seed" == std::string(argv[i])) {
       if (i + 1 < argc && '-' != argv[i + 1][0]) {
-        seed_str = argv[i + 1];
+        seed_str = argv[i];
         try {
           rand_seed = std::stoul(argv[i + 1], nullptr, 0);
         } catch (std::invalid_argument &ia) {
@@ -737,6 +830,7 @@ void Options::parse_args(int argc, char **argv) {
                     << std::flush;
           exit(EXIT_FAILURE);
         }
+        i++;
       } else { // rand_seed = std::time(NULL); // no need
         std::cerr << "invalid argument : -s/--seed requires you to provide a seed after the flag\n"
                      "                   else exclude it to use default value: (current_system_time)\n"
@@ -789,7 +883,7 @@ void Options::parse_args(int argc, char **argv) {
     } else if ("-rc" == std::string(argv[i]) || "--r-cover" == std::string(argv[i]) || "--report-cover" == std::string(argv[i])) {
       r_cover = true;
 #endif
-    } else if ("-ag" == std::string(argv[i]) || "-ll" == std::string(argv[i]) || "-al" == std::string(argv[i]) 
+    } else if ("-ag" == std::string(argv[i]) || "-ll" == std::string(argv[i]) || "-al" == std::string(argv[i])
                 || "--attempt-guard" == std::string(argv[i]) || "--loop-limit" == std::string(argv[i]) || "--attempt-limit" == std::string(argv[i])) {
       // do_attempt_guard = true;  // just check to make sure this value is not 0
       guard_provided = true;
@@ -954,7 +1048,7 @@ void Options::parse_args(int argc, char **argv) {
         exit(EXIT_FAILURE);
       }
     } else {
-      std::cerr << "ignored argument : `" << argv[i] << "` is not recognised as a argument and will be ignored\n" 
+      std::cerr << "ignored argument : `" << argv[i] << "` is not recognised as a argument and will be ignored\n"
                 << std::flush;
     }
   } // end for loop
@@ -975,7 +1069,7 @@ void Options::parse_args(int argc, char **argv) {
         exit(EXIT_FAILURE);
       }
     }
-    
+
     // check for inconsistent or contradictory options here
     //[X]TODO (OPTIONAL) check OPTIONS to make sure config is valid and output
     // if (history_length == 0) {
@@ -1080,45 +1174,55 @@ const stream_void Options::write_config(ostream_p& out) const noexcept {
                                     : "randomly assigned \t(default)"));
   std::string deadlock_str = "";
   if (deadlock) {
-#ifdef __romp__ENABLE_liveness_property
-    if (liveness) {
-      deadlock_str += sep + "liveness property violations";
-      sep = ", ";
-    }
-#endif
+#   ifdef __romp__ENABLE_liveness_property
+      if (liveness) {
+        deadlock_str += sep + "liveness property violations";
+        sep = ", ";
+      }
+#   endif
     if (attempt_limit != defaults.attempt_limit) deadlock_str += sep + "attempt limit";
   } else deadlock_str = "NO DETECTION (" + std::string((deadlock == defaults.deadlock) ? " \t(default)" : "");
   sep = "";
   std::string report_str = "property violations | error statements reached";
   std::string pw_report_str = "";
   bool _compound = false;
-#ifdef __romp__ENABLE_assume_property
-  if (r_assume) {
-    _compound = true;
-    // report_str += " | " "assume property violated"; 
-    pw_report_str += "assume property violated";
-    sep = " | ";
-  }
+# ifdef __romp__ENABLE_assume_property
+    if (r_assume) {
+      _compound = true;
+      // report_str += " | " "assume property violated";
+      pw_report_str += "assume property violated";
+      sep = " | ";
+    }
+# endif
+# ifdef __romp__ENABLE_cover_property
+    // if (complete_on_cover) report_str += " | " "cover properties completed";
+    if (complete_on_cover && r_cover) {
+      _compound = true;
+      pw_report_str += sep + "cover properties completed";
+      sep = " | ";
+    }
+# endif
+# if (_ROMP_RULE_SELECTION_ALGO == (0ul)) // 100% radom
+    std::string selection_algo_str = "100% random with replacement [opt: 0] \t (config when generating with romp)";
+# elif (_ROMP_RULE_SELECTION_ALGO == (2ul)) // full no replacement
+    std::string selection_algo_str = "Expanded Rule Random replacement without replacement [opt: 2] \t(config when generating with romp)";
+# elif (_ROMP_RULE_SELECTION_ALGO == (3ul)) // heuristic symmetry reduction
+    std::string selection_algo_str = "Heuristic Symmetry Reduction [opt: 3] \t(config when generating with romp)";
+# else                                      // per rule no replacement [default]
+    std::string selection_algo_str = "Per Rule Random selection without replacement [opt: 1] \t(default : config when generating with romp)";
 #endif
-#ifdef __romp__ENABLE_cover_property
-  // if (complete_on_cover) report_str += " | " "cover properties completed";
-  if (complete_on_cover && r_cover) {
-    _compound = true;
-    pw_report_str += sep + "cover properties completed";
-    sep = " | ";
-  }
-#endif
-  if (report_all) pw_report_str = "ALL WALKS"; 
-  else if (report_error) pw_report_str += sep + "property violations | error statements reached"; 
+  if (report_all) pw_report_str = "ALL WALKS";
+  else if (report_error) pw_report_str += sep + "property violations | error statements reached";
   else if (not _compound) pw_report_str = "NONE \t(default)";
   out << out.indentation()
-      << "BASE LAUNCH CONFIG:"                                      << out.indent() << out.nl()
-      << "    threads: " << threads << ((threads==defaults.threads) ? " \t(default)" : "")<< out.nl()
-      << "      walks: " << walks << ((walks==defaults.walks) ? " \t(default)" : "")<< out.nl()
-      << "       seed: " << rand_seed << ((rand_seed==defaults.rand_seed) ? " \t(default:time)" : "")  << out.nl()
-      << " startstate: " << startstate_str                                          << out.nl()
-      << "  max depth: " << depth << ((depth==defaults.depth) ? " \t(default)" : "")  << out.nl()
-      << "   deadlock: " << deadlock_str                                            << out.nl()
+      << "BASE LAUNCH CONFIG:"                                                      << out.indent() << out.nl()
+      << " rule-selection-algo: " << selection_algo_str                                             << out.nl()
+      << "             threads: " << threads << ((threads==defaults.threads) ? " \t(default)" : "") << out.nl()
+      << "               walks: " << walks << ((walks==defaults.walks) ? " \t(default)" : "")       << out.nl()
+      << "                seed: " << rand_seed << ((rand_seed==defaults.rand_seed) ? " \t(default:C++defined)" : "")  << out.nl()
+      << "          startstate: " << startstate_str                                                 << out.nl()
+      << "           max depth: " << depth << ((depth==defaults.depth) ? " \t(default)" : "")       << out.nl()
+      << "            deadlock: " << deadlock_str                                                   << out.nl()
 #ifdef __romp__ENABLE_symmetry
       << "   symmetry: YES, heuristic \t(config when generating with romp)"
 #else
@@ -1147,11 +1251,11 @@ const stream_void Options::write_config(ostream_p& out) const noexcept {
   out << "ENABLED SPECIAL/RUMUR PROPERTIES:"                        << out.indent()
 #ifdef __romp__ENABLE_assume_property
                                                                                     << out.nl()
-      << "      assume: YES, " << (r_assume ? "reporting" : "non-reporting \t(default)")  
+      << "      assume: YES, " << (r_assume ? "reporting" : "non-reporting \t(default)")
 #endif
 #ifdef __romp__ENABLE_cover_property
                                                                                     << out.nl()
-      << "       cover: " << ((complete_on_cover) 
+      << "       cover: " << ((complete_on_cover)
                               ? "YES, " + std::string((r_cover) ? "reporting" : "non-reporting")
                               : "NO \t(default)" )                                    << out.nl()
       << " cover-count: " << ((complete_on_cover)
@@ -1172,12 +1276,12 @@ const stream_void Options::write_config(ostream_p& out) const noexcept {
       << "history len: " << _ROMP_HIST_LEN << " \t(config when generating with romp)"<< out.nl()
       << "print state: " << ((report_emit_state)
                              ? ("YES"
-                                + std::string((report_show_type) 
+                                + std::string((report_show_type)
                                                 ? ", w/ type info"
                                                 : "")
-                                + std::string((report_emit_state==defaults.report_emit_state 
-                                                && report_show_type==defaults.report_show_type) 
-                                              ? " \t(default)" 
+                                + std::string((report_emit_state==defaults.report_emit_state
+                                                && report_show_type==defaults.report_show_type)
+                                              ? " \t(default)"
                                               : ""))
                              : ("NO"
                                 + std::string((report_emit_state==defaults.report_emit_state)
@@ -1199,8 +1303,8 @@ const stream_void Options::write_config(ostream_p& out) const noexcept {
     out << " - max depth reached"                                                   << out.nl()
         << " - attempt limit reached"
             << ((attempt_limit == defaults.attempt_limit)
-                ? (" \t(`built-in`" 
-                    + std::string((deadlock) 
+                ? (" \t(`built-in`"
+                    + std::string((deadlock)
                                   ? ")"
                                   : "; ignores -nd/--no-deadlock)"))
                 : ((deadlock)
@@ -1226,10 +1330,10 @@ ojstream<O>& operator << (ojstream<O>& json, const Options& opts) noexcept {
             "\"bfs-coef\":" << ((opts.do_bfs) ? std::to_string(opts.bfs_coefficient) : "null") << ","
             "\"bfs-limit\":" << ((opts.do_bfs) ? std::to_string(opts.bfs_limit) : "null") << ","
             "\"max-depth\":" << opts.depth << ","
-            "\"abs-attempt-limit\":" << std::to_string(_ROMP_ATTEMPT_LIMIT_DEFAULT) << ","
-            "\"attempt-limit\":" << ((opts.attempt_limit != _ROMP_ATTEMPT_LIMIT_DEFAULT
-                                        && opts.deadlock) 
-                                      ? std::to_string(opts.attempt_limit) 
+            "\"abs-attempt-limit\":" << std::to_string(_ROMP_ATTEMPT_LIMIT_DEFAULT()) << ","
+            "\"attempt-limit\":" << ((opts.attempt_limit != _ROMP_ATTEMPT_LIMIT_DEFAULT()
+                                        && opts.deadlock)
+                                      ? std::to_string(opts.attempt_limit)
                                       : "null") << ","
             "\"start-mode\":" << ((opts.start_id != _ROMP_START_ID_DEFAULT)
                                   ? ("\"single\"")
@@ -1239,9 +1343,21 @@ ojstream<O>& operator << (ojstream<O>& json, const Options& opts) noexcept {
             "\"single-start-id\":" << ((opts.start_id != _ROMP_START_ID_DEFAULT)
                                         ? std::to_string(opts.start_id)
                                         : "null") << ","
-#ifdef __romp__ENABLE_symmetry
+#if (_ROMP_RULE_SELECTION_ALGO == (0ul))
+            "\"rule-selection-algo-id\":0,"
+            "\"rule-selection-algo-desc\":\"100% random\","
+            "\"symmetry-reduction\":false,"
+#elif (_ROMP_RULE_SELECTION_ALGO == (2ul))
+            "\"rule-selection-algo-id\":2,"
+            "\"rule-selection-algo-desc\":\"Rule Expanded Random without replacement\","
+            "\"symmetry-reduction\":false,"
+#elif (_ROMP_RULE_SELECTION_ALGO == (3ul))
+            "\"rule-selection-algo-id\":3,"
+            "\"rule-selection-algo-desc\":\"Heuristic Symmetry Reduction\","
             "\"symmetry-reduction\":true,"
 #else
+            "\"rule-selection-algo-id\":1,"
+            "\"rule-selection-algo-desc\":\"Per Rule Random without Replacement\","
             "\"symmetry-reduction\":false,"
 #endif
 #ifdef __romp__ENABLE_assume_property
@@ -1251,8 +1367,8 @@ ojstream<O>& operator << (ojstream<O>& json, const Options& opts) noexcept {
 #endif
 #ifdef __romp__ENABLE_cover_property
             "\"enable-cover\":" << opts.complete_on_cover << ","
-            "\"cover-count\":" << ((opts.complete_on_cover) 
-                                    ? std::to_string(opts.cover_count) 
+            "\"cover-count\":" << ((opts.complete_on_cover)
+                                    ? std::to_string(opts.cover_count)
                                     : "null") << ","
 #else
             "\"enable-cover\":false,"
@@ -1260,8 +1376,8 @@ ojstream<O>& operator << (ojstream<O>& json, const Options& opts) noexcept {
 #endif
 #ifdef __romp__ENABLE_liveness_property
             "\"enable-liveness\":" << opts.liveness << ","
-            "\"liveness-limit\":" << ((opts.liveness) 
-                                      ? std::to_string(opts.lcount) 
+            "\"liveness-limit\":" << ((opts.liveness)
+                                      ? std::to_string(opts.lcount)
                                       : "null") << ","
 #else
             "\"enable-liveness\":false,"
@@ -1298,8 +1414,8 @@ ostream_p& operator << (ostream_p& out, const Options& opts) noexcept { opts.wri
       put_msgs(bfs.put_msgs),
       id(RandWalker::next_id++),
       OPTIONS(OPTIONS_),
-      sim1Step(((OPTIONS.do_trace) 
-                  ? std::function<void()>([this](){sim1Step_trace();}) 
+      sim1Step(((OPTIONS.do_trace)
+                  ? std::function<void()>([this](){sim1Step_trace();})
                   : std::function<void()>([this](){sim1Step_no_trace();}))),
 #     ifdef __romp__ENABLE_cover_property
         enable_cover(OPTIONS_.complete_on_cover), goal_cover_count(OPTIONS_.cover_count),
@@ -1324,9 +1440,9 @@ ostream_p& operator << (ostream_p& out, const Options& opts) noexcept { opts.wri
       bfs_trace(bfs);
     }
     // transfer history from bfs
-    for (size_t i=bfs.history_start; i<bfs.history_level; ++i) 
+    for (size_t i=bfs.history_start; i<bfs.history_level; ++i)
       history[i%history_size()] = bfs.history[i%bfs.history_size()];
-    //NOTE: this is lazy and overwrites previous data while transferring data 
+    //NOTE: this is lazy and overwrites previous data while transferring data
     //     since the history buffer on a BFS Walker is always larger than a random walker
   }
 
@@ -1339,7 +1455,7 @@ ostream_p& operator << (ostream_p& out, const Options& opts) noexcept { opts.wri
     for (size_t i=bfs.history_start; i<bfs.history_level; ++i) {
       *json << sep << *bfs.history[i%bfs.history_size()].rule;
     }
-    *json << "],"  
+    *json << "],"
             "\"state\":" << bfs.state << '}';
   }
 

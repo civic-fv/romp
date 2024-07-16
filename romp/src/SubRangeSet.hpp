@@ -7,13 +7,13 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file IntRangeSet.hpp
- * 
+ *
  * @brief A data object that holds a set representation of integer ranges,
  *        where overlap-ing ranges are union-ed into single ranges.
  *        (used in romp to handle the merged scalar enum value space)
- * 
+ *
  * @date 2022/10/16
- * @version 0.2
+ * @version 0.3
  */
 
 namespace romp {
@@ -32,7 +32,7 @@ class SubRangeSet {
 public:
   const int_t MIN;
   const int_t MAX;
-  SubRangeSet(int_t MIN_, int_t MAX_) 
+  SubRangeSet(int_t MIN_, int_t MAX_)
     : MIN(MIN_), MAX(MAX_), range_head(nullptr), _size(0u) {}
   void insert(int_t min, int_t max) {
     min = ((min <= MIN) ? MIN : min);
@@ -48,7 +48,7 @@ public:
 
   iterator begin() const { return iterator{range_head}; }
   iterator end() const { return iterator{nullptr}; }
-  size_t size() const { return _size; } 
+  size_t size() const { return _size; }
 
 protected:
   struct iterator {

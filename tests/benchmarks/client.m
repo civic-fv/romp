@@ -1,3 +1,7 @@
+--------------------------------------------------------------------------------
+-- RUN: romp "%s" -o - | c++ - -o /dev/null
+--------------------------------------------------------------------------------
+
 const clientNUMS : 2;
 type state : enum{I, T, C, E};
 
@@ -5,11 +9,11 @@ type state : enum{I, T, C, E};
 
 var n : array [client] of state;
 
-    x : boolean; 
-    
+    x : boolean;
+
 ruleset i : client do
 rule "Try" n[i] = I ==> begin
-      n[i] := T;endrule; 
+      n[i] := T;endrule;
 
 rule "Crit"
       n[i] = T& x = true ==>begin
@@ -18,8 +22,8 @@ rule "Crit"
 rule "Exit"
       n[i] = C ==>begin
       n[i] := E;endrule;
-      
- 
+
+
 rule "Idle"
       n[i] = E ==> begin n[i] := I;
       x := true;endrule;
@@ -28,7 +32,7 @@ endruleset;
 startstate
 begin
  for i: client do
-    n[i] := I; 
+    n[i] := I;
   endfor;
   x := true;
 endstartstate;

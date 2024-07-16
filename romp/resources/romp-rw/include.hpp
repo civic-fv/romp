@@ -7,11 +7,11 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file romp-rw/include.hpp
- * 
+ *
  * @brief the includes needed for the generated model checker
- * 
+ *
  * @date 2022/10/05
- * @version 0.2
+ * @version 0.3
  */
 
 #ifndef __romp__GENERATED_CODE
@@ -42,6 +42,9 @@
 #include <unordered_set>
 #include <chrono>
 #include <ctime>
+#include <bitset>
+#include <random>
+// #include <sys/time.h>  // from mimicing cmurphi random
 
 #ifndef __romp__GENERATED_CODE
 #include "pregen-fix.hpp" // FOR PRE-CODEGEN LANGUAGE SUPPORT ONLY !!

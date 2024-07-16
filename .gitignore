@@ -48,6 +48,13 @@ CMakeFiles/**
 *.ru.c
 *.ru
 *.cm
+*.ro
+*.ro0
+*.ro1
+*.ro2
+*.ro3
+*.ro4
+*.ro5
 tests/*.cpp
 tests/*.out
 tests/**/*.cpp
@@ -96,6 +103,11 @@ tests/**/*.out
 
 # vscode excludes
 .vscode/*.log
+
+
+# Lit test times
+.lit_test_times.*
+
 
 # CMake ignores
 CMakeLists.txt.user

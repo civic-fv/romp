@@ -29,7 +29,7 @@ void MultisetAdd::update() {
 
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 MultisetRemove::MultisetRemove(const Ptr<ExprID>& index_, const Ptr<Expr>& multiset_, const location& loc_)
   : Stmt(loc_), index(index_), multiset(multiset_) {}
@@ -46,7 +46,7 @@ void MultisetRemove::validate() const {
         throw Error("index value of the MultisetRemove operation could not be associated with a Choose rule", index->loc);
       if (not index->type()->equal_to(*ms_quantifier->type))
         throw Error("index not of valid type for specified multiset", index->loc);
-    } else 
+    } else
       throw Error("MultisetRemove requires that the index value be an unmodified variable reference to a Choose rule", index->loc);
   } else
     throw Error("not of a multiset type as expected", multiset->loc);
@@ -55,7 +55,7 @@ void MultisetRemove::update() {
   // nothing to do here with current design
 }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 MultisetRemovePred::MultisetRemovePred(const MultisetQuantifier& ms_quantifier_, const Ptr<Expr>& pred_, const location& loc_)

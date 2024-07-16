@@ -9,7 +9,7 @@
 
 namespace romp {
 
-void CodeGenerator::set_out(std::shared_ptr<std::ofstream>& out_) { out = out_; }
+void CodeGenerator::set_out(std::unique_ptr<std::ofstream> out_) { out = std::move(out_); }
 
 // std::filesystem::path CodeGenerator::input_file_path = "stdin";
 // std::filesystem::path CodeGenerator::output_file_path = "./romp.cpp";

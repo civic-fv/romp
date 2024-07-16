@@ -31,7 +31,7 @@ const IdHandler MURPHI_RESERVED_NAMES_HANDLER = [](std::string name, const IdTyp
     switch (id_type) {
       case FUNCTION_NAME: {
         // if (name == "") // technically parser should never allow this
-        //   throw Error("missing name/id in Function/Procedure declaration", loc); 
+        //   throw Error("missing name/id in Function/Procedure declaration", loc);
         auto res = RESERVED_FUNCT_NAMES.find(lower_name);
         if (res != RESERVED_FUNCT_NAMES.end())
           throw Error("Function/Procedure name/id `"+name+"` conflicts with reserved id `"+*res+"`", loc);
@@ -50,7 +50,7 @@ const IdHandler MURPHI_RESERVED_NAMES_HANDLER = [](std::string name, const IdTyp
         break;
       case TYPE_NAME: {
         // if (name == "") // technically parser should never allow this
-        //   throw Error("missing name/id in type declaration", loc); 
+        //   throw Error("missing name/id in type declaration", loc);
         auto res = RESERVED_TYPE_NAMES.find(lower_name);
         if (res != RESERVED_TYPE_NAMES.end())
           throw Error("type name/id (`"+name+"`) conflicts with a reserved id (`"+*res+"`)", loc);
@@ -69,8 +69,8 @@ const IdHandler MURPHI_RESERVED_NAMES_HANDLER = [](std::string name, const IdTyp
 
 
 Ptr<Model> parse(std::istream &input) {
-  return parse(input, 
-               [&](std::string name, const IdType id_type, const location& loc) -> std::optional<std::string> { 
+  return parse(input,
+               [&](std::string name, const IdType id_type, const location& loc) -> std::optional<std::string> {
                   return {name};
                });
 }

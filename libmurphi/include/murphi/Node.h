@@ -3,6 +3,7 @@
 #include "location.hh"
 #include <climits>
 #include <cstddef>
+#include <cstdint>
 #include <iostream>
 
 #ifndef MURPHI_API_WITH_RTTI
@@ -47,9 +48,9 @@ struct MURPHI_API_WITH_RTTI Node {
   ///   and its symbols linked.
   ///  (aka in the dispatch method after returning from a visit call)
   /// It is recommended to always call it after modifying an AST member
-  ///  therefore it is also always recommended to ensure a node's 
+  ///  therefore it is also always recommended to ensure a node's
   ///  dependent and dependee symbols are properly updated after making any changes.
-  /// (This exists only because this parsing system/lib does not keeping 
+  /// (This exists only because this parsing system/lib does not keeping
   ///   an active symtab structure during parsing and until the AST is discarded)
   /// CONTRACT: implementations and overrides of this function should NEVER break symbol resolution!
   virtual void update();

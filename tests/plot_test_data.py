@@ -13,7 +13,7 @@ def violin_plot():
 def box_plot(df_selected):
     """
     Take in a DF selection in the form of `{'group': {'label': [data-points], more label groups ...}, more groups...}`
-    
+
     """
     #TODO printing plots
 
@@ -27,7 +27,7 @@ def main():
     # {} nested for how many qualifiers you want to have
     box_plot({x:{m:dfx.query(f"Model_name=='{m}'").Time.to_numpy() for m in ['ruMI','german','n_peterson_bug1']} for x,dfx in [('cmurphi',df_cm),('rumur',df_ru)]}
             )
-    
+
 
 
 #%%

@@ -1,71 +1,75 @@
---------------------------------------------------------------------------
--- Copyright (C) 1992, 1993 by the Board of Trustees of 		  
--- Leland Stanford Junior University.					  
---									  
--- This description is provided to serve as an example of the use	  
--- of the Murphi description language and verifier, and as a benchmark	  
--- example for other verification efforts.				  
---									  
--- License to use, copy, modify, sell and/or distribute this description  
--- and its documentation any purpose is hereby granted without royalty,   
--- subject to the following terms and conditions, provided		  
---									  
--- 1.  The above copyright notice and this permission notice must	  
--- appear in all copies of this description.				  
--- 									  
--- 2.  The Murphi group at Stanford University must be acknowledged	  
--- in any publication describing work that makes use of this example. 	  
--- 									  
--- Nobody vouches for the accuracy or usefulness of this description	  
--- for any purpose.							  
---------------------------------------------------------------------------
-
---------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Copyright (C) 1992, 1993 by the Board of Trustees of
+-- Leland Stanford Junior University.
 --
---                                                                        
--- File:        ldash.m                                                   
---                                                                        
--- Content:     Concrete Dash Protocol                                    
---              with spinning locks only                                  
---		with symmetry		
---                                                                        
---              Checked with the PROM tables                              
---                                                                        
--- Specification decision:                                                
---          1)  Each cluster is modeled by a lock address cache (LCache), 
---              a lock address RAC (LRAC), and a unlock operation RAC (ULRAC)
---              to store outstanding operations.                          
---          2)  Seperate network channels are used.                       
---              (request and reply)                                       
---          3)  Aliases are used extensively.                             
---                                                                        
--- Summary of result:                                                     
---          1)  No bug is discovered for the final version                
---              of the protocol.                                          
---          2)  Details of result can be found at the end of this file.   
---                                                                        
--- Options:                                   
---          An option flag 'nohome' is used to switch on/off the local    
---          memory action.  This enables us to simplify the protocol to   
---          examine the behaviour when the number of processor increases. 
---                                                                        
--- References: 						       	       	  
---          1) Daniel Lenoski, James Laudon, Kourosh Gharachorloo, 	  
---             Wlof-Dietrich Weber, Anoop Gupta, John Hennessy, 	  
---             Mark Horowitz and Monica Lam.				  
---             The Stanford DASH Multiprocessor.			  
---             Computer, Vol 25 No 3, p.63-79, March 1992.		  
---             (available online)					  
---          2) Daniel Lenoski, 						  
---             DASH Prototype System,					  
---             PhD thesis, Stanford University, Chapter 3, 1992		  
---             (available online)					  
---                                                                        
--- Last Modified:        20 April 94
---                                                                        
---------------------------------------------------------------------------
+-- This description is provided to serve as an example of the use
+-- of the Murphi description language and verifier, and as a benchmark
+-- example for other verification efforts.
+--
+-- License to use, copy, modify, sell and/or distribute this description
+-- and its documentation any purpose is hereby granted without royalty,
+-- subject to the following terms and conditions, provided
+--
+-- 1.  The above copyright notice and this permission notice must
+-- appear in all copies of this description.
+--
+-- 2.  The Murphi group at Stanford University must be acknowledged
+-- in any publication describing work that makes use of this example.
+--
+-- Nobody vouches for the accuracy or usefulness of this description
+-- for any purpose.
+--------------------------------------------------------------------------------
 
-/*
+--------------------------------------------------------------------------------
+--
+--
+-- File:        ldash.m
+--
+-- Content:     Concrete Dash Protocol
+--              with spinning locks only
+--		with symmetry
+--
+--              Checked with the PROM tables
+--
+-- Specification decision:
+--          1)  Each cluster is modeled by a lock address cache (LCache),
+--              a lock address RAC (LRAC), and a unlock operation RAC (ULRAC)
+--              to store outstanding operations.
+--          2)  Seperate network channels are used.
+--              (request and reply)
+--          3)  Aliases are used extensively.
+--
+-- Summary of result:
+--          1)  No bug is discovered for the final version
+--              of the protocol.
+--          2)  Details of result can be found at the end of this file.
+--
+-- Options:
+--          An option flag 'nohome' is used to switch on/off the local
+--          memory action.  This enables us to simplify the protocol to
+--          examine the behaviour when the number of processor increases.
+--
+-- References:
+--          1) Daniel Lenoski, James Laudon, Kourosh Gharachorloo,
+--             Wlof-Dietrich Weber, Anoop Gupta, John Hennessy,
+--             Mark Horowitz and Monica Lam.
+--             The Stanford DASH Multiprocessor.
+--             Computer, Vol 25 No 3, p.63-79, March 1992.
+--             (available online)
+--          2) Daniel Lenoski,
+--             DASH Prototype System,
+--             PhD thesis, Stanford University, Chapter 3, 1992
+--             (available online)
+--
+-- Last Modified:        20 April 94
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- RUN: romp "%s" -o - | c++ - -o /dev/null
+--------------------------------------------------------------------------------
+
+/*
 Declarations
 The number of clusters is defined by 'ProcCount'.  To simplify the
 description, only some of the clusters have lock memory ('HomeCount').
@@ -91,10 +95,10 @@ and separate RAC entries are used as in ULRAC.
 only lock address space and IODir address space are used.
 */
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Constant Declarations
---------------------------------------------------
-Const 
+--------------------------------------------------------------------------------
+Const
   HomeCount:        1;         	 -- number of homes.
   RemoteCount:      4;		 -- number of remote nodes.
   ProcCount:        HomeCount+RemoteCount;
@@ -109,9 +113,9 @@ Const
   nohome:       true;           -- options to switch off processors at Home.
                                 -- to simplify the protocol.
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Type Declarations
---------------------------------------------------
+--------------------------------------------------------------------------------
 Type
   Home   : Scalarset (HomeCount);
   Remote : Scalarset (ProcCount-HomeCount);
@@ -122,18 +126,18 @@ Type
   -- the type of requests that go into the request network
   -- lock operations only
   Request_Type:
-    enum{ 
-        RD_L,    -- lock operation -- read request to Home 
+    enum{
+        RD_L,    -- lock operation -- read request to Home
         GSET,    -- lock operation -- grant request to grant cluster
-        IOWR     -- lock operation -- unlock request to home 
+        IOWR     -- lock operation -- unlock request to home
         };
 
   -- the type of reply that go into the reply network
   -- lock operations only
   Reply_Type:
     enum{
-        ACK_L,   -- lock operation -- grant acknowledge 
-        LCK,     -- lock operation -- locked lock reply 
+        ACK_L,   -- lock operation -- grant acknowledge
+        LCK,     -- lock operation -- locked lock reply
         UNLCK    -- lock operation -- unlocked lock reply
         };
 
@@ -155,7 +159,7 @@ Type
 
   -- States in the Remote Access Cache (RAC) :
   -- a) maintaining the state of currently outstanding requests,
-  -- b) buffering replies from the network 
+  -- b) buffering replies from the network
   -- c) supplementing the functionality of the processors' caches
   RAC_State:
   enum{
@@ -176,7 +180,7 @@ Type
         Locally_Shared
         };
 
-
+
 Type
   -- Directory Controller and the Memory
   -- a) Directory DRAM
@@ -187,7 +191,7 @@ Type
     Record
       LDir: Array[LAddress] of
               Record
-                State:  enum{ Unlocked, Locked, Queued }; 
+                State:  enum{ Unlocked, Locked, Queued };
                 QueuedCount: Dir_Index;
                 Entries: Array[Dir_Index] of Proc;
               End;
@@ -208,25 +212,25 @@ Type
                 Record
                   State: Cache_State;
                 End;
-      LRAC:   Array[Home] of Array[LAddress] of 
+      LRAC:   Array[Home] of Array[LAddress] of
                 Record
                   State: RAC_State;
                   Granting: Proc;
                 End;
-      ULRAC:  Array[Home] of Array[LAddress] of 
+      ULRAC:  Array[Home] of Array[LAddress] of
                 Record
                   State: RAC_State;
                 End;
     End;
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Variable Declarations
 --
 -- Clusters 0..HomeCount-1 :  Clusters with distributed memory (Procs and Homes)
 -- Clusters HomeCount..ProcCount-1 : Simplified Clusters w/o memory. (Procs only)
 -- ReqNet : Virtual network with cluster-to-cluster channels
 -- ReplyNet : Virtual network with cluster-to-cluster channels
---------------------------------------------------
+--------------------------------------------------------------------------------
 Var
   ReqNet:    Array[Proc] of Array[Proc] of
                Record
@@ -246,7 +250,7 @@ Var
                  Proc: Proc;
                End;
 
-/*
+/*
 Procedures
 -- Lock Directory handling functions
 -- Request Network handling functions
@@ -255,11 +259,11 @@ Procedures
 -- Sending Lock messages
 */
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Lock Directory handling functions
 -- a) remove a queued cluster from the lock queue
 -- b) add a queued cluster to the lock queue
---------------------------------------------------
+--------------------------------------------------------------------------------
 Procedure Remove_from_Queue( h : Proc;
 		             l : LAddress;
 			     Entry : Dir_Index);
@@ -269,7 +273,7 @@ Begin
   Do
     -- rearrange queue (not fifo queue)
     For i := 0 to QueuedCount-2 Do
-      If ( i >= Entry ) Then        
+      If ( i >= Entry ) Then
         -- move tail entries upwards; possibly empty records.
         Homes[h].LDir[l].Entries[i] := Homes[h].LDir[l].Entries[i+1];
       Endif;
@@ -296,7 +300,7 @@ Begin
            ( i < QueuedCount )
          ->
            ( Homes[h].LDir[l].Entries[i] != n )
-         Endforall )      
+         Endforall )
     Then
       Assert ( QueuedCount < DirMax ) "directory queue overflow";
       Homes[h].LDir[l].Entries[QueuedCount] := n;
@@ -305,13 +309,13 @@ Begin
   Endalias;
 Endprocedure;
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Request Network handling functions
 -- a) A request is put into the end of a specific channel connecting
 --    the source Src and the destination Dst.
 -- b) Request is only consumed at the head of the queue, forming
 --    a FIFO ordered network channel.
---------------------------------------------------
+--------------------------------------------------------------------------------
 Procedure Send_Req( t : Request_Type;
                     Dst, Src, Aux : Proc;
                     LAddr : LAddress );
@@ -327,7 +331,7 @@ Begin
       Undefine ReqNet[Src][Dst].Messages[NewID].Aux;
     Else
       ReqNet[Src][Dst].Messages[NewID].Aux := Aux;
-    Endif;  
+    Endif;
     ReqNet[Src][Dst].Messages[NewID].LAddr := LAddr;
     NewID := NewID + 1;
   Endalias;
@@ -348,13 +352,13 @@ Begin
   Endalias;
 Endprocedure;
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Reply Network handling functions
 -- a) A Reply is put into the end of a specific channel connecting
 --    the source Src and the destination Dst.
 -- b) Reply is only consumed at the head of the queue, forming
 --    a FIFO ordered network channel.
---------------------------------------------------
+--------------------------------------------------------------------------------
 Procedure Send_Reply( t : Reply_Type;
 		      Dst, Src, Aux : Proc;
                       LAddr : LAddress );
@@ -368,7 +372,7 @@ Begin
     ReplyNet[Src][Dst].Messages[NewID].Mtype := t;
     If (Isundefined(Aux)) Then
       Undefine ReplyNet[Src][Dst].Messages[NewID].Aux;
-    Else      
+    Else
       ReplyNet[Src][Dst].Messages[NewID].Aux := Aux;
     Endif;
     ReplyNet[Src][Dst].Messages[NewID].LAddr := LAddr;
@@ -391,20 +395,20 @@ Begin
   Endalias;
 Endprocedure;
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Procedure Checking mutual exclusion
 -- rules should call this function whenever it wants to
 -- enter Critical section.
---------------------------------------------------
+--------------------------------------------------------------------------------
 Procedure Check_Mutual_Exclusion( h : Home;
 				  l : LAddress);
 Begin
   Assert ( LockOwner[h][l].State != Valid) "Mutual exclusion violated";
 Endprocedure;
 
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Sending Lock messages
---------------------------------------------------
+--------------------------------------------------------------------------------
 -- Granting acknowledge
 Procedure Send_ACK_L( Dst, Src, Aux : Proc;
 		      l : LAddress);
@@ -453,7 +457,7 @@ Begin
   Send_Reply(LCK, Dst, Src, UNDEF, l);
 End;
 
-/*
+/*
 Rule Sets for fundamental memory access
 1) CPU III  : lock requests issued by CPU
 2) CPU IV   : unlock requests issued by CPU
@@ -466,10 +470,10 @@ Rule Sets for fundamental memory access
 /*
 CPU III
 
-The rule set indeterministically issue lock request 
+The rule set indeterministically issue lock request
 
-When a CPU has not acquired a arbitrary lock, it may 
-issue a lock request.  
+When a CPU has not acquired a arbitrary lock, it may
+issue a lock request.
 
 Home lock acquire: -- current commented out for system with only remote lock.
 If the lock addresss is unlocked, acquire is successful.  Otherwise
@@ -507,7 +511,7 @@ Do
     (h=n) & !nohome
     & !( LockOwner[h][l].State = Valid
        & LockOwner[h][l].Proc = n )
-  ==> 
+  ==>
   Begin
     Switch LRAC.State
     Case INVAL:
@@ -517,7 +521,7 @@ Do
         Case Non_Locally_Cached:
           Check_Mutual_Exclusion(h,l);
           LockOwner[h][l].State := Valid;
-          LockOwner[h][l].Proc := n; 
+          LockOwner[h][l].Proc := n;
           LDir.State := Locked;
         Case Locally_Shared:
           Error "inconsistent LDir and LCache";
@@ -532,7 +536,7 @@ Do
         Case Locally_Shared:
           -- spinning on cache; or processor works on other jobs
         Endswitch;
-      Endswitch;      
+      Endswitch;
 
     Case DGNTS:
       Switch LDir.State
@@ -544,7 +548,7 @@ Do
         Endif;
         Check_Mutual_Exclusion(h,l);
         LockOwner[h][l].State := Valid;
-        LockOwner[h][l].Proc := n; 
+        LockOwner[h][l].Proc := n;
         If LRAC.Granting = h
         Then
           Assert ( ULRAC.State = WDIRW ) "lock ack to funny ULRAC state";
@@ -554,16 +558,16 @@ Do
         Endif;
 	LRAC.State := INVAL;
         Undefine LRAC.Granting;
-      End; --switch;      
+      End; --switch;
     End; --switch;
-  End; --rule;  
+  End; --rule;
 
-
+
   Rule "Remote Lock Acquire"
     ( h != n )
     & !( LockOwner[h][l].State = Valid
        & LockOwner[h][l].Proc = n )
-  ==> 
+  ==>
   Begin
     Switch LRAC.State
     Case INVAL:
@@ -572,7 +576,7 @@ Do
         LRAC.State := WLCK;
         Send_RD_L(h, n, l);
       Case Locally_Shared: -- locked
-        -- no action; processor do other jobs and then come back. 
+        -- no action; processor do other jobs and then come back.
       Endswitch;
 
     Case DLCK: -- already have reply from home saying locked
@@ -590,7 +594,7 @@ Do
       Case Non_Locally_Cached:
         Check_Mutual_Exclusion(h,l);
         LockOwner[h][l].State := Valid;
-        LockOwner[h][l].Proc := n; 
+        LockOwner[h][l].Proc := n;
 	LRAC.State := INVAL;
         Undefine LRAC.Granting;
       Case Locally_Shared:
@@ -604,7 +608,7 @@ Do
       Endif;
       Check_Mutual_Exclusion(h,l);
       LockOwner[h][l].State := Valid;
-      LockOwner[h][l].Proc := n; 
+      LockOwner[h][l].Proc := n;
       Send_ACK_L(LRAC.Granting, n, h, l);
       LRAC.State := INVAL;
       Undefine LRAC.Granting;
@@ -622,7 +626,7 @@ Do
       Case Locally_Shared:
         Error "WLCK with cached lock";
       Endswitch;
- 
+
     Else
       Error "funny LRAC state with lock request enabled.";
 
@@ -634,12 +638,12 @@ Endruleset; -- l
 Endruleset; -- h
 Endruleset; -- n
 
-/*
+/*
 CPU IV
 
-The CPU indeterministically issue unlock request 
+The CPU indeterministically issue unlock request
 
-When a CPU has acquired a arbitrary lock, it may release 
+When a CPU has acquired a arbitrary lock, it may release
 it at any time.
 
 Home lock release:
@@ -689,7 +693,7 @@ Do
         LockOwner[h][l].State := Invalid;
         Undefine LockOwner[h][l].Proc;
       Case Queued: -- grant lock to other
-        -- indeterministically grant a cluster 
+        -- indeterministically grant a cluster
         If ( j < LDir.QueuedCount
            & LDir.Entries[j] != h )
         Then
@@ -705,12 +709,12 @@ Do
 
     Case WDIRW: -- conflict
       -- processor works on other jobs first and then retry.
-      -- possible sequence of actions that causes this situration 
+      -- possible sequence of actions that causes this situration
       -- 1) release
       -- 2) remote lock and release
-      -- 3) acquire again 
+      -- 3) acquire again
       -- 4) and try to release before ack come back.
- 
+
     Else
       Error "funny ULRAC with lock release action enbled";
 
@@ -718,7 +722,7 @@ Do
   Endrule;
 Endruleset; -- j
 
-
+
   Rule "Remote Lock Release"
     (h!=n)
     & LockOwner[h][l].State = Valid
@@ -732,12 +736,12 @@ Endruleset; -- j
       LockOwner[h][l].State := Invalid;
       Undefine LockOwner[h][l].Proc;
 
-    Case WDIRW: -- conflict; 
+    Case WDIRW: -- conflict;
       -- processor works on other jobs first and then retry.
-      -- possible sequence of actions that causes this situration 
+      -- possible sequence of actions that causes this situration
       -- 1) release
       -- 2) remote lock and release
-      -- 3) acquire again 
+      -- 3) acquire again
       -- 4) and try to release before ack come back.
 
     Else
@@ -751,21 +755,21 @@ Endruleset; -- l
 Endruleset; -- h
 Endruleset; -- n
 
-/*
+/*
 CPU V
 
 Modelling lock acquire timeout
 
 A granted lock may never be claimed by the requesting CPU,
 as a result of process migration, etc.  A timeout mechanism is
-implemented in DASH to refuse a granted lock. 
+implemented in DASH to refuse a granted lock.
 
 Two sets of rules
   Rule "Timeout at remote cluster -> Grant Rejected "
   Rule "Timeout at home cluster -> Grant Rejected"
 
 Issue messages:
-	IOWR        
+	IOWR
 */
 Ruleset n:Proc Do
 Ruleset h:Home Do
@@ -792,7 +796,7 @@ Do
     Undefine LRAC.Granting;
   End;
 
-
+
   Rule "Timeout at home cluster -> Grant Rejected"
     ( h = n) & !nohome
     & LRAC.State = DGNTS
@@ -819,7 +823,7 @@ Do
       Undefine LRAC.Granting;
 
     Case Queued:
-      -- indeterministically grant a cluster 
+      -- indeterministically grant a cluster
       If ( j < LDir.QueuedCount
          & LDir.Entries[j] != n )
       Then
@@ -837,7 +841,7 @@ Endruleset; -- l
 Endruleset; -- h
 Endruleset; -- n
 
-/*
+/*
 PCPU III
 
 PCPU handle Lock/unlock request
@@ -858,7 +862,7 @@ Two sets of rules:
   Rule "Handle unlock request to home"
 
 Handle messages:
-   RD_L     
+   RD_L
    IOWR
 */
 
@@ -893,18 +897,18 @@ Do
       LDir.State := Queued;
       Add_to_LDir_Entries(Dst,LAddr,Src);
       Send_Lock_Reply(Src, Dst, LAddr);
-    Endswitch;     
+    Endswitch;
     Consume_Request(Src, Dst);
   Endalias; -- LDir, LCache
-  Endrule; -- handle lock read 
+  Endrule; -- handle lock read
 
-
+
   Ruleset j:Dir_Index Do
   -- select cluster at queue to grant lock nondeterministically
 
   Rule "Handle unlock request to home"
     ReqChan.Count > 0
-    & Request = IOWR 
+    & Request = IOWR
   ==>
   Begin
   Alias
@@ -933,8 +937,8 @@ Do
         Consume_Request(Src, Dst);
 
       Case Queued: -- indeterministically grant a cluster the lock
-        If ( j < LDir.QueuedCount 
-           & LDir.Entries[j] != Dst ) 
+        If ( j < LDir.QueuedCount
+           & LDir.Entries[j] != Dst )
         Then
           -- chosen cluster is a remote cluster
           Send_Grant_SET(LDir.Entries[j] , Dst, Aux, LAddr);
@@ -962,7 +966,7 @@ Endalias; -- ReqChan, Request, Aux, LAddr
 Endruleset; -- Src
 Endruleset; -- Dst
 
-/*
+/*
 PCPU IV
 
 handle Lock grant request
@@ -982,7 +986,7 @@ Handle messages:
 
 Ruleset Dst: Proc Do
 Ruleset Src: Proc Do
-Alias 
+Alias
   ReqChan: ReqNet[Src][Dst];
   Request: ReqNet[Src][Dst].Messages[0].Mtype;
   LAddr: ReqNet[Src][Dst].Messages[0].LAddr;
@@ -1024,9 +1028,9 @@ Endalias; -- ReqChan, Request, LAddr, Aux
 Endruleset; -- Src
 Endruleset; -- Dst
 
-/*
+/*
 RCPU II
- 
+
 handle locked/unlocked reply and granting acknowledgement
 
 The locked/unlocked reply is recorded in the LRAC.
@@ -1063,11 +1067,11 @@ Do
     Switch LRAC.State
     Case WLCK:
       LRAC.State := DULCK;
-      -- and RCPU will release processor so that it may try again if it wants to 
+      -- and RCPU will release processor so that it may try again if it wants to
     Case RLCK:
       Error "unlock reply with funny LRAC state";
       LRAC.State := DULCK;
-      -- and RCPU will release processor so that it may try again if it wants to 
+      -- and RCPU will release processor so that it may try again if it wants to
     Else
       Error "unlock reply with funny LRAC state";
     Endswitch;
@@ -1075,7 +1079,7 @@ Do
   Endalias; -- LRAC
   Endrule; -- handle unlock reply
 
-
+
   Rule "Handle lock reply"
     ReplyChan.Count > 0
     & Reply = LCK
@@ -1087,7 +1091,7 @@ Do
     Switch LRAC.State
     Case WLCK:
       LRAC.State := DLCK;
-      -- and RCPU will release processor so that it may try again if it wants to 
+      -- and RCPU will release processor so that it may try again if it wants to
     Case RLCK:
       LRAC.State := INVAL;
       Undefine LRAC.Granting;
@@ -1120,11 +1124,11 @@ Endalias; -- ReplyChan, Reply, LAddr, Aux
 Endruleset; -- Src
 Endruleset; -- Dst
 
-/*
+/*
 Start state
 */
 Startstate
-Begin  
+Begin
   For h : Home Do
   For l : LAddress Do
     Homes[h].LDir[l].State := Unlocked;
@@ -1151,17 +1155,17 @@ Begin
   Endfor;
   Endfor;
 
-  For Dst: Proc Do 
-  For Src: Proc Do 
+  For Dst: Proc Do
+  For Src: Proc Do
     ReqNet[Src][Dst].Count := 0;
     Undefine ReqNet[Src][Dst].Messages;
     ReplyNet[Src][Dst].Count := 0;
     Undefine ReplyNet[Src][Dst].Messages;
   Endfor;
   Endfor;
-End; 
+End;
 
-/* 
+/*
 Invarient: Correct lock state
 Invarient: Correct lock queue
 Invariant: Irrelevant queue members are set to zero
@@ -1172,7 +1176,7 @@ Invariant "Correct lock state -> forward"
   Forall h : Home Do
   Forall l : LAddress Do
     LockOwner[h][l].State = Valid
-    -> 
+    ->
     ( Homes[h].LDir[l].State = Locked
     | Homes[h].LDir[l].State = Queued )
   Endforall
@@ -1186,7 +1190,7 @@ Invariant "Correct lock state -> backward"
     ->
     ( LockOwner[h][l].State = Valid
     | Exists n : Proc Do
-        ( Procs[n].LRAC[h][l].State = DULCK 
+        ( Procs[n].LRAC[h][l].State = DULCK
         | Procs[n].LRAC[h][l].State = DGNTS )
       Endexists
     | Exists n : Proc Do
@@ -1212,9 +1216,9 @@ Invariant "Correct lock queue"
     ( Homes[h].LDir[l].State = Queued
     & j < Homes[h].LDir[l].QueuedCount
     & Homes[h].LDir[l].Entries[j] = n )
-    -> 
+    ->
     ( Procs[n].LCache[h][l].State = Locally_Shared
-    | Procs[n].LRAC[h][l].State = DLCK 
+    | Procs[n].LRAC[h][l].State = DLCK
     | Exists i : 0..ChanMax-1 Do
         ( i < ReplyNet[h][n].Count
         & ReplyNet[h][n].Messages[i].Mtype = LCK )
@@ -1320,5 +1324,4 @@ Release 2.9S (Sparc 20, cabbage.stanford.edu)
 
 
 ******************/
-
 

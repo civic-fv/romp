@@ -37,8 +37,8 @@ namespace  {
 
 // std::string int_to_hex(unsigned long i ) {
 //   // std::stringstream stream;
-//   // stream << "0x" 
-//   //       //  << std::setfill ('0') << std::setw(sizeof(T)*2) 
+//   // stream << "0x"
+//   //       //  << std::setfill ('0') << std::setw(sizeof(T)*2)
 //   //        << std::hex << i;
 //   // return stream.str();
 //   return std::to_string(i);
@@ -52,8 +52,8 @@ namespace  {
 
 
 void generate(const Model &m, const std::vector<Comment> &comments,
-                romp::CodeGenerator &gen, const std::string& build_cmds) {
-  
+                romp::ModelGenerator &gen, const std::string& build_cmds) {
+
   gen << ROMP_GENERATED_FILE_PREFACE("\tGenerated code for a romp \"parallel random walker\" verification tool based off of the Murphi Model described in:\n"
                                      "\t\tOriginal Murphi Model: " + gen.input_file_path.filename().string() + "\n"
                                      "\tPlease build with the following command(s):\n\t\t" + build_cmds + "") "\n";
@@ -61,17 +61,18 @@ void generate(const Model &m, const std::vector<Comment> &comments,
   gen << "\n#define __romp__GENERATED_CODE\n\n";
   gen << "\n#define _ROMP_STATE_TYPE " ROMP_STATE_TYPE "\n\n";
   gen << "\n#define _ROMP_HIST_LEN (" << gen.hist_len << "ul)\n\n";
+  gen << "\n#define " ROMP_RULE_SELECTION_ALGO_VAR " (" << gen.selection_algo << "ul)\n\n";
   gen << "\n#define _ROMP_THREAD_TO_RW_RATIO (" << gen.default_walk_multiplier << "ul)\n\n";
   gen << "\n#define _ROMP_BFS_COEF (" << gen.default_bfs_coefficient << "ul)\n\n";
   std::string file_path = gen.input_file_path.string();
   gen << "\n#define __model__filepath \"" << nEscape(file_path) << "\"\n\n";
   int _count = std::count(file_path.begin(), file_path.end(), ' ');
-  gen << "\n#define __model__filepath_contains_space (" 
+  gen << "\n#define __model__filepath_contains_space ("
       << ((_count > 0) ? "true" : "false") << ")\n\n";
   std::string file_name = gen.input_file_path.filename().string();
   gen << "\n#define __model__filename \"" << nEscape(file_name) << "\"\n";
   _count = std::count(file_name.begin(), file_name.end(), ' ');
-  gen << "\n#define __model__filename_contains_space (" 
+  gen << "\n#define __model__filename_contains_space ("
       << ((_count > 0) ? "true" : "false") << ")\n\n";
 
   gen << "namespace " ROMP_UTIL_NAMESPACE_NAME " {\n"
@@ -144,8 +145,8 @@ void generate(const Model &m, const std::vector<Comment> &comments,
 
   gen << "\n\n#pragma region model__generated_code\n\n"
       << gen.indentation() << "namespace " ROMP_MODEL_NAMESPACE_NAME " {\n";
-  romp::ModelGenerator m_gen(gen, se_gen.enum_ids, comments);
-  m_gen.dispatch(m);
+  gen.set_params(se_gen.enum_ids, comments);
+  gen.dispatch(m);
   gen << "\n" << gen.indentation() << "} // namespace " ROMP_MODEL_NAMESPACE_NAME "\n"
       << "\n\n#pragma endregion model__generated_code\n\n" << /*std::*/gen.flush();
 
@@ -172,14 +173,14 @@ void generate(const Model &m, const std::vector<Comment> &comments,
       << "#define " ROMP_LIVENESS_PROP_COUNT " (" << prop_ids.second <<  "ul)\n\n"
       << gen.indentation() << "const " ROMP_INFO_PROPERTY_TYPE "* LIVENESS_INFOS[" ROMP_LIVENESS_PROP_COUNT "] = {";
   std::string sep = "";
-  for (auto i : m_gen.liveness_id_map) {
+  for (auto i : gen.liveness_id_map) {
     gen << sep << "&" ROMP_INFO_PROPERTIES_VAR "[" << i << ']';
     sep = ",";
   }
   gen << "};\n"
       << gen.indentation() << "const " ROMP_INFO_PROPERTY_TYPE "* COVER_INFOS[" ROMP_COVER_PROP_COUNT "] = {";
   sep = "";
-  for (auto i : m_gen.cover_id_map) {
+  for (auto i : gen.cover_id_map) {
     gen << sep << "&" ROMP_INFO_PROPERTIES_VAR "[" << i << ']';
     sep = ",";
   }
@@ -199,13 +200,13 @@ void generate(const Model &m, const std::vector<Comment> &comments,
 
   gen << "\n\n#pragma region rule_caller__generated_code\n\n"
       << gen.indentation() << "namespace " ROMP_CALLER_NAMESPACE_NAME " {\n\n"
-      << gen.indentation() 
+      << gen.indentation()
       << "// << ==================================== Rule Expansions ===================================== >> \n\n";
   romp::generate_ruleset_callers(gen,m);
-  gen << "\n\n" << gen.indentation() 
+  gen << "\n\n" << gen.indentation()
       << "// << =============================== Property Rule Expansions ================================= >> \n\n";
   romp::generate_property_rule_callers(gen,m);
-  gen << "\n\n" << gen.indentation() 
+  gen << "\n\n" << gen.indentation()
       << "// << ================================= Startstate Expansions ================================== >> \n\n";
   romp::generate_startstate_callers(gen,m);
   gen << "\n\n" << gen.indentation() << "} // namespace " ROMP_CALLER_NAMESPACE_NAME "\n"
@@ -234,7 +235,7 @@ void generate(const Model &m, const std::vector<Comment> &comments,
 # else
     gen.output_embedded_code_file(resources_romp_rw_main_hpp, resources_romp_rw_main_hpp_len);
 # endif
-  gen << "\n#pragma endregion romp_main\n\n" 
+  gen << "\n#pragma endregion romp_main\n\n"
          "/* << === EOF === >> */\n"<< /*std::*/gen.flush();
 
   // gen << buffer.rdbuf() << "\n\n";

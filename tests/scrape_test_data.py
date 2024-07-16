@@ -14,7 +14,7 @@
  *        It produces a single tsv with all of the run data for easier Processing latter
  *
  * @date 2023/01/07
- * @version 0.2
+ * @version 0.3
  *"""
 
 import pandas as pd
@@ -25,7 +25,7 @@ from pathlib import Path
 from math import inf
 import concurrent.futures as cf
 from multiprocessing import cpu_count
-from trace_stats import (ModelResult, ModelResults, TraceData, fs_DFS, 
+from trace_stats import (ModelResult, ModelResults, TraceData, fs_DFS,
                          process_data as process_trace_dir, genTraceData as genRompTraceData,
                          process_data_parallel as process_trace_dir_parallel)
 from gen_test_scripts import ROMP_CONFIGS, CMURPHI_CONFIGS, RUMUR_CONFIGS, INIT_TIME_STR
@@ -88,7 +88,7 @@ def romp(f,data_dir) -> dict:
         raise Exception(f"File Contents unreadable ({index}-{run}: {f!s})")
     # Extract the relevant information using regular expressions
     '''searching for a pattern in string
-        if found 
+        if found
             get capture group
             re.search() --gets match obj'''
     t = TIME_PATTERN.search(content)
@@ -198,7 +198,7 @@ def cmurphi(f) -> dict:
         raise Exception(f"File Contents unreadable ({index}-{run}: {f!s})")
     # Extract the relevant information using regular expressions
     '''searching for a pattern in string
-        if found 
+        if found
             get capture group
             re.search() --gets match obj'''
     t = TIME_PATTERN.search(content)
@@ -271,7 +271,7 @@ def rumur(f) -> dict:
         raise Exception(f"File Contents unreadable ({index}-{run}: {f!s})")
     # Extract the relevant information using regular expressions
     '''searching for a pattern in string
-        if found 
+        if found
             get capture group
             re.search() --gets match obj'''
     t = TIME_PATTERN.search(content)
@@ -298,7 +298,7 @@ def rumur(f) -> dict:
         "Misc_data": dict()
         })
     return data
-#?END def rumur() -> None    
+#?END def rumur() -> None
 
 
 def read_text_file(path, df, top_dir="./") -> dict:
@@ -314,18 +314,18 @@ def read_text_file(path, df, top_dir="./") -> dict:
         elif path.endswith('.cm.txt'):
             return cmurphi(path)
     return None
-#?END def read_text_file() -> None                
+#?END def read_text_file() -> None
 
 def scrape_data(data_dir) -> pd.DataFrame:
     #do col name to be added for cmurphi - omission prob stats required and analysis of state space  // -pr gives rules information is it required ? --todo
     #for romp only to consider text below RW results ? other in config --TOdo
     # df: pd.DataFrame = pd.DataFrame(columns=COLS)
-    #created a pd dataframe with subcols each for flag + others 
+    #created a pd dataframe with subcols each for flag + others
     # call opening file function in loop
     data_files = []
     def file_callback(path) -> None:
-        if (path.endswith('.romp.txt') 
-                or path.endswith('.ru.txt') 
+        if (path.endswith('.romp.txt')
+                or path.endswith('.ru.txt')
                 or path.endswith('.cm.txt')):
             data_files.append(path)
     def thread_work(filepath) -> dict:

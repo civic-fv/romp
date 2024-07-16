@@ -9,13 +9,13 @@
  * @org Ganesh Gopalakrishnan's Research Group
  * @file gen_test_scripts.py
  *
- * @brief A utility to generate tests scripts, 
+ * @brief A utility to generate tests scripts,
  *        meant to run on slurm based super computer clusters,
  *        that will run romp and it's competitors to collect operational data.
  *        Meant to be used in conjunction with scrape_test_data.py and other utils.
  *
  * @date 2022/11/11
- * @version 0.2
+ * @version 0.3
  *"""
 
 from os import system, makedirs, listdir
@@ -101,7 +101,7 @@ CXX = "g++"
 CXX_PARAMS = "-O3 -pthread"
 CC_PARAMS = "-march=native -O3 -pthread"
 
-INIT_TIME:datetime = datetime.now() 
+INIT_TIME:datetime = datetime.now()
 INIT_TIME_STR:str = INIT_TIME.strftime("%y-%m-%d_%H-%M-%S")
 
 LOCAL_SAVE_PATH = "./test_results"
@@ -195,7 +195,7 @@ do
 
     cd ..
     rm -rf "$j_id"
-    cd "$TEST_DIR" 
+    cd "$TEST_DIR"
 done
 """
 
@@ -234,7 +234,7 @@ def main():
     if DEBUG:
         print('[' + str(JOB['index']) + "] RUNNING: `" + JOB['model'] + "` x" + str(TEST_RUNS))
     for i in range(TEST_RUNS):
-        outfile = (SAVE_LOC + 
+        outfile = (SAVE_LOC +
                     ('/%0{{fmax_len}}d-%02d__%s.%s' % (JOB['index'], i, JOB['model'], EXT)))
         start = perf_counter_ns()
         system(JOB['run'].format(seed=start) + ' > "' + outfile + '.txt"')
@@ -244,7 +244,7 @@ def main():
         if ENABLE_TRACE_RUNS and JOB['trace'] is not None and JOB['trace'] != "":
             system(JOB['trace'].format(seed=start))
         if ENABLE_CACHEGRIND and not JOB['trace']:
-            system((JOB['cachegrind']).format(seed=start) 
+            system((JOB['cachegrind']).format(seed=start)
                     + ' > "' + outfile + '.cache.txt"')
     if DEBUG:
         print('[' + str(JOB['index']) + "] FINISHED: `" + JOB['model'] + "` x" + str(TEST_RUNS))
@@ -294,7 +294,7 @@ class ConfigGenerator:
     @property
     def index(self) -> int:
         return self._index
-    
+
     @property
     def exe_ext(self) -> str:
         return self._exe_ext
@@ -314,7 +314,7 @@ class ConfigGenerator:
         if self._config is None:
             raise Exception("config not generated")
         return self._config
-    
+
     @property
     def model(self) -> Path:
         if self._index is None:
@@ -351,8 +351,8 @@ class ConfigGenerator:
     #     ) if isinstance(i, ModelCheckerConfigOption)])
     #     return (f"time {base_model.absolute()}.{self._index}.{self._exe_ext} {launch_opts} "
     #             f"> {outdir}/{base_model}__{self._exe_ext}__{self._index}_%j.txt")
-    
-    @property 
+
+    @property
     def launch_cmd(self) -> str:
         if self._index is None:
             raise Exception("ConfigGenerator not in iterator mode!!")
@@ -360,15 +360,15 @@ class ConfigGenerator:
         launch_opts = ' '.join([i.value for i in self._config.values(
                                 ) if isinstance(i, ModelCheckerConfigOption)])
         return (f"{base_model}.{self._index}.{self._exe_ext} {launch_opts}")
-    
-    @property 
+
+    @property
     def trace_cmd(self) -> str:
         if self._index is None:
             raise Exception("ConfigGenerator not in iterator mode!!")
         if self._exe_ext != "romp":
             return ""
         return (f"{self.launch_cmd} -t {ROMP_TRACE_DIR_TEMPLATE.format(id=self._index)}")
-    
+
     @property
     def cachegrind_cmd(self) -> str:
         return (f"valgrind --tool=cachegrind {self.launch_cmd}")
@@ -454,7 +454,7 @@ def gen_tests(cg: ConfigGenerator, outputDir: Path) -> None:
                                                job_slice_size=floor(len(cg)/SLURM_MAX_ARRAY_SIZE),
                                                job_remainder=len(cg)%SLURM_MAX_ARRAY_SIZE,
                                                ext=cg.exe_ext))
-#? END def gen_tests() -> None  
+#? END def gen_tests() -> None
 
 ROMP_CONFIGS: ConfigGenerator = ConfigGenerator(ROMP, CXX, "-std=c++17 "+CXX_PARAMS, ROMP_PARAMS, ALL_MODELS, "romp")
 
@@ -486,4 +486,3 @@ def main(args) -> None:
 
 if __name__ == "__main__":
     main(sys.argv)
-

@@ -1,26 +1,26 @@
--------------------------------------------------------------------------
--- Copyright (C) 1992, 1993 by the Board of Trustees of 		 
--- Leland Stanford Junior University.					 
+--------------------------------------------------------------------------------
+-- Copyright (C) 1992, 1993 by the Board of Trustees of
+-- Leland Stanford Junior University.
 --
--- This description is provided to serve as an example of the use	 
--- of the Murphi description language and verifier, and as a benchmark	 
--- example for other verification efforts.				 
---									 
--- License to use, copy, modify, sell and/or distribute this description 
--- and its documentation any purpose is hereby granted without royalty,  
--- subject to the following terms and conditions, provided		 
---									 
--- 1.  The above copyright notice and this permission notice must	 
--- appear in all copies of this description.				 
--- 									 
--- 2.  The Murphi group at Stanford University must be acknowledged	 
--- in any publication describing work that makes use of this example. 	 
--- 									 
--- Nobody vouches for the accuracy or usefulness of this description	 
--- for any purpose.							 
--------------------------------------------------------------------------
-
-------------------------------------------------------------------
+-- This description is provided to serve as an example of the use
+-- of the Murphi description language and verifier, and as a benchmark
+-- example for other verification efforts.
+--
+-- License to use, copy, modify, sell and/or distribute this description
+-- and its documentation any purpose is hereby granted without royalty,
+-- subject to the following terms and conditions, provided
+--
+-- 1.  The above copyright notice and this permission notice must
+-- appear in all copies of this description.
+--
+-- 2.  The Murphi group at Stanford University must be acknowledged
+-- in any publication describing work that makes use of this example.
+--
+-- Nobody vouches for the accuracy or usefulness of this description
+-- for any purpose.
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
 -- Engineer:    C. Norris Ip                                    --
 --                                                              --
 -- File:        dpnew.m						--
@@ -44,7 +44,12 @@
 -- Date Created:        10 DEC 92                               --
 -- Last modified:       14 Feb 93                               --
 --                                                              --
-------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- RUN: romp "%s" -o - | c++ - -o /dev/null
+--------------------------------------------------------------------------------
+
 Const
   N: 3;      -- Number of philosophers.
   option: 1; -- options as shown in the header
@@ -54,7 +59,7 @@ Type
   side: enum {left, right};
 
 Var
-  Philosophers: 
+  Philosophers:
     Array [Phil_ID] of
       Record
         Status: Enum { think, take, eat, release };
@@ -80,7 +85,7 @@ Alias p: Philosophers[ID] Do
     p.Status = think
     &
     Exists ID1: Phil_ID Do
-      ID1 != ID & Philosophers[ID1].Status = think 
+      ID1 != ID & Philosophers[ID1].Status = think
     End
   ==>
   Begin
@@ -101,7 +106,7 @@ Alias p: Philosophers[ID] Do
       -- cannot get fork, have to wait
     End;
   End;
-  
+
   Rule "take right fork"
     (option = 1 | option = 3)
     &
@@ -137,8 +142,8 @@ Alias p: Philosophers[ID] Do
       !p.Got_Forks[s]
     End
   ==>
-  Begin 
-    If ( !(Philosophers[(ID=0)?N-1:ID-1].Got_Forks[left]) 
+  Begin
+    If ( !(Philosophers[(ID=0)?N-1:ID-1].Got_Forks[left])
        & !(Philosophers[(ID=N-1)?0:ID+1].Got_Forks[right]) )
     Then
       For s: side Do
@@ -146,7 +151,7 @@ Alias p: Philosophers[ID] Do
       End;
       p.Status := eat;
     Else
-      -- cannot get fork, have to wait 
+      -- cannot get fork, have to wait
     End;
   End;
 
@@ -173,7 +178,7 @@ Alias p: Philosophers[ID] Do
 
   Rule "start thinking"
     p.Status = release
-    & 
+    &
     Forall s: side Do
       p.Got_Forks[s] = false
     End
@@ -204,7 +209,7 @@ Invariant "All eating philosophers have both forks available."
     Philosophers[ID].Status = eat
     ->
     Forall s: side Do
-      Philosophers[ID].Got_Forks[s] 
+      Philosophers[ID].Got_Forks[s]
     End
   End
   ;
@@ -215,7 +220,7 @@ Invariant "A fork is used by upto one philosophers only"
     ->
     !Philosophers[(ID=N-1)?0:ID+1].Got_Forks[right]
   End
-  &   
+  &
   Forall ID: Phil_ID Do
     Philosophers[ID].Got_Forks[right]
     ->
@@ -224,7 +229,7 @@ Invariant "A fork is used by upto one philosophers only"
   ;
 
 /*
--- option to check the result of violating invariant rather than deadlock detection. 
+-- option to check the result of violating invariant rather than deadlock detection.
 Invariant "deadlock!"
   !Forall ID : Phil_ID Do
     Philosophers[ID].Status = take

@@ -40,7 +40,7 @@ protected:
   Rule &operator=(const Rule &) = default;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI AliasRule : public Rule {
@@ -57,7 +57,7 @@ struct MURPHI_API_WITH_RTTI AliasRule : public Rule {
   std::vector<Ptr<Rule>> flatten() const final;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI SimpleRule : public Rule {
@@ -78,7 +78,7 @@ struct MURPHI_API_WITH_RTTI SimpleRule : public Rule {
   void visit(ConstBaseTraversal &visitor) const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI StartState : public Rule {
@@ -96,7 +96,7 @@ struct MURPHI_API_WITH_RTTI StartState : public Rule {
   void visit(ConstBaseTraversal &visitor) const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI PropertyRule : public Rule {
@@ -114,7 +114,7 @@ struct MURPHI_API_WITH_RTTI PropertyRule : public Rule {
   void visit(ConstBaseTraversal &visitor) const;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI Ruleset : public Rule {
@@ -133,9 +133,9 @@ struct MURPHI_API_WITH_RTTI Ruleset : public Rule {
   std::vector<Ptr<Rule>> flatten() const final;
 };
 
-// << ------------------------------------------------------------------------------------------ >> 
-// everything below here is implemented in src/ext_Rule.h 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
+// everything below here is implemented in src/ext_Rule.h
+// << ------------------------------------------------------------------------------------------ >>
 
 
 struct MURPHI_API_WITH_RTTI ChooseRule : public Rule {

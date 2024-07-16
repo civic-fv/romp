@@ -45,9 +45,9 @@ void IsMember::validate_types() const {
   if (const auto _u = dynamic_cast<const ScalarsetUnion*>(t.get())) {
     if (not _u->contains(*type_value))
       throw Error("IsMember will ALWAYS evaluate to false",loc);
-  } else 
-    throw Error("`" + designator->to_string() 
-                + "` is not of type scalarset union, as IsMember expects", 
+  } else
+    throw Error("`" + designator->to_string()
+                + "` is not of type scalarset union, as IsMember expects",
                 designator->loc);
 }
 // this needs to be called after symbol resolution and a call to update()
@@ -60,13 +60,13 @@ std::string IsMember::to_string() const {
 }
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 SUCast::SUCast(const Ptr<TypeExpr>& target_, const Ptr<Expr>& cur_, const location& loc_)
   : UnaryExpr(cur_,loc_), target(target_) { update(); }
 SUCast *SUCast::clone() const { return new SUCast(*this); }
 
-void SUCast::visit(BaseTraversal& visitor) { visitor.visit_sucast(*this); } 
+void SUCast::visit(BaseTraversal& visitor) { visitor.visit_sucast(*this); }
 void SUCast::visit(ConstBaseTraversal& visitor) const { visitor.visit_sucast(*this); }
 
 Ptr<TypeExpr> SUCast::type() const { return target; }
@@ -84,13 +84,13 @@ void SUCast::update() {
   // do nothing in current design
 }
 
-std::string SUCast::to_string() const { 
-  return "(/*cast*/ " + rhs->to_string() 
-          + "/* --to-> `"+ target->to_string() +"`*/)"; 
+std::string SUCast::to_string() const {
+  return "(/*cast*/ " + rhs->to_string()
+          + "/* --to-> `"+ target->to_string() +"`*/)";
 }
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 MultisetElement::MultisetElement(const Ptr<Expr>& multiset_, const Ptr<ExprID> index_, const location& loc_)
   : Expr(loc_), index(index_), multiset(multiset_) {}
@@ -115,7 +115,7 @@ mpz_class MultisetElement::constant_fold() const {
   throw Error("multiset element used in a constant expression", loc);
 }
 
-bool MultisetElement::is_lvalue() const { 
+bool MultisetElement::is_lvalue() const {
   // multiset element can't ever be used to change value internally
   return false;  // moved to a check in assignment
   // return multiset->is_lvalue();
@@ -124,7 +124,7 @@ bool MultisetElement::is_lvalue() const {
 bool MultisetElement::is_readonly() const {
   // multiset element can't ever be used to change value internally
   return true;
-  // return multiset->is_readonly(); 
+  // return multiset->is_readonly();
 }
 
 bool MultisetElement::is_pure() const { return true; }
@@ -141,9 +141,9 @@ void MultisetElement::validate() const {
   } else
     throw murphi::Error("DEV ERROR : multiset element is operating on a type that is not a multiset", loc);
 }
-void MultisetElement::update() { 
+void MultisetElement::update() {
   // do nothing but override the SUCast inserting behavior from element,
-  //  since we should never allow any in-appropriate index types in the first place. 
+  //  since we should never allow any in-appropriate index types in the first place.
 }
 
 std::string MultisetElement::to_string() const {
@@ -151,7 +151,7 @@ std::string MultisetElement::to_string() const {
 }
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 MultisetQuantifier::MultisetQuantifier(const std::string& name_, const Ptr<Expr> multiset_, const location& loc_)
   : Quantifier(name_,nullptr,loc_), multiset(multiset_) {}
@@ -178,10 +178,10 @@ std::string MultisetQuantifier::to_string() const {
 }
 
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 MultisetCount::MultisetCount(const MultisetQuantifier& ms_quantifier_, const Ptr<Expr>& condition_, const location& loc_)
-  : Expr(loc_), ms_quantifier(ms_quantifier_), condition(condition_) 
+  : Expr(loc_), ms_quantifier(ms_quantifier_), condition(condition_)
   {}
 MultisetCount *MultisetCount::clone() const { return new MultisetCount(*this); }
 

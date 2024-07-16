@@ -1,79 +1,83 @@
---------------------------------------------------------------------------
--- Copyright (C) 1992 by the Board of Trustees of 			  
--- Leland Stanford Junior University.					  
---									  
--- This description is provided to serve as an example of the use	  
--- of the Murphi description language and verifier, and as a benchmark	  
--- example for other verification efforts.				  
---									  
--- License to use, copy, modify, sell and/or distribute this description  
--- and its documentation any purpose is hereby granted without royalty,   
--- subject to the following terms and conditions, provided		  
---									  
--- 1.  The above copyright notice and this permission notice must	  
--- appear in all copies of this description.				  
--- 									  
--- 2.  The Murphi group at Stanford University must be acknowledged	  
--- in any publication describing work that makes use of this example. 	  
--- 									  
--- Nobody vouches for the accuracy or usefulness of this description	  
--- for any purpose.							  
---------------------------------------------------------------------------
-
---------------------------------------------------------------------------
--- NOTE: This model with a "bug" inserted into it, 
---        might not compile with CMurphi 
---        or traditional/old/original Murphi
---       This is because the getRand function relies 
---        on bitwise AND, OR & NOT, which og spec does not have.
---       It is designed to work with the parser and AST from the rumur-lib 
---------------------------------------------------------------------------
-
---------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Copyright (C) 1992 by the Board of Trustees of
+-- Leland Stanford Junior University.
 --
---                                                                        
--- File:        muxn.m                                                    
---                                                                        
--- Content:     Peterson's algorithm (mutual exclusion for n-processes)   
---                                                                        
--- Summary of result:                                                     
---          1)  No bug is discovered 					  
---          2)  Details of result can be found at the end of this file.   
---                                                                        
--- References: 						       	       	  
--- Peterson, G.L.,  Myths about the mutual exclusion problem,             
--- Information processing letters, Vol 12, No 3, 1981.                    
---                                                                        
--- Date created:         28 Oct 92                                        
--- Last Modified:        17 Feb 93                                        
---                                                                        
---------------------------------------------------------------------------
+-- This description is provided to serve as an example of the use
+-- of the Murphi description language and verifier, and as a benchmark
+-- example for other verification efforts.
+--
+-- License to use, copy, modify, sell and/or distribute this description
+-- and its documentation any purpose is hereby granted without royalty,
+-- subject to the following terms and conditions, provided
+--
+-- 1.  The above copyright notice and this permission notice must
+-- appear in all copies of this description.
+--
+-- 2.  The Murphi group at Stanford University must be acknowledged
+-- in any publication describing work that makes use of this example.
+--
+-- Nobody vouches for the accuracy or usefulness of this description
+-- for any purpose.
+--------------------------------------------------------------------------------
 
---------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- NOTE: This model with a "bug" inserted into it,
+--        might not compile with CMurphi
+--        or traditional/old/original Murphi
+--       This is because the getRand function relies
+--        on bitwise AND, OR & NOT, which og spec does not have.
+--       It is designed to work with the parser and AST from the rumur-lib
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+--
+--
+-- File:        muxn.m
+--
+-- Content:     Peterson's algorithm (mutual exclusion for n-processes)
+--
+-- Summary of result:
+--          1)  No bug is discovered
+--          2)  Details of result can be found at the end of this file.
+--
+-- References:
+-- Peterson, G.L.,  Myths about the mutual exclusion problem,
+-- Information processing letters, Vol 12, No 3, 1981.
+--
+-- Date created:         28 Oct 92
+-- Last Modified:        17 Feb 93
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
 -- Contains injected bug:
 --   This model contains a working and verified representation of a
---    N peterson algorithm, but with an injected "bug." 
---   That adds a buffer of length `BL` which records the order 
+--    N peterson algorithm, but with an injected "bug."
+--   That adds a buffer of length `BL` which records the order
 --    in which processes get the lock of a resource until it is full.
 --   When full it will declare the order in the buffer as a sequence of
 --    lock ownerships that if any subsequence of length `MSL` or more
 --    occurs in any following `N` length sequences of locking orderings,
 --    is declared to be a "bug."
---  To do this we also keep a buffer of length `N` that is filled with a 
+--  To do this we also keep a buffer of length `N` that is filled with a
 --   new set before it is checked for said bug.
 -- Concepts:
 --  These two buffers and the accompanying variables in the statespace,
---   greatly increase the statespace to a point that no current Murphi 
+--   greatly increase the statespace to a point that no current Murphi
 --   model checker could ever efficiently hold them all in a set.
---  Therefore, it is known that unless a bug is encountered  
+--  Therefore, it is known that unless a bug is encountered
 --   a traditional Murphi model checker must either end
 --   due to state hash saturation, or a built in timeout condition is hit
---   in cases of nivea state sets that have undefined behavior 
+--   in cases of nivea state sets that have undefined behavior
 --   when fully saturated.
 --  The "bug" state is designed to be variably difficult to find, but
 --   also defined that there is no possible progression that will never
 --   meet the criteria... MAYBE
---------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- RUN: romp "%s" -o - | c++ - -o /dev/null
+--------------------------------------------------------------------------------
 
 Const
   N: 4; -- 7; -- the number of processes
@@ -91,7 +95,7 @@ Type
   -- pid: 1..N;
   priority: 0..N;
   label_t: Enum{L0, -- : non critical section; j := 1; while j<n do
-		L1,  -- : Beginwhile Q[i] := j  
+		L1,  -- : Beginwhile Q[i] := j
 		L2,  -- : turn[j] := i   (asking the other process to take turn / update the turn system)
 		L3,  -- : wait until (forall k != i, Q[k] < j) or turn[j] != i ; j++; Endwhile  (wait for your turn) <-- you get lock here
 		L4   -- : critical section; Q[i] := 0  (your turn)
@@ -123,7 +127,7 @@ Ruleset i: pid  Do
     P[i] = L0  ==>
   Begin
     localj[i] := 1;
-    P[i] := L1; 
+    P[i] := L1;
   End;
 
   Rule "L1 execute assign Qi j"
@@ -137,11 +141,11 @@ Ruleset i: pid  Do
     P[i] = L2  ==>
   Begin
     turn[localj[i]]  := i;
-    P[i] := L3; 
+    P[i] := L3;
   End;
 
   Rule "L3 execute wait until"
-    P[i] = L3  ==>  -- any process at L3 can do this but only 
+    P[i] = L3  ==>  -- any process at L3 can do this but only
   Begin
     If ( Forall k: pid Do
            ( k!=i ) -> ( Q[k]<localj[i] )  -- if all other process has a lower/worse priority
@@ -152,9 +156,9 @@ Ruleset i: pid  Do
       If ( localj[i]<N )
       Then
         P[i] := L1; -- go update the Q again
-      Else          -- when localj[i] = N -> it is now our turn 
+      Else          -- when localj[i] = N -> it is now our turn
         P[i] := L4; -- this assigns the lock to (us)
-      End; --If 
+      End; --If
     End; --If
   End;
 
@@ -179,7 +183,7 @@ Ruleset i: pid  Do
         -- print_bug(True);
       EndIf;
     EndIf;
-  EndRule; 
+  EndRule;
 
 End; --Ruleset
 
@@ -203,10 +207,10 @@ Begin
   b_size := 0;
   Undefine lock_hist;
   Undefine bug;
-  If (MSL<2) 
+  If (MSL<2)
     Then Error "CONFIG ERROR: `MSL` needs to >= 2 to be a proper subseq !!";
   EndIf;
-  If (MSL>LHL) 
+  If (MSL>LHL)
     Then Error "CONFIG ERROR: `MSL` needs to <=`LHL` for a subsequence to be found !!";
   EndIf;
 End;
@@ -226,7 +230,7 @@ Invariant "injected hist subseq bug"
     (!(lh_is_full) | !(
       Exists l := MSL to ((BL<LHL) ? BL : LHL) Do -- length of substring
         Exists b_i := 0 To (BL-l) Do -- look at all start loc in bug
-          Exists lh_i := 0 To (LHL-l) Do -- look at all start loc in lock_hist 
+          Exists lh_i := 0 To (LHL-l) Do -- look at all start loc in lock_hist
               Forall j := 0 To (l-1) Do -- compare sub seq of len l
                 bug[b_i+j] = lock_hist[lh_i+j]
               EndForall
@@ -279,7 +283,7 @@ Summary of Result (using release 2.3):
 	628868 states, 3144340 rules fired in 758.92s.
 	25458 states max in the queue.
 
-gamma2.9S on theforce.stanford.edu 
+gamma2.9S on theforce.stanford.edu
 
   	5 proc
 	-O4 compile 119.7s 2.7Mbytes
@@ -289,7 +293,7 @@ gamma2.9S on theforce.stanford.edu
 	6 proc
 	-O4 compile 120.2s 2.7Mbytes
 	    (28 bytes per states)
-        -sym2,3,4  35,159 states, 210954 rules 117.45s 
+        -sym2,3,4  35,159 states, 210954 rules 117.45s
 
 Release 2.9S (Sparc 20, cabbage.stanford.edu)
 
@@ -302,4 +306,3 @@ Release 2.9S (Sparc 20, cabbage.stanford.edu)
       -c 163298 states, 1143086 rules fired in 292.42s.
 
 ******************/
-

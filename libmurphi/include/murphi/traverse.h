@@ -97,9 +97,9 @@ public:
   virtual void visit_multisetadd(MultisetAdd& n) = 0;
   virtual void visit_multisetcount(MultisetCount& n) = 0;
   virtual void visit_multisetelement(MultisetElement& n) = 0;
-  virtual void visit_multisetremove(MultisetRemove& n) = 0; 
-  virtual void visit_multisetremovepred(MultisetRemovePred& n) = 0; 
-  virtual void visit_multisetquantifier(MultisetQuantifier& n) = 0; 
+  virtual void visit_multisetremove(MultisetRemove& n) = 0;
+  virtual void visit_multisetremovepred(MultisetRemovePred& n) = 0;
+  virtual void visit_multisetquantifier(MultisetQuantifier& n) = 0;
   virtual void visit_scalarsetunion(ScalarsetUnion& n) = 0;
   virtual void visit_sucast(SUCast& n) = 0;
 
@@ -197,9 +197,9 @@ public:
   void visit_multisetadd(MultisetAdd& n) override;
   void visit_multisetcount(MultisetCount& n) override;
   void visit_multisetelement(MultisetElement& n) override;
-  void visit_multisetremove(MultisetRemove& n) override; 
-  void visit_multisetremovepred(MultisetRemovePred& n) override; 
-  void visit_multisetquantifier(MultisetQuantifier& n) override; 
+  void visit_multisetremove(MultisetRemove& n) override;
+  void visit_multisetremovepred(MultisetRemovePred& n) override;
+  void visit_multisetquantifier(MultisetQuantifier& n) override;
   void visit_scalarsetunion(ScalarsetUnion& n) override;
   void visit_sucast(SUCast& n) override;
 
@@ -281,7 +281,7 @@ public:
   virtual void visit_while(const While &n) = 0;
   virtual void visit_xor(const Xor &n) = 0;
 
-  
+
   virtual void visit_chooserule(const ChooseRule& n) = 0;
   virtual void visit_ismember(const IsMember& n) = 0;
   virtual void visit_multiset(const Multiset& n) = 0;
@@ -290,12 +290,12 @@ public:
   virtual void visit_multisetelement(const MultisetElement& n) = 0;
   virtual void visit_multisetremove(const MultisetRemove& n) = 0;
   virtual void visit_multisetremovepred(const MultisetRemovePred& n) = 0;
-  virtual void visit_multisetquantifier(const MultisetQuantifier& n) = 0; 
+  virtual void visit_multisetquantifier(const MultisetQuantifier& n) = 0;
   virtual void visit_scalarsetunion(const ScalarsetUnion& n) = 0;
   virtual void visit_sucast(const SUCast& n) = 0;
 
 
-  // ConstTraversal dispatch is virtual 
+  // ConstTraversal dispatch is virtual
   // allowing for simple mappings of operations across all nodes in AST
   virtual void dispatch(const Node &n);
 
@@ -382,9 +382,9 @@ public:
   void visit_multisetadd(const MultisetAdd& n) override;
   void visit_multisetcount(const MultisetCount& n) override;
   void visit_multisetelement(const MultisetElement& n) override;
-  void visit_multisetremove(const MultisetRemove& n) override; 
-  void visit_multisetremovepred(const MultisetRemovePred& n) override; 
-  void visit_multisetquantifier(const MultisetQuantifier& n) override; 
+  void visit_multisetremove(const MultisetRemove& n) override;
+  void visit_multisetremovepred(const MultisetRemovePred& n) override;
+  void visit_multisetquantifier(const MultisetQuantifier& n) override;
   void visit_scalarsetunion(const ScalarsetUnion& n) override;
   void visit_sucast(const SUCast& n) override;
 
@@ -442,9 +442,9 @@ public:
   void visit_chooserule(const ChooseRule& n) override;
   void visit_multiset(const Multiset& n) override;
   void visit_multisetadd(const MultisetAdd& n) override;
-  void visit_multisetremove(const MultisetRemove& n) override; 
-  void visit_multisetremovepred(const MultisetRemovePred& n) override; 
-  void visit_multisetquantifier(const MultisetQuantifier& n) override; 
+  void visit_multisetremove(const MultisetRemove& n) override;
+  void visit_multisetremovepred(const MultisetRemovePred& n) override;
+  void visit_multisetquantifier(const MultisetQuantifier& n) override;
   void visit_scalarsetunion(const ScalarsetUnion& n) override;
 
   virtual ~ConstExprTraversal() = default;
@@ -516,7 +516,7 @@ public:
   void visit_multiset(const Multiset& n) override;
   void visit_multisetcount(const MultisetCount& n) override;
   void visit_multisetelement(const MultisetElement& n) override;
-  void visit_multisetquantifier(const MultisetQuantifier& n) override; 
+  void visit_multisetquantifier(const MultisetQuantifier& n) override;
   void visit_scalarsetunion(const ScalarsetUnion& n) override;
   void visit_sucast(const SUCast& n) override;
 
@@ -597,8 +597,8 @@ public:
   void visit_multisetadd(const MultisetAdd& n) override;
   void visit_multisetcount(const MultisetCount& n) override;
   void visit_multisetelement(const MultisetElement& n) override;
-  void visit_multisetremove(const MultisetRemove& n) override; 
-  void visit_multisetremovepred(const MultisetRemovePred& n) override; 
+  void visit_multisetremove(const MultisetRemove& n) override;
+  void visit_multisetremovepred(const MultisetRemovePred& n) override;
   void visit_multisetquantifier(const MultisetQuantifier& n) override;
   void visit_sucast(const SUCast& n) override;
 

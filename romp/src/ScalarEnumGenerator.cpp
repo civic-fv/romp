@@ -7,11 +7,11 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file ScalarEnumGenerator.cpp
- * 
- * @brief 
- * 
+ *
+ * @brief
+ *
  * @date 2022/10/14
- * @version 0.2
+ * @version 0.3
  */
 
 #include "ScalarEnumGenerator.hpp"
@@ -29,8 +29,8 @@ ScalarEnumGenerator::ScalarEnumGenerator(CodeGenerator& gen_)
 void ScalarEnumGenerator::visit_model(const murphi::Model& m) {
   gen << "\n" << gen.indentation() << ROMP_SCALAR_ENUM_DECL_h << "\n";
   gen.indent();
-  gen << gen.indentation() << ROMP_SCALAR_ENUM_UNDEFINED_NAME << " = " 
-                             << ROMP_SCALAR_ENUM_UNDEFINED_VALUE << ','; 
+  gen << gen.indentation() << ROMP_SCALAR_ENUM_UNDEFINED_NAME << " = "
+                             << ROMP_SCALAR_ENUM_UNDEFINED_VALUE << ',';
 
   for (auto& n : m.children)
     dispatch(*n);
@@ -60,11 +60,11 @@ void ScalarEnumGenerator::visit_enum(const murphi::Enum& n) {
   gen.indent();
   sep = "";
   for (auto& m : n.members)
-    if (add_enum_id(m.first,m.first)) 
+    if (add_enum_id(m.first,m.first))
       ++added;
     else
       last_bad = m;
-  
+
   if (added != n.members.size() && added != 0)
       throw Error("there exists name conflicts with this enum value (`" + last_bad.first + "`) "
                 "and some other enum, scalarset, variable, alias, or parameter "
@@ -80,17 +80,17 @@ void ScalarEnumGenerator::visit_scalarset(const murphi::Scalarset& n) {
   // these complex names are to both avoid collisions and because I scrub names that contain `_romp_` at parse time none should exist
   std::string prefix = (((n.name != "") ? "_romp_"+n.name : "__romp__scalarset")
                           + '_' + n.bound->constant_fold().get_str() + '_');
-  gen << "\n" << gen.indentation() << "/* " 
+  gen << "\n" << gen.indentation() << "/* "
         << n.name << ((n.name != "") ? ": " : "")
         << n.to_string() << " */";
   gen.indent();
   sep = "";
   for (size_t i=1; i<=n.count(); ++i)
-    if (add_enum_id((prefix + std::to_string(i)), 
+    if (add_enum_id((prefix + std::to_string(i)),
                     (((n.name!="") ? n.name+'_' : prefix)
                       + std::to_string(i))))
       ++added;
-    
+
   if (added != n.count() && added != 0)
     throw Error("there exists (generated) name conflicts with this scalarset "
                 "and some enum, variable, alias, or parameter",n.loc);

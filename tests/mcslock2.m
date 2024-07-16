@@ -1,46 +1,50 @@
---------------------------------------------------------------------------
--- Copyright (C) 1992, 1993 by the Board of Trustees of 		  
--- Leland Stanford Junior University.					  
---									  
--- This description is provided to serve as an example of the use	  
--- of the Murphi description language and verifier, and as a benchmark	  
--- example for other verification efforts.				  
---									  
--- License to use, copy, modify, sell and/or distribute this description  
--- and its documentation any purpose is hereby granted without royalty,   
--- subject to the following terms and conditions, provided		  
---									  
--- 1.  The above copyright notice and this permission notice must	  
--- appear in all copies of this description.				  
--- 									  
--- 2.  The Murphi group at Stanford University must be acknowledged	  
--- in any publication describing work that makes use of this example. 	  
--- 									  
--- Nobody vouches for the accuracy or usefulness of this description	  
--- for any purpose.							  
---------------------------------------------------------------------------
-
---------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Copyright (C) 1992, 1993 by the Board of Trustees of
+-- Leland Stanford Junior University.
 --
---                                                                        
--- File:        mcslock2.m                                                
---                                                                        
--- Content:     MCS distributed list-based queuing lock                   
---              without atomic compare_and_swap operations                
---                                                                        
--- Summary of result:                                                     
---          1)  No bug is discovered 					  
---          2)  Details of result can be found at the end of this file.   
---                                                                        
--- References: 						       	       	  
--- J.M. Mellor-Crummey and M.L. Scott,					  
+-- This description is provided to serve as an example of the use
+-- of the Murphi description language and verifier, and as a benchmark
+-- example for other verification efforts.
+--
+-- License to use, copy, modify, sell and/or distribute this description
+-- and its documentation any purpose is hereby granted without royalty,
+-- subject to the following terms and conditions, provided
+--
+-- 1.  The above copyright notice and this permission notice must
+-- appear in all copies of this description.
+--
+-- 2.  The Murphi group at Stanford University must be acknowledged
+-- in any publication describing work that makes use of this example.
+--
+-- Nobody vouches for the accuracy or usefulness of this description
+-- for any purpose.
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+--
+--
+-- File:        mcslock2.m
+--
+-- Content:     MCS distributed list-based queuing lock
+--              without atomic compare_and_swap operations
+--
+-- Summary of result:
+--          1)  No bug is discovered
+--          2)  Details of result can be found at the end of this file.
+--
+-- References:
+-- J.M. Mellor-Crummey and M.L. Scott,
 -- Algorithms for Scalable Synchronization on Shared-Memory Multiprocessors,
--- ACM transactions on computer systems, Vol 9, No 1, 1991.               
---                                                                        
--- Date created:         28 Oct 92                                        
--- Last Modified:        17 Feb 93                                        
---                                                                        
---------------------------------------------------------------------------
+-- ACM transactions on computer systems, Vol 9, No 1, 1991.
+--
+-- Date created:         28 Oct 92
+-- Last Modified:        17 Feb 93
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- RUN: romp "%s" -o - | c++ - -o /dev/null
+--------------------------------------------------------------------------------
 
 Const
   N: 3;
@@ -49,14 +53,14 @@ Type
   --  The scalarset is used for symmetry, which is implemented in Murphi 1.5
   --  and not upgraded to Murphi 2.0 yet
   pid: scalarset (N);
-  label_t: Enum{L0,  -- : non critical section; 
+  label_t: Enum{L0,  -- : non critical section;
 		     -- : acquire => R->next := nil
 		L1,  -- :            predecessor := fetch_and_store( L,R )
 		L2,  -- :  	     if (predecessor != nil)
 		L3,  -- : 		R->locked := true
 		L4,  -- : 		predecessor->next := R
 		L5,  -- : 		repeat while I->locked
-		L6,  -- : critical section; 
+		L6,  -- : critical section;
 		     -- : release => if (R->next = nil)
 		L7,  -- : 		old_tail = fetch_and_store( L,nil )
  		L8,  -- : 		if (old_tail = R)
@@ -88,68 +92,68 @@ Var
 	     pred: ptqnode;
 	     tail: ptqnode;
  	     usuper: ptqnode;
-	   End;		
+	   End;
   L: ptqnode;
 
 Procedure setNextNil( i:pid);
 Begin
     R[i].next.nil := true;
     Undefine R[i].next.p;
-End; 
+End;
 
 Procedure setNext( i, n:pid);
 Begin
     R[i].next.nil := false;
     R[i].next.p := n;
-End; 
+End;
 
 Procedure setPredNil( i:pid);
 Begin
     local[i].pred.nil := true;
     Undefine local[i].pred.p;
-End; 
-  
+End;
+
 Procedure setPred( i, n:pid);
 Begin
     local[i].pred.nil := false;
     local[i].pred.p := n;
-End; 
+End;
 
 Procedure setTailNil( i:pid);
 Begin
     local[i].tail.nil := true;
     Undefine local[i].tail.p;
-End; 
-  
+End;
+
 Procedure setTail( i, n:pid);
 Begin
     local[i].tail.nil := false;
     local[i].tail.p := n;
-End; 
+End;
 
 Procedure setUsuperNil( i:pid);
 Begin
     local[i].usuper.nil := true;
     Undefine local[i].usuper.p;
-End; 
-  
+End;
+
 Procedure setUsuper( i, n:pid);
 Begin
     local[i].usuper.nil := false;
     local[i].usuper.p := n;
-End; 
+End;
 
 Procedure setLockNil();
 Begin
     L.nil := true;
     Undefine L.p;
-End; 
+End;
 
 Procedure setLock( i:pid);
 Begin
     L.nil := false;
     L.p := i;
-End; 
+End;
 
 Ruleset i: pid  Do
 
@@ -158,7 +162,7 @@ Ruleset i: pid  Do
   ==>
   Begin
     setNextNil(i);
-    P[i] := L1; 
+    P[i] := L1;
   End;
 
   Rule "execute assign pred FandS L I"
@@ -172,7 +176,7 @@ Ruleset i: pid  Do
       setPred(i,L.p);
     End; --If
     setLock(i);
-    P[i] := L2; 
+    P[i] := L2;
   End;
 
   Rule "execute if pred nil"
@@ -181,7 +185,7 @@ Ruleset i: pid  Do
   Begin
     If ( local[i].pred.nil )
     Then
-      P[i] := L6; 
+      P[i] := L6;
     Else
       P[i] := L3;
     End; --If
@@ -191,8 +195,8 @@ Ruleset i: pid  Do
     P[i] = L3
   ==>
   Begin
-    R[i].locked := true; 
-    P[i] := L4; 
+    R[i].locked := true;
+    P[i] := L4;
   End;
 
   Rule "execute assign prednext I"
@@ -227,7 +231,7 @@ Ruleset i: pid  Do
 
   Rule "execute assign oldtail FandS L nil"
     P[i] = L7
-  ==> 
+  ==>
   Begin
     If ( L.nil )
     Then
@@ -236,7 +240,7 @@ Ruleset i: pid  Do
       setTail(i,L.p);
     End; --If
     setLockNil();
-    P[i] := L8; 
+    P[i] := L8;
   End;
 
   Rule "execute if tail eq I"
@@ -250,7 +254,7 @@ Ruleset i: pid  Do
       P[i] := L9;
     End; --If
   End;
-      
+
   Rule "execute assign usuper FandS L tail"
     P[i] = L9
   ==>
@@ -265,14 +269,14 @@ Ruleset i: pid  Do
     End; --If
     If ( murphilocal.nil )
     Then
-      Error "tail cannot be nil at this point.";	
+      Error "tail cannot be nil at this point.";
       setLockNil();
     Else
       setLock(murphilocal.p);
     End; --If
-    P[i] := L10; 
-  End; 
-    
+    P[i] := L10;
+  End;
+
   Rule "execute repeat while Inext nil"
     P[i] = L10
   ==>
@@ -301,13 +305,13 @@ Ruleset i: pid  Do
   ==>
   Begin
     R[R[i].next.p].locked := false;
-    P[i] := L0; 
+    P[i] := L0;
   End;
 
 End; --Ruleset
-   
+
 Startstate
-Begin 
+Begin
   For i:pid Do
     P[i] := L0;
     setNextNil(i);
@@ -328,7 +332,7 @@ Invariant
       )
     End  --exists
     End; --Exists
- 
+
 /******************
 
 Summary of Result (using release 2.3):
@@ -350,17 +354,17 @@ Summary of Result (using release 2.3):
 	540219 states 15713 max in queue.
 	1620657 rules fired
 	1303.74s in sun sparc 2 station
-	
-	BFS -nosym 
+
+	BFS -nosym
 	3240032 states 94222 max in queue
 	9720096 rules fired
 	5818.00s in sun sparc 2 station
 
 	BFS -sym3
 	543763 states, 1631289 rules fired in 1322.08s.
-	15619 max in queue 
+	15619 max in queue
 
-gamma2.9S on theforce.stanford.edu 
+gamma2.9S on theforce.stanford.edu
 
   	2 proc
 	-O4 compile 169.7s 3.2Mbytes
@@ -373,11 +377,11 @@ gamma2.9S on theforce.stanford.edu
 	    (32 bytes per states)
         -sym3 540,219 states, 1620657 rules 1114.48s
         -sym2 540,219 states, 1620657 rules 1064.57s
-        -sym4 542,071 states, 1626213 rules 992.39s	      
+        -sym4 542,071 states, 1626213 rules 992.39s
 
 Release 2.9S (Sparc 20, cabbage.stanford.edu)
 
-   3 processes  
+   3 processes
        * The size of each state is 256 bits (rounded up to 32 bytes).
     -b * The size of each state is 256 bits (rounded up to 32 bytes).
 
@@ -386,5 +390,4 @@ Release 2.9S (Sparc 20, cabbage.stanford.edu)
     -c  540219 states, 1620657 rules fired in 387.64s.
 
 ******************/
-
 

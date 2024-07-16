@@ -83,7 +83,9 @@
         "cfenv": "cpp",
         "typeindex": "cpp",
         "variant": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "filesystem": "cpp",
+        "queue": "cpp"
     },
     "doxdocgen.file.fileOrder": [
         "custom",
@@ -104,7 +106,7 @@
         "@org <a href=\"https://civic-fv.github.io\">Civic-fv NSF Grant</a>",
         "@org Ganesh Gopalakrishnan's Research Group",
     ],
-    "doxdocgen.file.versionTag": "@version 0.2", // update me with new versions
+    "doxdocgen.file.versionTag": "@version 0.3", // update me with new versions
     //<<================================================================================================>>//
     //<<                                           (LANG):                                              >>//
     //<<                                            C/C++                                               >>//
@@ -128,7 +130,7 @@
         "editor.tabSize": 2,
         "editor.useTabStops": true,
         // "editor.detectIndentation": false,
-        "editor.wordBasedSuggestions": true,
+        "editor.wordBasedSuggestions": "matchingDocuments",
         "editor.suggest.insertMode": "replace",
         "editor.semanticHighlighting.enabled": true
     },
@@ -138,7 +140,7 @@
         "editor.tabSize": 2,
         "editor.useTabStops": true,
         // "editor.detectIndentation": false,
-        "editor.wordBasedSuggestions": true,
+        "editor.wordBasedSuggestions": "matchingDocuments",
         "editor.suggest.insertMode": "replace",
         "editor.semanticHighlighting.enabled": true
     },
@@ -380,6 +382,7 @@
         "multithreading",
         "Multivariable",
         "Murphi",
+        "ndarray",
         "nlohmann",
         "ojstream",
         "oster",

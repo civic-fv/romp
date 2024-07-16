@@ -7,11 +7,11 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file CodeGenerator.hpp
- * 
+ *
  * @brief The place where dreams come to die
- * 
+ *
  * @date 2022/06/10
- * @version 0.2
+ * @version 0.3
  */
 
 #pragma once
@@ -34,12 +34,12 @@ namespace romp {
   // some common supporting code used by code generation functions
   class CodeGenerator {
   protected:
-    std::shared_ptr<std::ofstream> out = nullptr;
+    std::unique_ptr<std::ostream> out = nullptr;
 
   public:
     CodeGenerator() = default;
     ~CodeGenerator() = default;
-    void set_out(std::shared_ptr<std::ofstream>& out_);
+    void set_out(std::unique_ptr<std::ofstream> out_);
 
 
     // the backend type for ranges
@@ -54,9 +54,11 @@ namespace romp {
     // the number of rule applications to keep track of for trace reports
     size_t hist_len = ROMP_HISTORY_SIZE_PREPROCESSOR_VAR_DEFAULT_VALUE;
     // the number of rule applications to keep track of for trace reports
-    size_t default_walk_multiplier = 16u;
+    size_t default_walk_multiplier = 64u;
     // the number of walkers per unique state to explore upto during initial BFS
     size_t default_bfs_coefficient = 16u;
+    // the rule selection algorithm to use
+    size_t selection_algo = 1ul;
     // function attributes to prepend before the definition of any murphi function's C/C++ function.
     std::string M_FUNCTION__FUNC_ATTRS = "";
     // function attributes to prepend before the definition of any murphi simple rule's guard C/C++ function.
@@ -78,7 +80,7 @@ namespace romp {
     bool is_cover_enabled = false;
     bool is_liveness_enabled = false;
     bool is_measure_enabled = false;
-    
+
 
   protected:
     // id_t next_property_rule_id = 0u;
@@ -94,7 +96,7 @@ namespace romp {
     // // id_t next_type_id = 0u;
     // // id_t next_enum_id = 0u;
     // id_t next_record_member_id = 0u;
-    
+
 
   public:
     // get a white space string for the current indentation level
@@ -139,9 +141,9 @@ namespace romp {
     // CodeGenerator& operator << (const std::function<std::ostream&(std::ostream&)>& manipulator);
     // CodeGenerator& operator << (const std::function<CodeGenerator&(CodeGenerator&)>& manipulator);
     // inline CodeGenerator& operator << (const murphi::Node &n);
-    
+
     // friend inline CodeGenerator& _flush(CodeGenerator& gen);
-    
+
 
     // template<typename T>
     // friend inline CodeGenerator& operator << (CodeGenerator& gen, const T &val);

@@ -346,7 +346,7 @@ void Indexer::visit_while(While &n) {
 
 void Indexer::visit_xor(Xor &n) { visit_bexpr(n); }
 
-// << ------------------------------------------------------------------------------------------ >> 
+// << ------------------------------------------------------------------------------------------ >>
 
 void Indexer::visit_chooserule(ChooseRule& n) {
   n.unique_id = next++;
@@ -359,7 +359,7 @@ void Indexer::visit_ismember(IsMember& n) {
   dispatch(*n.designator);
   dispatch(*n.type_value);
 }
-  
+
 void Indexer::visit_multiset(Multiset& n) {
   n.unique_id = next++;
   dispatch(*n.size); // index_type should be nullptr
@@ -400,7 +400,7 @@ void Indexer::visit_multisetquantifier(MultisetQuantifier& n) {
   n.unique_id = next++;
   dispatch(*n.multiset);
   visit_quantifier(n);
-} 
+}
 
 void Indexer::visit_scalarsetunion(ScalarsetUnion& n) {
   n.unique_id = next++;

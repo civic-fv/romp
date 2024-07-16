@@ -26,7 +26,7 @@ private:
       replacement = prefix + std::to_string(index);
       index++;
     }
-    
+
     // replace non-letter symbols
     replacement = sanitize_name(replacement);
 

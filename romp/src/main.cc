@@ -2,7 +2,7 @@
 #include "generate.hpp"
 #include "check.h"
 #include "NestedError.hpp"
-#include "CodeGenerator.hpp"
+#include "ModelGenerator.hpp"
 // #include "generate_h.h"
 // #include "options.h"
 #include "resources.h"
@@ -16,6 +16,7 @@
 #include <murphi/murphi.h>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <utility>
@@ -30,7 +31,6 @@ using dup_t =
 
 static std::string in_filename = "<stdin>";
 static dup_t in;
-static std::shared_ptr<std::ofstream> out;
 
 // output C source? (as opposed to C header)
 // static bool source = true;
@@ -43,7 +43,6 @@ std::filesystem::path make_path(std::string p) {
 }
 
 void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
-  bool no_sym_provided = false;
   bool out_file_provided = false;
   // unsigned int hist_len = ROMP_HISTORY_SIZE_PREPROCESSOR_VAR_DEFAULT_VALUE;
   for (;;) {
@@ -52,7 +51,7 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
         { "help",               no_argument,        0,  'h' },
         { "output",             required_argument,  0,  'o' },
         { "rule-history-len",   required_argument,  0,  'r' },
-        { "no-symmetry",        no_argument,        0,  's' },
+        { "selection-algo",     required_argument,  0,  's' },
         { "enable-assume",      no_argument,        0,  'a' },
         { "enable-cover",       no_argument,        0,  'c' },
         { "enable-liveness",    no_argument,        0,  'l' },
@@ -71,7 +70,7 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
     };
 
     int option_index = 0;
-    int c = getopt_long(argc, argv, "ho:r:sacliR:vSw:b:", options, &option_index);
+    int c = getopt_long(argc, argv, "ho:r:s:acliR:vmSw:b:", options, &option_index);
 
     if (c == -1)
       break;
@@ -87,13 +86,12 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
       exit(EXIT_SUCCESS);
 
     case 'o': { // --output
-      auto o = std::make_shared<std::ofstream>(optarg,std::ios::out);
+      auto o = std::make_unique<std::ofstream>(std::string_view(optarg) == "-" ? "/dev/stdout" : optarg, std::ios::out | std::ios::trunc);
       if (!o->is_open()) {
         std::cerr << "failed to open " << optarg << "\n";
         exit(EXIT_FAILURE);
       }
-      gen.set_out(o);
-      // out = o;
+      gen.set_out(move(o));
       gen.output_file_path = make_path(optarg);
       out_file_provided = true;
       break;
@@ -113,8 +111,23 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
       }
       break;
 
-    case 's': // --no-symmetry
-      no_sym_provided = true;
+    case 's': // --selection-algo
+      try {
+        gen.selection_algo = std::stoul(optarg, nullptr, 0);
+      } catch (std::invalid_argument &ia) {
+        std::cerr << "invalid argument : provided selection algorithm value was not a number (NaN) !! (for -s/--selection-algo flag)\n"
+                  << std::flush;
+        exit(EXIT_FAILURE);
+      } catch (std::out_of_range &oor) {
+        std::cerr << "invalid argument : provided selection algorithm value was out of range !! (for -s/--selection-algo flag)\n"
+                  << std::flush;
+        exit(EXIT_FAILURE);
+      }
+      if (gen.selection_algo > ROMP_RULE_SELECTION_ALGO_LIMIT) {
+        std::cerr << "invalid argument : provided selection algorithm value was out of range !! [0," << ROMP_RULE_SELECTION_ALGO_LIMIT << "] (for -s/--selection-algo flag)\n"
+                  << std::flush;
+        exit(EXIT_FAILURE);
+      }
       break;
 
     case 'a': // --enable-assume
@@ -220,25 +233,22 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
   if (not out_file_provided) {
     gen.output_file_path = gen.input_file_path;
     gen.output_file_path.replace_extension(".romp.cpp");
-    auto o = std::make_shared<std::ofstream>(gen.output_file_path);
+    auto o = std::make_unique<std::ofstream>(gen.output_file_path, std::ios::out | std::ios::trunc);
     if (!o->is_open()) {
       std::cerr << "failed to open \"" << gen.output_file_path << "\"\n"  << std::flush;
       exit(EXIT_FAILURE);
     }
-    out = o;
-    gen.set_out(o);
+    gen.set_out(move(o));
   }
   // gen.enable_preprocessor_option(
   //     ROMP_HISTORY_SIZE_PREPROCESSOR_VAR " (" + std::to_string(gen.hist_len) + "ul)"
   //   );
   if (gen.default_walk_multiplier == 0) {
     gen.default_walk_multiplier = 1u;
-    std::cerr << "WARNING : `0` is an invalid value for default walk multiplier, `1` will used instead !! (for -w/--default-wal-multiplier flag)\n" 
+    std::cerr << "WARNING : `0` is an invalid value for default walk multiplier, `1` will used instead !! (for -w/--default-wal-multiplier flag)\n"
               << std::flush;
   }
-  if (not no_sym_provided)
-    gen.enable_preprocessor_option(ROMP_SYMMETRY_PREPROCESSOR_VAR);
-  
+
 }
 
 static dup_t make_stdin_dup() {
@@ -259,12 +269,12 @@ std::string trim(const std::string &s)
     while (start != s.end() && std::isspace(*start)) {
         start++;
     }
- 
+
     auto end = s.end();
     do {
         end--;
     } while (std::distance(start, end) > 0 && std::isspace(*end));
- 
+
     return std::string(start, end + 1);
 }
 
@@ -277,7 +287,7 @@ std::string _to_lower(const std::string& data) {
 
 int main(int argc, char **argv) {
 
-  romp::CodeGenerator gen;
+  romp::ModelGenerator gen;
   // parse command line options
   parse_args(gen, argc, argv);
 

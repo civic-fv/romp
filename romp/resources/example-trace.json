@@ -6,7 +6,7 @@
         "seed": 0, // the int rep fo the rand seed
         "max-depth": 0, // the starting fuel level
         "...": "..."  // don't put this in just omit prev ','
-    }, 
+    },
     "trace": [
         // ^^^ all of this needs to be output before you write any trace info ^^^
         // \/ \/ all of this section will be output during the RW \/ \/ (you will need to insert commas between objects)
@@ -42,7 +42,7 @@
     "results": { // <- best done in a helper function to call whenever you want
         "depth": 0, // put in this info
         "valid": true, // if the random walk terminated because fo a property violation or not
-        "is-error": false, // (FOR-LATER) is true if error-trace is not triggered by an assumption (all other properties only throw when state is in error) 
+        "is-error": false, // (FOR-LATER) is true if error-trace is not triggered by an assumption (all other properties only throw when state is in error)
         "...": "..."  // don't put this in just omit prev ','
     }
 }

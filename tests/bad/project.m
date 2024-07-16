@@ -6,6 +6,11 @@
 --
 --------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
+-- RUN: romp "%s" -o - | c++ - -o /dev/null
+-- XFAIL: *
+--------------------------------------------------------------------------------
+
 
 --------------------------------------------------------------------------------
 -- constants, types and variables
@@ -13,9 +18,9 @@
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const
-  
+
   INTRUDER_PARTICIPATES:     true;
-  
+
   -- enable/disable invariants
   CHK_MEMBERSHIP:            true;
   CHK_GKEY_LIFE:             true;
@@ -36,7 +41,7 @@ const
   InvalidGKEK:               MumGKEKs + 1;
   InvalidGTEK:               NumTKEKperGKEK + 1;
   InvalidKeyLifetime:        MaxKeyLifetime + 1;
-  
+
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 type
   MSID:         scalarset (NumMS);   -- mobile station identifiers
@@ -48,35 +53,35 @@ type
   NonceID:      1..MaxMSNonce;
   SequenceNum:  0..MaxSequenceNum;
   KeyLifetime:  0..MaxKeyLifetime;
-  
- 
+
+
   -- hmac/cmac related types
   PacketNumber_Uni : record
     ul:    SequenceNum;
     dl:    SequenceNum;
   end;
-  
+
   GMacKey_Uni : record  -- unicast msg mac key
     gid:  GSAID;
     msid: MSID;
     ul:   boolean;   -- uplink or not
   end;
-  
+
   GMacKey_MBS : record  -- multicast/broadcast msg mac key (always downlink)
     gid:  GSAID;
     gkek: GKEKID;
   end;
-  
+
   GMacKeyKnown_Uni : array[GSAID] of array[MSID] of array[boolean] of boolean;
-  
+
   GMacKeyKnown_MBS : array[GSAID] of array[GKEKID] of boolean;
-  
+
   -- group key related types
   GTEKParam : record
     gkekVer: GKEKID;
     gtekVer: GTEKID;
   end;
-  
+
   GKEK : record
     gid: GSAID;
     gkekVer: GKEKID;
@@ -84,12 +89,12 @@ type
     param: GKEKID;
     life: KeyLifetime;
   end;
-  
+
   GKEKey : record
     gid: GSAID;
     gkekVer: GKEKID;
   end;
-  
+
   GTEK : record
     gid: GSAID;
     gkekVer: GKEKID;
@@ -98,19 +103,19 @@ type
     param: GTEKParam;
     life: KeyLifetime;
   end;
-  
+
   GTEKey : record
     gid: GSAID;
     gkekVer: GKEKID;
     gtekVer: GTEKID;
   end;
-  
+
   GKey1_t : record
     gkek: boolean;
     gtek: array[GTEKID] of boolean;
   end;
   GKeyKnown : array[GSAID] of array[GKEKID] of GKey1_t;
-  
+
   -- message related types
   MessageType : enum {           -- different types of messages
     KeyReq,              --  {Na, A}Kb:   nonce and address
@@ -124,8 +129,8 @@ type
     mType:    MessageType;       -- type of message. this can be identified by msg header
     gsaId:    GSAID;             -- source of message
     nonce:    NonceID;
-    gkek:     GKEK;              -- 
-    gtek:     GTEK;              -- 
+    gkek:     GKEK;              --
+    gtek:     GTEK;              --
     seq:      SequenceNum;       -- key push counter
     pn:       SequenceNum;       -- packet number counter
   end;
@@ -137,11 +142,11 @@ type
     mType:       MessageType;       -- type of message. this can be identified by msg header
     gsaId:       GSAID;             -- source of message
     nonce:       NonceID;
-    gkek:        GKEK;              -- 
-    gtek:        GTEK;              -- 
+    gkek:        GKEK;              --
+    gtek:        GTEK;              --
     seq:         SequenceNum;
     pn:          SequenceNum;       -- packet number counter
-    
+
     gMacKey_Uni:  GMacKey_Uni;         -- unicast group mac key used for msg verification
     gMacKey_MBS:  GMacKey_MBS;         -- MBS group mac key used for msg verification
     mic:          MIC;
@@ -153,7 +158,7 @@ type
     M_OpWait,                    -- waiting for response from BS
     M_Operational,               -- MS operating inside of a group
     M_RekeyInterWait
-  };                             
+  };
 
   MobileStation : record
     state:        array [GSAID] of MSStates;
@@ -168,10 +173,10 @@ type
     curGtekParam: array[GSAID] of GTEKParam;
     curGtekSeq:   array[GSAID] of SequenceNum;   -- current GTEK sequence number received
     curGtekLife:  array[GSAID] of KeyLifetime;   -- current GTEK lifetime received
-    
+
     pn_uni:       array[GSAID] of PacketNumber_Uni;
     pn_mbs:       array[GSAID] of SequenceNum;
-    
+
     sessions:     array[GSAID] of MSSessions;
   end;
 
@@ -180,24 +185,24 @@ type
     B_Operational,               -- normal state that no rekeying is going on
     B_GKEKRekey,                 -- rekey GKEK to each MS in the group
     B_GTEKRekey                  -- rekey TKEK to all MS in the group thru multicast
-  };                             
+  };
 
   GroupMembers : array[MSID] of boolean;
-  
+
   BaseStation : record
     state:            array[GSAID] of BSStates;
     groupMembership:  array[GSAID] of GroupMembers;
-    gkekRekeyRecp:    array[GSAID] of multiset[NumMS] of MSID;  -- recipients of GKEK Rekey msg of a group 
+    gkekRekeyRecp:    array[GSAID] of multiset[NumMS] of MSID;  -- recipients of GKEK Rekey msg of a group
     curGkek:          array[GSAID] of GKEKID;        -- current GKEKs versions
     curGkekLife:      array[GSAID] of KeyLifetime;   -- current GKEK lifetime
     curGtek:          array[GSAID] of GTEKID;        -- current GTEKs versions
     curGtekLife:      array[GSAID] of KeyLifetime;   -- current GTEK lifetime
-    
-    --keyReqSeq:        array[GSAID] of array[MSID] of SequenceNum;    
+
+    --keyReqSeq:        array[GSAID] of array[MSID] of SequenceNum;
     pn_uni:           array[GSAID] of array[MSID] of PacketNumber_Uni;
     pn_mbs:           array[GSAID] of SequenceNum;
   end;
-  
+
   -- Intruder knowledge
   Intruder : record
     gmacs_uni:  GMacKeyKnown_Uni;
@@ -216,7 +221,7 @@ var                                         -- state variables for
   net: multiset[NetworkSize] of Message;    --  network
   ms: array[MSID] of MobileStation;     --  all mobile stations (includes the one intruder)
   bs: BaseStation;
-  
+
   intruderId: MSID;        --  intruder's MSID
   intruderInGroup: GSAID;  --  the 1 group that intruder joins
   intd: Intruder;          --  intruder knowledge
@@ -243,7 +248,7 @@ end;
 function verifyGKEK(k1, k2: GKEK): boolean;
   return (k1.gid = k2.gid &
           k1.gkekVer = k2.gkekVer &
-          k1.encKEK = k2.encKEK & 
+          k1.encKEK = k2.encKEK &
           k1.param = k2.param &
           k1.life = k2.life
          );
@@ -253,7 +258,7 @@ function verifyGTEK(k1, k2: GTEK): boolean;
   return (k1.gid = k2.gid &
           k1.gkekVer = k2.gkekVer &
           k1.gtekVer = k2.gtekVer &
-          k1.encGKEK = k2.encGKEK & 
+          k1.encGKEK = k2.encGKEK &
           k1.param.gkekVer = k2.param.gkekVer &
           k1.param.gtekVer = k2.param.gtekVer &
           k1.life = k2.life
@@ -282,7 +287,7 @@ begin
           msg.nonce = msg.mic.nonce &
           msg.pn = msg.mic.pn &
           verifyGKEK(msg.gkek, msg.mic.gkek) &
-          verifyGTEK(msg.gtek, msg.mic.gtek)          
+          verifyGTEK(msg.gtek, msg.mic.gtek)
          );
 end;
 
@@ -396,7 +401,7 @@ begin
        (m1.mType = KeyUpdGTEK | (m1.cid = m2.cid)) ) then
     return false;
   end;
-  
+
   switch m1.mType
     case KeyReq:
       return (m1.nonce = m2.nonce &
@@ -472,7 +477,7 @@ ruleset msid: MSID do
       multisetcount (l:net, true) < NetworkSize
 
     ==>
-    
+
     var
       outM: Message;   -- outgoing message
       gmacKey: GMacKey_Uni;
@@ -486,13 +491,13 @@ ruleset msid: MSID do
       outM.gsaId   := gid;
       outM.nonce   := ms[msid].curNonce[gid];
       outM.pn      := ms[msid].pn_uni[gid].ul;
-      
+
       undefine gmacKey;
       gmacKey.gid := gid;
       gmacKey.msid := msid;
       gmacKey.ul := true;
       outM.gMacKey_Uni := gmacKey;
-      
+
       undefine mic;
       mic.cid   := msid;
       mic.mType := KeyReq;
@@ -506,9 +511,9 @@ ruleset msid: MSID do
       ms[msid].state[gid]     := M_OpWait;
       ms[msid].lastSentNonce  := ms[msid].curNonce[gid];
       ms[msid].curNonce[gid]  := ms[msid].curNonce[gid] + 1;
-      
+
       ms[msid].pn_uni[gid].ul := outM.pn + 1;
-      
+
       if msid = intruderId then
         intruderInGroup := gid;
       end;
@@ -524,26 +529,26 @@ ruleset msid: MSID do
         net[i].fromIntruder &
         net[i].mType = KeyRsp &
         net[i].cid = msid
-        
+
       ==>
-      
+
       var
         inM:     Message;
         gkekey:  GKEKey;
         gtekey:  GTEKey;
-        
+
       begin
         inM := net[i];
         multisetremove(i, net);
-        
+
         if ms[msid].state[gid] = M_OpWait &
            inM.pn > ms[msid].pn_uni[inM.gsaId].dl then
-          
+
           ms[msid].pn_uni[inM.gsaId].dl := inM.pn;
-          
-          if (verifyKeyRspMac(inM) & 
+
+          if (verifyKeyRspMac(inM) &
               inM.nonce = ms[msid].lastSentNonce) then
-         
+
             if (ms[msid].curGkekLife[gid] < inM.gkek.life) then
               if CHK_GKEY_LIFE then
                 error "GKEK lifetime got extended!!!"
@@ -554,7 +559,7 @@ ruleset msid: MSID do
                 error "GTEK lifetime got extended!!!"
               end;
             end;
-         
+
             undefine gkekey;
             gkekey.gid := inM.gkek.gid;
             gkekey.gkekVer := inM.gkek.gkekVer;
@@ -562,7 +567,7 @@ ruleset msid: MSID do
             ms[msid].curGkekParam[gid] := inM.gkek.param;
             ms[msid].curGkekSeq[gid] := inM.gkek.gkekVer;
             ms[msid].curGkekLife[gid] := inM.gkek.life;
-         
+
             undefine gtekey;
             gtekey.gid := inM.gtek.gid;
             gtekey.gkekVer := inM.gtek.gkekVer;
@@ -571,13 +576,13 @@ ruleset msid: MSID do
             ms[msid].curGtekParam[gid] := inM.gtek.param;
             ms[msid].curGtekSeq[gid] := inM.gtek.gtekVer;
             ms[msid].curGtekLife[gid] := inM.gtek.life;
-         
+
             ms[msid].inGroup[gid] := true;
             ms[msid].state[gid] := M_Operational;
             undefine ms[msid].lastSentNonce;
           end;
         end;
-             
+
       end;
     end;
   end;
@@ -591,29 +596,29 @@ ruleset msid: MSID do
         net[i].fromIntruder &
         net[i].mType = KeyUpdGKEK &
         net[i].cid = msid
-        
+
       ==>
-      
+
       var
         inM:     Message;
         gkekey:  GKEKey;
-        
+
       begin
         inM := net[i];
         multisetremove(i, net);
-        
+
         if ms[msid].state[gid] = M_Operational &
            inM.pn > ms[msid].pn_uni[inM.gsaId].dl then
-          
+
           ms[msid].pn_uni[inM.gsaId].dl := inM.pn;
-          
+
           if (verifyKeyUpdGKEKMac(inM)) then
             if (ms[msid].curGkekLife[gid] < inM.gkek.life) then
               if CHK_GKEY_LIFE then
                 error "GKEK lifetime got extended!!!"
               end;
             end;
-          
+
             undefine gkekey;
             gkekey.gid := inM.gkek.gid;
             gkekey.gkekVer := inM.gkek.gkekVer;
@@ -621,11 +626,11 @@ ruleset msid: MSID do
             ms[msid].curGkekParam[gid] := inM.gkek.param;
             ms[msid].curGkekSeq[gid] := inM.gkek.gkekVer;
             ms[msid].curGkekLife[gid] := inM.gkek.life;
-          
+
             ms[msid].state[gid] := M_RekeyInterWait;
           end;
         end;
-        
+
       end;
     endchoose;
   end;
@@ -639,27 +644,27 @@ ruleset msid: MSID do
         net[i].fromIntruder &
         net[i].mType = KeyUpdGTEK &
         multisetcount(j:net[i].multiReceivers, net[i].multiReceivers[j] = msid) > 0
-        
+
       ==>
-      
+
       var
         inM:     Message;
         gtekey:  GTEKey;
-      
+
       begin
         inM := net[i];
         if ms[msid].state[gid] = M_RekeyInterWait &
            inM.pn > ms[msid].pn_mbs[inM.gsaId] then
-          
+
           ms[msid].pn_mbs[inM.gsaId] := inM.pn;
-         
+
           if (verifyKeyUpdGTEKMac(inM, ms[msid].curGkek[gid].gkekVer)) then
             if (ms[msid].curGtekLife[gid] < inM.gtek.life) then
               if CHK_GTEY_LIFE then
                 error "GTEK lifetime got extended!!!"
               end;
             end;
-          
+
             undefine gtekey;
             gtekey.gid := inM.gtek.gid;
             gtekey.gkekVer := inM.gtek.gkekVer;
@@ -668,18 +673,18 @@ ruleset msid: MSID do
             ms[msid].curGtekParam[gid] := inM.gtek.param;
             ms[msid].curGtekSeq[gid] := inM.gtek.gtekVer;
             ms[msid].curGtekLife[gid] := inM.gtek.life;
-          
+
             ms[msid].state[gid] := M_Operational;
           end;
 	  	end;
-	  	
+
         multisetremovepred(j:net[i].multiReceivers, net[i].multiReceivers[j] = msid);
         if multisetcount(j:net[i].multiReceivers, true) = 0 then
 	  	  multisetremove(i, net);
 	  	end;
-	  	
+
       end;
-      
+
     endchoose;
   end;
 end;
@@ -691,14 +696,14 @@ ruleset msid: MSID do
       msid != intruderId &  -- intruder can join 1 group max and won't leave the group
       ms[msid].state[gid] = M_Operational &
       bs.state[gid] = B_Operational
-      
+
     ==>
-    
+
     begin
       ms[msid].state[gid] := M_Start;
       ms[msid].inGroup[gid] := false;
       ms[msid].sessions[gid] := ms[msid].sessions[gid] + 1;
-      
+
       bs.state[gid] := B_GKEKRekey;  -- bs should be in rekey mode immediately
       bs.groupMembership[gid][msid] := false;
     end;
@@ -714,9 +719,9 @@ choose i: net do
   rule "bs receives KeyReq and sends KeyRsp message"
     net[i].fromIntruder &
     net[i].mType = KeyReq
-    
+
   ==>
-  
+
   var
     outM:  Message;
     inM:   Message;
@@ -725,17 +730,17 @@ choose i: net do
     gtekp: GTEKParam;
     gmack: GMacKey_Uni;
     mic:   MIC;
-    
+
   begin
     inM := net[i];
     multisetremove(i, net);
     if (verifyKeyReqMac(inM) &
         inM.pn > bs.pn_uni[inM.gsaId][inM.cid].ul
        ) then
-       
+
       --first, update packet number counter
       bs.pn_uni[inM.gsaId][inM.cid].ul := inM.pn;
-       
+
       undefine outM;
       outM.fromIntruder := false;
       outM.cid := inM.cid;
@@ -743,7 +748,7 @@ choose i: net do
       outM.gsaId := inM.gsaId;
       outM.nonce := inM.nonce;
       outM.pn    := bs.pn_uni[inM.gsaId][inM.cid].dl;
-      
+
       undefine gkek;
       gkek.gid := inM.gsaId;
       gkek.gkekVer := bs.curGkek[inM.gsaId];
@@ -752,7 +757,7 @@ choose i: net do
       gkek.life := bs.curGkekLife[inM.gsaId];
       outM.gkek := gkek;
       bs.curGkekLife[inM.gsaId] := bs.curGkekLife[inM.gsaId] - 1;
-      
+
       undefine gtek;
       gtek.gid := inM.gsaId;
       gtek.gkekVer := bs.curGkek[inM.gsaId];
@@ -765,13 +770,13 @@ choose i: net do
       gtek.life := bs.curGtekLife[inM.gsaId];
       outM.gtek := gtek;
       bs.curGtekLife[inM.gsaId] := bs.curGtekLife[inM.gsaId] - 1;
-      
+
       undefine gmack;
       gmack.gid := inM.gsaId;
       gmack.msid := inM.cid;
       gmack.ul := false;
       outM.gMacKey_Uni := gmack;
-      
+
       undefine mic;
       mic.cid := outM.cid;
       mic.mType := outM.mType;
@@ -781,24 +786,24 @@ choose i: net do
       mic.gtek  := outM.gtek;
       mic.pn    := outM.pn;
       outM.mic  := mic;
-      
+
       multisetadd(outM, net);
-      
+
       bs.groupMembership[outM.gsaId][outM.cid] := true;  -- BS authenticates MS into the group
       bs.pn_uni[outM.gsaId][outM.cid].dl := outM.pn + 1;
     end;
   end;
-end; 
+end;
 
 -- base station spontaneously enters GKEK rekey mode
 ruleset gid: GSAID do
   rule "bs enters GKEK rekey mode"
-  
+
     bs.state[gid] = B_Operational &
     memberCount(bs.groupMembership[gid]) > 0  -- an optimization. only rekey when the group is not empty
-    
+
   ==>
-  
+
   begin
     bs.state[gid] := B_GKEKRekey;
     for i:MSID do
@@ -813,20 +818,20 @@ end;
 ruleset gid: GSAID do
   ruleset msid: MSID do
     rule "bs sends out GKEK Update messages"
-  
+
       bs.state[gid] = B_GKEKRekey &
       multisetcount(j:bs.gkekRekeyRecp[gid], bs.gkekRekeyRecp[gid][j] = msid) > 0 &
       multisetcount (l:net, true) < NetworkSize
-    
+
     ==>
-  
+
     var
-    
+
       outM:     Message;
       gkek:     GKEK;
       gmacKey:  GMacKey_Uni;
       mic:      MIC;
-      
+
     begin
       undefine outM;
       outM.fromIntruder := false;
@@ -834,7 +839,7 @@ ruleset gid: GSAID do
       outM.mType := KeyUpdGKEK;
       outM.gsaId := gid;
       outM.pn := bs.pn_uni[gid][msid].dl;
-      
+
       undefine gkek;
       gkek.gid := gid;
       gkek.gkekVer := bs.curGkek[gid];
@@ -842,15 +847,15 @@ ruleset gid: GSAID do
       gkek.param := bs.curGkek[gid];
       gkek.life := bs.curGkekLife[gid];
       outM.gkek := gkek;
-      
+
       outM.seq := gkek.gkekVer;
-      
+
       undefine gmacKey;
       gmacKey.gid := gid;
       gmacKey.msid := msid;
       gmacKey.ul := false;
       outM.gMacKey_Uni := gmacKey;
-      
+
       undefine mic;
       mic.cid := msid;
       mic.mType := KeyUpdGKEK;
@@ -859,9 +864,9 @@ ruleset gid: GSAID do
       mic.seq := outM.seq;
       mic.pn := outM.pn;
       outM.mic := mic;
-      
+
       multisetadd(outM, net);
-      
+
       bs.pn_uni[gid][msid].dl := outM.pn + 1;
       bs.curGkekLife[gid] := bs.curGkekLife[gid] - 1;
     end;
@@ -871,12 +876,12 @@ end;
 -- base station enters GTEK rekey mode
 ruleset gid: GSAID do
   rule "bs enters GTEK rekey mode"
-  
+
     bs.state[gid] = B_GKEKRekey &
     multisetcount(j:bs.gkekRekeyRecp[gid], true) = 0
-    
+
   ==>
-  
+
   begin
     bs.state[gid] := B_GTEKRekey;
   end;
@@ -885,20 +890,20 @@ end;
 -- base station broadcasts GTEK Update msg to the group
 ruleset gid: GSAID do
   rule "bs broadcasts GTEK Update message"
-  
-    bs.state[gid] = B_GTEKRekey & 
+
+    bs.state[gid] = B_GTEKRekey &
     multisetcount (l:net, true) < NetworkSize
-    
+
   ==>
 
   var
-    
+
     outM:     Message;
     gtek:     GTEK;
     gmacKey:  GMacKey_MBS;
     gtekp:    GTEKParam;
     mic:      MIC;
-      
+
   begin
     undefine outM;
     outM.fromIntruder := false;
@@ -910,7 +915,7 @@ ruleset gid: GSAID do
     outM.mType := KeyUpdGTEK;
     outM.gsaId := gid;
     outM.pn := bs.pn_mbs[gid];
-      
+
     undefine gtek;
     gtek.gid := gid;
     gtek.gkekVer := bs.curGkek[gid];
@@ -922,14 +927,14 @@ ruleset gid: GSAID do
     gtek.param := gtekp;
     gtek.life := bs.curGtekLife[gid];
     outM.gtek := gtek;
-      
+
     outM.seq := gtek.gtekVer;
-      
+
     undefine gmacKey;
     gmacKey.gid := gid;
     gmacKey.gkek := bs.curGkek[gid];
     outM.gMacKey_MBS := gmacKey;
-      
+
     undefine mic;
     mic.mType := outM.mType;
     mic.gsaId := outM.gsaId;
@@ -937,9 +942,9 @@ ruleset gid: GSAID do
     mic.gtek := outM.gtek;
     mic.pn := outM.pn;
     outM.mic := mic;
-      
+
     multisetadd(outM, net);
-      
+
     bs.state[gid] := B_Operational;
     bs.pn_mbs[gid] := outM.pn + 1;
     bs.curGtekLife[gid] := bs.curGtekLife[gid] - 1;
@@ -956,16 +961,16 @@ choose i: net do
 
     !(net[i].fromIntruder) &
     net[i].cid != intruderId
-    
+
   ==>
 
   var
     inM: Message;
-    
+
   begin
     inM := net[i];
     intruderLearns(inM);
-    
+
     -- store the whole message for replay
     if multisetcount(j:intd.messages, equalMessage(inM, intd.messages[j])) = 0 then
 
@@ -995,7 +1000,7 @@ choose i: intd.messages do   --  recorded message
       outM := intd.messages[i];
       outM.fromIntruder := true;
 	  outM.cid := msid;
-      
+
       multisetadd(outM, net);
     end;
   end;
@@ -1021,11 +1026,11 @@ choose i: intd.messages do   --  recorded message
         multisetadd(j, outM.multiReceivers);
       end;
     end;
-    
+
     multisetadd(outM, net);
   end;
 end;
-        
+
 -- intruder generates a KeyReq message
 ruleset msid: MSID do
   ruleset gid: GSAID do
@@ -1035,14 +1040,14 @@ ruleset msid: MSID do
         intd.ak[msid] &
         multisetcount (l:net, true) < NetworkSize &
         msid != intruderId
-      
+
       ==>
-    
+
       var
         outM:    Message;
         gmacKey: GMacKey_Uni;
         mic: MIC;
-        
+
       begin
         undefine outM;
         outM.fromIntruder    := true;
@@ -1051,14 +1056,14 @@ ruleset msid: MSID do
         outM.gsaId   := gid;
         outM.nonce   := nn;
         outM.pn      := ms[msid].pn_uni[gid].ul;  -- assume intd already know because he's been observing all traffic
-      
+
         -- if AK is known, then gmac key is known
         undefine gmacKey;
         gmacKey.gid := gid;
         gmacKey.msid := msid;
         gmacKey.ul := true;
         outM.gMacKey_Uni := gmacKey;
-      
+
         undefine mic;
         mic.cid   := msid;
         mic.mType := KeyReq;
@@ -1072,7 +1077,7 @@ ruleset msid: MSID do
     end;
   end;
 end;
-        
+
 -- intruder generates a KeyRsp message
 ruleset msid: MSID do
   ruleset gid: GSAID do
@@ -1082,9 +1087,9 @@ ruleset msid: MSID do
         intd.ak[msid] &
         multisetcount (l:net, true) < NetworkSize &
         msid != intruderId
-      
+
       ==>
-    
+
       var
         outM:    Message;
         gkek:  GKEK;
@@ -1092,7 +1097,7 @@ ruleset msid: MSID do
         gtekp: GTEKParam;
         gmack: GMacKey_Uni;
         mic:   MIC;
-        
+
       begin
         undefine outM;
         outM.fromIntruder    := true;
@@ -1101,7 +1106,7 @@ ruleset msid: MSID do
         outM.gsaId   := gid;
         outM.nonce   := nn;
         outM.pn      := bs.pn_uni[gid][msid].dl;  -- assume intd already know because he's been observing all traffic
-       
+
         undefine gkek;
         gkek.gid := gid;
         gkek.gkekVer := InvalidGKEK;
@@ -1109,7 +1114,7 @@ ruleset msid: MSID do
         gkek.param := InvalidGKEK;
         gkek.life := InvalidKeyLifetime;
         outM.gkek := gkek;
-      
+
         undefine gtek;
         gtek.gid := gid;
         gtek.gkekVer := InvalidGKEK;
@@ -1121,14 +1126,14 @@ ruleset msid: MSID do
         gtek.param := gtekp;
         gtek.life := InvalidKeyLifetime;
         outM.gtek := gtek;
-      
+
         -- if AK is known, then gmac key is known
         undefine gmack;
         gmack.gid := gid;
         gmack.msid := msid;
         gmack.ul := false;
         outM.gMacKey_Uni := gmack;
-      
+
         undefine mic;
         mic.cid := outM.cid;
         mic.mType := outM.mType;
@@ -1144,7 +1149,7 @@ ruleset msid: MSID do
     end;
   end;
 end;
-        
+
 -- intruder generates a KeyUpdGKEK message
 ruleset msid: MSID do
   ruleset gid: GSAID do
@@ -1152,15 +1157,15 @@ ruleset msid: MSID do
       intd.ak[msid] &
       multisetcount (l:net, true) < NetworkSize &
       msid != intruderId
-      
+
     ==>
-    
+
     var
       outM:    Message;
       gkek:  GKEK;
       gmack: GMacKey_Uni;
       mic:   MIC;
-        
+
     begin
       undefine outM;
       outM.fromIntruder    := true;
@@ -1168,7 +1173,7 @@ ruleset msid: MSID do
       outM.mType   := KeyUpdGKEK;
       outM.gsaId   := gid;
       outM.pn      := bs.pn_uni[gid][msid].dl;  -- assume intd already know because he's been observing all traffic
-       
+
       undefine gkek;
       gkek.gid := gid;
       gkek.gkekVer := InvalidGKEK;
@@ -1178,14 +1183,14 @@ ruleset msid: MSID do
       outM.gkek := gkek;
 
       outM.seq := gkek.gkekVer;
-            
+
       -- if AK is known, then gmac key is known
       undefine gmack;
       gmack.gid := gid;
       gmack.msid := msid;
       gmack.ul := false;
       outM.gMacKey_Uni := gmack;
-      
+
       undefine mic;
       mic.cid := outM.cid;
       mic.mType := outM.mType;
@@ -1199,7 +1204,7 @@ ruleset msid: MSID do
     end;
   end;
 end;
-        
+
 -- intruder generates a KeyUpdGTEK message
 ruleset msid: MSID do
   ruleset gid: GSAID do
@@ -1208,16 +1213,16 @@ ruleset msid: MSID do
         intd.gkekKnown[gid][gkekVer] &
         multisetcount (l:net, true) < NetworkSize &
         msid != intruderId
-      
+
       ==>
-    
+
       var
         outM:    Message;
         gtek:  GTEK;
         gtekp: GTEKParam;
         gmack: GMacKey_MBS;
         mic:   MIC;
-        
+
       begin
         undefine outM;
         outM.fromIntruder    := true;
@@ -1230,7 +1235,7 @@ ruleset msid: MSID do
         outM.mType   := KeyUpdGTEK;
         outM.gsaId   := gid;
         outM.pn      := bs.pn_mbs[gid];  -- assume intd already know because he's been observing all traffic
-            
+
         undefine gtek;
         gtek.gid := gid;
         gtek.gkekVer := InvalidGKEK;
@@ -1242,14 +1247,14 @@ ruleset msid: MSID do
         gtek.param := gtekp;
         gtek.life := InvalidKeyLifetime;
         outM.gtek := gtek;
-      
+
         outM.seq := gtek.gtekVer;
-        
+
         undefine gmack;
         gmack.gid := gid;
         gmack.gkek := gkekVer;
         outM.gMacKey_MBS := gmack;
-      
+
         undefine mic;
         mic.mType := outM.mType;
         mic.gsaId := outM.gsaId;
@@ -1281,15 +1286,15 @@ startstate
         ms[msid].curGkekLife[gid] := MaxKeyLifetime;
         ms[msid].curGtekSeq[gid]  := 0;
         ms[msid].curGtekLife[gid] := MaxKeyLifetime;
-	
+
 	    ms[msid].pn_uni[gid].ul   := 1;
 	    ms[msid].pn_uni[gid].dl   := 0;
 	    ms[msid].pn_mbs[gid]      := 0;
-	    
+
 	    ms[msid].sessions[gid]    := 0;
 	end;
   end;
-  
+
   -- initialize base station
   undefine bs;
   for gid: GSAID do
@@ -1300,7 +1305,7 @@ startstate
     bs.curGtekLife[gid] := MaxKeyLifetime;
     for msid: MSID do
       bs.groupMembership[gid][msid] := false;
-      
+
 	  bs.pn_uni[gid][msid].ul   := 0;
 	  bs.pn_uni[gid][msid].dl   := 1;
     end;
@@ -1317,22 +1322,22 @@ startstate
     end;
 
   end;
-  
-  for gid: GSAID do   -- 
-    for msid: MSID do  
+
+  for gid: GSAID do   --
+    for msid: MSID do
       intd.gmacs_uni[gid][msid][true] := false;
       intd.gmacs_uni[gid][msid][false] := false;
     end;
     for gkekid: GKEKID do
       intd.gmacs_mbs[gid][gkekid] := false;
       intd.gkekKnown[gid][gkekid] := false;
-      for gtekid: GTEKID do 
+      for gtekid: GTEKID do
         intd.gtekKnown[gid][gkekid][gtekid] := false;
       end;
     end;
   end;
-  
-  for msid: MSID do  
+
+  for msid: MSID do
     intd.kek[msid] := false;
     intd.ak[msid]  := false;
     for nid: NonceID do
@@ -1342,9 +1347,9 @@ startstate
   intd.kek[intruderId] := true;
   intd.ak[intruderId]  := true;
 
-  -- initialize network 
+  -- initialize network
   undefine net;
-  
+
 end;
 
 
@@ -1430,7 +1435,7 @@ invariant "GKEK and GTEK key paramters integrity"
       ms[msid].curGtek[gid].gtekVer = bs.curGtek[gid]
     end
   end;
-  
+
 invariant "cross group gkek secrecy"
   forall gid: GSAID do
     forall gkekid: GKEKID do
@@ -1440,7 +1445,7 @@ invariant "cross group gkek secrecy"
       intd.gkekKnown[gid][gkekid] = false
     end
   end;
-  
+
 invariant "cross group gtek secrecy"
   forall gid: GSAID do
     forall gkekid: GKEKID do

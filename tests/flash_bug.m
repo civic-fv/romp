@@ -3,16 +3,20 @@
  * OG Model Credit: http://www.cs.cmu.edu/~tmurali/flow_examples/
  * Bug Injected By: Andrew Osterhout
  * NOTE:
- *  This model has a bug injected that trggers an invariant if any process 
- *   writes to the same location it most recently read from more than 
+ *  This model has a bug injected that trggers an invariant if any process
+ *   writes to the same location it most recently read from more than
  *   a certain number of times in a row.
  *  This bug can be pretty deep, but doesn't really have any obvious bottlenecks.
- *  The thought behind this bug is that the bug free version of this protocol maps 
+ *  The thought behind this bug is that the bug free version of this protocol maps
  *   entirely into this new larger statespace.
  *  Also for funsies you can think of this bug as a way to model physical limitations and
  *   wear that might occur in actual hardware, but only kind of, and not really for most
  *   modern hardware systems, just a fun though that inspired the mapping.
  */
+
+--------------------------------------------------------------------------------
+-- RUN: romp "%s" -o - | c++ - -o /dev/null
+--------------------------------------------------------------------------------
 
 const
 
@@ -114,8 +118,8 @@ type
   end;
 
   -- Bug Types:
-  BUG_STATE : record 
-    
+  BUG_STATE : record
+
   end;
 
 var
@@ -125,7 +129,7 @@ var
 
   -- Bug variables:
 
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 ruleset h : NODE; d : DATA do
 startstate "Init"
@@ -158,7 +162,7 @@ startstate "Init"
 endstartstate;
 endruleset;
 
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 ruleset src : NODE; data : DATA do
 rule "Store"
@@ -889,7 +893,7 @@ ruleset src : NODE do
 rule "NI_InvAck"
   src != Home &
   Sta.InvMsg[src].Cmd = INV_InvAck &
-  Sta.Dir.Pending & Sta.Dir.InvSet[src]  
+  Sta.Dir.Pending & Sta.Dir.InvSet[src]
 ==>
 var NxtSta : STATE;
 begin
@@ -994,7 +998,7 @@ begin
 endrule;
 endruleset;
 
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 invariant "CacheStateProp"
   forall p : NODE do forall q : NODE do
@@ -1014,7 +1018,7 @@ invariant "CacheDataProp"
 invariant "MemDataProp"
   !Sta.Dir.Dirty -> Sta.MemData = Sta.CurrData;
 
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 --   /* refinement relations */
 
@@ -1120,4 +1124,3 @@ invariant "MemDataProp"
 --   min : NODE;
 --   mi : msg; /* the incoming message */
 --   mi := UniMsg[min];
-

@@ -1,47 +1,51 @@
------------------------------------------------------------------------------
--- Murphi code for the locking protocol                                    
--- Author : Ganesh Gopalakrishnan, written circa year 2000 
--- Derived from Dilip Khandekar and John Carter's work     
--- Compare against Promela model studied in Asg3, CS 6110, Spring 2022     
------------------------------------------------------------------------------
-			 
+--------------------------------------------------------------------------------
+-- Murphi code for the locking protocol
+-- Author : Ganesh Gopalakrishnan, written circa year 2000
+-- Derived from Dilip Khandekar and John Carter's work
+-- Compare against Promela model studied in Asg3, CS 6110, Spring 2022
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- RUN: romp "%s" -o - | c++ - -o /dev/null
+--------------------------------------------------------------------------------
+
 -- begin of locking.m --
 
 Const
   Nprocs 	: 9; -- >= 2 reqd to satisfy request_bufT type declaration.
 
--------------------------------------------------------
+--------------------------------------------------------------------------------
 
 Type
   procT : 0..Nprocs-1; -- Scalarset (Nprocs);
-  
+
   request_bufT :record
 		  	Ar: Array[0..Nprocs-2] of procT;
 			Count: -1..Nprocs-2 -- legal range is 0..Nprocs-2
 					    -- -1 acts as empty indicator
 		end;
 
-		/* With Nprocs=1, we get 0..-1 which makes sense 
-		   mathematically (empty) but perhaps not in Murphi. 
+		/* With Nprocs=1, we get 0..-1 which makes sense
+		   mathematically (empty) but perhaps not in Murphi.
 		   So, avoid Nprocs <= 1. Similar caveats apply for
 		   all array declarations of the form 0..N-2. */
 
   stateT : enum { ENTER, TRYING, BLOCKED, LOCKED, EXITING };
   hstateT: enum { HANDLE, TRYGRANT };
 
--------------------------------------------------------
+--------------------------------------------------------------------------------
 
 Var
-  request_bufs 	: Array [procT] of request_bufT; 
-  prob_owners  	: Array [procT] of procT;        
-  waiters	: Array [procT] of request_bufT; 
-  mutexes	: Array [procT] of Boolean;      
+  request_bufs 	: Array [procT] of request_bufT;
+  prob_owners  	: Array [procT] of procT;
+  waiters	: Array [procT] of request_bufT;
+  mutexes	: Array [procT] of Boolean;
 
-  ar_states	: Array [procT] of stateT;       
+  ar_states	: Array [procT] of stateT;
   hstates	: Array [procT] of hstateT;
-  pids          : Array [procT] of procT; -- stores pids that are SS ids    
+  pids      : Array [procT] of procT; -- stores pids that are SS ids
 
--------------------------------------------------------
+--------------------------------------------------------------------------------
 
 procedure initq(var queue: request_bufT);
                -- queue of Array range 0..Nprocs-2
@@ -86,7 +90,7 @@ begin
       endif
  endif
 end;
-	
+
 procedure enqueue(var queue: request_bufT; pid: procT);
                   -- queue of Array range 0..Nprocs-2
 begin
@@ -97,7 +101,7 @@ begin
  endif;
 end;
 
--------------------------------------------------------
+--------------------------------------------------------------------------------
 
 procedure place_request(prob_owner, p : procT);
 begin
@@ -129,18 +133,18 @@ begin
  	endif
 end;
 
--------------------------------------------------------
+--------------------------------------------------------------------------------
 
 Ruleset p:procT Do
-    Alias 	request_buf: request_bufs[p] Do 
-    Alias	prob_owner : prob_owners[p]  Do 
-    Alias	waiter	   : waiters[p]	     Do 
-    Alias	state	   : ar_states[p]    Do 
-    Alias	hstate	   : hstates[p]      Do 
-    Alias	mutex	   : mutexes[p]      Do 
+    Alias 	request_buf: request_bufs[p] Do
+    Alias	prob_owner : prob_owners[p]  Do
+    Alias	waiter	   : waiters[p]	     Do
+    Alias	state	   : ar_states[p]    Do
+    Alias	hstate	   : hstates[p]      Do
+    Alias	mutex	   : mutexes[p]      Do
 
     	Rule "Try acquiring the lock"
-	 	((state = ENTER) & !mutex) 
+	 	((state = ENTER) & !mutex)
 			==> mutex := true;
 			    state := TRYING;
 	Endrule;
@@ -150,7 +154,7 @@ Ruleset p:procT Do
 		((state = TRYING) & (prob_owner = p) & mutex)
 			==> mutex := false;
                             state := LOCKED;
-                            
+
 	Endrule;
 	-------------------------------------------------------
 
@@ -161,7 +165,7 @@ Ruleset p:procT Do
 			    state := BLOCKED;
 	Endrule;
 	-------------------------------------------------------
-	
+
 	Rule "Locked -> Enter if no waiters"
 		((state = LOCKED) & emptyq(waiter)) ==> state := ENTER;
 	Endrule;
@@ -174,7 +178,7 @@ Ruleset p:procT Do
 	Endrule;
 	-------------------------------------------------------
 
-	-- added emptyq check for waiter 
+	-- added emptyq check for waiter
     	Rule "In EXITING state, pass hd waiter and tail of waiters along."
 		((state = EXITING) & !emptyq(waiter) & mutex)
 			==>   mutex := false;
@@ -186,7 +190,7 @@ Ruleset p:procT Do
 		   	      prob_owner := frontq(waiter);
 
 -- added this new line to update the state of acquire's thread state when passing the lock
-			      ar_states[frontq(waiter)] := LOCKED;   
+			      ar_states[frontq(waiter)] := LOCKED;
 
 			      copytail(waiter, waiters[prob_owner]);
 			      state := ENTER;
@@ -197,7 +201,7 @@ Ruleset p:procT Do
 	-- added this new rule which will get fired when there are no waiters in the queue
 	-- Rule "In EXITING state, release the lock if no waiters."
         --        ((state = EXITING) & emptyq(waiter) & mutex)
-        --                ==>   
+        --                ==>
         --                    state := ENTER;
         --                    mutex := false;
         -- Endrule;
@@ -234,9 +238,9 @@ Ruleset p:procT Do
 
 		   	    dequeue(request_buf);
 		   	    hstate := HANDLE;
-	
+
 			   endif
-			
+
 	Endrule;
 	-------------------------------------------------------
 
@@ -247,7 +251,7 @@ Ruleset p:procT Do
                             place_request(prob_owner,frontq(request_buf));
 		   	    dequeue(request_buf);
 		   	    hstate := HANDLE;
-		   	    
+
 	Endrule;
 	-------------------------------------------------------
 
@@ -258,7 +262,7 @@ Ruleset p:procT Do
                             enqueue(waiter,frontq(request_buf));
 		   	    dequeue(request_buf);
 		   	    hstate := HANDLE;
-		   	    
+
 	Endrule;
 	-------------------------------------------------------
 
@@ -270,7 +274,7 @@ Ruleset p:procT Do
     Endalias;
 Endruleset;
 
--------------------------------------------------------
+--------------------------------------------------------------------------------
 
 Ruleset n:procT Do
 Startstate
@@ -297,7 +301,7 @@ Endruleset;
 --     Exists i5: procT Do
 --     Exists i6: procT Do
 --     Exists i7: procT Do
---     Exists i8: procT Do  
+--     Exists i8: procT Do
 -- (-- pairwise distinct i0..i8
 --  i0 != i1 & i0 != i2 & i0 != i3 & i0 != i4 &
 --  i0 != i5 & i0 != i6 & i0 != i7 & i0 != i8
@@ -317,12 +321,12 @@ Endruleset;
 --  &
 --  i6 != i7 & i6 != i8
 --  &
---  i7 != i8 
+--  i7 != i8
 --  &
 --  --
 -- (prob_owners[i0]=i1)&(prob_owners[i1]=i2)&(prob_owners[i2]=i6)&
--- (prob_owners[i3]=i4)&(prob_owners[i4]=i5)&(prob_owners[i5]=i6)& 
--- (prob_owners[i6]=i7)&(prob_owners[i7]=i8)&(prob_owners[i8]=i8) 
+-- (prob_owners[i3]=i4)&(prob_owners[i4]=i5)&(prob_owners[i5]=i6)&
+-- (prob_owners[i6]=i7)&(prob_owners[i7]=i8)&(prob_owners[i8]=i8)
 --  )
 --     End  --Exists i0
 --     End  --Exists i1
@@ -332,10 +336,10 @@ Endruleset;
 --     End  --Exists i5
 --     End  --Exists i6
 --     End  --Exists i7
---     End  --Exists i8 
+--     End  --Exists i8
 --  ;
 
---------------------------------------------
+--------------------------------------------------------------------------------
 -- Invariant "Bug3"
 -- !(
 -- (prob_owners[0]=1)&(prob_owners[1]=2)&
@@ -346,35 +350,35 @@ Endruleset;
 -- )
 
 
---------------------------------------------
- Invariant "Symm. Bug 0..8"
- !(
- (prob_owners[pids[0]]=pids[1])&(prob_owners[pids[1]]=pids[2])&
- (prob_owners[pids[2]]=pids[5])&
- (prob_owners[pids[3]]=pids[4])&(prob_owners[pids[4]]=pids[5])&
- (prob_owners[pids[5]]=pids[6])&
- (prob_owners[pids[6]]=pids[7])&
- (prob_owners[pids[7]]=pids[8])&
- (prob_owners[pids[8]]=pids[8]) 
-   )
+--------------------------------------------------------------------------------
+--  Invariant "Symm. Bug 0..8"
+--  !(
+--  (prob_owners[pids[0]]=pids[1])&(prob_owners[pids[1]]=pids[2])&
+--  (prob_owners[pids[2]]=pids[5])&
+--  (prob_owners[pids[3]]=pids[4])&(prob_owners[pids[4]]=pids[5])&
+--  (prob_owners[pids[5]]=pids[6])&
+--  (prob_owners[pids[6]]=pids[7])&
+--  (prob_owners[pids[7]]=pids[8])&
+--  (prob_owners[pids[8]]=pids[8])
+--    )
 
---------------------------------------------
- Invariant "Symm. Bug 0..8 but bug depends on 0..7" 
- !(
- (prob_owners[pids[0]]=pids[1])&(prob_owners[pids[1]]=pids[2])&
- (prob_owners[pids[2]]=pids[5])&
- (prob_owners[pids[3]]=pids[4])&(prob_owners[pids[4]]=pids[5])&
- (prob_owners[pids[5]]=pids[6])&
- (prob_owners[pids[6]]=pids[7])&
- (prob_owners[pids[7]]=pids[7])
-   )
-
-
+--------------------------------------------------------------------------------
+--  Invariant "Symm. Bug 0..8 but bug depends on 0..7"
+--  !(
+--  (prob_owners[pids[0]]=pids[1])&(prob_owners[pids[1]]=pids[2])&
+--  (prob_owners[pids[2]]=pids[5])&
+--  (prob_owners[pids[3]]=pids[4])&(prob_owners[pids[4]]=pids[5])&
+--  (prob_owners[pids[5]]=pids[6])&
+--  (prob_owners[pids[6]]=pids[7])&
+--  (prob_owners[pids[7]]=pids[7])
+--    )
 
 
 
 
--------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
 
 -- end of locking.m
--------------------------------------------------------
+--------------------------------------------------------------------------------

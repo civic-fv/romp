@@ -1,3 +1,7 @@
+--------------------------------------------------------------------------------
+-- RUN: romp "%s" -o - | c++ - -o /dev/null
+--------------------------------------------------------------------------------
+
 type
     ms_t: multiset [4] of 0..3;
 
@@ -20,4 +24,3 @@ rule "spin"
 
 Invariant "multiplicity matters" m1 = m2;
 Invariant "multiplicity does NOT matter" m1 != m2;
-

@@ -7,11 +7,11 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file generate_state_stream.hpp
- * 
+ *
  * @brief generate the stream operators used to output the state to json files or the console
- * 
+ *
  * @date 2022/10/19
- * @version 0.2
+ * @version 0.3
  */
 
 #include "CodeGenerator.hpp"
@@ -22,13 +22,13 @@ namespace romp {
 
 
   /**
-   * @brief Generate the stream operators for the state data object 
+   * @brief Generate the stream operators for the state data object
    *        used to output the state to json traces and the console output
    */
   void generate_state_stream(romp::CodeGenerator& gen, const murphi::Model& m);
-  
+
   /**
-   * @brief Generate the std::hash object for the state data object 
+   * @brief Generate the std::hash object for the state data object
    *        used to hash the state into a hash compacted state during initial BFS
    */
   void generate_state_hash(romp::CodeGenerator& gen, const murphi::Model& m);

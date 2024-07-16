@@ -7,11 +7,11 @@
  * @org <a href="https://civic-fv.github.io">Civic-fv NSF Grant</a>
  * @org Ganesh Gopalakrishnan's Research Group
  * @file bfs.hpp
- * 
+ *
  * @brief code for the preemptive bfs before romp launch
- * 
+ *
  * @date 2023/01/10
- * @version 0.2
+ * @version 0.3
  */
 
 
@@ -25,7 +25,7 @@
 namespace std {
   template<>
   struct hash<::romp::State_t> {
-    inline size_t operator () (const ::romp::State_t& state) const { 
+    inline size_t operator () (const ::romp::State_t& state) const {
       return state.__romp__model_hash();
     }
   };
@@ -65,11 +65,11 @@ namespace romp {
     void __handle_exception(const R& r, const E& er) noexcept {
       tripped_inside = r.make_error();
     }
-  
+
   public:
 
     BFSWalker(const Options OPTIONS_, id_t start_id_)
-      : OPTIONS(OPTIONS_), 
+      : OPTIONS(OPTIONS_),
 #       if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
           enable_liveness(OPTIONS_.liveness),
 #       endif
@@ -83,7 +83,7 @@ namespace romp {
       if (tripped_inside != nullptr) delete tripped_inside;
     }
 
-  void init_state() noexcept {    
+  void init_state() noexcept {
     const StartState& startstate = ::__caller__::STARTSTATES[_start_id];
 #   ifdef __ROMP__DO_MEASURE
       start_time = time_mr();
@@ -94,7 +94,7 @@ namespace romp {
        __handle_exception(startstate,me);
     } catch (const std::exception& ex) {
       status = Result::UNKNOWN_CAUSE;
-      __handle_exception(startstate,ex); 
+      __handle_exception(startstate,ex);
     } catch (...) {
       status = Result::UNKNOWN_CAUSE;
       tripped_inside = new ModelStartStateError(startstate);
@@ -149,7 +149,7 @@ namespace romp {
         start_time = time_mr();
 #     endif
       pass = false;
-      try {  
+      try {
         if ((pass = r.guard(state)) == true) {
           r.action(state);
           ++_depth;
@@ -184,7 +184,7 @@ namespace romp {
           }
 #     ifdef __ROMP__DO_MEASURE
         active_time += time_mr() - start_time;
-#     endif             
+#     endif
     }
 
 
@@ -263,7 +263,7 @@ namespace romp {
 # endif
 
     // called when trying to print the results of the BFS walker when it finishes (will finish up trace file if necessary too)
-    //  the calling context should ensure that the BFSWalker is not being used else where & safe output to the ostream 
+    //  the calling context should ensure that the BFSWalker is not being used else where & safe output to the ostream
     friend ostream_p& operator << (ostream_p& out, const BFSWalker& rw) {
       std::string res_color = get_color(rw.status);
       out << out.nl()
@@ -275,7 +275,7 @@ namespace romp {
           << "     Result: " << res_color << std::to_string(rw.status) << "\033[0m"   << out.nl()
           << out.dedent()                                                             << out.nl()
           << "TRACE LITE:"                                            << out.indent() << out.nl();
-      if (rw.OPTIONS.do_trace) 
+      if (rw.OPTIONS.do_trace)
         out << "NOTE - BFS does not currently support rich json traces" << out.nl();
       out << "History: ["                             << out.indent() << out.indent() << out.nl()
           << "-(0) " << ::__caller__::STARTSTATES[rw._start_id] << '\n';
@@ -304,13 +304,13 @@ namespace romp {
           try {
             msg.first(out);
           } catch (std::exception& ex) {
-            out << out.indent() << out.nl() << msg.second << " :: error occurred while evaluating put statement" 
+            out << out.indent() << out.nl() << msg.second << " :: error occurred while evaluating put statement"
                 << out.nl() << ex << out.dedent() << out.nl();
           }
         }
         out << out.dedent() << out.nl() << "\"\"\"" << out.dedent() << out.nl();
       }
-          
+
 #     ifdef __ROMP__DO_MEASURE
         out << out.dedent()                                                         << out.nl()
             << "TIME REPORT:"                                       << out.indent() << out.nl()
@@ -323,8 +323,8 @@ namespace romp {
       return out;
     }
     // called when trying to print the results of the BFS walker when it finishes (will finish up trace file if necessary too)
-    //  the calling context should ensure that the BFSWalker is not being used else where & safe output to the ostream 
-    friend std::ostream& operator << (std::ostream& out, const BFSWalker& rw) 
+    //  the calling context should ensure that the BFSWalker is not being used else where & safe output to the ostream
+    friend std::ostream& operator << (std::ostream& out, const BFSWalker& rw)
     { ostream_p _out(out,rw.OPTIONS,0); _out << rw; return out; }
 
     State_t state;
@@ -346,7 +346,7 @@ protected:
 
 public:
 
-  BFSHandler(const Options& OPTIONS_) 
+  BFSHandler(const Options& OPTIONS_)
     : OPTIONS(OPTIONS_),
       TARGET(OPTIONS_.walks / OPTIONS_.bfs_coefficient),
       out(std::cout,OPTIONS_,0)
@@ -357,7 +357,7 @@ public:
   }
 
   /**
-   * @brief Launch a romp run where we first do a single threaded BFS before 
+   * @brief Launch a romp run where we first do a single threaded BFS before
    *        launching the swarm of random walkers.
    * @param OPTIONS the options object defining how the romp run should work.
    *                (required that bfs and do_even start be true)
@@ -365,12 +365,12 @@ public:
   void launch() {
     start_time = time_ms();
 
-    // - run through the startstates and add them to the queue ---- 
+    // - run through the startstates and add them to the queue ----
     for (size_t i=0; i<_ROMP_STARTSTATES_LEN; ++i) {
       auto walker = new BFSWalker(OPTIONS,i);
       walker->init_state();
       ++rules_applied;
-      if (walker->is_done()) {  // discover error during 
+      if (walker->is_done()) {  // discover error during
         end_bfs_report_error(walker);
         return;
       } else if (insert_state(walker->state))
@@ -412,12 +412,17 @@ protected:
 #         if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
             if (enable_liveness) walker->merge_liveness(liveness);
 #         endif
-          if (walker->pass) ++rules_applied;
-          if (insert_state(walker->state)) {
-              q.push_back(walker);
-            if (q.size() >= TARGET)
-              break;
-          } else delete walker;
+          if (walker->pass) { // guard passed
+            ++rules_applied;
+            if (insert_state(walker->state)) { // state is novel (yet unseen)
+                q.push_back(walker);
+              if (q.size() >= TARGET)
+                break;
+            } else delete walker;
+          } else {
+            delete walker;
+            continue;
+          }
         }
 #     if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
         // end if liveness property violated
@@ -541,15 +546,15 @@ protected:
     while (not q.empty() && q.size()<TARGET && rules_applied < OPTIONS.bfs_limit && bad == nullptr) {
       mut_out.unlock();
       // if (cycle % update_coef == 0) {
-      //   out << out.indentation() 
-      //       << '[' << (time_mr() - start_time) << "] " 
+      //   out << out.indentation()
+      //       << '[' << (time_mr() - start_time) << "] "
       //         "States found: " << states.size() << "; "
       //         "Rules Applied: " << rules_applied << "; "
       //         "BFS Progress: " << ((long long)((q.size()*100)/(TARGET*100)))
       //       << " (" << q.size() << '/' << TARGET << ");\n";
       //   mut_in.unlock();
       //   out.out.flush();
-      // } else 
+      // } else
         mut_in.unlock();
       // ++cycle;
       std::this_thread::sleep_for(pause_delay);
@@ -581,7 +586,7 @@ protected:
     } else
       end_bfs_solved();
     /* Ideas
-        - short term store new states in vector per threads then lock to add new states in bulk 
+        - short term store new states in vector per threads then lock to add new states in bulk
     */
   }
 
@@ -614,10 +619,10 @@ protected:
 
     auto lambda = [&]() { // code the threads run
       in_queue.lock();
-      while (in_seeds.size() > 0) { 
+      while (in_seeds.size() > 0) {
         in_seeds.front(); RandWalker *rw = new RandWalker(*l[in_seeds.size()%OPTIONS.bfs_coefficient%l.size()],
                                                           in_seeds.front(),OPTIONS);
-        in_seeds.pop(); 
+        in_seeds.pop();
         in_queue.unlock();
 
         // rw->init(); // no need to init when starting from bfs
@@ -651,13 +656,13 @@ protected:
           "==================================\n"
           "\033[0m\n\n";
     out.out.flush();
-    
+
     std::this_thread::sleep_for(pause_delay*2);
     while (true) {
       while (true) {  // handel outputs
         // if (cycles % update_coef == 0) { // this really slows things down
         //   out.indent();
-        //   out << '[' << (time_ms() - start_time) << "] " 
+        //   out << '[' << (time_ms() - start_time) << "] "
         //       << progress << '/' << OPTIONS.walks
         //       << " walks complete" << out.nl();
         //   out.dedent();
@@ -682,8 +687,8 @@ protected:
           delete rw;
         }
       }
-      
-      std::this_thread::sleep_for(pause_delay); 
+
+      std::this_thread::sleep_for(pause_delay);
       out_queue.lock();
       if (not (walks_done < OPTIONS.walks)) {
         out_queue.unlock();
@@ -732,7 +737,7 @@ protected:
     auto t = time_ms() - start_time;
     walker->finalize();
     std::string color = "\033[30;1;4m";
-    out << '\n' << out.nl() 
+    out << '\n' << out.nl()
         << "Error found during initial BFS"
         << out.nl() << *walker << '\n'
         << out.nl() << "\033[1;4mBFS SUMMARY:\033[0m" << out.indent()
@@ -744,7 +749,7 @@ protected:
     delete walker;
     out.out << std::flush;
   }
-  
+
   /**
    * @brief call when bfs ends with no new items in the queue
    */
@@ -765,9 +770,9 @@ protected:
     auto t = time_ms() - start_time;
     out << out.nl()
         << "NO ERRORS found during initial BFS\n"
-        << out.nl() 
-          << ((rules_applied >= OPTIONS.bfs_limit) 
-                ? "WARNING : BFS limit was reached, statespace might not have been sufficiently explored before launching the walkers !!\n" 
+        << out.nl()
+          << ((rules_applied >= OPTIONS.bfs_limit)
+                ? "WARNING : BFS limit was reached, statespace might not have been sufficiently explored before launching the walkers !!\n"
                 : std::string(""))
         << out.nl() << "\033[1;4mBFS SUMMARY:\033[0m" << out.indent()
         << out.nl() << "    States Found: " << states.size()

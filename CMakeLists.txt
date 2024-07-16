@@ -45,11 +45,13 @@ if(${CMAKE_VERSION} VERSION_GREATER 3.11)
   find_package(Python3 REQUIRED COMPONENTS Interpreter)
 endif()
 
+enable_testing()
+
 add_subdirectory(libmurphi)
 # add_subdirectory(murphi2c)
 add_subdirectory(romp)
 # add_subdirectory(romp-old)
-# add_subdirectory(tests/murphi-comment-ls)
+add_subdirectory(tests)
 
 # add_custom_target(check
 #   COMMAND env PATH=${CMAKE_CURRENT_BINARY_DIR}/romp:${CMAKE_CURRENT_BINARY_DIR}/murphi2c:${CMAKE_CURRENT_BINARY_DIR}/murphi2murphi:${CMAKE_CURRENT_BINARY_DIR}/murphi2uclid:${CMAKE_CURRENT_BINARY_DIR}/murphi2xml:${CMAKE_CURRENT_BINARY_DIR}/tests/murphi-comment-ls:$ENV{PATH}
