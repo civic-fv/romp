@@ -589,8 +589,8 @@ const RuleSet* _RS = nullptr;
                                 << ",\"active-time\":null,\"total-time\":null"
 #endif
             << ",\"property-violated\":" << tripped
-            << ",\"tripped-inside\":" << tripped_inside
-            << ",\"attempts-final\":" << _attempt_limit
+            << ",\"tripped-inside\":[" << tripped_inside
+            << "],\"attempts-final\":" << _attempt_limit
                               << "}" // closes results object
               << "}"; // closes top level trace object
     json->out.flush();
