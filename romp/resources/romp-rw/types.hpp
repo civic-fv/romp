@@ -761,7 +761,7 @@ namespace romp {
     static constexpr const std::string __json_type() {
       return "{\"$type\":\"scalarset-union-type\","
                 "\"member-count\":"+std::to_string(sizeof...(UNION_MEMBERS))+","
-                "\"\"bound\":"+ std::to_string(__COUNT()) +'}';
+                "\"bound\":"+ std::to_string(__COUNT()) +'}';
     }
     template<class O>
     friend ojstream<O>& operator << (ojstream<O>& out, const ScalarsetUnionType& val) {
