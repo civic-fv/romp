@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
 project(romp LANGUAGES CXX)
 
@@ -41,8 +41,15 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 endif()
 
 # if we have a new enough CMake to have FindPython3, check for it
-if(${CMAKE_VERSION} VERSION_GREATER 3.11)
+if(${CMAKE_VERSION} VERSION_GREATER 3.20)
   find_package(Python3 REQUIRED COMPONENTS Interpreter)
+  set(XXD_UTIL "${CMAKE_CURRENT_BINARY_DIR}/xxd.py")
+  configure_file("misc/xxd.py" "${XXD_UTIL}"
+      FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+    )
+else()
+set(XXD_UTIL "${CMAKE_CURRENT_SOURCE_DIR}/misc/xxd.py")
+message(INFO "cmake version too low to auto asign file permissions please run: `` chmod +x ${CMAKE_CURRENT_SOURCE_DIR}/misc/xxd.py  `` before compiling")
 endif()
 
 enable_testing()

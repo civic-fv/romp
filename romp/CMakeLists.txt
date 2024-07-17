@@ -1,75 +1,75 @@
 # Define resources.
 add_custom_command(# the man/help page
   OUTPUT resources_manpage.cpp
-  COMMAND ../misc/xxd.py doc/romp.1 ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cpp
+  COMMAND ${XXD_UTIL} doc/romp.1 ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cpp
   MAIN_DEPENDENCY doc/romp.1
-  DEPENDS ../misc/xxd.py
+  DEPENDS ${XXD_UTIL}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(# the includes for the genrated model checker
   OUTPUT resources_romp-rw_include.cpp
-  COMMAND ../misc/xxd.py resources/romp-rw/include.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_include.cpp
+  COMMAND ${XXD_UTIL} resources/romp-rw/include.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_include.cpp
   MAIN_DEPENDENCY resources/romp-rw/include.hpp
-  DEPENDS ../misc/xxd.py
+  DEPENDS ${XXD_UTIL}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(# the genral declrations for the genrated model checker
   OUTPUT resources_romp-rw_decl.cpp
-  COMMAND ../misc/xxd.py resources/romp-rw/decl.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_decl.cpp
+  COMMAND ${XXD_UTIL} resources/romp-rw/decl.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_decl.cpp
   MAIN_DEPENDENCY resources/romp-rw/decl.hpp
-  DEPENDS ../misc/xxd.py
+  DEPENDS ${XXD_UTIL}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(# the writers used to write to console in the genrated model checker
   OUTPUT resources_romp-rw_writers.cpp
-  COMMAND ../misc/xxd.py resources/romp-rw/writers.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_writers.cpp
+  COMMAND ${XXD_UTIL} resources/romp-rw/writers.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_writers.cpp
   MAIN_DEPENDENCY resources/romp-rw/writers.hpp
-  DEPENDS ../misc/xxd.py
+  DEPENDS ${XXD_UTIL}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(# the error handling classes and functions
   OUTPUT resources_romp-rw_error.cpp
-  COMMAND ../misc/xxd.py resources/romp-rw/error.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_error.cpp
+  COMMAND ${XXD_UTIL} resources/romp-rw/error.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_error.cpp
   MAIN_DEPENDENCY resources/romp-rw/error.hpp
-  DEPENDS ../misc/xxd.py
+  DEPENDS ${XXD_UTIL}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(# the type templates for the genrated model checker
   OUTPUT resources_romp-rw_types.cpp
-  COMMAND ../misc/xxd.py resources/romp-rw/types.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_types.cpp
+  COMMAND ${XXD_UTIL} resources/romp-rw/types.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_types.cpp
   MAIN_DEPENDENCY resources/romp-rw/types.hpp
-  DEPENDS ../misc/xxd.py
+  DEPENDS ${XXD_UTIL}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(# the hahser templates for the genrated model checker
   OUTPUT resources_romp-rw_hash.cpp
-  COMMAND ../misc/xxd.py resources/romp-rw/hash.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_hash.cpp
+  COMMAND ${XXD_UTIL} resources/romp-rw/hash.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_hash.cpp
   MAIN_DEPENDENCY resources/romp-rw/hash.hpp
-  DEPENDS ../misc/xxd.py
+  DEPENDS ${XXD_UTIL}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(# file with CLI config options
   OUTPUT resources_romp-rw_options.cpp
-  COMMAND ../misc/xxd.py resources/romp-rw/options.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_options.cpp
+  COMMAND ${XXD_UTIL} resources/romp-rw/options.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_options.cpp
   MAIN_DEPENDENCY resources/romp-rw/options.hpp
-  DEPENDS ../misc/xxd.py
+  DEPENDS ${XXD_UTIL}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(# our main definition and code file for the random walker and associated algorithms
   OUTPUT resources_romp-rw_walker.cpp
-  COMMAND ../misc/xxd.py resources/romp-rw/walker.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_walker.cpp
+  COMMAND ${XXD_UTIL} resources/romp-rw/walker.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_walker.cpp
   MAIN_DEPENDENCY resources/romp-rw/walker.hpp
-  DEPENDS ../misc/xxd.py
+  DEPENDS ${XXD_UTIL}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(# our main definition and code file for the preliminary BFS
   OUTPUT resources_romp-rw_bfs.cpp
-  COMMAND ../misc/xxd.py resources/romp-rw/bfs.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_bfs.cpp
+  COMMAND ${XXD_UTIL} resources/romp-rw/bfs.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_bfs.cpp
   MAIN_DEPENDENCY resources/romp-rw/bfs.hpp
-  DEPENDS ../misc/xxd.py
+  DEPENDS ${XXD_UTIL}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(# just some random implementations of functions that need to have everythign else declared and impl'ed first
   OUTPUT resources_romp-rw_impls.cpp
-  COMMAND ../misc/xxd.py resources/romp-rw/impls.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_impls.cpp
+  COMMAND ${XXD_UTIL} resources/romp-rw/impls.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_impls.cpp
   MAIN_DEPENDENCY resources/romp-rw/impls.hpp
-  DEPENDS ../misc/xxd.py
+  DEPENDS ${XXD_UTIL}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(# file with our main function
   OUTPUT resources_romp-rw_main.cpp
-  COMMAND ../misc/xxd.py resources/romp-rw/main.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_main.cpp
+  COMMAND ${XXD_UTIL} resources/romp-rw/main.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_romp-rw_main.cpp
   MAIN_DEPENDENCY resources/romp-rw/main.hpp
-  DEPENDS ../misc/xxd.py
+  DEPENDS ${XXD_UTIL}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 # add_custom_command(# retrieve verified version of the json lib we use nlohmann/json (https://github.com/nlohmann/json)
 #   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/resources/lib/nlohmann_json.hpp
@@ -78,9 +78,9 @@ add_custom_command(# file with our main function
 #   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 # add_custom_command(# convert jsonlib to
 #   OUTPUT resources_lib_nlohmann_json.cpp
-#   COMMAND ../misc/xxd.py resources/lib/nlohmann_json.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_lib_nlohmann_json.cpp
+#   COMMAND ${XXD_UTIL} resources/lib/nlohmann_json.hpp ${CMAKE_CURRENT_BINARY_DIR}/resources_lib_nlohmann_json.cpp
 #   MAIN_DEPENDENCY resources/lib/nlohmann_json.hpp
-#   DEPENDS ../misc/xxd.py
+#   DEPENDS ${XXD_UTIL}
 #   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(ROMP_CMAKE_CXX_FLAGS "-Wmissing-declarations -Wunknown-pragmas")

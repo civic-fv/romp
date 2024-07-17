@@ -285,6 +285,23 @@ std::string _to_lower(const std::string& data) {
   return result;
 }
 
+auto id_handler(const std::string& name, const murphi::IdType type, const murphi::location& loc) -> std::optional<std::string> {
+                        std::regex bad_name_regex("_+[Rr][Oo][Mm][Pp]_+.*");
+                        if (std::regex_search(name, bad_name_regex))
+                          throw murphi::Error("name/id (`"+name+"`) starts with the protected romp key phrase "
+                                              "(regex:/_+[Rr][Oo][Mm][Pp]_+.*/)",loc);
+                        if (name == "romp")
+                          throw murphi::Error("name/id (`romp`) is a reserved word",loc);
+                        // if (name == "")
+                        //   throw murphi::Error("name/id (`romp`) is a reserved word",loc);
+                        std::string name_lower = _to_lower(name);
+                        romp::CodeGenerator _gen;
+                        auto res = _gen.RESERVED_NAMES.find(name_lower);
+                        if (res != _gen.RESERVED_NAMES.end())
+                          throw murphi::Error("name/id `"+name+"` is a reserved word",loc);
+                        return {name};
+                      }
+
 int main(int argc, char **argv) {
 
   romp::ModelGenerator gen;
@@ -298,22 +315,8 @@ int main(int argc, char **argv) {
 
   // parse input model
   murphi::Ptr<murphi::Model> m;
-  std::regex bad_name_regex("_+[Rr][Oo][Mm][Pp]_+.*");
   try {
-    m = murphi::parse(*in.first, [&](const std::string& name, auto type, auto loc) -> std::optional<std::string> {
-                        if (std::regex_search(name, bad_name_regex))
-                          throw murphi::Error("name/id (`"+name+"`) starts with the protected romp key phrase "
-                                              "(regex:/_+[Rr][Oo][Mm][Pp]_+.*/)",loc);
-                        if (name == "romp")
-                          throw murphi::Error("name/id (`romp`) is a reserved word",loc);
-                        // if (name == "")
-                        //   throw murphi::Error("name/id (`romp`) is a reserved word",loc);
-                        std::string name_lower = _to_lower(name);
-                        auto res = gen.RESERVED_NAMES.find(name_lower);
-                        if (res != gen.RESERVED_NAMES.end())
-                          throw murphi::Error("name/id `"+name+"` is a reserved word",loc);
-                        return {name};
-                      });
+    m = murphi::parse(*in.first, id_handler);
   } catch (murphi::Error &e) {
     romp::fprint_exception(std::cerr, e);
     // std::cerr << e.loc << ":" << e.what() << "\n";

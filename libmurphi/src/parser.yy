@@ -612,6 +612,7 @@ stmt: category STRING expr {
   $$ = murphi::Ptr<murphi::AliasStmt>::make(decls, $4, @$);
 } | ERROR STRING {
   $$ = murphi::Ptr<murphi::ErrorStmt>::make(id_handler($2,murphi::ERROR_STMT_NAME, @2), @$);
+  /* $$ = murphi::Ptr<murphi::ErrorStmt>::make(("ERROR_STMT__"+($2)), @$); */
 } | CLEAR designator {
   $$ = murphi::Ptr<murphi::Clear>::make($2, @$);
 } | FOR quantifier DO stmts endfor {

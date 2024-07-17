@@ -128,7 +128,7 @@ define __generate_per_model_directive
 $(1): $(2)
 	@printf "\nFinished Building all `$(1)` model checkers!\n\n"
 endef
-$(foreach model,$(ALL_MODELS),$(eval $(call __generate_per_model_directive,$(model:%.m=%),$(if $(filter $(model:%.m=%).m,$(ROMP_MODELS)),$(model:%.m=%).romp $(model:%.m=%).nsym.romp )$(if $(filter $(model:%.m=%).m,$(CMURPHI_MODELS)),$(model:%.m=%).cm )$(if $(filter $(model:%.m=%).m,$(RUMUR_MODELS)),$(model:%.m=%).ru))))
+$(foreach model,$(ALL_MODELS),$(eval $(call __generate_per_model_directive,$(model:%.m=%),$(if $(filter $(model:%.m=%).m,$(ROMP_MODELS)),$(model:%.m=%).romp $(if $(filter $(model:%.m=%).m,$(CMURPHI_MODELS)),$(model:%.m=%).cm )$(if $(filter $(model:%.m=%).m,$(RUMUR_MODELS)),$(model:%.m=%).ru))))
 
 
 # =================

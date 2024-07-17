@@ -3,13 +3,13 @@
     "cmake.configureOnOpen": true,
     "git.mergeEditor": true,
     "files.associations": {
+        "known_hosts": "plaintext",
         "*.json.liquid": "json",
         "*.yaml.liquid": "yaml",
         "*.md.liquid": "markdown",
         "*.js.liquid": "liquid-javascript",
         "*.css.liquid": "liquid-css",
         "*.scss.liquid": "liquid-scss",
-        "known_hosts": "plaintext",
         "*.tcc": "cpp",
         "*.C": "cpp",
         "*.c": "c",
@@ -85,7 +85,14 @@
         "variant": "cpp",
         "*.ipp": "cpp",
         "filesystem": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "__bits": "cpp",
+        "__debug": "cpp",
+        "__threading_support": "cpp",
+        "__tuple": "cpp",
+        "__verbose_abort": "cpp"
     },
     "doxdocgen.file.fileOrder": [
         "custom",

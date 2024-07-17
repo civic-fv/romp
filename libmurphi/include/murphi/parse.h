@@ -16,7 +16,17 @@
 
 namespace murphi {
 
-extern const IdHandler MURPHI_RESERVED_NAMES_HANDLER;
+
+/**
+ * @brief A helper function that is passed to the flex/bison generated parsing system to ensure that 
+ *        no user can name a murphi object something that conflicts with the built in objects of the
+ *        murphi language syntax. \n
+ *        This function will throw an exception if the label does not meet the requirements specified above.
+ * @param name the label/name as a string
+ * @param id_type the kind of node this label belongs to
+ * @param loc the location in the user generated murphi source file of the node or the nodes label depending
+ */
+void MURPHI_RESERVED_NAMES_HANDLER(const std::string& name, const IdType id_type, const location& loc);
 
 
 /**
@@ -37,7 +47,7 @@ MURPHI_API Ptr<Model> parse(std::istream &input);
  * @return \c murphi::Ptr<murphi::Model> - a fully parsed murphi AST
  * @throw \c murphi::Error - on parsing and Murphi language errors.
  */
-MURPHI_API Ptr<Model> parse(std::istream &input, const std::unordered_set<std::string>& reserved_names);
+MURPHI_API Ptr<Model> parse(std::istream& input, const std::unordered_set<std::string>& reserved_names);
 
 // /**
 //  * @brief Parse in a model from an input stream. Throws Errors on parsing errors.
@@ -66,6 +76,6 @@ MURPHI_API Ptr<Model> parse(std::istream &input, const std::unordered_set<std::s
  * @return \c murphi::Ptr<murphi::Model> - a fully parsed murphi AST
  * @throw \c murphi::Error - on parsing and Murphi language errors.
  */
-MURPHI_API Ptr<Model> parse(std::istream &input, const IdHandler& id_handler);
+MURPHI_API Ptr<Model> parse(std::istream& input, IdHandler id_handler);
 
 } // namespace murphi

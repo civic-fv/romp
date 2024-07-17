@@ -1,6 +1,24 @@
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 
+if(NOT ${BISON_FOUND})
+  message(FATAL_ERROR "the bison package was not found, please install bison before continuing")
+endif()
+if(NOT ${FLEX_FOUND})
+  message(FATAL_ERROR "the flex package was not found, please install flex before continuing")
+endif()
+
+if(${CMAKE_VERSION} VERSION_GREATER 3.20)
+  find_package(Python3 REQUIRED COMPONENTS Interpreter)
+  set(MAKE_VERSION_UTIL "${CMAKE_CURRENT_BINARY_DIR}/make-version.py")
+  configure_file("src/make-version.py" "${MAKE_VERSION_UTIL}"
+      FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+    )
+else()
+set(MAKE_VERSION_UTILL "${CMAKE_CURRENT_SOURCE_DIR}/src/make-version.py")
+message(INFO "cmake version too low to auto asign file permissions please run: `` chmod +x ${CMAKE_CURRENT_SOURCE_DIR}/misc/xxd.py  `` before compiling")
+endif()
+
 find_path(GMPXX_INCLUDE NAMES gmpxx.h PATHS ENV CPLUS_INCLUDE_PATH)
 if(NOT GMPXX_INCLUDE)
   message(FATAL_ERROR "GMP headers not found")
@@ -44,7 +62,7 @@ endif()
 
 add_custom_command(
   OUTPUT murphi-get-version.h
-  COMMAND src/make-version.py ${CMAKE_CURRENT_BINARY_DIR}/murphi-get-version.h
+  COMMAND ${MAKE_VERSION_UTIL} ${CMAKE_CURRENT_BINARY_DIR}/murphi-get-version.h
   MAIN_DEPENDENCY src/make-version.py
   DEPENDS always_run
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
