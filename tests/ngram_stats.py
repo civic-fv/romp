@@ -14,7 +14,9 @@ def create_rule_name(rule) -> str:
     sep = ""
 
     for q in rule.get('quantifiers',[]):
-        if "scalarset" in q['value']['type']:
+        if "scalarsetunion" in q['value']['type']:
+            res += sep + q['value']['value']['value'][6:]
+        elif "scalarset" in q['value']['type']:
             res += sep + q['value']['value'][6:]
         elif "range" in q['value']['type']:
             res += sep + str(q['value']['value']['value']) #TODO check how ranges are output as quantifiers
