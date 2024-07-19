@@ -4,9 +4,7 @@ import json
 import sys
 from collections import defaultdict, deque
 import glob
-import plotly.graph_objects as go
-import plotly.express as px
-from math import factorial as fact
+from multiset import FrozenMultiset
 
 
 DEBUG: bool = False
@@ -26,50 +24,50 @@ def get_state_simple(json):
                         for i in json])
 #? END def get_state_simple: NormState
 
-def create_rule_name(rule) -> str:
-    res = f"{rule.get('label','<UNKNOWN>')}("
-    sep = ""
-
-    for q in rule.get('quantifiers',[]):
-        if "scalarset" in q['type']:
-            res += sep + q['value']['value'][6:]
-        elif "range" in q['type']:
-            res += sep + q['value']['value'] #TODO check how ranges are output as quantifiers
-        sep = ','
-    return res + ')'
 
 def _do_process(path: str) -> set:
     with open(path,'r') as file:
+        trace_file = json.load(file)
+        states: set = set()
         
-        pass
+        for trace_item in trace_file['trace']:
+            trace_item_type = trace_item['$type']
+            
+            if trace_item_type in {'rule-hit','init'}:
+                 state = get_state_simple(trace_item['state'])
+                 states.add(state)
+    
+    return states
 
 
-def main(n):
-    json_files = glob.glob('*.json')
+def main(path):
+    json_files = glob.glob(f'{path}/*.json')
 
     if not json_files:
         print("No JSON files found in the current directory.")
         sys.exit(1)
     
-    all_rule_sequences = [] 
-    all_filtered_ngrams = defaultdict(int)
-    total_count = 0
-    walk_count = 0
+    states: set = set()
+    walk_Count: int = 0
 
     for json_file in json_files:
         walk_Count += 1
         states |= _do_process(json_file)
 
-    print(f"Total States: {}")
+    print(f"Total States:  {len(states)}\n"
+          f"Total Walkers: {walk_Count}\n")
 
-
-    # plot_histogram(all_filtered_ngrams, 'N-gram Frequencies', 'Frequency', 'N-grams', 'ngram_frequencies.png', top_n=20, min_freq=5)
-    # plot_histogram(avg_ngram_freqs, 'Average N-gram Frequencies Across All Walks', 'Average Frequency', 'N-grams', 'avg_ngram_frequencies.png', top_n=20, min_freq=0.1)
-
+    
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Usage: ./trace_statistics.py <n>")
+        print("Usage: ./simple_state_count.py <path>")
         sys.exit(1)
+    main(sys.argv[1])
+    
+    
+"""
 
-    n = int(sys.argv[1])
-    main(n)
+| model name   | depth | bfs states | rw states | # of rw's | rw's coverage |
+| n_pete_bug1  |     8 |      316   |      192  |      32   | =(rs states)/(bfs states) |
+
+"""
