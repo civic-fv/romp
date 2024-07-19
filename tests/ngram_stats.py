@@ -19,7 +19,9 @@ def create_rule_name(rule) -> str:
         elif "scalarset" in q['value']['type']:
             res += sep + q['value']['value'][6:]
         elif "range" in q['value']['type']:
-            res += sep + str(q['value']['value']['value']) #TODO check how ranges are output as quantifiers
+            res += sep + str(q['value']['value']['value'])
+        elif "enum" in q['value']['type']:
+            res += q['value']['value'][6:] #TODO check how enums are output as quantifiers
         sep = ','
     return res + ')'
 
