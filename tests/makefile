@@ -26,8 +26,8 @@ RUMUR := ../../rumur/build/rumur/rumur
 
 CFLAGS := -std=c11 -O3 -pthread -march=native
 CXXFLAGS := -O3 -pthread
-ROMP_FLAGS := -m
-CMURPHI_FLAGS :=
+ROMP_FLAGS := -mS
+CMURPHI_FLAGS := 
 # $(info CMURPHI_FLAGS = $(CMURPHI_FLAGS))
 CMURPHI_INCLUDE_DIR := ../../cmurphi/include
 RUMUR_FLAGS := --smt-path z3 --smt-arg=-smt2 --smt-arg=-in --smt-arg=-t:5000
@@ -64,7 +64,7 @@ define __generate_romp_model_directive
 $(1).ro.cpp: $(1).m
 	@printf "Generating $$@ with romp ...\n"
 	@printf "  $$(ROMP) $$(ROMP_FLAGS) -o $$@ $(1).m\n"
-	@$$(ROMP) $$(ROMP_FLAGS) -o $$@ $(1).m
+	$$(ROMP) $$(ROMP_FLAGS) -o $$@ $(1).m
 	@printf "Finished Generating: $$@\n"
 $(1).ro0: $(1).ro.cpp
 	@printf "Building $$@ ...\n"

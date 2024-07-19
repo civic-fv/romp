@@ -47,6 +47,7 @@ namespace romp {
     }
 constexpr size_t _ROMP_ATTEMPT_LIMIT_DEFAULT();
 #define _ROMP_START_ID_DEFAULT ((unsigned)(~(0u)))
+
 struct Options {
   // size_t history_length = 4;
   bool do_trace = false;
@@ -85,6 +86,8 @@ struct Options {
   bool bfs_single = true;
   size_t bfs_coefficient = _ROMP_BFS_COEF;
   size_t bfs_limit = INT16_MAX; // max number of states to explore before giving up
+  bool do_bfs_with_depth_limit = false;
+  size_t bfs_depth_limit = 0ul;
 
   const std::string get_trace_dir() const noexcept {
     if (do_single) return trace_dir;

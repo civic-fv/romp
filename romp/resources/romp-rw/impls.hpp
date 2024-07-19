@@ -570,8 +570,8 @@ void print_help() {
     " the romp process is not preserved through the BFS process.  We recommend\n"
     " instead just rerunning the same config with traces enabled if you need more\n"
     " detailed information, it may be slower but it will work.\n"
-    "  --bfs {single|multi} {int}  Enables an initial Breadth First Search of the\n"
-    "    | -bfs {s|m} {int}          statespace, that is either single threaded or\n"
+    "  --ibfs {single|multi} {int} Enables an initial Breadth First Search of the\n"
+    "    | -ibfs {s|m} {int}         statespace, that is either single threaded or\n"
     "                                multithreaded (defaults to single).\n"
     "                                The BFS will terminate and a swarm of random\n"
     "                                walkers will start when there are enough\n"
@@ -580,10 +580,19 @@ void print_help() {
     "                                where each unique state gets {int} random walks\n"
     "                                to increase the total coverage\n"
     "                                ({int} defaults to " << default_opts.bfs_coefficient << ").\n"
-    "  --bfs-limit <int>           Sets a limit on how long the initial BFS can go\n"
+    "  --bfs-limit <int>            Sets a limit on how long the initial BFS can go\n"
     "    | -bfsl <int>               on for.  This is measured in number of rules\n"
     "                                applied. (<int> defaults to " << default_opts.bfs_limit << ")\n"
     "\n"
+    "DEPTH LIMITED BFS:\n"
+    "This is a BFS implementation of murphi that stops after the states reach a \n"
+    " total depth that is specified by the user. NOTE: this will not run random \n"
+    " walks after the BFS completes it will just end.\n"
+    " --bfs <int>                   Run the BFS with a max depth of <int>.\n"
+    "    | -bfs <int>\n"
+    "  --bfs-limit <int>            Sets a limit on how many total rules the\n"
+    "    | -bfsl <int>               depth limited BFS can apply before terminating\n"
+    "                                early. (<int> defaults to " << default_opts.bfs_limit << ")\n"
     "PROPERTY CONFIGURATIONS:\n"
     "  --no-deadlock           Disable Deadlock detection.\n"
     "    | -nd                   (overrides all property options below)\n"
@@ -994,8 +1003,8 @@ void Options::parse_args(int argc, char **argv) {
       std::cerr << "\nWARNING : enabling traces can significantly reduce performance "
                    "& can take up a large amount of system recourses !!\n"
                 << std::flush;
-    } else if ("-bfs" == std::string(argv[i]) || "--bfs" == std::string(argv[i])
-               || "-BFS" == std::string(argv[i]) || "--BFS" == std::string(argv[i])) {
+    } else if ("-ibfs" == std::string(argv[i]) || "--ibfs" == std::string(argv[i])
+               || "-IBFS" == std::string(argv[i]) || "--IBFS" == std::string(argv[i])) {
       do_bfs = true;
       if (i + 1 < argc && '-' != argv[i + 1][0]) {
         ++i;
@@ -1010,18 +1019,44 @@ void Options::parse_args(int argc, char **argv) {
           bfs_coefficient = std::stoul(argv[i], nullptr, 0);
         } catch (std::invalid_argument &ia) {
           std::cerr << "invalid argument : provided initial BFS Coefficient was not a number (NaN) !!\n"
-                       "                   |-> (for --bfs/-bfs {single|multiple} {int} flag)\n"
+                       "                   |-> (for --ibfs/-ibfs {single|multiple} {int} flag)\n"
                        "                                                         ^^^^^\n"
                     << std::flush;
           exit(EXIT_FAILURE);
         } catch (std::out_of_range &oor) {
           std::cerr << "invalid argument : provided initial BFS Coefficient was out of range must be unsigned int (aka "
                        "must be positive & less than 2.147 billion)\n"
+                       "                   |-> (for --ibfs/-ibfs {single|multiple} {int} flag)\n"
+                       "                                                         ^^^^^\n"
+                    << std::flush;
+          exit(EXIT_FAILURE);
+        }
+      }
+    } else if ("-bfs" == std::string(argv[i]) || "--bfs" == std::string(argv[i])
+               || "-BFS" == std::string(argv[i]) || "--BFS" == std::string(argv[i])) {
+      do_bfs_with_depth_limit = true;
+      do_bfs = true;
+      if (i+1 < argc && '-' != argv[i+1][0]) {
+        i++;
+        try {
+          bfs_depth_limit = std::stoul(argv[i], nullptr, 0);
+        } catch (std::invalid_argument &ia) {
+          std::cerr << "invalid argument : provided BFS depth limit was not a number (NaN) !!\n"
+                       "                   |-> (for --bfs/-bfs <int> flag)\n"
+                       "                                                         ^^^^^\n"
+                    << std::flush;
+          exit(EXIT_FAILURE);
+        } catch (std::out_of_range &oor) {
+          std::cerr << "invalid argument : provided BFS depth limit was out of range must be unsigned int (aka "
+                       "must be positive & less than 2.147 billion)\n"
                        "                   |-> (for --bfs/-bfs {single|multiple} {int} flag)\n"
                        "                                                         ^^^^^\n"
                     << std::flush;
           exit(EXIT_FAILURE);
         }
+      } else {
+        std::cerr << "invalid argument: expected a positive integer value after the --bfs/-bfs flag.\n" << std::flush;
+        exit(EXIT_FAILURE);
       }
     } else if ("-bfsl" == std::string(argv[i]) || "--bfs-limit" == std::string(argv[i])
                || "-bfs-l" == std::string(argv[i]) || "--bfsl" == std::string(argv[i])

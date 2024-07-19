@@ -67,7 +67,6 @@ namespace romp {
     }
 
   public:
-
     BFSWalker(const Options OPTIONS_, id_t start_id_)
       : OPTIONS(OPTIONS_),
 #       if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
@@ -83,7 +82,9 @@ namespace romp {
       if (tripped_inside != nullptr) delete tripped_inside;
     }
 
-  void init_state() noexcept {
+    inline size_t get_depth() { return _depth; }
+
+  void init_state() noexcept {    
     const StartState& startstate = ::__caller__::STARTSTATES[_start_id];
 #   ifdef __ROMP__DO_MEASURE
       start_time = time_mr();
@@ -377,7 +378,8 @@ public:
         q.push_back(walker);
     }
 
-    if (OPTIONS.bfs_single) single_bfs();
+    if (OPTIONS.do_bfs_with_depth_limit) single_bfs_depth_limited();
+    else if (OPTIONS.bfs_single) single_bfs();
     else multithreaded_bfs();
 
   }
@@ -438,6 +440,67 @@ protected:
     if (not q.empty()) {
       end_bfs();
       this->launch_threads();
+    } else
+      end_bfs_solved();
+  }
+
+
+  /**
+   * @brief Perform the bfs in a single threaded manner
+   *        NOTE: must be called after processing start states
+   */
+  void single_bfs_depth_limited() {
+#   if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
+      const bool enable_liveness = OPTIONS.liveness;
+      bool liveness[_ROMP_LIVENESS_PROP_COUNT];
+#   endif
+    while (not q.empty() && rules_applied < OPTIONS.bfs_limit) {
+      auto b_w = q.front();
+      q.pop_front();
+      if (b_w->get_depth() > OPTIONS.bfs_depth_limit) {
+        break;
+      }
+#     if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
+        if (enable_liveness) std::memset(liveness,0u,sizeof(bool)*_ROMP_LIVENESS_PROP_COUNT);
+#     endif
+      for (size_t i=0; q.size()<TARGET && i<_ROMP_RULESETS_LEN; ++i)
+        for (auto rule : ::__caller__::RULESETS[i].rules) {
+          BFSWalker* walker = (BFSWalker*) std::malloc(sizeof(BFSWalker));
+          std::memcpy(walker,b_w,sizeof(BFSWalker)); // copy base walker
+          // walker->sim1step(rule);
+          walker->sim1Step_no_trace(rule);
+          if (walker->is_done()) {
+            end_bfs_report_error(walker);
+            return;
+          }
+#         if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
+            if (enable_liveness) walker->merge_liveness(liveness);
+#         endif
+          if (walker->pass) { // guard passed
+            ++rules_applied;
+            if (insert_state(walker->state)) { // state is novel (yet unseen)
+                q.push_back(walker);
+              if (q.size() >= TARGET)
+                break;
+            } else delete walker;
+          } else { 
+            delete walker; 
+            continue; 
+          }
+        }
+#     if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
+        // end if liveness property violated
+        if (enable_liveness && (size_t liveness_id = is_live(liveness)) < _ROMP_LIVENESS_PROP_COUNT) {
+          b_w->set_liveness_violation(liveness_id);
+          end_bfs_report_error(b_w);
+          return;
+        }
+#     endif
+      delete b_w;
+    }
+
+    if (not q.empty()) {
+      end_bfs();
     } else
       end_bfs_solved();
   }
