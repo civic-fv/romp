@@ -110,7 +110,7 @@
   /* Tell Bison we'll receive another parameter that will allow us to pass
    * check ID's.
    */
-%parse-param { const murphi::_parser_IdHandler &id_handler }
+%parse-param { murphi::_parser_IdHandler id_handler }
 
 %token ALIAS
 %token AMPAMP "&&"
