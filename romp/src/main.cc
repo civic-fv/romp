@@ -91,7 +91,7 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
         std::cerr << "failed to open " << optarg << "\n";
         exit(EXIT_FAILURE);
       }
-      gen.set_out(move(o));
+      gen.set_out(std::move(o));
       gen.output_file_path = make_path(optarg);
       out_file_provided = true;
       break;
@@ -238,7 +238,7 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
       std::cerr << "failed to open \"" << gen.output_file_path << "\"\n"  << std::flush;
       exit(EXIT_FAILURE);
     }
-    gen.set_out(move(o));
+    gen.set_out(std::move(o));
   }
   // gen.enable_preprocessor_option(
   //     ROMP_HISTORY_SIZE_PREPROCESSOR_VAR " (" + std::to_string(gen.hist_len) + "ul)"
