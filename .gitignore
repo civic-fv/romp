@@ -1,12 +1,10 @@
 # general directories
-bin/**
-build/**
-CMakeFiles/**
-**/__pycache__/**
+/build/
+/build-*/
+__pycache__/
 
-#ignore romp model-checker gnerated trace files
-**/traces/**
-**/traces/*.json
+# ignore romp model-checker gnerated trace files
+traces/
 
 # debug files
 *.test.cpp
