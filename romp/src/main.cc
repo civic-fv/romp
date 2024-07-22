@@ -35,7 +35,7 @@ static dup_t in;
 // output C source? (as opposed to C header)
 // static bool source = true;
 
-std::filesystem::path make_path(std::string p) {
+std::filesystem::path make_path(std::string_view p) {
   std::filesystem::path _p = p;
   if (_p.is_relative())
     return std::filesystem::absolute(_p);
