@@ -278,12 +278,7 @@ std::string trim(const std::string &s)
     return std::string(start, end + 1);
 }
 
-std::string _to_lower(const std::string& data) {
-  std::string result(data.size(), '\0');
-  std::transform(data.begin(), data.end(), result.begin(),
-    [](unsigned char c){ return std::tolower(c); });
-  return result;
-}
+namespace murphi { extern std::string to_lower(std::string_view in); } // cheating
 
 int main(int argc, char **argv) {
 
@@ -308,7 +303,7 @@ int main(int argc, char **argv) {
                           throw murphi::Error("name/id (`romp`) is a reserved word",loc);
                         // if (name == "")
                         //   throw murphi::Error("name/id (`romp`) is a reserved word",loc);
-                        std::string name_lower = _to_lower(name);
+                        std::string name_lower = murphi::to_lower(name);
                         auto res = gen.RESERVED_NAMES.find(name_lower);
                         if (res != gen.RESERVED_NAMES.end())
                           throw murphi::Error("name/id `"+name+"` is a reserved word",loc);
