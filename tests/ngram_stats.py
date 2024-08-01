@@ -14,7 +14,7 @@ def create_rule_name(rule) -> str:
     sep = ""
 
     for q in rule.get('quantifiers',[]):
-        if "scalarsetunion" in q['value']['type']:
+        if "scalarset-union" in q['value']['type']:
             res += sep + q['value']['value']['value'][6:]
         elif "scalarset" in q['value']['type']:
             res += sep + q['value']['value'][6:]
