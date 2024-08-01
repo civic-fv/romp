@@ -145,7 +145,7 @@
                 "--do-measure",
                 "--simple-trace",
                 "--output",
-                "${file}.test.cpp",
+                "${file}.ro.cpp",
                 "${file}"
             ],
             "options": {
@@ -167,9 +167,9 @@
                 "-fdiagnostics-color=always",
                 "-g",
                 "-pthread",
-                "${file}.test.cpp",
+                "${file}.ro.cpp",
                 "-o",
-                "${file}.test"
+                "${file}.ro"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

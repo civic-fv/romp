@@ -589,6 +589,35 @@
             "miDebuggerPath": "/bin/gdb"
         },
         {
+            "name": "romp: romp->g++ build and debug active murphi file (bfs-depth-limit test)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${file}.ro",
+            "args": [
+                "-bfs", "8"
+                ,"-y"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "C/C++: g++ build active murphi file [romp]",
+            "miDebuggerPath": "/bin/gdb"
+        },
+        {
             "name": "C/C++: romp-rw g++ build and debug active C++ file (parallel-walk test)",
             "type": "cppdbg",
             "request": "launch",

@@ -33,7 +33,7 @@ namespace std {
 } //namespace std
 
 namespace romp {
-
+  
   class BFSWalker : public IRandWalker {
     const Options& OPTIONS;
     id_t _start_id;
@@ -76,6 +76,18 @@ namespace romp {
     {
       state.__rw__ = this;
     }
+
+    BFSWalker(const BFSWalker& other) 
+      : OPTIONS(other.OPTIONS)
+    {
+      *this = other;
+    }
+
+    inline BFSWalker& operator = (const BFSWalker& other) {
+      std::memcpy(this, &other, sizeof(BFSWalker));
+      state.__rw__ = this;
+      return *this;
+    } 
 
     ~BFSWalker() {
       if (tripped != nullptr) delete tripped;
@@ -403,8 +415,9 @@ protected:
 #     endif
       for (size_t i=0; q.size()<TARGET && i<_ROMP_RULESETS_LEN; ++i)
         for (auto rule : ::__caller__::RULESETS[i].rules) {
-          BFSWalker* walker = (BFSWalker*) std::malloc(sizeof(BFSWalker));
-          std::memcpy(walker,b_w,sizeof(BFSWalker)); // copy base walker
+          BFSWalker* walker = new BFSWalker(*b_w);
+          // BFSWalker* walker = (BFSWalker*) std::malloc(sizeof(BFSWalker));
+          // std::memcpy(walker,b_w,sizeof(BFSWalker)); // copy base walker
           // walker->sim1step(rule);
           walker->sim1Step_no_trace(rule);
           if (walker->is_done()) {
@@ -465,8 +478,9 @@ protected:
 #     endif
       for (size_t i=0; q.size()<TARGET && i<_ROMP_RULESETS_LEN; ++i)
         for (auto rule : ::__caller__::RULESETS[i].rules) {
-          BFSWalker* walker = (BFSWalker*) std::malloc(sizeof(BFSWalker));
-          std::memcpy(walker,b_w,sizeof(BFSWalker)); // copy base walker
+          auto walker = new BFSWalker(*b_w);
+          // BFSWalker* walker = (BFSWalker*) std::malloc(sizeof(BFSWalker));
+          // std::memcpy(walker,b_w,sizeof(BFSWalker)); // copy base walker
           // walker->sim1step(rule);
           walker->sim1Step_no_trace(rule);
           if (walker->is_done()) {
@@ -549,8 +563,9 @@ protected:
 #       endif
         for (size_t i=0; /*q.size()<TARGET &&*/ i<_ROMP_RULESETS_LEN; ++i)
           for (auto rule : ::__caller__::RULESETS[i].rules) {
-            BFSWalker* walker = (BFSWalker*) std::malloc(sizeof(BFSWalker));
-            std::memcpy(walker,b_w,sizeof(BFSWalker)); // copy base walker
+            auto walker = new BFSWalker(*b_w);
+            // BFSWalker* walker = (BFSWalker*) std::malloc(sizeof(BFSWalker));
+            // std::memcpy(walker,b_w,sizeof(BFSWalker)); // copy base walker
             // walker->sim1step(rule);
             walker->sim1Step_no_trace(rule);
             if (walker->is_done()) {
