@@ -35,7 +35,7 @@ static dup_t in;
 // output C source? (as opposed to C header)
 // static bool source = true;
 
-std::filesystem::path make_path(std::string p) {
+std::filesystem::path make_path(std::string_view p) {
   std::filesystem::path _p = p;
   if (_p.is_relative())
     return std::filesystem::absolute(_p);
@@ -91,7 +91,7 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
         std::cerr << "failed to open " << optarg << "\n";
         exit(EXIT_FAILURE);
       }
-      gen.set_out(move(o));
+      gen.set_out(std::move(o));
       gen.output_file_path = make_path(optarg);
       out_file_provided = true;
       break;
@@ -238,7 +238,7 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
       std::cerr << "failed to open \"" << gen.output_file_path << "\"\n"  << std::flush;
       exit(EXIT_FAILURE);
     }
-    gen.set_out(move(o));
+    gen.set_out(std::move(o));
   }
   // gen.enable_preprocessor_option(
   //     ROMP_HISTORY_SIZE_PREPROCESSOR_VAR " (" + std::to_string(gen.hist_len) + "ul)"
@@ -279,7 +279,7 @@ std::string trim(const std::string &s)
 }
 
 std::string _to_lower(const std::string& data) {
-  std::string result;
+  std::string result(data.size(), '\0');
   std::transform(data.begin(), data.end(), result.begin(),
     [](unsigned char c){ return std::tolower(c); });
   return result;

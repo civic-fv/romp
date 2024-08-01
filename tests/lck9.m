@@ -7,7 +7,6 @@
 
 --------------------------------------------------------------------------------
 -- RUN: romp "%s" -o - | c++ - -o /dev/null
--- XFAIL: *
 --------------------------------------------------------------------------------
 
 -- begin of locking.m --
@@ -279,9 +278,7 @@ Endruleset;
 
 	Ruleset n:procT Do
 	Startstate
-	Var tmp: 0..Nprocs;
 	Begin
-		tmp := 0;
 		For p:procT Do
 			pids[p] := p;  -- store pids in an array
 			initq(request_bufs[p]);
@@ -290,8 +287,6 @@ Endruleset;
 			ar_states[p] := ENTER;
 			hstates[p] := HANDLE;
 			mutexes[p] := false;
-			pid[tmp] := p;
-			tmp := tmp + 1;
 		EndFor;
 	Endstartstate;
 	Endruleset;
