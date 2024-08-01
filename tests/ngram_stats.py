@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import os
 import sys
 from collections import defaultdict, deque
 import glob
@@ -14,7 +15,11 @@ def create_rule_name(rule) -> str:
     sep = ""
 
     for q in rule.get('quantifiers',[]):
-        if "scalarset-union" in q['value']['type']:
+        # if 'scalarset-union-quantifier' in q['value']['type']:
+        #     res += sep + q['value']['value']['value'][6:]
+        if "scalarset-quantifier" in q['value']['type'] or "scalarset-union-quantifier" in q['value']['type']:
+            res += sep + q['value']['value']['value'][6:]
+        elif "scalarsetunion" in q['value']['type']:
             res += sep + q['value']['value']['value'][6:]
         elif "scalarset" in q['value']['type']:
             res += sep + q['value']['value'][6:]
@@ -72,7 +77,7 @@ def plot_histogram(data, title, xlabel, ylabel, filename, top_n=20):
     labels = [str(k) for k in data.keys()]
     values = list(data.values())
 
-    fig = go.Figure(data=[go.Bar(x=list(range(len(labels))), y=values, text=values, hovertext=labels, hoverinfo='text+y', textposition='auto')])
+    fig = go.Figure(data=[go.Bar(x=list(range(len(labels))), y=values, text=values, hovertext=labels, hoverinfo='text+y', textposition='auto', marker_color='rgba(55, 83, 109, 0.8)')])
     fig.update_layout(
         title=title,
         xaxis_title=xlabel,
@@ -87,8 +92,8 @@ def plot_histogram(data, title, xlabel, ylabel, filename, top_n=20):
     fig.show()
 
 
-def get_stats(n,dir):
-    json_files = glob.glob(f"{dir}/*.json")
+def process_subdir(n,dir):
+    json_files = [os.path.join(root, file) for root, _, files in os.walk(dir) for file in files if file.endswith(".json")]
 
     if not json_files:
         print("No JSON files found in the current directory.")
@@ -115,14 +120,26 @@ def get_stats(n,dir):
 
     avg_ngram_freqs = {k: v / walk_count for k, v in all_filtered_ngrams.items()}
 
-    for ngram, count in avg_ngram_freqs.items():
-        print(f'{ngram}: {count}')
+    # for ngram, count in avg_ngram_freqs.items():
+    #     print(f'{ngram}: {count}')
     
-    plot_histogram(avg_ngram_freqs, 'Top Average N-gram Frequencies Across All Walks', 'Average Frequency', 'N-grams', 'avg_ngram_frequencies.png', top_n=20)
+    plot_histogram(avg_ngram_freqs, 'Top Average N-gram Frequencies Across All Walks', 'Average Frequency', 'N-grams', f'avg_ngram_frequencies_{os.path.basename(dir)}.png', top_n=20)
 
 
     # plot_histogram(all_filtered_ngrams, 'N-gram Frequencies', 'Frequency', 'N-grams', 'ngram_frequencies.png', top_n=20, min_freq=5)
     # plot_histogram(avg_ngram_freqs, 'Average N-gram Frequencies Across All Walks', 'Average Frequency', 'N-grams', 'avg_ngram_frequencies.png', top_n=20, min_freq=0.1)
+
+def get_stats(n, dir):
+    subdirs = [os.path.join(dir, subdir) for subdir in os.listdir(dir) if os.path.isdir(os.path.join(dir, subdir))]
+    print(subdirs)
+
+    if not subdirs:
+        print("No subdirectories found in the specified directory.")
+        sys.exit(1)
+
+    for subdir in subdirs:
+        print(f"Processing directory: {subdir}")
+        process_subdir(n, subdir)
 
 def main():
     if len(sys.argv) != 3:
