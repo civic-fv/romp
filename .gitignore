@@ -1,6 +1,7 @@
 # general directories
 /build/
 /build-*/
+/html/
 result
 __pycache__/
 
