@@ -132,7 +132,7 @@ void generate_property_rule_callers(romp::CodeGenerator& gen, const murphi::Mode
             dispatch(*r2);
         }
     }
-    void visit_propertystmt(const PropertyStmt& n) final { ++_lid; }
+    void visit_propertystmt([[maybe_unused]] const PropertyStmt& n) final { ++_lid; }
 
     void visit_propertyrule(const PropertyRule& n) final {
       // const PropertyRule& prop = *_prop;

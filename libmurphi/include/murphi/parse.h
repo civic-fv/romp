@@ -68,4 +68,12 @@ MURPHI_API Ptr<Model> parse(std::istream &input, const std::unordered_set<std::s
  */
 MURPHI_API Ptr<Model> parse(std::istream &input, const IdHandler& id_handler);
 
+/**
+ * @brief Convert a string to lowercase.
+ *
+ * @param in  a string
+ * @return    (owned) `in` converted to lowercase
+ */
+MURPHI_API std::string to_lower(std::string_view in);
+
 } // namespace murphi

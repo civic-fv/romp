@@ -194,17 +194,22 @@ void MultisetCount::validate() const {
   if (not condition->is_pure())
     throw Error("expression is not pure", condition->loc);
 }
+
 void MultisetCount::update() {
   // condition = MultisetElement::convert_elements(ms_quantifier,condition);  // moved to symbol-resolver disambiguate
 }
+
 Ptr<TypeExpr> MultisetCount::type() const {
   const auto t = ms_quantifier.multiset->type()->resolve();
-  if (const auto ms = dynamic_cast<const Multiset*>(t.get()))
+  if (const auto ms = dynamic_cast<const Multiset*>(t.get())) {
     return Ptr<Range>::make(Ptr<Number>::make(0_mpz,location()),
                             ms->size, loc);
-  // else
+  } else {
     assert(false && "DEV ERROR : MultisetQuantifier did not refer to a multiset!");
+    throw Error("<internal>", loc);
+  }
 }
+
 mpz_class MultisetCount::constant_fold() const { throw Error("not a constant value", loc); }
 bool MultisetCount::constant() const { return false; }
 bool MultisetCount::is_pure() const { return true; /* enforced by validate */ }

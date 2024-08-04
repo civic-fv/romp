@@ -36,7 +36,7 @@ void ScalarsetUnion::visit(ConstBaseTraversal &visitor) const { visitor.visit_sc
 
 mpz_class ScalarsetUnion::count() const {
   mpz_class count = 0_mpz;
-  for (const Ptr<TypeExpr> m : members)
+  for (const Ptr<TypeExpr>& m : members)
     count += m->count();
   return count;
 }
@@ -47,8 +47,8 @@ std::string ScalarsetUnion::upper_bound() const {
 std::string ScalarsetUnion::lower_bound() const { return "VALUE_C(1)"; }
 
 void ScalarsetUnion::validate() const {
-  for (const auto _m : members) {
-    const auto m = _m->resolve();
+  for (const auto& _m : members) {
+    const auto& m = _m->resolve();
     if (isa<Enum>(m)) {
       if (m->count() <= 0)
         throw Error("ScalarsetUnions require included enums to define at least 1 member!",_m->loc);
@@ -59,7 +59,7 @@ void ScalarsetUnion::validate() const {
     throw Error("a ScalarsetUnion can only union enums, and *named* Scalarsets.", _m->loc);
   }
   for (size_t i=0; i<members.size(); ++i) {
-    const auto i_r = members[i]->resolve();
+    const auto& i_r = members[i]->resolve();
     if (const auto i_s = dynamic_cast<const Scalarset*>(i_r.get())) {
       for (size_t j=i+1; j<members.size(); ++j) {
         const auto tmp = members[j]->resolve();
@@ -70,7 +70,7 @@ void ScalarsetUnion::validate() const {
       }
     } else if (const auto i_e = dynamic_cast<const Enum*>(i_r.get())) {
       for (size_t j=i+1; j<members.size(); ++j) {
-        const auto tmp = members[j]->resolve();
+        const auto& tmp = members[j]->resolve();
         if (const auto j_e = dynamic_cast<const Enum*>(tmp.get())) {
           if (i_e->equal_to(*j_e))
             throw Error("duplicate (enum) type in union", j_e->loc);
@@ -81,7 +81,7 @@ void ScalarsetUnion::validate() const {
 }
 bool ScalarsetUnion::is_useful() const {
   bool useful = false;
-  for (const auto m : members)
+  for (const auto& m : members)
     if (isa<Scalarset>(m)) {
       if (isa<ScalarsetUnion>(m))
         useful |= m->is_useful();
@@ -102,7 +102,7 @@ std::string ScalarsetUnion::to_string() const {
   std::stringstream buf;
   buf << "union {";
   std::string sep;
-  for (const auto _m : members) {
+  for (const auto& _m : members) {
     buf << sep << _m->to_string();
     sep = ", ";
   }
@@ -169,7 +169,7 @@ bool ScalarsetUnion::contains(const TypeExpr& n) const {
 
 
 Multiset::Multiset(const Ptr<Expr>& size_, const Ptr<TypeExpr>& element_type_, const location& loc_)
-  : TypeExpr(loc_), element_type(element_type_), size(size_) {}
+  : TypeExpr(loc_), size(size_), element_type(element_type_) {}
 
 Multiset* Multiset::clone() const { return new Multiset(*this); }
 

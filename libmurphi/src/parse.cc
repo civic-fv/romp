@@ -70,7 +70,7 @@ const IdHandler MURPHI_RESERVED_NAMES_HANDLER = [](std::string name, const IdTyp
 
 Ptr<Model> parse(std::istream &input) {
   return parse(input,
-               [&](std::string name, const IdType id_type, const location& loc) -> std::optional<std::string> {
+               [&](std::string name, [[maybe_unused]] const IdType id_type, [[maybe_unused]] const location& loc) -> std::optional<std::string> {
                   return {name};
                });
 }

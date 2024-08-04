@@ -102,7 +102,7 @@ void ScalarEnumGenerator::visit_scalarset(const murphi::Scalarset& n) {
 // void ScalarEnumGenerator::visit_scalarsetunion(const murphi::ScalarsetUnion& n) {}
 
 
-void ScalarEnumGenerator::visit_ismember(const murphi::IsMember& n) {
+void ScalarEnumGenerator::visit_ismember([[maybe_unused]] const murphi::IsMember& n) {
   // dispatch(*n.designator); // honestly there should be no way to introduce a valid new type through IsMember so just don't
   // DO NOT DISPATCH ON THE INTERNAL TYPE SPECIFIER OF THIS NODE !!
 }

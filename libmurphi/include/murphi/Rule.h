@@ -74,8 +74,8 @@ struct MURPHI_API_WITH_RTTI SimpleRule : public Rule {
   void validate() const final;
   void update() final;
 
-  void visit(BaseTraversal &visitor);
-  void visit(ConstBaseTraversal &visitor) const;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 };
 
 // << ------------------------------------------------------------------------------------------ >>

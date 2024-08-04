@@ -123,7 +123,7 @@ void Clear::validate() const {
   struct NoMultiset : ConstTraversal {
     const location& loc;
     NoMultiset(const location& loc_) : loc(loc_) {}
-    void visit_multiset(const Multiset& n) final {
+    void visit_multiset([[maybe_unused]] const Multiset& n) final {
       throw Error("invalid clear of a multiset type", loc);
     }
   };

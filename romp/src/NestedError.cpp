@@ -37,8 +37,8 @@ namespace romp {
         std::rethrow_if_nested(ex);
     } catch(const murphi::Error& mod_ex) {
       fprint_exception/* <murphi::Error> */(out, mod_ex, prefix + __romp__nested_exception__print_prefix);
-    } catch(const std::exception& ex) {
-      fprint_exception/* <std::exception> */(out, ex, prefix + __romp__nested_exception__print_prefix);
+    } catch(const std::exception& ex1) {
+      fprint_exception/* <std::exception> */(out, ex1, prefix + __romp__nested_exception__print_prefix);
     } catch(...) {}
   }
 
@@ -54,8 +54,8 @@ namespace romp {
         std::rethrow_if_nested(ex);
     } catch(const murphi::Error& mod_ex) {
       fprint_exception/* <murphi::Error> */(out, mod_ex, prefix + __romp__nested_exception__print_prefix);
-    } catch(const std::exception& ex) {
-      fprint_exception/* <std::exception> */(out, ex, prefix + __romp__nested_exception__print_prefix);
+    } catch(const std::exception& ex1) {
+      fprint_exception/* <std::exception> */(out, ex1, prefix + __romp__nested_exception__print_prefix);
     } catch(...) {}
   }
 

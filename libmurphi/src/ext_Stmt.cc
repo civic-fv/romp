@@ -8,7 +8,7 @@ namespace murphi {
 
 
 MultisetAdd::MultisetAdd(const Ptr<Expr>& value_, const Ptr<Expr>& multiset_, const location& loc_)
-  : Stmt(loc_), multiset(multiset_), value(value_) {}
+  : Stmt(loc_), value(value_), multiset(multiset_) {}
 MultisetAdd *MultisetAdd::clone() const { return new MultisetAdd(*this); }
 
 void MultisetAdd::visit(BaseTraversal &visitor) { visitor.visit_multisetadd(*this); }
