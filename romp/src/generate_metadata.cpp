@@ -110,7 +110,7 @@ std::string to_string(const Function& f) {
     if (_p->readonly) buf << "var ";
     buf << nEscape(_p->name);
     if (f.parameters.size() >= 2)
-      for (int i=1; i<f.parameters.size(); ++i) {
+      for (size_t i = 1; i < f.parameters.size(); ++i) {
         p = f.parameters[i].get();
         if (_p->readonly == p->readonly
               && (_p->type->unique_id == p->type->unique_id || equal(_p->type->loc, p->type->loc)))

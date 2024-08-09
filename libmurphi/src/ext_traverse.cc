@@ -17,7 +17,7 @@ void ConstTraversal::visit_chooserule(const ChooseRule& n) {
   for (auto &r : n.rules)
     dispatch(*r);
 }
-void ConstExprTraversal::visit_chooserule(const ChooseRule& n) {
+void ConstExprTraversal::visit_chooserule([[maybe_unused]] const ChooseRule& n) {
   assert(false && "`visit_chooserule` needs to be overriden in implementing classes! "
                   "(from: murphi::ConstExprTraversal)");
 }
@@ -202,19 +202,19 @@ void ConstTypeTraversal::visit_multisetquantifier(const MultisetQuantifier& n) {
 
 
 void Traversal::visit_scalarsetunion(ScalarsetUnion& n) {
-  for (auto m : n.members)
+  for (auto&& m : n.members)
     dispatch(*m);
 }
 void ConstTraversal::visit_scalarsetunion(const ScalarsetUnion& n) {
-  for (const auto m : n.members)
+  for (const auto& m : n.members)
     dispatch(*m);
 }
 void ConstExprTraversal::visit_scalarsetunion(const ScalarsetUnion& n) {
-  for (const auto m : n.members)
+  for (const auto& m : n.members)
     dispatch(*m);
 }
 void ConstStmtTraversal::visit_scalarsetunion(const ScalarsetUnion& n) {
-  for (const auto m : n.members)
+  for (const auto& m : n.members)
     dispatch(*m);
 }
 

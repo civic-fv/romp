@@ -1,1 +1,2 @@
-add_test(NAME lit COMMAND lit -v tests/ WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+configure_file(lit.cfg.in lit.cfg)
+add_test(NAME lit COMMAND lit -v .)

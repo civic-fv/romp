@@ -35,12 +35,7 @@ static dup_t in;
 // output C source? (as opposed to C header)
 // static bool source = true;
 
-std::filesystem::path make_path(std::string_view p) {
-  std::filesystem::path _p = p;
-  if (_p.is_relative())
-    return std::filesystem::absolute(_p);
-    return _p;
-}
+namespace {
 
 void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
   bool out_file_provided = false;
@@ -92,7 +87,7 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
         exit(EXIT_FAILURE);
       }
       gen.set_out(std::move(o));
-      gen.output_file_path = make_path(optarg);
+      gen.output_file_path = std::filesystem::absolute(optarg);
       out_file_provided = true;
       break;
     }
@@ -220,7 +215,7 @@ void parse_args(romp::CodeGenerator& gen, int argc, char **argv) {
       exit(EXIT_FAILURE);
     }
 
-    gen.input_file_path = make_path(argv[optind]);
+    gen.input_file_path = std::filesystem::absolute(argv[optind]);
 
     auto i = std::make_shared<std::ifstream>(gen.input_file_path);
     auto j = std::make_shared<std::ifstream>(gen.input_file_path);
@@ -263,26 +258,6 @@ static dup_t make_stdin_dup() {
   return dup_t(buffer, copy);
 }
 
-std::string trim(const std::string &s)
-{
-    auto start = s.begin();
-    while (start != s.end() && std::isspace(*start)) {
-        start++;
-    }
-
-    auto end = s.end();
-    do {
-        end--;
-    } while (std::distance(start, end) > 0 && std::isspace(*end));
-
-    return std::string(start, end + 1);
-}
-
-std::string _to_lower(const std::string& data) {
-  std::string result(data.size(), '\0');
-  std::transform(data.begin(), data.end(), result.begin(),
-    [](unsigned char c){ return std::tolower(c); });
-  return result;
 }
 
 int main(int argc, char **argv) {
@@ -300,7 +275,7 @@ int main(int argc, char **argv) {
   murphi::Ptr<murphi::Model> m;
   std::regex bad_name_regex("_+[Rr][Oo][Mm][Pp]_+.*");
   try {
-    m = murphi::parse(*in.first, [&](const std::string& name, auto type, auto loc) -> std::optional<std::string> {
+    m = murphi::parse(*in.first, [&](const std::string& name, [[maybe_unused]] auto type, auto loc) -> std::optional<std::string> {
                         if (std::regex_search(name, bad_name_regex))
                           throw murphi::Error("name/id (`"+name+"`) starts with the protected romp key phrase "
                                               "(regex:/_+[Rr][Oo][Mm][Pp]_+.*/)",loc);
@@ -308,7 +283,7 @@ int main(int argc, char **argv) {
                           throw murphi::Error("name/id (`romp`) is a reserved word",loc);
                         // if (name == "")
                         //   throw murphi::Error("name/id (`romp`) is a reserved word",loc);
-                        std::string name_lower = _to_lower(name);
+                        std::string name_lower = murphi::to_lower(name);
                         auto res = gen.RESERVED_NAMES.find(name_lower);
                         if (res != gen.RESERVED_NAMES.end())
                           throw murphi::Error("name/id `"+name+"` is a reserved word",loc);

@@ -261,6 +261,7 @@
 
 model: nodes {
   output = murphi::Ptr<murphi::Model>::make($1, @$);
+  (void)yynerrs_; // silence unused warning
 };
 
 nodes: nodes decl {

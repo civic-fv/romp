@@ -22,21 +22,11 @@ public:
   scanner(std::istream *arg_yyin = 0, std::ostream *arg_yyout = 0)
       : yyFlexLexer(arg_yyin, arg_yyout) {}
 
-/* XXX: Clang's -Woverloaded-virtual decides that the following declaration is
- * possibly a mistake. However, we are deliberately overloading this method with
- * a different type signature. The cleanest way I've found around it is to
- * toggle off the warning here.
- */
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Woverloaded-virtual"
-#endif
+
+  using yyFlexLexer::yylex; // throws an error if called
   // Force a new available type signature for yylex
   virtual int yylex(parser::semantic_type *const lval,
                     parser::location_type *loc);
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
 };
 
 } // namespace murphi

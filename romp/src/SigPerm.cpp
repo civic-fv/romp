@@ -40,7 +40,7 @@ namespace romp {
 
   Sig::Sig(const SigPerm& perm_) // copy constructor
     // : index(0), perm(perm_), params(nullptr) {}
-    : index(0), perm(perm_), params(0) {}
+    : index(0), params(0), perm(perm_) {}
 
   Sig::Sig(const Sig& other)
     : index(other.index), params(new const SigParam*[other.size()]), perm(other.perm)
@@ -54,7 +54,7 @@ namespace romp {
     std::stringstream buf;
     // buf << "quantifiers(";
     std::string sep = "";
-      for (int i=0; i<perm.param_count; ++i)
+      for (size_t i = 0; i < perm.param_count; ++i)
         if (params[i] != nullptr) {
           buf << sep << perm.quantifiers[i].name << ":=" << nEscape(params[i]->str_rep);
           // buf << sep << perm.quantifiers[i].name << ":=" << nEscape(params[i].value_str);
@@ -114,11 +114,11 @@ namespace romp {
   const std::string& SigParam::to_string() const {return str_rep;}
   const std::string& SigParam::to_json() const {return json_rep;}
 
-  inline const std::string SigParam::to_string(const std::string& value_str, const QuantExpansion& qe) {
+  inline const std::string SigParam::to_string(const std::string& value_str, [[maybe_unused]] const QuantExpansion& qe) {
     return /* "(::" ROMP_TYPE_NAMESPACE "::" + qe.type_id + ") " + */ value_str;
   }
 
-  inline const std::string SigParam::to_json(const std::string& value_str, const QuantExpansion& qe, const std::string json_val_type) {
+  inline const std::string SigParam::to_json(const std::string& value_str, [[maybe_unused]] const QuantExpansion& qe, const std::string json_val_type) {
     // if (auto _tid = dynamic_cast<const murphi::TypeExprID*>(qe.type.get())) {
     //   return "{\"type\":\"" + _tid->referent->name + ": " + _tid->referent->value->to_string() + "\","
     //                 "\"value\":""\"" + value_str +"\"}";
@@ -198,7 +198,6 @@ namespace romp {
 
   void QuantExpansion::resolve_quantifier_type(const murphi::Quantifier& q_) {
     class type_trav : public murphi::ConstBaseTypeTraversal {
-      const murphi::Quantifier& q;
       QuantExpansion& qe;
       std::string _json_prefix;
       std::string json_affix = "}";
@@ -208,9 +207,9 @@ namespace romp {
       }
     public:
       type_trav(const murphi::Quantifier& q__, QuantExpansion& parent_, const std::string& display_type_)
-        : q(q__), qe(parent_), _json_prefix("{\"$type\":\"quantifier\",\"id\":\""+q__.name+'"'),
-          display_type(display_type_),
-          ConstBaseTypeTraversal("Not a supported TypeExpr for bounding a quantifier (it may be undefined or too complex) !!")
+        : ConstBaseTypeTraversal("Not a supported TypeExpr for bounding a quantifier (it may be undefined or too complex) !!"),
+          qe(parent_), _json_prefix("{\"$type\":\"quantifier\",\"id\":\""+q__.name+'"'),
+          display_type(display_type_)
       {}
       void visit_array(const murphi::Array& n) { unsupported_traversal(n,"murphi::Array"); }
       void visit_multiset(const murphi::Multiset& n) { unsupported_traversal(n,"murphi::Multiset"); }
@@ -223,7 +222,7 @@ namespace romp {
         qe.step = 1_mpz;
         qe._size = n.members.size();
         // qe.values = std::vector<const SigParam*>(qe.size());
-        for (int i=0; i<n.members.size(); ++i)
+        for (size_t i = 0; i < n.members.size(); ++i)
           qe.values.push_back(new SigParam{
                                 mpz_class(i),
                                 n.members[i].first,
@@ -273,10 +272,10 @@ namespace romp {
         for (const auto& m : n.members) {
           const auto _t = m->resolve();
           if (const auto _s = dynamic_cast<const murphi::Scalarset*>(_t.get())) {
-            mpz_class stop = _s->count(); count += stop;
+            mpz_class end = _s->count(); count += end;
             std::string prefix = (((_s->name != "") ? "_romp_"+_s->name : "__romp__scalarset")
                                      + '_' + _s->count().get_str() + '_');
-            for (mpz_class i=1_mpz; i<=stop; i+=1)
+            for (mpz_class i = 1_mpz; i <= end; ++i)
               qe.values.push_back(new SigParam{
                                     mpz_class(index),
                                     prefix+i.get_str(),
@@ -285,12 +284,12 @@ namespace romp {
                                     qe
                                   });
           } else if (const auto _e = dynamic_cast<const murphi::Enum*>(_t.get())) {
-            for (const auto& m : _e->members)
+            for (const auto& m1 : _e->members)
               qe.values.push_back(new SigParam{
                                     mpz_class(index),
-                                    m.first,
-                                    m.first,
-                                    json_wrap(index++,SigParam::to_json('"'+m.first+'"', qe, display_type)),
+                                    m1.first,
+                                    m1.first,
+                                    json_wrap(index++,SigParam::to_json('"'+m1.first+'"', qe, display_type)),
                                     qe
                                   });
           }
@@ -328,8 +327,8 @@ namespace romp {
   // std::unordered_map<std::string,std::shared_ptr<const QuantExpansion>> SigPerm::quant_vals_cache{};
 
   SigPerm::SigPerm(const murphi::Rule& rule_, const char* rule_type_)
-    : rule_type(rule_type_), rule(rule_),
-      param_count(rule_.quantifiers.size()), quantifiers(rule_.quantifiers)
+    : rule(rule_), rule_type(rule_type_),
+      quantifiers(rule_.quantifiers), param_count(rule_.quantifiers.size())
   {
     // quant_vals = std::vector<std::shared_ptr<const QuantExpansion>>(param_count);
     if (param_count == 0) return;
@@ -337,7 +336,7 @@ namespace romp {
     add_quants(rule.quantifiers);
     while (quant_vals[0] == nullptr) quant_vals.erase(quant_vals.begin()); // remove leading nullptr(s)
     if (quant_vals.size() != param_count) throw murphi::Error("(SigPerm) failed to properly add all quantifiers to permutation (possibly too many nulls added) !! \t[dev-error]",rule_.loc);
-    for (int i=0; i<quant_vals.size(); ++i)
+    for (size_t i = 0; i < quant_vals.size(); ++i)
       if (quant_vals[i] == nullptr) throw murphi::Error("(SigPerm) a nullptr was added to the list of quantifiers !! \t[dev-error]", rule_.loc);
   }
 
@@ -350,6 +349,7 @@ namespace romp {
     quant_vals.push_back(std::shared_ptr<QuantExpansion>(new QuantExpansion(q)));
     _size *= quant_vals[quant_vals.size()-1]->size();
   }
+
   // void SigPerm::add_quant(const murphi::Quantifier& q) {
   //   if (auto _tid = dynamic_cast<const murphi::TypeExprID*>(q.decl->type.get())) {
   //     auto qe_i = SigPerm::quant_vals_cache.find(_tid->referent->name);
@@ -381,6 +381,7 @@ namespace romp {
       param_iters.push_back(0);
     return param_iters;
   }
+
   // std::vector<std::vector<const SigParam>::iterator> SigPerm::get_init_param_iters() const {
   //   std::vector<std::vector<const SigParam>::iterator> param_iters(param_count);
   //   for (auto quant_val : quant_vals)
@@ -411,10 +412,19 @@ namespace romp {
 
   // prefix iterator
   SigPerm::Iterator& operator ++ (SigPerm::Iterator& it) { it.increment_item(); return it; }
+
   // postfix iterator
-  SigPerm::Iterator operator ++ (SigPerm::Iterator& it, int n) { SigPerm::Iterator cpy(it); ++it; return cpy; }
-  /* friend */ bool operator == (const SigPerm::Iterator& l, const SigPerm::Iterator& r) { return  (l.perm.rule.name) ==  (r.perm.rule.name) && l.index == r.index; }
-  /* friend */ bool operator != (const SigPerm::Iterator& l, const SigPerm::Iterator& r) { return  (l.perm.rule.name) !=  (r.perm.rule.name) || l.index != r.index; }
+  SigPerm::Iterator operator ++ (SigPerm::Iterator& it, [[maybe_unused]] int n) {
+    SigPerm::Iterator cpy(it); ++it; return cpy;
+  }
+
+  /* friend */ bool operator == (const SigPerm::Iterator& l, const SigPerm::Iterator& r) {
+    return (l.perm.rule.name) == (r.perm.rule.name) && l.index == r.index;
+  }
+
+  /* friend */ bool operator != (const SigPerm::Iterator& l, const SigPerm::Iterator& r) {
+    return !(l == r);
+  }
 
   // std::string SigPerm::Iterator::to_string() const { sig_ptr->to_string(); }
   std::string SigPerm::Iterator::to_string() const { return sig.to_string(); }
@@ -436,7 +446,9 @@ namespace romp {
     // sig_ptr = new Sig(++index, params, perm);
     // delete old;
   }
+
   void SigPerm::Iterator::increment_param_iters() { increment_param_iters(perm.param_count-1); }
+
   void SigPerm::Iterator::increment_param_iters(signed long level) {
     if (level < 0) return; // base case
     auto& quant = *perm.quant_vals[level];
@@ -461,7 +473,7 @@ namespace romp {
 
   SigPerm::Iterator::Iterator(const SigPerm& perm_/* , std::vector<size_t> param_iters_ */)
       // : index(0ul), perm(perm_), param_iters(param_iters_.size()), sig(0,perm_.param_count,perm_)
-      : index(0ul), perm(perm_), param_iters(new size_t[perm_.param_count+1]), sig(0,perm_.param_count,perm_)
+      : index(0ul), sig(0,perm_.param_count,perm_), perm(perm_), param_iters(new size_t[perm_.param_count+1])
     {
       // std::vector<const SigParam*> params(perm.param_count);
       for (size_t i=0; i<perm.param_count; ++i) {
@@ -476,17 +488,20 @@ namespace romp {
       //   params.push_back(*param_i);
       // sig_ptr = new Sig(++index, params, perm);
     }
+
   // SigPerm::Iterator::Iterator(const SigPerm& perm_, std::vector<std::vector<const SigParam&>::iterator> param_iters_)
   //     : index(0ul), perm(perm_), param_iters(param_iters_)
   //   {}
-  SigPerm::Iterator::Iterator(const SigPerm& perm_, size_t index_)
-    // : index(perm_.size()), perm(perm_), sig(perm_.size(), 1, perm_) {}
-    : index(perm_.size()), perm(perm_), sig(perm_.size(), 1, perm_), param_iters(nullptr) {}
-    // : index(perm_.size()), perm(perm_), sig(perm_.size(),std::vector<const SigParam*>(),perm_) {}
+
+  SigPerm::Iterator::Iterator(const SigPerm& perm_, [[maybe_unused]] size_t index_)
+    // : index(perm_.size()), sig(perm_.size(), 1, perm_), perm(perm_) {}
+    : index(perm_.size()), sig(perm_.size(), 1, perm_), perm(perm_), param_iters(nullptr) {}
+    // : index(perm_.size()), sig(perm_.size(),std::vector<const SigParam*>(),perm_), perm(perm_) {}
+
   // SigPerm::Iterator::~Iterator() { delete sig_ptr; }
 
   SigPerm::Iterator::Iterator(const SigPerm::Iterator& other)
-    : perm(other.perm), index(other.index), sig(other.sig), param_iters(new size_t[other.perm.param_count+1])
+    : index(other.index), sig(other.sig), perm(other.perm), param_iters(new size_t[other.perm.param_count+1])
   {
     for (size_t i=0; i<other.perm.param_count; ++i)
       param_iters[i] = other.param_iters[i];

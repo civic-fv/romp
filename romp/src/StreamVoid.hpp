@@ -20,7 +20,6 @@ namespace romp {
 
   // provide a way to inline custom manipulator type functions
   class _StreamVoid {
-    void* _ = nullptr;
     friend inline std::ostream& operator << (std::ostream& out, const _StreamVoid&) { return out; }
   };
 

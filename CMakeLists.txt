@@ -1,48 +1,89 @@
-cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.29 FATAL_ERROR)
 
 project(romp LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # This seems to be some magic to get libraries to install correctly.
 include(GNUInstallDirs)
 
+include(CheckCXXCompilerFlag)
+include(CheckLinkerFlag)
+
+
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+
 
 # enable even more warnings if the compiler supports them
-include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG(-Wcast-qual HAS_WARNING_CAST_QUAL)
-if(HAS_WARNING_CAST_QUAL)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wcast-qual")
-endif()
-CHECK_CXX_COMPILER_FLAG(-Wcast-align HAS_WARNING_CAST_ALIGN)
-if(HAS_WARNING_CAST_ALIGN)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wcast-align")
-endif()
-CHECK_CXX_COMPILER_FLAG(-Wlogical-op HAS_WARNING_LOGICAL_OP)
-if(HAS_WARNING_LOGICAL_OP)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wlogical-op")
-endif()
-CHECK_CXX_COMPILER_FLAG(-Wstrict-aliasing=1 HAS_WARNING_STRICT_ALIASING_1)
-if(HAS_WARNING_STRICT_ALIASING_1)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wstrict-aliasing=1")
-endif()
-CHECK_CXX_COMPILER_FLAG(-Wpointer-arith HAS_WARNING_POINTER_ARITH)
-if(HAS_WARNING_POINTER_ARITH)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wpointer-arith")
+macro(try_add_cxx_warn_flag flag)
+    CHECK_CXX_COMPILER_FLAG("-W${flag}" HAS_WARNING_${flag})
+    if(HAS_WARNING_${flag})
+        string(APPEND WARN_CXX_FLAGS " -W${flag}")
+    else()
+        message(WARNING "C++ compiler ${CMAKE_CXX_COMPILER} is missing the ${flag} warning")
+    endif()
+endmacro()
+
+foreach(f IN ITEMS cast-qual cast-align logical-op write-strings format=2
+                   strict-aliasing=1 pointer-arith missing-declarations
+                   unknown-pragmas shadow undef)
+    try_add_cxx_warn_flag(${f})
+endforeach()
+string(APPEND WARN_CXX_FLAGS " -W -Wall -Wextra")
+if(NOT DEFINED ROMP_DIST)
+    string(APPEND WARN_CXX_FLAGS " -Werror -Wno-error=unknown-pragmas")
 endif()
 
-set(OLD_CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-set(ROMP_CMAKE_CXX_FLAGS "-W -Wall -Wextra -Wformat=2 \
-  -Wwrite-strings -Wmissing-declarations -Wshadow -Wundef")
-set(CMAKE_CXX_FLAGS "${OLD_CMAKE_CXX_FLAGS} -std=c++17 ${ROMP_CMAKE_CXX_FLAGS}")
+CHECK_CXX_COMPILER_FLAG(-fno-sanitize=all HAS_SANITIZER)
+if(HAS_SANITIZER)
+    CHECK_CXX_COMPILER_FLAG(-fno-sanitize-trap=all HAS_SANITIZER_TRAP)
+    CHECK_CXX_COMPILER_FLAG(-fsanitize-ignorelist=/dev/null HAS_SANITIZER_IGNORE_LIST)
+
+    block(SCOPE_FOR VARIABLES PROPAGATE SANITIZER_CXX_FLAGS)
+        # clang's CFI sanitizer requires link-time optimization and non-overridable symbols
+        set(SANITIZER_cfi_ADD_CXX_FLAGS "-flto;-fvisibility=protected")
+
+        macro(check_sanitizer sanitizer)
+            # NB: linker flag because some sanitizers require runtime support
+            CHECK_LINKER_FLAG(CXX "${SANITIZER_${sanitizer}_ADD_CXX_FLAGS};-fsanitize=${sanitizer}" HAS_SANITIZER_${sanitizer})
+            if(NOT HAS_SANITIZER_${sanitizer})
+                message(SEND_ERROR "Sanitizer ${sanitizer} is not supported by C++ compiler ${CMAKE_CXX_COMPILER}")
+            endif()
+        endmacro()
+
+        foreach(san IN LISTS ROMP_USE_SANITIZERS)
+            check_sanitizer(${san})
+            list(APPEND SANITIZER_CXX_FLAGS_BASE "${SANITIZER_${san}_ADD_CXX_FLAGS}")
+        endforeach()
+
+        if(NOT DEFINED ROMP_USE_SANITIZERS OR ROMP_USE_SANITIZERS STREQUAL "")
+            set(SANITIZER_CXX_FLAGS "")
+        else()
+            list(JOIN ROMP_USE_SANITIZERS "," sanitize_arg)
+            CHECK_LINKER_FLAG(CXX "${SANITIZER_CXX_FLAGS_BASE};-fsanitize=${sanitize_arg}" SANITIZERS_COMPATIBLE_${sanitize_arg})
+            if(NOT SANITIZERS_COMPATIBLE_${sanitize_arg})
+                message(SEND_ERROR "C++ compiler ${CMAKE_CXX_COMPILER} does not support simultaneously enabling ${ROMP_USE_SANITIZERS} sanitizers")
+            endif()
+
+            list(JOIN SANITIZER_CXX_FLAGS_BASE " " SANITIZER_CXX_FLAGS)
+            string(APPEND SANITIZER_CXX_FLAGS " -fsanitize=${sanitize_arg} -fno-sanitize-recover=all")
+            if(HAS_SANITIZER_TRAP)
+                string(APPEND SANITIZER_CXX_FLAGS " -fno-sanitize-trap=all")
+            endif()
+            if(HAS_SANITIZER_IGNORE_LIST)
+                string(APPEND SANITIZER_CXX_FLAGS " -fsanitize-ignorelist=\"${CMAKE_SOURCE_DIR}/sanitizer-known-issues.txt\"")
+            endif()
+        endif()
+    endblock()
+endif()
+
+string(APPEND CMAKE_CXX_FLAGS " ${WARN_CXX_FLAGS} ${SANITIZER_CXX_FLAGS}")
 
 # Enable --as-needed, present on GNU ld on Linux, to minimise dependencies.
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--as-needed")
-  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--as-needed")
-endif()
-
-# if we have a new enough CMake to have FindPython3, check for it
-if(${CMAKE_VERSION} VERSION_GREATER 3.11)
-  find_package(Python3 REQUIRED COMPONENTS Interpreter)
+CHECK_LINKER_FLAG(CXX "-Wl,--as-needed" HAS_LINK_AS_NEEDED)
+if(HAS_LINK_AS_NEEDED)
+    string(APPEND CMAKE_EXE_LINKER_FLAGS    " -Wl,--as-needed")
+    string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl,--as-needed")
 endif()
 
 enable_testing()
@@ -50,7 +91,6 @@ enable_testing()
 add_subdirectory(libmurphi)
 # add_subdirectory(murphi2c)
 add_subdirectory(romp)
-# add_subdirectory(romp-old)
 add_subdirectory(tests)
 
 # add_custom_target(check

@@ -1,0 +1,72 @@
+from lit.formats import ShTest
+from os import getenv
+from pathlib import Path
+from subprocess import run as spawn
+
+
+if 'CMAKE' not in "${CMAKE_BUILD_TYPE}": # In a CMake-generated file
+    print("In CMake")
+    _CMAKE = True
+
+    config.test_source_root = "${CMAKE_SOURCE_DIR}/tests"
+    config.test_exec_root = "${CMAKE_CURRENT_BINARY_DIR}"
+else:
+    _CMAKE = False
+
+
+def find_romp() -> str: # in IO
+    global config
+
+
+    def path(*parts: str) -> Path | None:
+        return Path(*parts) if all(parts) else None
+
+    def is_valid_romp(romp_bin_path: Path) -> bool: # in IO
+        try:
+            spawn([romp_bin_path, "--version"], capture_output = True)
+            return True
+        except FileNotFoundError:
+            return False
+
+
+    cwd = Path.cwd()
+    testdir = Path(__file__).parent
+
+    if _CMAKE:
+        if (romp := "${CMAKE_BINARY_DIR}/romp/romp") and is_valid_romp(romp):
+            return romp
+
+    if (romp := path(getenv("ROMP_TEST_BIN"))) and is_valid_romp(romp):
+        return romp
+
+    if (romp := path(getenv("ROMP_TEST_HOME"), "romp/romp")) and is_valid_romp(romp):
+        return romp
+
+    if (romp := testdir / ".." / f"build-{getenv('ROMP_TEST_BUILD_TYPE') or ''}" / "romp/romp") and is_valid_romp(romp):
+        return romp
+
+    if (romp := testdir / "../build/romp/romp") and is_valid_romp(romp):
+        return romp
+
+    if (romp := testdir / "../romp/romp") and is_valid_romp(romp):
+        return romp
+
+    for builddir in testdir.glob("../*build*/"):
+        if (romp := builddir / "romp/romp") and is_valid_romp(romp):
+            return romp
+
+    error = Exception("No romp found")
+    error.add_note("Perhaps you forgot to build? If not, set ROMP_TEST_HOME=<your build directory>")
+    raise error
+
+
+
+config.name = "romp"
+
+config.test_format = ShTest()
+config.suffixes = [".m"]
+
+config.substitutions = [
+    (r"romp", f"\"{find_romp()}\""),
+    (r"c\+\+", "g++ -pipe -x c++ -std=gnu++17"),
+  ]

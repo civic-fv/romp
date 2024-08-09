@@ -1,0 +1,2 @@
+[cfi-icall]
+fun:_ZN19__gmp_alloc_cstringD2Ev

@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <iostream>
+#include <locale>
 #include <murphi/Decl.h>
 #include <murphi/Model.h>
 #include <murphi/Ptr.h>
@@ -14,11 +15,10 @@
 
 namespace murphi {
 
-std::string _to_lower(const std::string& data) {
-  std::string result(data.size(), '\0');
-  std::transform(data.begin(), data.end(), result.begin(),
-    [](unsigned char c){ return std::tolower(c); });
-  return result;
+std::string to_lower(std::string_view in) {
+  std::string out(in);
+  std::use_facet<std::ctype<char>>(std::locale()).tolower(&*out.begin(), &*out.end());
+  return out;
 }
 
 
@@ -27,7 +27,7 @@ const std::unordered_set<std::string> RESERVED_FUNCT_NAMES{"clear", "ismember", 
 const std::unordered_set<std::string> RESERVED_TYPE_NAMES{"array", "boolean", "enum", "multiset", "range", "scalarset" /* , "real" */, "undefined", "union"};
 
 const IdHandler MURPHI_RESERVED_NAMES_HANDLER = [](std::string name, const IdType id_type, const location& loc) -> std::optional<std::string> {
-    std::string lower_name = _to_lower(name);
+    std::string lower_name = to_lower(name);
     switch (id_type) {
       case FUNCTION_NAME: {
         // if (name == "") // technically parser should never allow this
@@ -70,7 +70,7 @@ const IdHandler MURPHI_RESERVED_NAMES_HANDLER = [](std::string name, const IdTyp
 
 Ptr<Model> parse(std::istream &input) {
   return parse(input,
-               [&](std::string name, const IdType id_type, const location& loc) -> std::optional<std::string> {
+               [&](std::string name, [[maybe_unused]] const IdType id_type, [[maybe_unused]] const location& loc) -> std::optional<std::string> {
                   return {name};
                });
 }

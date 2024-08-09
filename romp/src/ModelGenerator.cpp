@@ -149,7 +149,7 @@ void ModelGenerator::visit_bor(const Bor &n) {
 
 // << ------------------------------------------------------------------------------------------ >>
 
-void ModelGenerator::visit_chooserule(const ChooseRule &n) {
+void ModelGenerator::visit_chooserule([[maybe_unused]] const ChooseRule &n) {
   // this is unreachable because generate_c is only ever called with a Model
   // and all rules are flattened during ModelGenerator::visit_model
   assert(!"unreachable");
@@ -660,7 +660,7 @@ void ModelGenerator::visit_multisetelement(const MultisetElement &n) {
 
 // << ------------------------------------------------------------------------------------------ >>
 
-void ModelGenerator::visit_multisetremove(const MultisetRemove &n) {
+void ModelGenerator::visit_multisetremove([[maybe_unused]] const MultisetRemove &n) {
   //[X]TODO: update ModelGenerator::visit_multisetremove to new standards
   // this is unreachable because we dont' support choose rule's and this is useless without them
   assert(!"unreachable");
@@ -689,7 +689,7 @@ void ModelGenerator::visit_multisetremovepred(const MultisetRemovePred &n) {
 
 // << ------------------------------------------------------------------------------------------ >>
 
-void ModelGenerator::visit_multisetquantifier(const MultisetQuantifier &n) {
+void ModelGenerator::visit_multisetquantifier([[maybe_unused]] const MultisetQuantifier &n) {
   //[X]TODO: update ModelGenerator::visit_multisetquantifier to new standards
   // this is unreachable because we let the Multiset type handle this for everything but choose rules
   //   which we don't support at all
@@ -1256,7 +1256,7 @@ void ModelGenerator::visit_startstate(const StartState &n) {
     *this << "void";
   } else {
     std::string sep;
-    for (const auto q : n.quantifiers) {
+    for (const auto& q : n.quantifiers) {
       if (q.type == nullptr || q.decl == nullptr || q.decl->type == nullptr)
         throw Error("(startstate) Quantifier is missing type/decl info !! \t[dev-error]",q.loc);
       *this << sep // ;

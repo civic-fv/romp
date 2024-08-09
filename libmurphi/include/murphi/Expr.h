@@ -683,10 +683,10 @@ struct MURPHI_API_WITH_RTTI Element : public Expr {
   Element(const Ptr<Expr> &array_, const Ptr<Expr> &index_,
           const location &loc_);
   virtual ~Element() = default;
-  Element *clone() const;
+  Element *clone() const override;
 
-  void visit(BaseTraversal &visitor);
-  void visit(ConstBaseTraversal &visitor) const;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
   bool constant() const final;
   Ptr<TypeExpr> type() const final;
@@ -956,7 +956,7 @@ struct MURPHI_API_WITH_RTTI MultisetElement : public Expr {
   bool constant() const final;
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
-  void validate() const;
+  void validate() const override final;
   bool is_lvalue() const final;
   bool is_readonly() const final;
   bool is_pure() const final;

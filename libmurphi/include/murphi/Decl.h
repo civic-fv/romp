@@ -104,11 +104,11 @@ struct MURPHI_API_WITH_RTTI TypeDecl : public Decl {
 
   TypeDecl(const std::string &name, const Ptr<TypeExpr> &value_,
            const location &loc);
-  TypeDecl *clone() const;
+  TypeDecl *clone() const override;
   virtual ~TypeDecl() = default;
 
-  void visit(BaseTraversal &visitor);
-  void visit(ConstBaseTraversal &visitor) const;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
   // void validate() const final;
   void update() override;
