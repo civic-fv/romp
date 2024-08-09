@@ -290,7 +290,6 @@ Endruleset;
 			ar_states[p] := ENTER;
 			hstates[p] := HANDLE;
 			mutexes[p] := false;
-			pid[tmp] := p;
 			tmp := tmp + 1;
 		EndFor;
 	Endstartstate;

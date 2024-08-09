@@ -67,7 +67,7 @@ namespace romp {
     }
 
   public:
-    BFSWalker(const Options OPTIONS_, id_t start_id_)
+    BFSWalker(const Options& OPTIONS_, id_t start_id_)
       : OPTIONS(OPTIONS_),
 #       if (defined(__romp__ENABLE_liveness_property) && _ROMP_LIVENESS_PROP_COUNT > 0)
           enable_liveness(OPTIONS_.liveness),
@@ -86,6 +86,8 @@ namespace romp {
     inline BFSWalker& operator = (const BFSWalker& other) {
       std::memcpy(this, &other, sizeof(BFSWalker));
       state.__rw__ = this;
+      tripped = nullptr;
+      tripped_inside = nullptr;
       return *this;
     } 
 
@@ -498,7 +500,7 @@ protected:
                 break;
             } else delete walker;
           } else { 
-            delete walker; 
+            delete walker;
             continue; 
           }
         }

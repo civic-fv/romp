@@ -15,7 +15,7 @@
             "startstate": // END of your part of the output
             {} // <- this would be the start state object that you get from the ::__caller__::STARSTATES array
             , // <- you would need to insert this
-            "state": // <- you would need to insert this
+            "state": [1, 2,3,4,{"multiset":[1,1,2]}...] // <- you would need to insert this
             {} // <- this should be jsu the state object piped in
             // if this is the end of the object no comma
         }, // <- this brace & comma will need to be written manually by you every time
