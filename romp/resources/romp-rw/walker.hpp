@@ -79,18 +79,15 @@ template<size_t N>
 size_t choose_from_bag(std::bitset<N>& bag, RandSeed_t& seed, size_t M=N, size_t attempt_limit=N) {
   size_t choice = ~(0ul);
   choice = rand_choice(seed,0ul,bag.count());
-  size_t i = 0; size_t r = 0;
-  while (true) {
-    if (bag[i] && r == choice) {
-      bag.set(i, false);
-      return (unsigned) i;
-    } else if (bag[i]) {
-      i++;
-      r++;
-    } else {
-      i++;
+  size_t r = 0ul;
+  for (size_t i=0ul; i<N; ++i)
+    if (bag[i]) {  //if rule with ID i is available to choose form 
+      if (r == choice) { //and it's the r^th rule available in the bag that matches our random choice
+        bag[i] = false; //mark rule with ID i as unavailable
+        return (unsigned) i; // return the rule ID
+      }
+      r++; // increment count of available rules found
     }
-  }
   // size_t choice = ~(0ul);
   // do {
   //   choice = rand_choice(seed,0ul,M);
