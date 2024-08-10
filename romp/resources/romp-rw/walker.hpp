@@ -76,7 +76,7 @@ T rand_choice(RandSeed_t &seed, T min, T max) {
 typedef _ROMP_ChoiceBag_t ChoiceBag_t;
 
 template<size_t N>
-size_t choose_from_bag(std::bitset<N>& bag, RandSeed_t& seed, size_t M=N, size_t attempt_limit=N) {
+std::pair<size_t,size_t> choose_from_bag(std::bitset<N>& bag, RandSeed_t& seed, size_t M=N, size_t attempt_limit=N) {
   size_t choice = ~(0ul);
   choice = rand_choice(seed,0ul,bag.count());
   size_t r = 0ul;
@@ -84,10 +84,11 @@ size_t choose_from_bag(std::bitset<N>& bag, RandSeed_t& seed, size_t M=N, size_t
     if (bag[i]) {  //if rule with ID i is available to choose form 
       if (r == choice) { //and it's the r^th rule available in the bag that matches our random choice
         bag[i] = false; //mark rule with ID i as unavailable
-        return (unsigned) i; // return the rule ID
+        return {(unsigned) i, choice}; // return the rule ID
       }
       r++; // increment count of available rules found
     }
+  return {0ul,0ul};
   // size_t choice = ~(0ul);
   // do {
   //   choice = rand_choice(seed,0ul,M);
@@ -397,38 +398,8 @@ private:
   }
   inline void _progress() {/* do nothing more */}
 
-#elif (_ROMP_RULE_SELECTION_ALGO == (2ul)) // random w/out replacement from all possibilities
-  _ROMP_ChoiceBag_t rule_bag;
-  const Rule& choose_rule() {
-    if (((_ROMP_ChoiceBag_t)rule_bag).none()) {
-      status = Result::DEADLOCK; _valid = false;
-      return ::__caller__::RULESETS[0].rules[0];
-    }
-    const size_t choice = choose_from_bag(rule_bag, rand_seed);
-    const auto p = get_rs_and_r_ids(choice);
-    return ::__caller__::RULESETS[p.first].rules[p.second];
-  }
-  inline void _progress() {
-    _valid = true;
-    rule_bag.set();
-  }
-
-#elif (_ROMP_RULE_SELECTION_ALGO == (3ul)) // random everything without replacement
-  // keeps track of what rule to call next for our heuristic symmetry reduction
-  id_t next_rule[_ROMP_RULESETS_LEN];
-  const Rule& choose_rule() {
-    const size_t rs_id = rand_choice<size_t>(rand_seed,0ul,_ROMP_RULESETS_LEN);
-    const RuleSet& rs = ::__caller__::RULESETS[rs_id];
-    id_t& r_id = next_rule[rs_id];  // this is a reference
-    const Rule& r = rs.rules[r_id];
-    if (++r_id >= rs.rules.size())
-      r_id = 0;
-    return r;
-  }
-  inline void _progress() {/* do nothing more */}
-
-#else // [DEFAULT] random rule -> random ruleset w/out replacement
-const RuleSet* _RS = nullptr;
+#elif (_ROMP_RULE_SELECTION_ALGO == (1ul)) // random rule -> random ruleset w/out replacement
+  const RuleSet* _RS = nullptr;
   std::bitset<_ROMP_RULESETS_LEN> ruleset_bag;
   _ROMP_ChoiceBag_t rule_bag;
   const Rule& choose_rule() {
@@ -449,6 +420,38 @@ const RuleSet* _RS = nullptr;
     _valid = true;
     ruleset_bag.set();
   }
+
+#elif (_ROMP_RULE_SELECTION_ALGO == (3ul)) // random everything without replacement
+  // keeps track of what rule to call next for our heuristic symmetry reduction
+  id_t next_rule[_ROMP_RULESETS_LEN];
+  const Rule& choose_rule() {
+    const size_t rs_id = rand_choice<size_t>(rand_seed,0ul,_ROMP_RULESETS_LEN);
+    const RuleSet& rs = ::__caller__::RULESETS[rs_id];
+    id_t& r_id = next_rule[rs_id];  // this is a reference
+    const Rule& r = rs.rules[r_id];
+    if (++r_id >= rs.rules.size())
+      r_id = 0;
+    return r;
+  }
+  inline void _progress() {/* do nothing more */}
+
+#else // [DEFAULT]  random w/out replacement from all possibilities
+  _ROMP_ChoiceBag_t rule_bag;
+  struct ChoiceData {const Rule& r; size_t rID; size_t choice;};
+  ChoiceData choose_rule() {
+    if (((_ROMP_ChoiceBag_t)rule_bag).none()) {
+      status = Result::DEADLOCK; _valid = false;
+      return {::__caller__::RULESETS[0].rules[0],0ul,0ul};
+    }
+    auto pair = choose_from_bag(rule_bag, rand_seed);
+    const size_t choice = pair.first;
+    const auto p = get_rs_and_r_ids(choice);
+    return {::__caller__::RULESETS[p.first].rules[p.second], pair.first,  pair.second};
+  }
+  inline void _progress() {
+    _valid = true;
+    rule_bag.set();
+  }
 #endif
 
 
@@ -456,9 +459,8 @@ const RuleSet* _RS = nullptr;
 #ifdef __ROMP__DO_MEASURE
     start_time = time_mr();
 #endif
-    // const RuleSet& rs = rand_ruleset();
-    // const Rule& r = rand_rule(rs);
-    const Rule& r = choose_rule();
+    const auto choice_data = choose_rule();
+    const Rule& r = choice_data.r;
     if (not _valid) return;
     bool pass = false;
     try {
@@ -466,10 +468,15 @@ const RuleSet* _RS = nullptr;
         r.action(state);
         progress(r);
         *json << ",{\"$type\":\"rule-hit\",\"rule\":" << r << ","
+                  "\"rand-choice\":" << choice_data.choice << ","
+                  "\"rule-id\":" << choice_data.rID << ","
                  "\"state\":" << state
               << "}";
       } else {
-        *json << ",{\"$type\":\"rule-miss\",\"rule\":" << r << "}";
+        *json << ",{\"$type\":\"rule-miss\",\"rule\":" << r << ","
+                  "\"rand-choice\":" << choice_data.choice << ","
+                  "\"rule-id\":" << choice_data.rID
+              << "}";
         --_attempt_limit;
       }
     } catch(IModelError& me) {
@@ -513,7 +520,7 @@ const RuleSet* _RS = nullptr;
 #endif
     // const RuleSet& rs= rand_ruleset();
     // const Rule& r= rand_rule(rs);
-    const Rule& r = choose_rule();
+    const Rule& r = choose_rule().r;
     if (not _valid) return;
     bool pass = false;
     try {

@@ -20,7 +20,7 @@
 #define __romp__ENABLE_assume_property
 #define __romp__ENABLE_cover_property
 #define __romp__ENABLE_liveness_property
-#define _ROMP_RULE_SELECTION_ALGO (1ul)
+#define _ROMP_RULE_SELECTION_ALGO (2ul)
 #define __ROMP__DO_MEASURE
 #define _ROMP_COVER_PROP_COUNT (2ul)
 #define _ROMP_LIVENESS_PROP_COUNT (2ul)

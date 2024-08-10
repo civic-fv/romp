@@ -26,7 +26,7 @@ RUMUR := ../../rumur/build/rumur/rumur
 
 CFLAGS := -std=c11 -O3 -pthread -march=native
 CXXFLAGS := -O3 -pthread
-ROMP_FLAGS := -m
+ROMP_FLAGS := -mS
 CMURPHI_FLAGS :=
 # $(info CMURPHI_FLAGS = $(CMURPHI_FLAGS))
 CMURPHI_INCLUDE_DIR := ../../cmurphi/include
@@ -88,10 +88,10 @@ $(1).ro3: $(1).ro.cpp
 	@printf "Finished Building: $$@\n"
 $(1).romp:  $(1).ro $(1).ro0 $(1).ro1 $(1).ro2 $(1).ro3 $(1).ro0
 	@printf "Making all romp varaints $$@ with `cp` ...\n"
-$(1).ro: $(1).ro1
+$(1).ro: $(1).ro2
 	@printf "``Making'' $$@ with `cp` ...\n"
-	@printf "  $$(CP) $(1).ro1 $(1).ro\n"
-	@$$(CP) $(1).ro1 $(1).ro
+	@printf "  $$(CP) $(1).ro2 $(1).ro\n"
+	@$$(CP) $(1).ro2 $(1).ro
 	@printf "Finished ``Making'': $$@\n"
 endef
 $(foreach model,$(ROMP_MODELS),$(eval $(call __generate_romp_model_directive,$(model:%.m=%))))
